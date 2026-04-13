@@ -282,5 +282,167 @@
       "body": "Good news! Tickets are now available for {event}. You have 24 hours to purchase.",
       "cta": "Buy tickets now"
     }
+  },
+  "site": {
+    "nav": {
+      "services": "Leistungen",
+      "incubation": "Inkubation",
+      "courses": "Kurse",
+      "investments": "Investitionen",
+      "mentorship": "Mentoring",
+      "events": "Veranstaltungen",
+      "elearning": "E-Learning",
+      "about": "Über uns",
+      "contact": "Kontakt",
+      "tickets": "Tickets sichern",
+      "menu": "Menü",
+      "close": "Schließen"
+    },
+    "hero": {
+      "tag": "Afrikas Top Business Group · Deutschland",
+      "title": "Wir bauen die nächste Generation afrikanischer Unternehmer:innen — aus Deutschland.",
+      "subtitle": "Das Diambilay Business Center Germany vereint Inkubation, Kapital, Mentoring und hochkarätige Events, damit Gründer:innen mit afrikanischen Wurzeln global skalieren.",
+      "ctaPrimary": "Richesses d'Afrique entdecken",
+      "ctaSecondary": "Mitglied werden"
+    },
+    "stats": {
+      "title": "DBC im Überblick",
+      "countries": "Länder",
+      "countriesValue": "5+",
+      "founders": "Gründer:innen begleitet",
+      "foundersValue": "300+",
+      "capital": "Investiertes Kapital",
+      "capitalValue": "2 Mio. €+",
+      "years": "Jahre Wirkung",
+      "yearsValue": "10+"
+    },
+    "services": {
+      "eyebrow": "Was wir tun",
+      "title": "Der komplette Stack für afrikanisches Unternehmertum — in Deutschland.",
+      "subtitle": "Sechs aufeinander abgestimmte Säulen, die Gründer:innen von der Idee über das investierbare Unternehmen zur globalen Marke führen.",
+      "incubation": {
+        "title": "Inkubation",
+        "short": "90-Tage-Programme, die frühe Ideen zu venture-fähigen Unternehmen machen.",
+        "long": "Intensive Sprints, strukturiertes Curriculum, engagierte Mentor:innen, Berliner Studio-Space und ein klarer Übergang in unsere Investitionspipeline.",
+        "bullets": [
+          "90-Tage-Gründer-Sprints",
+          "Produkt-, Rechts- und Go-to-Market-Support",
+          "Demo-Day-Zugang zu DBC-Investor:innen"
+        ]
+      },
+      "courses": {
+        "title": "Kurse",
+        "short": "On-Demand- und Kohorten-Kurse mit den schärfsten Köpfen des Kontinents.",
+        "long": "Vom ersten Businessplan bis zu CFO-Finanzen: gebaut mit Praktiker:innen, die es getan haben. Verfügbar in EN, DE und FR.",
+        "bullets": [
+          "Live-Kohorten mit Senior-Operator:innen",
+          "Selbstbestimmte Podia-Masterclasses",
+          "Von DBC-Partnern anerkannte Zertifikate"
+        ]
+      },
+      "investments": {
+        "title": "Investitionen",
+        "short": "Pre-Seed- bis Series-A-Kapital für afrikanisch gegründete Unternehmen zwischen EU und Afrika.",
+        "long": "Wir setzen auf Operator:innen, die wir kennen — mit Kapital, Netzwerk und Exit-Optionen. Thesengetrieben, mit Fokus auf Menschen.",
+        "bullets": [
+          "25k–500k € Erstinvestments",
+          "Fokus: Fintech, Handel, Kreativwirtschaft",
+          "Co-Investment mit führenden EU- und AU-Fonds"
+        ]
+      },
+      "mentorship": {
+        "title": "Mentoring",
+        "short": "1:1-Sessions mit Senior-Leader:innen, die gebaut haben, was Sie bauen.",
+        "long": "Unser Mentor:innen-Netzwerk umfasst Ex-Fortune-500-Exec:s, afrikanische Unicorn-Gründer:innen und europäische Venture-Partner:innen.",
+        "bullets": [
+          "Monatliche 1:1-Sessions",
+          "Branchengenau passende Mentor:innen",
+          "Langfristige Beziehungen, keine Einmalgespräche"
+        ]
+      },
+      "events": {
+        "title": "Richesses d'Afrique",
+        "short": "Flaggschiff-Konferenzen und Masterclasses, die das Ökosystem in einem Raum versammeln.",
+        "long": "Unsere jährliche Richesses-d'Afrique-Konferenz versammelt 950+ Gründer:innen, Investor:innen und Führungskräfte. 2026 am 13. Juni im Congress Center West, Messe Essen.",
+        "bullets": [
+          "Richesses d'Afrique 2026 · 13. Juni · Essen",
+          "Quartalsweise Masterclasses in Berlin, Frankfurt, Paris",
+          "Tickets auf ticket.dbc-germany.com"
+        ]
+      },
+      "elearning": {
+        "title": "E-Learning",
+        "short": "Richesses d'Afrique by DBC — die Online-Akademie für afrikanisches Unternehmertum.",
+        "long": "Podia-Plattform mit Masterclasses der DBC-Fakultät. Gleiche Qualität wie vor Ort, in Ihrem Tempo.",
+        "bullets": [
+          "Lebenslanger Zugang zu allen Kursen",
+          "Untertitel in EN / DE / FR",
+          "Neue Masterclass jeden Monat"
+        ]
+      },
+      "learnMore": "Mehr erfahren"
+    },
+    "events": {
+      "eyebrow": "Demnächst",
+      "title": "Events, die Karrieren verändern.",
+      "subtitle": "Live-Momente für Gründer:innen, Investor:innen und die Diaspora, die Afrikas Wirtschaft prägt.",
+      "cta": "Alle Veranstaltungen",
+      "noUpcoming": "Unsere nächste Veranstaltung wird bald angekündigt. Tragen Sie sich unten ein."
+    },
+    "about": {
+      "eyebrow": "Über DBC",
+      "title": "Von Lubumbashi nach Berlin — eine Mission.",
+      "body": "Gegründet in Lubumbashi von Dr. Jean-Clément Diambilay ist das Diambilay Business Center Afrikas aktivster grenzüberschreitender Inkubator. DBC Germany bringt jedes Programm, jede Investmentthese und jeden Kurs in die afrikanische Diaspora in Europa — ohne Kompromisse.",
+      "ctaFounder": "Gründer kennenlernen",
+      "ctaCareers": "Zum Team stoßen"
+    },
+    "contact": {
+      "eyebrow": "Kontakt",
+      "title": "Lassen Sie uns zusammen bauen.",
+      "subtitle": "Erzählen Sie uns, wer Sie sind. Wir antworten persönlich innerhalb von zwei Werktagen.",
+      "nameLabel": "Ihr Name",
+      "emailLabel": "E-Mail",
+      "topicLabel": "Worum geht's?",
+      "topicOptions": {
+        "general": "Allgemeine Anfrage",
+        "incubation": "Inkubation / Kohorte",
+        "investment": "Investment-Pitch",
+        "mentorship": "Mentoring-Anfrage",
+        "partnership": "Partnerschaft / Sponsoring",
+        "press": "Presse"
+      },
+      "messageLabel": "Ihre Nachricht",
+      "submit": "Nachricht senden",
+      "submitting": "Wird gesendet...",
+      "success": "Danke — Ihre Nachricht ist angekommen. Wir melden uns.",
+      "error": "Etwas ist schiefgelaufen. Bitte erneut versuchen oder hello@dbc-germany.com.",
+      "emailDirect": "Oder per E-Mail an hello@dbc-germany.com",
+      "office": "Büro",
+      "officeAddress": "DBC Germany GmbH, Berlin"
+    },
+    "footer": {
+      "tagline": "Afrikas Top Business Group.",
+      "sections": {
+        "services": "Leistungen",
+        "company": "Unternehmen",
+        "legal": "Recht",
+        "connect": "Folgen"
+      },
+      "about": "Über DBC",
+      "careers": "Karriere",
+      "press": "Presse",
+      "privacy": "Datenschutz",
+      "terms": "AGB",
+      "imprint": "Impressum",
+      "cookiePolicy": "Cookie-Richtlinie",
+      "rights": "Alle Rechte vorbehalten.",
+      "parentOrg": "Eine Tochtergesellschaft des Diambilay Business Center, Lubumbashi."
+    },
+    "cta": {
+      "ready": "Bereit, DBC beizutreten?",
+      "readySub": "Ob Sie gründen, investieren oder mentoren — es gibt eine Säule für Sie.",
+      "primary": "Für Inkubation bewerben",
+      "secondary": "Kontakt aufnehmen"
+    }
   }
 }
