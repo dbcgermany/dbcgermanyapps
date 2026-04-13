@@ -4,7 +4,7 @@ import { createEmailClient } from "@dbc/email";
 import { createServerClient } from "@dbc/supabase/server";
 
 const CONTACT_DEST =
-  process.env.CONTACT_DEST_EMAIL ?? "hello@dbc-germany.com";
+  process.env.CONTACT_DEST_EMAIL ?? "info@dbc-germany.com";
 
 // Simple in-memory cooldown per email to slow down spam. Doesn't survive
 // cold starts, but it's cheap defense-in-depth alongside Turnstile-less
@@ -75,7 +75,7 @@ export async function sendContactMessage(
     const resend = createEmailClient();
     const from =
       process.env.RESEND_FROM_ADDRESS ??
-      "DBC Germany <hello@dbc-germany.com>";
+      "DBC Germany <info@dbc-germany.com>";
     const { error } = await resend.emails.send({
       from,
       to: CONTACT_DEST,

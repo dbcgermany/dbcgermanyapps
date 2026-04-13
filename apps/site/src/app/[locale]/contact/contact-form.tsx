@@ -155,7 +155,7 @@ export function ContactForm({
           {isPending ? labels.submitting : labels.submit}
         </button>
         <a
-          href="mailto:hello@dbc-germany.com"
+          href="mailto:info@dbc-germany.com"
           className="text-xs text-muted-foreground hover:text-foreground"
         >
           {labels.emailDirect}

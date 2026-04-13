@@ -74,16 +74,11 @@ export default async function ImprintPage({
           {t.info}
         </p>
         <p>
-          <strong>DBC Germany GmbH</strong>
+          <strong>DBC Germany</strong>
         </p>
-        <p>Berlin, Germany</p>
-        <p className="text-muted-foreground">
-          {locale === "de"
-            ? "Die vollständige Postanschrift wird beim Handelsregistereintrag ergänzt."
-            : locale === "fr"
-              ? "L'adresse postale complète sera ajoutée après l'enregistrement au registre du commerce."
-              : "The full postal address will be added upon registration in the commercial register."}
-        </p>
+        <p>Speditionstraße 15a</p>
+        <p>40221 Düsseldorf</p>
+        <p>Deutschland</p>
       </section>
 
       <section className="mt-8 space-y-2 text-base">
@@ -99,11 +94,22 @@ export default async function ImprintPage({
           {t.contact}
         </p>
         <p>
+          {locale === "de" ? "Telefon" : locale === "fr" ? "Téléphone" : "Phone"}
+          :{" "}
           <a
-            href="mailto:hello@dbc-germany.com"
+            href="tel:+4916314895470"
             className="text-primary hover:text-primary/80"
           >
-            hello@dbc-germany.com
+            +49 163 148 95 47
+          </a>
+        </p>
+        <p>
+          E-Mail:{" "}
+          <a
+            href="mailto:info@dbc-germany.com"
+            className="text-primary hover:text-primary/80"
+          >
+            info@dbc-germany.com
           </a>
         </p>
       </section>

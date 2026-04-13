@@ -415,10 +415,10 @@
       "submit": "Send message",
       "submitting": "Sending...",
       "success": "Thanks — your message is in. We'll be in touch.",
-      "error": "Something went wrong. Please try again or email hello@dbc-germany.com.",
-      "emailDirect": "Or email hello@dbc-germany.com",
+      "error": "Something went wrong. Please try again or email info@dbc-germany.com.",
+      "emailDirect": "Or email info@dbc-germany.com",
       "office": "Office",
-      "officeAddress": "DBC Germany GmbH, Berlin"
+      "officeAddress": "DBC Germany · Speditionstraße 15a · 40221 Düsseldorf"
     },
     "footer": {
       "tagline": "Africa's Top Business Group.",

@@ -48,17 +48,36 @@ export default async function ContactPage({
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 {t("office")}
               </p>
-              <p className="mt-1 text-base">{t("officeAddress")}</p>
+              <p className="mt-1 text-base">
+                DBC Germany
+                <br />
+                Speditionstraße 15a
+                <br />
+                40221 Düsseldorf
+                <br />
+                Deutschland
+              </p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                {locale === "de" ? "Telefon" : locale === "fr" ? "Téléphone" : "Phone"}
+              </p>
+              <a
+                href="tel:+4916314895470"
+                className="mt-1 inline-block text-base text-primary hover:text-primary/80"
+              >
+                +49 163 148 95 47
+              </a>
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Email
               </p>
               <a
-                href="mailto:hello@dbc-germany.com"
+                href="mailto:info@dbc-germany.com"
                 className="mt-1 inline-block text-base text-primary hover:text-primary/80"
               >
-                hello@dbc-germany.com
+                info@dbc-germany.com
               </a>
             </div>
           </div>
