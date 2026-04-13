@@ -26,7 +26,7 @@ export async function getOrders(filter?: {
   let query = supabase
     .from("orders")
     .select(
-      "id, event_id, total_cents, discount_cents, status, acquisition_type, payment_method, recipient_name, recipient_email, locale, created_at, email_sent_at"
+      "id, event_id, total_cents, discount_cents, status, acquisition_type, payment_method, recipient_name, recipient_email, locale, created_at, email_sent_at, stripe_payment_intent_id"
     )
     .order("created_at", { ascending: false })
     .limit(200);

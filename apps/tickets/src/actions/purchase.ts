@@ -32,6 +32,14 @@ const MAX_ORDERS_PER_EMAIL_PER_EVENT = parseInt(
   10
 );
 
+// How long a checkout session may hold inventory before the sweeper frees it.
+// Stripe Checkout sessions expire after 24h by default but we want a tighter
+// window so abandoned carts don't block other buyers from the last seats.
+const RESERVATION_TTL_MINUTES = parseInt(
+  process.env.RESERVATION_TTL_MINUTES ?? "15",
+  10
+);
+
 // Cloudflare Turnstile verification. Only enforced when the secret is set,
 // so local/dev environments without Turnstile configured still work.
 async function verifyTurnstile(token: string | undefined): Promise<boolean> {
@@ -211,7 +219,38 @@ export async function createCheckoutSession(input: CheckoutInput) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // 8. Create order (status: pending) BEFORE Stripe redirect
+  // 8. PRE-RESERVE inventory atomically, tier by tier. If any tier fails we
+  // roll back the ones we've already taken, so simultaneous buyers can't
+  // cause an over-charge post-payment.
+  const tierEntries = Object.entries(tierQuantities);
+  const reserved: Array<{ tierId: string; qty: number }> = [];
+  for (const [tierId, qty] of tierEntries) {
+    const { data: ok } = await supabase.rpc("reserve_tickets", {
+      p_tier_id: tierId,
+      p_quantity: qty,
+    });
+    if (ok === true) {
+      reserved.push({ tierId, qty });
+    } else {
+      // Release anything we already took before returning the error.
+      for (const prev of reserved) {
+        await supabase.rpc("release_tickets", {
+          p_tier_id: prev.tierId,
+          p_quantity: prev.qty,
+        });
+      }
+      const soldOutTier = tiers.find((t) => t.id === tierId);
+      return {
+        error: `Another buyer just claimed the last of "${soldOutTier?.name_en ?? "this tier"}". Please try a different tier.`,
+      };
+    }
+  }
+
+  const reservationExpiresAt = new Date(
+    Date.now() + RESERVATION_TTL_MINUTES * 60_000
+  ).toISOString();
+
+  // 9. Create order (status: pending) with explicit reservation window.
   const { data: order, error: orderError } = await supabase
     .from("orders")
     .insert({
@@ -226,15 +265,23 @@ export async function createCheckoutSession(input: CheckoutInput) {
       recipient_email: buyerEmail,
       recipient_name: input.attendees[0].name,
       locale: input.locale,
+      reservation_expires_at:
+        totalCents === 0 ? null : reservationExpiresAt,
     })
     .select("id")
     .single();
 
   if (orderError) {
+    for (const prev of reserved) {
+      await supabase.rpc("release_tickets", {
+        p_tier_id: prev.tierId,
+        p_quantity: prev.qty,
+      });
+    }
     return { error: "Failed to create order. Please try again." };
   }
 
-  // 9. Create ticket rows (not yet confirmed — linked to pending order)
+  // 10. Create ticket rows (linked to pending order)
   const ticketRows = input.attendees.map((attendee) => ({
     order_id: order.id,
     event_id: event.id,
@@ -246,18 +293,10 @@ export async function createCheckoutSession(input: CheckoutInput) {
 
   await supabase.from("tickets").insert(ticketRows);
 
-  // 10. If free order, skip Stripe — mark as comped and redirect to confirmation
+  // 11. If free order, skip Stripe — mark as comped and redirect.
   if (totalCents === 0) {
-    // Atomic coupon redemption
     if (couponId) {
       await supabase.rpc("redeem_coupon", { p_coupon_id: couponId });
-    }
-    // Reserve inventory for each tier
-    for (const [tierId, qty] of Object.entries(tierQuantities)) {
-      await supabase.rpc("reserve_tickets", {
-        p_tier_id: tierId,
-        p_quantity: qty,
-      });
     }
 
     // Send tickets via email AFTER the response is sent (don't block redirect).
@@ -282,7 +321,7 @@ export async function createCheckoutSession(input: CheckoutInput) {
     redirect(`/${input.locale}/confirmation/${order.id}`);
   }
 
-  // 11. Create Stripe Checkout Session
+  // 12. Create Stripe Checkout Session
   const lineItems = input.attendees.map((attendee) => {
     const tier = tierMap.get(attendee.tierId)!;
     return {
@@ -314,20 +353,48 @@ export async function createCheckoutSession(input: CheckoutInput) {
     .map((m: string) => PAYMENT_METHOD_MAP[m])
     .filter(Boolean) as string[];
 
-  const session = await getStripe().checkout.sessions.create({
-    mode: "payment",
-    payment_method_types:
-      (paymentMethodTypes.length > 0 ? paymentMethodTypes : ["card"]) as Stripe.Checkout.SessionCreateParams["payment_method_types"],
-    line_items: lineItems,
-    discounts,
-    metadata: {
-      order_id: order.id,
-      event_id: event.id,
-      coupon_id: couponId ?? "",
-    },
-    success_url: `${process.env.NEXT_PUBLIC_TICKETS_URL}/${input.locale}/confirmation/${order.id}?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${process.env.NEXT_PUBLIC_TICKETS_URL}/${input.locale}/events/${input.eventSlug}`,
-  });
+  // Stripe Checkout's `expires_at` must be at least 30 minutes in the future,
+  // so line it up with max(30, reservation_ttl+slack).
+  const stripeExpiresIn = Math.max(
+    30 * 60,
+    RESERVATION_TTL_MINUTES * 60 + 60
+  );
+
+  let session: Stripe.Checkout.Session;
+  try {
+    session = await getStripe().checkout.sessions.create({
+      mode: "payment",
+      payment_method_types:
+        (paymentMethodTypes.length > 0 ? paymentMethodTypes : ["card"]) as Stripe.Checkout.SessionCreateParams["payment_method_types"],
+      line_items: lineItems,
+      discounts,
+      expires_at: Math.floor(Date.now() / 1000) + stripeExpiresIn,
+      metadata: {
+        order_id: order.id,
+        event_id: event.id,
+        coupon_id: couponId ?? "",
+      },
+      success_url: `${process.env.NEXT_PUBLIC_TICKETS_URL}/${input.locale}/confirmation/${order.id}?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_TICKETS_URL}/${input.locale}/events/${input.eventSlug}`,
+    });
+  } catch (err) {
+    // Roll back the reservation if Stripe refused to create the session.
+    for (const prev of reserved) {
+      await supabase.rpc("release_tickets", {
+        p_tier_id: prev.tierId,
+        p_quantity: prev.qty,
+      });
+    }
+    await supabase
+      .from("orders")
+      .update({ status: "cancelled", reservation_expires_at: null })
+      .eq("id", order.id);
+    console.error("Stripe checkout creation failed:", err);
+    return {
+      error:
+        "Payment provider is unavailable. Your seats were released — please try again in a moment.",
+    };
+  }
 
   // Store Stripe session ID on the order
   await supabase
@@ -335,6 +402,6 @@ export async function createCheckoutSession(input: CheckoutInput) {
     .update({ stripe_checkout_session_id: session.id })
     .eq("id", order.id);
 
-  // 12. Redirect to Stripe Checkout
+  // 13. Redirect to Stripe Checkout
   redirect(session.url!);
 }

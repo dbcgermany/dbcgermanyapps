@@ -15,6 +15,7 @@ interface Order {
   recipientEmail: string;
   createdAt: string;
   emailSentAt: string | null;
+  stripePaymentIntentId: string | null;
 }
 
 const STATUS_OPTIONS = [
@@ -211,17 +212,29 @@ export function OrdersClient({
                       })}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      {canRefund && (
-                        <button
-                          onClick={() => handleRefund(o.id)}
-                          disabled={isPending && refundingId === o.id}
-                          className="text-xs text-red-500 hover:text-red-700 disabled:opacity-50"
-                        >
-                          {isPending && refundingId === o.id
-                            ? t.refunding
-                            : t.refund}
-                        </button>
-                      )}
+                      <div className="flex flex-col items-end gap-1">
+                        {o.stripePaymentIntentId && (
+                          <a
+                            href={`https://dashboard.stripe.com/payments/${o.stripePaymentIntentId}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-muted-foreground hover:text-foreground"
+                          >
+                            Stripe &rarr;
+                          </a>
+                        )}
+                        {canRefund && (
+                          <button
+                            onClick={() => handleRefund(o.id)}
+                            disabled={isPending && refundingId === o.id}
+                            className="text-xs text-red-500 hover:text-red-700 disabled:opacity-50"
+                          >
+                            {isPending && refundingId === o.id
+                              ? t.refunding
+                              : t.refund}
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );

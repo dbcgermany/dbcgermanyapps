@@ -38,6 +38,7 @@ export default async function OrdersPage({
           recipientEmail: o.recipient_email,
           createdAt: o.created_at,
           emailSentAt: o.email_sent_at,
+          stripePaymentIntentId: o.stripe_payment_intent_id,
         }))}
         events={events.map((e) => ({
           id: e.id,

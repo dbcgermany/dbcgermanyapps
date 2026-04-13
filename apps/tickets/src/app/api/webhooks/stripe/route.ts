@@ -83,16 +83,24 @@ export async function POST(request: Request) {
     if (session.payment_method_types?.includes("paypal"))
       paymentMethod = "paypal";
 
-    // Update order status to paid
-    const { error: orderError } = await supabase
+    // Flip pending → paid and clear the reservation expiry so the sweeper
+    // won't touch this order. The WHERE guard ensures we only promote
+    // reservations that are still live — prevents duplicate fulfilment if
+    // Stripe retries the webhook after we've already handled it (the
+    // processed_webhooks check above is the primary defence; this is belt
+    // and braces).
+    const { data: promoted, error: orderError } = await supabase
       .from("orders")
       .update({
         status: "paid",
         payment_method: paymentMethod,
         stripe_payment_intent_id: session.payment_intent as string,
+        reservation_expires_at: null,
       })
       .eq("id", orderId)
-      .eq("status", "pending");
+      .eq("status", "pending")
+      .select("id")
+      .maybeSingle();
 
     if (orderError) {
       console.error("Failed to update order:", orderError);
@@ -102,33 +110,94 @@ export async function POST(request: Request) {
       );
     }
 
-    // Atomic inventory deduction per tier
-    const { data: tickets } = await supabase
-      .from("tickets")
-      .select("id, tier_id")
-      .eq("order_id", orderId);
+    if (!promoted) {
+      // Either the sweeper already released this order (rare, but
+      // recoverable) or Stripe is re-delivering an old event for an order
+      // that's already paid. If the sweeper got there first we need to
+      // refund — the customer was charged for seats we already released.
+      const { data: currentOrder } = await supabase
+        .from("orders")
+        .select("status, stripe_payment_intent_id")
+        .eq("id", orderId)
+        .single();
 
-    if (tickets) {
-      const tierCounts: Record<string, number> = {};
-      for (const ticket of tickets) {
-        tierCounts[ticket.tier_id] = (tierCounts[ticket.tier_id] || 0) + 1;
-      }
-
-      for (const [tierId, qty] of Object.entries(tierCounts)) {
-        const { data: reserved } = await supabase.rpc("reserve_tickets", {
-          p_tier_id: tierId,
-          p_quantity: qty,
-        });
-
-        if (!reserved) {
-          console.error(`Failed to reserve inventory for tier ${tierId}`);
+      if (currentOrder?.status === "cancelled") {
+        console.error(
+          `Order ${orderId} was swept before webhook — issuing refund for ${session.payment_intent}`
+        );
+        try {
+          if (session.payment_intent) {
+            await getStripe().refunds.create({
+              payment_intent: session.payment_intent as string,
+              reason: "requested_by_customer",
+              metadata: { order_id: orderId, reason: "inventory_released" },
+            });
+          }
+        } catch (err) {
+          console.error(
+            `CRITICAL: could not auto-refund swept order ${orderId}:`,
+            err
+          );
         }
+        return NextResponse.json({ received: true, swept: true });
       }
+      // Already paid or otherwise not-pending; nothing to do.
+      return NextResponse.json({ received: true, duplicate: true });
     }
 
-    // Atomic coupon redemption
+    // Atomic coupon redemption (inventory was already reserved at checkout
+    // intent time; we don't touch ticket_tiers here any more).
     if (couponId) {
       await supabase.rpc("redeem_coupon", { p_coupon_id: couponId });
+    }
+
+    // Audit log: order_paid + one ticket_issued per ticket
+    const { data: ticketsForAudit } = await supabase
+      .from("tickets")
+      .select("id, ticket_token, tier_id, attendee_email")
+      .eq("order_id", orderId);
+
+    const { data: amountRow } = await supabase
+      .from("orders")
+      .select("total_cents, currency")
+      .eq("id", orderId)
+      .single();
+
+    const auditRows: Array<{
+      action: string;
+      entity_type: string;
+      entity_id: string;
+      details: Record<string, unknown>;
+    }> = [
+      {
+        action: "order_paid",
+        entity_type: "orders",
+        entity_id: orderId,
+        details: {
+          event_id: eventId,
+          total_cents: amountRow?.total_cents ?? null,
+          currency: amountRow?.currency ?? "EUR",
+          payment_method: paymentMethod,
+          stripe_payment_intent_id: session.payment_intent ?? null,
+          stripe_event_id: event.id,
+        },
+      },
+    ];
+    for (const ticket of ticketsForAudit ?? []) {
+      auditRows.push({
+        action: "ticket_issued",
+        entity_type: "tickets",
+        entity_id: ticket.id,
+        details: {
+          order_id: orderId,
+          event_id: eventId,
+          attendee_email: ticket.attendee_email,
+          tier_id: ticket.tier_id,
+        },
+      });
+    }
+    if (auditRows.length > 0) {
+      await supabase.from("audit_log").insert(auditRows);
     }
 
     // Generate PDF tickets, send emails, and notify admins AFTER the response is
@@ -200,7 +269,7 @@ export async function POST(request: Request) {
             };
           });
 
-          await sendOrderReceipt({
+          const receipt = await sendOrderReceipt({
             to: order.recipient_email,
             recipientName: order.recipient_name,
             orderShortId: orderId.slice(0, 8).toUpperCase(),
@@ -214,6 +283,12 @@ export async function POST(request: Request) {
             lineItems,
             locale,
           });
+          if (receipt?.id) {
+            await supabase
+              .from("orders")
+              .update({ receipt_email_message_id: receipt.id })
+              .eq("id", orderId);
+          }
         } catch (err) {
           console.error(`Failed to send order receipt for ${orderId}:`, err);
         }
@@ -259,6 +334,43 @@ export async function POST(request: Request) {
         }
       }
     });
+  }
+
+  // Stripe Checkout expires abandoned sessions. Release any inventory we were
+  // holding for it so the seats flow back into the public pool. The sweeper
+  // cron is the main defence (Stripe's expiry is 24h unless we shorten it;
+  // our reservation TTL is 15min), but handling this event is cheap and
+  // keeps the DB in sync quickly.
+  if (event.type === "checkout.session.expired") {
+    const session = event.data.object as Stripe.Checkout.Session;
+    const orderId = session.metadata?.order_id;
+    if (orderId) {
+      const { data: cancelled } = await supabase
+        .from("orders")
+        .update({ status: "cancelled", reservation_expires_at: null })
+        .eq("id", orderId)
+        .eq("status", "pending")
+        .select("id")
+        .maybeSingle();
+
+      if (cancelled) {
+        const { data: heldTickets } = await supabase
+          .from("tickets")
+          .select("tier_id")
+          .eq("order_id", orderId);
+
+        const tierCounts: Record<string, number> = {};
+        for (const t of heldTickets ?? []) {
+          tierCounts[t.tier_id] = (tierCounts[t.tier_id] || 0) + 1;
+        }
+        for (const [tierId, qty] of Object.entries(tierCounts)) {
+          await supabase.rpc("release_tickets", {
+            p_tier_id: tierId,
+            p_quantity: qty,
+          });
+        }
+      }
+    }
   }
 
   return NextResponse.json({ received: true });

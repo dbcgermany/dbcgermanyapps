@@ -90,7 +90,7 @@ export async function sendTicketsForOrder(
       : "Ticket";
 
     try {
-      await sendTicketEmail({
+      const result = await sendTicketEmail({
         attendeeName: ticket.attendee_name,
         attendeeEmail: ticket.attendee_email,
         eventTitle,
@@ -107,11 +107,14 @@ export async function sendTicketsForOrder(
         orderUrl,
       });
 
-      // Stamp the ticket as sent (using ticket_token as a marker since
-      // we don't store the PDF in S3 — Resend keeps the attachment)
+      // Stamp the ticket as sent + persist the Resend message ID for
+      // downstream bounce/deliverability tracking.
       await supabase
         .from("tickets")
-        .update({ pdf_url: `sent:${new Date().toISOString()}` })
+        .update({
+          pdf_url: `sent:${new Date().toISOString()}`,
+          email_message_id: result?.id ?? null,
+        })
         .eq("id", ticket.id);
     } catch (err) {
       console.error(
