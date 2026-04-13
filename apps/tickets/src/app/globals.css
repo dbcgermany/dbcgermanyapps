@@ -1,0 +1,39 @@
+@import "tailwindcss";
+@import "@dbc/ui/tokens/base.css";
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --font-heading: var(--font-montserrat), system-ui, sans-serif;
+  --font-body: var(--font-ubuntu), system-ui, sans-serif;
+  --font-ui: var(--font-dm-sans), system-ui, sans-serif;
+
+  --radius-sm: var(--dbc-radius-sm);
+  --radius-md: var(--dbc-radius-md);
+  --radius-lg: var(--dbc-radius-lg);
+  --radius-xl: var(--dbc-radius-xl);
+}
+
+body {
+  background-color: var(--dbc-color-bg);
+  color: var(--dbc-color-text);
+  font-family: var(--font-body);
+}

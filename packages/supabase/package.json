@@ -1,0 +1,33 @@
+{
+  "name": "@dbc/supabase",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./server": {
+      "types": "./src/server.ts",
+      "default": "./src/server.ts"
+    }
+  },
+  "scripts": {
+    "type-check": "tsc --noEmit",
+    "gen-types": "supabase gen types typescript --project-id rcqgsexfuaoiiuqcqeka > ../types/src/database.ts"
+  },
+  "dependencies": {
+    "@dbc/types": "workspace:*",
+    "@supabase/supabase-js": "^2.49.0",
+    "@supabase/ssr": "^0.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "typescript": "^5"
+  },
+  "peerDependencies": {
+    "next": ">=15"
+  }
+}

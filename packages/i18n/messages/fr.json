@@ -1,0 +1,286 @@
+{
+  "common": {
+    "buttons": {
+      "submit": "Submit",
+      "cancel": "Cancel",
+      "save": "Save",
+      "delete": "Delete",
+      "edit": "Edit",
+      "back": "Back",
+      "next": "Next",
+      "close": "Close",
+      "confirm": "Confirm",
+      "loading": "Loading...",
+      "retry": "Retry",
+      "viewAll": "View all",
+      "download": "Download",
+      "export": "Export",
+      "search": "Search",
+      "filter": "Filter",
+      "clearAll": "Clear all",
+      "apply": "Apply"
+    },
+    "labels": {
+      "email": "Email",
+      "name": "Name",
+      "phone": "Phone",
+      "date": "Date",
+      "time": "Time",
+      "price": "Price",
+      "quantity": "Quantity",
+      "total": "Total",
+      "status": "Status",
+      "actions": "Actions",
+      "description": "Description",
+      "language": "Language",
+      "darkMode": "Dark mode",
+      "lightMode": "Light mode"
+    },
+    "errors": {
+      "generic": "Something went wrong. Please try again.",
+      "notFound": "Not found",
+      "unauthorized": "You are not authorized to view this page.",
+      "forbidden": "You do not have permission to perform this action.",
+      "networkError": "Network error. Please check your connection.",
+      "required": "This field is required",
+      "invalidEmail": "Please enter a valid email address"
+    },
+    "empty": {
+      "noResults": "No results found",
+      "noData": "No data available"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Sign in",
+      "email": "Email address",
+      "password": "Password",
+      "submit": "Sign in",
+      "forgotPassword": "Forgot password?"
+    },
+    "magicLink": {
+      "title": "Sign in with email",
+      "description": "Enter your email and we'll send you a sign-in link.",
+      "submit": "Send magic link",
+      "emailSent": "Check your email for a sign-in link.",
+      "expiry": "The link expires in 10 minutes."
+    },
+    "logout": "Sign out"
+  },
+  "events": {
+    "listing": {
+      "title": "Events",
+      "upcoming": "Upcoming events",
+      "past": "Past events",
+      "noEvents": "No upcoming events at the moment."
+    },
+    "details": {
+      "schedule": "Schedule",
+      "speakers": "Speakers",
+      "venue": "Venue",
+      "getTickets": "Get Tickets",
+      "soldOut": "Sold Out",
+      "salesStart": "Sales start {date}",
+      "salesEnded": "Sales have ended"
+    },
+    "types": {
+      "conference": "Conference",
+      "masterclass": "Masterclass"
+    }
+  },
+  "tickets": {
+    "tiers": {
+      "selectTier": "Select your tickets",
+      "remaining": "{count, plural, one {# ticket remaining} other {# tickets remaining}}",
+      "unlimited": "Available",
+      "perOrder": "Max {max} per order"
+    },
+    "checkout": {
+      "title": "Checkout",
+      "attendeeInfo": "Attendee information",
+      "attendeeName": "Attendee name",
+      "attendeeEmail": "Attendee email",
+      "ticketNumber": "Ticket {number} of {total}",
+      "couponPlaceholder": "Enter coupon code",
+      "applyCoupon": "Apply",
+      "couponApplied": "Coupon applied: {discount} off",
+      "couponInvalid": "Invalid or expired coupon code",
+      "couponExhausted": "This coupon has reached its maximum uses",
+      "subtotal": "Subtotal",
+      "discount": "Discount",
+      "orderTotal": "Total",
+      "payNow": "Pay {amount}",
+      "free": "Free",
+      "processing": "Processing payment..."
+    },
+    "confirmation": {
+      "title": "Order confirmed!",
+      "subtitle": "Your tickets have been sent to each attendee's email.",
+      "orderNumber": "Order #{orderId}",
+      "downloadAll": "Download all tickets",
+      "viewOrder": "View order details"
+    },
+    "transfer": {
+      "title": "Transfer ticket",
+      "description": "Transfer this ticket to a new attendee. The current QR code will be invalidated and a new one will be sent to the new attendee.",
+      "newName": "New attendee name",
+      "newEmail": "New attendee email",
+      "confirm": "Transfer ticket",
+      "success": "Ticket transferred successfully. A new ticket has been sent to {email}."
+    },
+    "pdf": {
+      "title": "Your Ticket",
+      "eventLabel": "Event",
+      "dateLabel": "Date",
+      "venueLabel": "Venue",
+      "attendeeLabel": "Attendee",
+      "tierLabel": "Ticket Type",
+      "scanNote": "Present this QR code at the entrance"
+    }
+  },
+  "orders": {
+    "history": {
+      "title": "My Orders",
+      "noOrders": "You don't have any orders yet.",
+      "orderDate": "Ordered on {date}",
+      "viewDetails": "View details"
+    },
+    "status": {
+      "pending": "Pending",
+      "paid": "Paid",
+      "comped": "Complimentary",
+      "refunded": "Refunded",
+      "cancelled": "Cancelled"
+    },
+    "acquisition": {
+      "purchased": "Purchased",
+      "invited": "Invited",
+      "assigned": "Assigned",
+      "doorSale": "Door sale"
+    }
+  },
+  "scan": {
+    "title": "Scan Tickets",
+    "selectEvent": "Select event",
+    "ready": "Ready to scan",
+    "scanning": "Scanning...",
+    "success": {
+      "title": "Checked in!",
+      "attendee": "{name}",
+      "tier": "{tier}"
+    },
+    "error": {
+      "alreadyScanned": "Already checked in at {time}",
+      "invalidTicket": "Invalid ticket",
+      "wrongEvent": "Ticket is for a different event"
+    },
+    "stats": {
+      "checkedIn": "Checked in",
+      "total": "of {total}",
+      "rate": "{rate}% check-in rate"
+    }
+  },
+  "admin": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "events": "Events",
+      "orders": "Orders",
+      "tickets": "Tickets",
+      "scan": "Scan",
+      "doorSale": "Door Sale",
+      "staff": "Staff",
+      "reports": "Reports",
+      "notifications": "Notifications",
+      "auditLog": "Audit Log",
+      "settings": "Settings"
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "totalRevenue": "Total Revenue",
+      "ticketsSold": "Tickets Sold",
+      "checkInRate": "Check-in Rate",
+      "activeEvents": "Active Events"
+    },
+    "events": {
+      "create": "Create Event",
+      "edit": "Edit Event",
+      "publish": "Publish",
+      "unpublish": "Unpublish",
+      "manageTiers": "Manage Tiers",
+      "manageCoupons": "Manage Coupons",
+      "manageSchedule": "Manage Schedule"
+    },
+    "sendTicket": {
+      "title": "Send Tickets",
+      "singleSend": "Send to one person",
+      "bulkSend": "Bulk send (CSV)",
+      "selectTier": "Select ticket tier",
+      "recipientEmail": "Recipient email",
+      "recipientName": "Recipient name",
+      "acquisitionType": "Type",
+      "send": "Send ticket",
+      "uploadCsv": "Upload CSV",
+      "csvFormat": "CSV format: name, email, tier_name",
+      "sending": "Sending tickets...",
+      "sent": "{count, plural, one {# ticket sent} other {# tickets sent}}",
+      "skipped": "{count} skipped (already exists)",
+      "failed": "{count} failed"
+    },
+    "doorSale": {
+      "title": "Door Sale",
+      "selectTier": "Select ticket tier",
+      "attendeeName": "Attendee name",
+      "attendeeEmail": "Attendee email (optional)",
+      "markPaid": "Mark as paid (cash)",
+      "created": "Ticket created and ready for entry"
+    },
+    "staff": {
+      "title": "Staff Management",
+      "invite": "Invite staff",
+      "assignEvents": "Assign events",
+      "role": "Role",
+      "noStaff": "No staff members yet."
+    },
+    "refund": {
+      "title": "Issue Refund",
+      "confirm": "Are you sure you want to refund this order? This will restore ticket inventory and process a Stripe refund.",
+      "processing": "Processing refund...",
+      "success": "Refund processed successfully."
+    }
+  },
+  "gdpr": {
+    "cookieConsent": {
+      "title": "We use cookies",
+      "description": "We use cookies to improve your experience and analyze site usage.",
+      "accept": "Accept all",
+      "reject": "Reject non-essential",
+      "settings": "Cookie settings"
+    },
+    "dataExport": {
+      "title": "Export my data",
+      "description": "Request a copy of all your personal data.",
+      "request": "Request export"
+    },
+    "dataDeletion": {
+      "title": "Delete my data",
+      "description": "Request deletion of your account and all associated data.",
+      "request": "Request deletion",
+      "confirm": "This action is irreversible. Are you sure?"
+    }
+  },
+  "notifications": {
+    "newOrder": "New order: {name} purchased {count, plural, one {# ticket} other {# tickets}} for {event}",
+    "tierSoldOut": "Sold out: {tier} for {event} is now sold out",
+    "refundIssued": "Refund: {amount} refunded for order #{orderId}",
+    "checkInMilestone": "Check-in milestone: {rate}% of attendees checked in for {event}"
+  },
+  "waitlist": {
+    "join": "Join waitlist",
+    "joined": "You're on the waitlist! We'll email you when tickets become available.",
+    "notification": {
+      "subject": "Tickets available for {event}",
+      "body": "Good news! Tickets are now available for {event}. You have 24 hours to purchase.",
+      "cta": "Buy tickets now"
+    }
+  }
+}

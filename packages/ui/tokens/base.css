@@ -1,0 +1,216 @@
+/*
+ * DBC Germany — Design Tokens (Base)
+ * Source of truth for all visual design values.
+ * SSOT: ssot.md Section 3-6
+ *
+ * Two-layer system:
+ *   Layer 1: --dbc-color-* (semantic hex values)
+ *   Layer 2: shadcn HSL variables (--background, --primary, etc.)
+ */
+
+/* =========================================================================
+   LIGHT THEME (default)
+   ========================================================================= */
+:root {
+  /* --- Layer 1: DBC Semantic Color Tokens --- */
+  --dbc-color-bg:                #ffffff;
+  --dbc-color-bg-secondary:      #fafafa;
+  --dbc-color-bg-tertiary:       #f5f5f5;
+  --dbc-color-surface:           #ffffff;
+  --dbc-color-surface-raised:    #fafafa;
+  --dbc-color-text:              #111111;
+  --dbc-color-text-secondary:    #737373;
+  --dbc-color-text-muted:        #a3a3a3;
+  --dbc-color-primary:           #c8102e;
+  --dbc-color-primary-hover:     #a00d24;
+  --dbc-color-accent:            #d4a017;
+  --dbc-color-accent-hover:      #b88a12;
+  --dbc-color-border:            #e5e5e5;
+  --dbc-color-border-subtle:     #f0f0f0;
+  --dbc-color-success:           #16a34a;
+  --dbc-color-error:             #dc2626;
+  --dbc-color-warning:           #d97706;
+  --dbc-color-info:              #2563eb;
+
+  /* --- Layer 2: shadcn/ui HSL Variables --- */
+  --background:           0 0% 100%;
+  --foreground:           0 0% 7%;
+  --card:                 0 0% 100%;
+  --card-foreground:      0 0% 7%;
+  --popover:              0 0% 98%;
+  --popover-foreground:   0 0% 7%;
+  --primary:              350 85% 42%;
+  --primary-foreground:   0 0% 100%;
+  --secondary:            0 0% 96%;
+  --secondary-foreground: 0 0% 7%;
+  --muted:                0 0% 96%;
+  --muted-foreground:     0 0% 45%;
+  --accent:               43 78% 46%;
+  --accent-foreground:    0 0% 100%;
+  --destructive:          0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+  --border:               0 0% 90%;
+  --input:                0 0% 90%;
+  --ring:                 350 85% 42%;
+  --radius:               0.5rem;
+
+  /* --- Typography --- */
+  --font-heading: var(--font-montserrat), system-ui, sans-serif;
+  --font-body: var(--font-ubuntu), system-ui, sans-serif;
+  --font-ui: var(--font-dm-sans), system-ui, sans-serif;
+
+  /* --- Spacing (4px base) --- */
+  --dbc-spacing-0:    0px;
+  --dbc-spacing-1:    4px;
+  --dbc-spacing-2:    8px;
+  --dbc-spacing-3:    12px;
+  --dbc-spacing-4:    16px;
+  --dbc-spacing-5:    20px;
+  --dbc-spacing-6:    24px;
+  --dbc-spacing-8:    32px;
+  --dbc-spacing-10:   40px;
+  --dbc-spacing-12:   48px;
+  --dbc-spacing-16:   64px;
+  --dbc-spacing-20:   80px;
+  --dbc-spacing-24:   96px;
+
+  /* Semantic spacing */
+  --dbc-spacing-page-x:       24px;
+  --dbc-spacing-page-y:       32px;
+  --dbc-spacing-card-padding:  24px;
+  --dbc-spacing-card-gap:      16px;
+  --dbc-spacing-section-gap:   64px;
+  --dbc-spacing-form-gap:      16px;
+
+  /* --- Radius --- */
+  --dbc-radius-none:  0px;
+  --dbc-radius-sm:    4px;
+  --dbc-radius-md:    8px;
+  --dbc-radius-lg:    12px;
+  --dbc-radius-xl:    16px;
+  --dbc-radius-full:  9999px;
+
+  /* --- Shadows --- */
+  --dbc-shadow-sm:   0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --dbc-shadow-md:   0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --dbc-shadow-lg:   0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  --dbc-shadow-xl:   0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+
+  /* --- Z-Index --- */
+  --dbc-z-base:      0;
+  --dbc-z-dropdown:  100;
+  --dbc-z-sticky:    200;
+  --dbc-z-modal:     300;
+  --dbc-z-popover:   400;
+  --dbc-z-toast:     500;
+
+  /* --- Motion --- */
+  --dbc-duration-fast:    100ms;
+  --dbc-duration-normal:  200ms;
+  --dbc-duration-slow:    300ms;
+  --dbc-duration-page:    500ms;
+  --dbc-easing-default:   cubic-bezier(0.4, 0, 0.2, 1);
+  --dbc-easing-in:        cubic-bezier(0.4, 0, 1, 1);
+  --dbc-easing-out:       cubic-bezier(0, 0, 0.2, 1);
+  --dbc-easing-spring:    cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* =========================================================================
+   DARK THEME
+   ========================================================================= */
+.dark {
+  /* --- Layer 1: DBC Semantic Color Tokens (dark) --- */
+  --dbc-color-bg:                #0a0a0a;
+  --dbc-color-bg-secondary:      #141414;
+  --dbc-color-bg-tertiary:       #1e1e1e;
+  --dbc-color-surface:           #1a1a1a;
+  --dbc-color-surface-raised:    #222222;
+  --dbc-color-text:              #fafafa;
+  --dbc-color-text-secondary:    #a3a3a3;
+  --dbc-color-text-muted:        #666666;
+  --dbc-color-primary:           #e63950;
+  --dbc-color-primary-hover:     #f05a70;
+  --dbc-color-accent:            #f0c040;
+  --dbc-color-accent-hover:      #f5d060;
+  --dbc-color-border:            #333333;
+  --dbc-color-border-subtle:     #222222;
+  --dbc-color-success:           #22c55e;
+  --dbc-color-error:             #ef4444;
+  --dbc-color-warning:           #f59e0b;
+  --dbc-color-info:              #3b82f6;
+
+  /* --- Layer 2: shadcn/ui HSL Variables (dark) --- */
+  --background:           0 0% 4%;
+  --foreground:           0 0% 98%;
+  --card:                 0 0% 10%;
+  --card-foreground:      0 0% 98%;
+  --popover:              0 0% 8%;
+  --popover-foreground:   0 0% 98%;
+  --primary:              352 76% 56%;
+  --primary-foreground:   0 0% 100%;
+  --secondary:            0 0% 12%;
+  --secondary-foreground: 0 0% 98%;
+  --muted:                0 0% 15%;
+  --muted-foreground:     0 0% 64%;
+  --accent:               45 85% 59%;
+  --accent-foreground:    0 0% 7%;
+  --destructive:          0 63% 31%;
+  --destructive-foreground: 0 0% 98%;
+  --border:               0 0% 20%;
+  --input:                0 0% 20%;
+  --ring:                 352 76% 56%;
+
+  /* Shadows softer in dark mode */
+  --dbc-shadow-sm:   0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --dbc-shadow-md:   0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --dbc-shadow-lg:   0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
+  --dbc-shadow-xl:   0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+}
+
+/* =========================================================================
+   UTILITY CLASSES
+   ========================================================================= */
+
+/* Font family utilities */
+.font-heading { font-family: var(--font-heading); }
+.font-body { font-family: var(--font-body); }
+.font-ui { font-family: var(--font-ui); }
+
+/* Semantic background utilities */
+.bg-background { background-color: var(--dbc-color-bg); }
+.bg-surface { background-color: var(--dbc-color-surface); }
+.bg-surface-raised { background-color: var(--dbc-color-surface-raised); }
+
+/* Semantic text utilities */
+.text-foreground { color: var(--dbc-color-text); }
+.text-muted-foreground { color: var(--dbc-color-text-secondary); }
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* =========================================================================
+   RESPONSIVE SPACING OVERRIDES
+   ========================================================================= */
+@media (min-width: 640px) {
+  :root {
+    --dbc-spacing-page-x: 32px;
+    --dbc-spacing-page-y: 48px;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --dbc-spacing-page-x: 48px;
+    --dbc-spacing-page-y: 64px;
+    --dbc-spacing-section-gap: 96px;
+  }
+}

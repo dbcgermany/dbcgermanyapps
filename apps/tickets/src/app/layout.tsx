@@ -1,0 +1,58 @@
+import type { Metadata } from "next";
+import { Montserrat, Ubuntu, DM_Sans } from "next/font/google";
+import { ThemeProvider, CookieConsent } from "@dbc/ui";
+import "./globals.css";
+
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const ubuntu = Ubuntu({
+  variable: "--font-ubuntu",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "700"],
+  display: "swap",
+});
+
+const dmSans = DM_Sans({
+  variable: "--font-dm-sans",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+export const metadata: Metadata = {
+  title: "DBC Germany Tickets",
+  description:
+    "Get your tickets for Richesses D'Afrique conferences and masterclasses by DBC Germany.",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${montserrat.variable} ${ubuntu.variable} ${dmSans.variable} h-full antialiased`}
+    >
+      <body className="min-h-full flex flex-col bg-background text-foreground font-body">
+        <ThemeProvider defaultTheme="system">
+          {children}
+          <CookieConsent
+            translations={{
+              title: "We use cookies",
+              description:
+                "We use cookies to improve your experience and analyze site usage.",
+              accept: "Accept all",
+              reject: "Reject non-essential",
+            }}
+          />
+        </ThemeProvider>
+      </body>
+    </html>
+  );
+}

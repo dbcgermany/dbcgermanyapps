@@ -1,0 +1,102 @@
+"use server";
+
+import { createServerClient, requireRole } from "@dbc/supabase/server";
+import { revalidatePath } from "next/cache";
+
+const TIER_COLUMNS =
+  "id, event_id, name_en, name_de, name_fr, description_en, description_de, description_fr, price_cents, currency, max_quantity, quantity_sold, sales_start_at, sales_end_at, is_public, sort_order, created_at" as const;
+
+export async function getTiers(eventId: string) {
+  await requireRole("manager");
+  const supabase = await createServerClient();
+
+  const { data, error } = await supabase
+    .from("ticket_tiers")
+    .select(TIER_COLUMNS)
+    .eq("event_id", eventId)
+    .order("sort_order", { ascending: true });
+
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+export async function createTier(formData: FormData) {
+  const user = await requireRole("manager");
+  const supabase = await createServerClient();
+
+  const eventId = formData.get("event_id") as string;
+  const locale = formData.get("locale") as string;
+  const nameEn = formData.get("name_en") as string;
+
+  const tierData = {
+    event_id: eventId,
+    name_en: nameEn,
+    name_de: (formData.get("name_de") as string) || nameEn,
+    name_fr: (formData.get("name_fr") as string) || nameEn,
+    description_en: formData.get("description_en") as string,
+    description_de: formData.get("description_de") as string,
+    description_fr: formData.get("description_fr") as string,
+    price_cents: Math.round(
+      parseFloat(formData.get("price") as string) * 100
+    ),
+    max_quantity: formData.get("max_quantity")
+      ? parseInt(formData.get("max_quantity") as string, 10)
+      : null,
+    sales_start_at: (formData.get("sales_start_at") as string) || null,
+    sales_end_at: (formData.get("sales_end_at") as string) || null,
+    is_public: formData.get("is_public") === "true",
+    sort_order: parseInt((formData.get("sort_order") as string) || "0", 10),
+  };
+
+  const { data, error } = await supabase
+    .from("ticket_tiers")
+    .insert(tierData)
+    .select("id")
+    .single();
+
+  if (error) return { error: error.message };
+
+  await supabase.from("audit_log").insert({
+    user_id: user.userId,
+    action: "create_tier",
+    entity_type: "ticket_tiers",
+    entity_id: data.id,
+    details: { name: nameEn, event_id: eventId },
+  });
+
+  revalidatePath(`/${locale}/events/${eventId}/tiers`);
+  return { success: true };
+}
+
+export async function deleteTier(tierId: string, eventId: string, locale: string) {
+  const user = await requireRole("manager");
+  const supabase = await createServerClient();
+
+  const { data: tier } = await supabase
+    .from("ticket_tiers")
+    .select("name_en, quantity_sold")
+    .eq("id", tierId)
+    .single();
+
+  if (tier && tier.quantity_sold > 0) {
+    return { error: "Cannot delete a tier that has sold tickets." };
+  }
+
+  const { error } = await supabase
+    .from("ticket_tiers")
+    .delete()
+    .eq("id", tierId);
+
+  if (error) return { error: error.message };
+
+  await supabase.from("audit_log").insert({
+    user_id: user.userId,
+    action: "delete_tier",
+    entity_type: "ticket_tiers",
+    entity_id: tierId,
+    details: { name: tier?.name_en, event_id: eventId },
+  });
+
+  revalidatePath(`/${locale}/events/${eventId}/tiers`);
+  return { success: true };
+}
