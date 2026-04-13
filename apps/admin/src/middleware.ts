@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { createMiddlewareClient } from "@dbc/supabase";
 import { LOCALES, DEFAULT_LOCALE, type Locale } from "@dbc/types";
 
-const PUBLIC_PATHS = ["/login"];
+const PUBLIC_PATHS = ["/login", "/set-password", "/auth/callback"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
