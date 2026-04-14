@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import type { Metadata } from "next";
 import { Card, Container, Eyebrow, Heading, Section } from "@dbc/ui";
 import { createServerClient } from "@dbc/supabase/server";
@@ -130,57 +131,53 @@ export default async function TeamPage({
             {members.map((m, i) => {
               const role = localeField(m, "role");
               const bio = localeField(m, "bio");
+              const teaser =
+                bio && bio.length > 180 ? bio.slice(0, 180).trim() + "…" : bio;
               return (
-                <Card key={m.id} className="flex flex-col items-start">
-                  {m.photo_url ? (
-                    <div className="relative h-20 w-20 overflow-hidden rounded-full">
-                      <Image
-                        src={m.photo_url}
-                        alt=""
-                        fill
-                        sizes="80px"
-                        className="object-cover"
-                        referrerPolicy="no-referrer"
-                      />
-                    </div>
-                  ) : (
-                    <div
-                      className={`flex h-20 w-20 items-center justify-center rounded-full font-heading text-2xl font-bold ${accentFor(i)}`}
-                      aria-hidden
-                    >
-                      {initialsOf(m.name)}
-                    </div>
-                  )}
-                  <Heading level={4} className="mt-5">
-                    {m.name}
-                  </Heading>
-                  {role && <Eyebrow className="mt-1">{role}</Eyebrow>}
-                  {bio && (
-                    <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                      {bio}
-                    </p>
-                  )}
-                  <div className="mt-4 flex flex-wrap gap-3 text-sm font-semibold">
-                    {m.email && (
-                      <a
-                        href={`mailto:${m.email}`}
-                        className="text-primary hover:text-primary/80"
+                <Link
+                  key={m.id}
+                  href={`/${locale}/team/${m.slug}`}
+                  className="block transition-transform hover:-translate-y-1"
+                >
+                  <Card className="flex h-full flex-col items-start transition-colors hover:border-primary/40">
+                    {m.photo_url ? (
+                      <div className="relative h-20 w-20 overflow-hidden rounded-full">
+                        <Image
+                          src={m.photo_url}
+                          alt=""
+                          fill
+                          sizes="80px"
+                          className="object-cover"
+                          referrerPolicy="no-referrer"
+                        />
+                      </div>
+                    ) : (
+                      <div
+                        className={`flex h-20 w-20 items-center justify-center rounded-full font-heading text-2xl font-bold ${accentFor(i)}`}
+                        aria-hidden
                       >
-                        {m.email}
-                      </a>
+                        {initialsOf(m.name)}
+                      </div>
                     )}
-                    {m.linkedin_url && (
-                      <a
-                        href={m.linkedin_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-muted-foreground hover:text-foreground"
-                      >
-                        LinkedIn ↗
-                      </a>
+                    <Heading level={4} className="mt-5">
+                      {m.name}
+                    </Heading>
+                    {role && <Eyebrow className="mt-1">{role}</Eyebrow>}
+                    {teaser && (
+                      <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                        {teaser}
+                      </p>
                     )}
-                  </div>
-                </Card>
+                    <span className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-primary">
+                      {l === "de"
+                        ? "Profil ansehen"
+                        : l === "fr"
+                          ? "Voir le profil"
+                          : "View profile"}
+                      <span aria-hidden>→</span>
+                    </span>
+                  </Card>
+                </Link>
               );
             })}
           </div>
