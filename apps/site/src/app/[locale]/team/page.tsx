@@ -130,9 +130,6 @@ export default async function TeamPage({
           <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {members.map((m, i) => {
               const role = localeField(m, "role");
-              const bio = localeField(m, "bio");
-              const teaser =
-                bio && bio.length > 180 ? bio.slice(0, 180).trim() + "…" : bio;
               return (
                 <Link
                   key={m.id}
@@ -163,12 +160,7 @@ export default async function TeamPage({
                       {m.name}
                     </Heading>
                     {role && <Eyebrow className="mt-1">{role}</Eyebrow>}
-                    {teaser && (
-                      <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                        {teaser}
-                      </p>
-                    )}
-                    <span className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-primary">
+                    <span className="mt-auto inline-flex items-center gap-1 pt-5 text-sm font-semibold text-primary">
                       {l === "de"
                         ? "Profil ansehen"
                         : l === "fr"

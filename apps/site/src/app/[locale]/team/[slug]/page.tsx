@@ -143,6 +143,23 @@ export default async function TeamMemberPage({
                 </a>
               )}
             </div>
+
+            {m.slug !== "ruth-bambi" && (
+              <p className="mt-6 w-full border-t border-border pt-4 text-center text-xs text-muted-foreground">
+                {l === "de"
+                  ? "Berichtet an"
+                  : l === "fr"
+                    ? "Rend compte à"
+                    : "Reports to"}
+                :{" "}
+                <Link
+                  href={`/${locale}/team/ruth-bambi`}
+                  className="font-medium text-foreground hover:text-primary"
+                >
+                  Ruth Bambi
+                </Link>
+              </p>
+            )}
           </Card>
 
           <div>
