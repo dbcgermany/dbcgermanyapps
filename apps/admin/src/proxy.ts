@@ -4,7 +4,7 @@ import { LOCALES, DEFAULT_LOCALE, type Locale } from "@dbc/types";
 
 const PUBLIC_PATHS = ["/login", "/set-password", "/auth/callback"];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // --- Locale detection & redirect ---

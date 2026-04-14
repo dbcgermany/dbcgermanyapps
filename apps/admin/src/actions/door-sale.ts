@@ -99,6 +99,75 @@ export async function createDoorSale(formData: FormData) {
   return { success: true, orderId: order.id };
 }
 
+/**
+ * Voids a door-sale order: deletes tickets, restores tier inventory, and marks
+ * the order status "refunded". Intended for the "I mistyped" undo flow right
+ * after a sale — only allows voids on door_sale orders.
+ */
+export async function voidDoorSale(orderId: string, locale: string) {
+  const user = await requireRole("team_member");
+  const supabase = await createServerClient();
+
+  const { data: order } = await supabase
+    .from("orders")
+    .select("id, acquisition_type, status, event_id, total_cents")
+    .eq("id", orderId)
+    .single();
+
+  if (!order) return { error: "Order not found" };
+  if (order.acquisition_type !== "door_sale") {
+    return { error: "Only door-sale orders can be voided from here." };
+  }
+  if (order.status === "refunded") {
+    return { error: "Order already voided." };
+  }
+
+  // Restore inventory per tier
+  const { data: tickets } = await supabase
+    .from("tickets")
+    .select("id, tier_id")
+    .eq("order_id", orderId);
+
+  if (tickets) {
+    const tierCounts: Record<string, number> = {};
+    for (const t of tickets) {
+      tierCounts[t.tier_id] = (tierCounts[t.tier_id] || 0) + 1;
+    }
+    for (const [tierId, qty] of Object.entries(tierCounts)) {
+      const { data: tier } = await supabase
+        .from("ticket_tiers")
+        .select("quantity_sold")
+        .eq("id", tierId)
+        .single();
+      if (tier) {
+        await supabase
+          .from("ticket_tiers")
+          .update({
+            quantity_sold: Math.max(0, tier.quantity_sold - qty),
+          })
+          .eq("id", tierId);
+      }
+    }
+  }
+
+  await supabase.from("tickets").delete().eq("order_id", orderId);
+  await supabase
+    .from("orders")
+    .update({ status: "refunded" })
+    .eq("id", orderId);
+
+  await supabase.from("audit_log").insert({
+    user_id: user.userId,
+    action: "void_door_sale",
+    entity_type: "orders",
+    entity_id: orderId,
+    details: { amount_cents: order.total_cents, event_id: order.event_id },
+  });
+
+  revalidatePath(`/${locale}/door-sale`);
+  return { success: true };
+}
+
 export async function getDoorSaleEvents() {
   await requireRole("team_member");
   const supabase = await createServerClient();

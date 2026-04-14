@@ -3,6 +3,7 @@
 import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { updateEvent } from "@/actions/events";
+import { CoverImageUpload } from "@/components/cover-image-upload";
 
 type EventRow = {
   id: string;
@@ -250,31 +251,7 @@ export function EditEventForm({
         </div>
       </div>
 
-      {/* Cover image */}
-      <div>
-        <label htmlFor="cover_image_url" className="block text-sm font-medium mb-1">
-          Cover image URL
-        </label>
-        <input
-          id="cover_image_url"
-          name="cover_image_url"
-          type="url"
-          defaultValue={event.cover_image_url ?? ""}
-          placeholder="https://example.com/hero.jpg"
-          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
-        />
-        {event.cover_image_url && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={event.cover_image_url}
-            alt="Current cover"
-            className="mt-2 h-32 w-auto rounded-md border border-border object-cover"
-          />
-        )}
-        <p className="mt-1 text-xs text-muted-foreground">
-          Hero image shown on the public event page. Use a public URL.
-        </p>
-      </div>
+      <CoverImageUpload initialUrl={event.cover_image_url} />
 
       <input
         type="hidden"

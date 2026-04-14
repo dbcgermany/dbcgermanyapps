@@ -63,7 +63,7 @@ function geoLocale(request: NextRequest): Locale | null {
   return country ? COUNTRY_LOCALE[country.toUpperCase()] ?? null : null;
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // --- Locale detection & redirect ---

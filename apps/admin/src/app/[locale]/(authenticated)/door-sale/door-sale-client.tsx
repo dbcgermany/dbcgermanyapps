@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { createDoorSale } from "@/actions/door-sale";
+import { createDoorSale, voidDoorSale } from "@/actions/door-sale";
 
 interface Tier {
   id: string;
@@ -28,9 +28,15 @@ export function DoorSaleClient({
   const [attendeeName, setAttendeeName] = useState("");
   const [attendeeEmail, setAttendeeEmail] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("cash");
-  const [result, setResult] = useState<{ error?: string; success?: boolean }>(
-    {}
-  );
+  const [result, setResult] = useState<{
+    error?: string;
+    success?: boolean;
+    orderId?: string;
+  }>({});
+  const [lastSale, setLastSale] = useState<{
+    orderId: string;
+    name: string;
+  } | null>(null);
   const [isPending, startTransition] = useTransition();
 
   function handleEventChange(newEventId: string) {
@@ -40,14 +46,31 @@ export function DoorSaleClient({
   }
 
   function handleSubmit(formData: FormData) {
+    const name = (formData.get("attendee_name") as string) || "";
     startTransition(async () => {
       const res = await createDoorSale(formData);
       setResult(res);
-      if (res.success) {
+      if (res.success && res.orderId) {
+        setLastSale({ orderId: res.orderId, name });
         setAttendeeName("");
         setAttendeeEmail("");
         // Refresh to update tier remaining counts
         router.refresh();
+      }
+    });
+  }
+
+  function handleVoid() {
+    if (!lastSale) return;
+    if (!confirm(`Void the ticket for ${lastSale.name}? This restores inventory.`)) return;
+    startTransition(async () => {
+      const res = await voidDoorSale(lastSale.orderId, locale);
+      if (res.success) {
+        setLastSale(null);
+        setResult({});
+        router.refresh();
+      } else {
+        setResult({ error: res.error });
       }
     });
   }
@@ -109,9 +132,21 @@ export function DoorSaleClient({
           {result.error}
         </div>
       )}
-      {result.success && (
+      {result.success && lastSale && (
         <div className="rounded-md bg-green-50 p-4 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-400">
-          &#x2713; {t.success}
+          <div className="flex items-center justify-between gap-4">
+            <span>
+              &#x2713; {t.success} &mdash; {lastSale.name}
+            </span>
+            <button
+              type="button"
+              onClick={handleVoid}
+              disabled={isPending}
+              className="rounded-md border border-red-300 bg-white px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-50 dark:bg-transparent"
+            >
+              Undo / Void
+            </button>
+          </div>
         </div>
       )}
 

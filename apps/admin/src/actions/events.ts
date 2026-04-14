@@ -1,8 +1,18 @@
 "use server";
 
 import { createServerClient, requireRole } from "@dbc/supabase/server";
+import { createClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+
+const COVER_BUCKET = "event-covers";
+
+function getServiceClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Column selections (no SELECT *)
@@ -228,4 +238,42 @@ export async function deleteEvent(id: string, locale: string) {
 
   revalidatePath(`/${locale}/events`);
   redirect(`/${locale}/events`);
+}
+
+/**
+ * Uploads an event cover image to the `event-covers` public bucket and returns
+ * the resulting public URL. Client components call this from a browser
+ * file-input component; the returned URL is written into the event form's
+ * `cover_image_url` field.
+ */
+export async function uploadEventCover(formData: FormData) {
+  await requireRole("manager");
+  const file = formData.get("file") as File | null;
+  if (!file || typeof file === "string") {
+    return { error: "No file provided" };
+  }
+  if (file.size > 8 * 1024 * 1024) {
+    return { error: "File is larger than 8 MB" };
+  }
+  if (!file.type.startsWith("image/")) {
+    return { error: "Only image files are allowed" };
+  }
+
+  const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+  const path = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${ext}`;
+
+  const service = getServiceClient();
+  const { error: uploadError } = await service.storage
+    .from(COVER_BUCKET)
+    .upload(path, file, {
+      contentType: file.type,
+      upsert: false,
+    });
+
+  if (uploadError) {
+    return { error: `Upload failed: ${uploadError.message}` };
+  }
+
+  const { data } = service.storage.from(COVER_BUCKET).getPublicUrl(path);
+  return { success: true as const, url: data.publicUrl };
 }
