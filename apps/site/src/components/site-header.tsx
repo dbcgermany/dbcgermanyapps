@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { LocaleSwitch } from "./locale-switch";
 import { ThemeToggle } from "@dbc/ui";
+import { DBC } from "@/lib/dbc-assets";
 
 export function SiteHeader({ locale }: { locale: string }) {
   const t = useTranslations("site.nav");
@@ -51,12 +53,15 @@ export function SiteHeader({ locale }: { locale: string }) {
           className="flex items-center gap-2 font-heading text-lg font-bold tracking-tight"
           aria-label="DBC Germany"
         >
-          <span
-            aria-hidden
-            className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground"
-          >
-            DBC
-          </span>
+          <Image
+            src={DBC.logo}
+            alt=""
+            width={32}
+            height={32}
+            className="h-8 w-8 object-contain"
+            referrerPolicy="no-referrer"
+            priority
+          />
           <span>DBC Germany</span>
         </Link>
 

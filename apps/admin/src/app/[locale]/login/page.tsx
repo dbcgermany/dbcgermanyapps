@@ -61,6 +61,16 @@ export default function LoginPage({
             <LoginForm locale={locale} />
           </Suspense>
         )}
+
+        <p className="text-center text-xs text-muted-foreground">
+          Trouble signing in? Contact{" "}
+          <a
+            href="mailto:dbc-germany@realjaynka.com"
+            className="text-primary hover:text-primary/80"
+          >
+            dbc-germany@realjaynka.com
+          </a>
+        </p>
       </div>
     </div>
   );

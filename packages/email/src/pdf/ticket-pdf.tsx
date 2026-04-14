@@ -186,7 +186,7 @@ const TRANSLATIONS = {
     tierLabel: "Ticket Type",
     scanTitle: "Present at entrance",
     scanText: "Show this QR code at the entrance for fast check-in. Each ticket is valid for one person only.",
-    footer: "DBC Germany GmbH \u00B7 ticket.dbc-germany.com",
+    footer: "DBC Germany (UG i.G.) \u00B7 ticket.dbc-germany.com",
   },
   de: {
     ticket: "Ticket",
@@ -196,7 +196,7 @@ const TRANSLATIONS = {
     tierLabel: "Ticketart",
     scanTitle: "Am Eingang vorzeigen",
     scanText: "Zeigen Sie diesen QR-Code am Eingang f\u00FCr einen schnellen Check-in. Jedes Ticket ist nur f\u00FCr eine Person g\u00FCltig.",
-    footer: "DBC Germany GmbH \u00B7 ticket.dbc-germany.com",
+    footer: "DBC Germany (UG i.G.) \u00B7 ticket.dbc-germany.com",
   },
   fr: {
     ticket: "Billet",
@@ -206,7 +206,7 @@ const TRANSLATIONS = {
     tierLabel: "Type de billet",
     scanTitle: "\u00C0 pr\u00E9senter \u00E0 l\u2019entr\u00E9e",
     scanText: "Montrez ce code QR \u00E0 l\u2019entr\u00E9e pour un enregistrement rapide. Chaque billet n\u2019est valable que pour une seule personne.",
-    footer: "DBC Germany GmbH \u00B7 ticket.dbc-germany.com",
+    footer: "DBC Germany (UG i.G.) \u00B7 ticket.dbc-germany.com",
   },
 };
 

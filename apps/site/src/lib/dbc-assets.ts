@@ -27,8 +27,8 @@ export const DBC = {
     incubationSidebar: `${BASE}/2025_02_13_13_29_IMG_1511-copy.jpg`,
     coursesSidebar: `${BASE}/2025_02_13_13_25_IMG_1689-copy.jpg`,
     mentorshipSidebar: `${BASE}/2025_02_13_12_40_IMG_1545-copy.jpg`,
-    investments: `${BASE}/bgfjedrlegr.jpg`,
-    events: `${BASE}/jjdlfjiffgo.jpg`,
+    investments: `${BASE}/2025_02_13_13_29_IMG_1511-copy.jpg`,
+    events: `${BASE}/2025_02_13_17_48_IMG_1655-copy.jpg`,
     eventFallback: `${BASE}/2025_02_13_17_48_IMG_1655-copy.jpg`,
   },
   serviceIcon: {

@@ -119,12 +119,26 @@ export default async function AboutPage({
                     className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary"
                   />
                   <span>
-                    <strong>Düsseldorf, Essen, Berlin</strong> —{" "}
+                    <strong>Düsseldorf</strong> —{" "}
                     {locale === "de"
-                      ? "Inkubation, Investmentteam, Events."
+                      ? "Sitz der DBC Germany: Inkubation, Investitionen, Operations."
                       : locale === "fr"
-                        ? "Incubation, équipe investissement, événements."
-                        : "Incubation, investment team, events."}
+                        ? "Siège de DBC Germany : incubation, investissements, opérations."
+                        : "DBC Germany HQ: incubation, investments, operations."}
+                  </span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span
+                    aria-hidden
+                    className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary/70"
+                  />
+                  <span>
+                    <strong>Essen</strong> —{" "}
+                    {locale === "de"
+                      ? "Veranstaltungsort Richesses d'Afrique 2026. Nur Event, kein Dauerstandort."
+                      : locale === "fr"
+                        ? "Lieu de Richesses d'Afrique 2026. Événement ponctuel, pas de bureau permanent."
+                        : "Venue for Richesses d'Afrique 2026. Event only, not a permanent office."}
                   </span>
                 </li>
                 <li className="flex items-start gap-3">
@@ -144,15 +158,15 @@ export default async function AboutPage({
                 <li className="flex items-start gap-3">
                   <span
                     aria-hidden
-                    className="mt-1 h-2 w-2 shrink-0 rounded-full bg-muted-foreground"
+                    className="mt-1 h-2 w-2 shrink-0 rounded-full bg-accent/70"
                   />
                   <span>
-                    <strong>Paris, Brussels, Lagos</strong> —{" "}
+                    <strong>Herblay-sur-Seine, France</strong> —{" "}
                     {locale === "de"
-                      ? "Masterclasses und Partner-Hubs."
+                      ? "DBC France SAS (SIREN 940 839 145) · 43 Avenue du Gros Chêne"
                       : locale === "fr"
-                        ? "Masterclasses et hubs partenaires."
-                        : "Masterclasses and partner hubs."}
+                        ? "DBC France SAS (SIREN 940 839 145) · 43 Avenue du Gros Chêne"
+                        : "DBC France SAS (SIREN 940 839 145) · 43 Avenue du Gros Chêne"}
                   </span>
                 </li>
               </ul>

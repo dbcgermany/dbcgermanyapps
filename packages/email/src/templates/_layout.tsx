@@ -62,7 +62,7 @@ export function EmailLayout({
 }
 
 export const FOOTER_SIGNATURE =
-  "Sent by DBC Germany GmbH \u00B7 ticket.dbc-germany.com";
+  "Sent by DBC Germany (UG i.G.) \u00B7 ticket.dbc-germany.com";
 export const FOOTER_QUESTIONS = {
   en: "Questions? Reply to this email or contact hello@dbc-germany.com.",
   de: "Fragen? Antworten Sie auf diese E-Mail oder schreiben Sie an hello@dbc-germany.com.",

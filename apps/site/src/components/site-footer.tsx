@@ -18,12 +18,14 @@ export async function SiteFooter({ locale }: { locale: string }) {
           {/* Brand column */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-2 font-heading text-lg font-bold">
-              <span
-                aria-hidden
-                className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground"
-              >
-                DBC
-              </span>
+              <Image
+                src={DBC.logo}
+                alt=""
+                width={32}
+                height={32}
+                className="h-8 w-8 object-contain"
+                referrerPolicy="no-referrer"
+              />
               DBC Germany
             </div>
             <p className="mt-3 max-w-sm text-sm text-muted-foreground">
@@ -197,7 +199,7 @@ export async function SiteFooter({ locale }: { locale: string }) {
 
         <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-border pt-8 text-xs text-muted-foreground sm:flex-row sm:items-center">
           <p>
-            &copy; {new Date().getFullYear()} DBC Germany GmbH.{" "}
+            &copy; {new Date().getFullYear()} DBC Germany (UG i.G.).{" "}
             {t("rights")}
           </p>
           <p>Düsseldorf · Essen · Lubumbashi</p>

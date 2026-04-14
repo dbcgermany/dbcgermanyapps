@@ -7,15 +7,15 @@ export const metadata: Metadata = {
 const content: Record<string, { title: string; body: string }> = {
   en: {
     title: "Terms of Service",
-    body: "These terms of service govern your use of the DBC Germany ticketing platform (ticket.dbc-germany.com). By purchasing tickets or using our services, you agree to these terms. Service provider: DBC Germany GmbH, Essen, Germany.",
+    body: "These terms of service govern your use of the DBC Germany ticketing platform (ticket.dbc-germany.com). By purchasing tickets or using our services, you agree to these terms. Service provider: DBC Germany (UG i.G.), Düsseldorf, Germany.",
   },
   de: {
     title: "Allgemeine Gesch\u00e4ftsbedingungen",
-    body: "Diese Allgemeinen Gesch\u00e4ftsbedingungen regeln Ihre Nutzung der DBC Germany Ticketing-Plattform (ticket.dbc-germany.com). Mit dem Kauf von Tickets oder der Nutzung unserer Dienste stimmen Sie diesen Bedingungen zu. Dienstanbieter: DBC Germany GmbH, Essen, Deutschland.",
+    body: "Diese Allgemeinen Gesch\u00e4ftsbedingungen regeln Ihre Nutzung der DBC Germany Ticketing-Plattform (ticket.dbc-germany.com). Mit dem Kauf von Tickets oder der Nutzung unserer Dienste stimmen Sie diesen Bedingungen zu. Dienstanbieter: DBC Germany (UG i.G.), Düsseldorf, Deutschland.",
   },
   fr: {
     title: "Conditions g\u00e9n\u00e9rales d\u2019utilisation",
-    body: "Les pr\u00e9sentes conditions g\u00e9n\u00e9rales r\u00e9gissent votre utilisation de la plateforme de billetterie DBC Germany (ticket.dbc-germany.com). En achetant des billets ou en utilisant nos services, vous acceptez ces conditions. Prestataire: DBC Germany GmbH, Essen, Allemagne.",
+    body: "Les pr\u00e9sentes conditions g\u00e9n\u00e9rales r\u00e9gissent votre utilisation de la plateforme de billetterie DBC Germany (ticket.dbc-germany.com). En achetant des billets ou en utilisant nos services, vous acceptez ces conditions. Prestataire: DBC Germany (UG i.G.), Düsseldorf, Allemagne.",
   },
 };
 

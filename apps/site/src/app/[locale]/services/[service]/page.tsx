@@ -92,12 +92,27 @@ export default async function ServiceDetailPage({
           </ul>
 
           <div className="mt-10 flex flex-wrap gap-3">
-            <Link
-              href={`/${locale}/contact`}
-              className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90"
-            >
-              {t("cta.secondary")}
-            </Link>
+            {service === "elearning" ? (
+              <a
+                href="https://richessesdafriquebydbc.podia.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90"
+              >
+                {locale === "de"
+                  ? "Zur Podia-Akademie"
+                  : locale === "fr"
+                    ? "Accéder à l'académie Podia"
+                    : "Open the Podia academy"}
+              </a>
+            ) : (
+              <Link
+                href={`/${locale}/contact`}
+                className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90"
+              >
+                {t("cta.secondary")}
+              </Link>
+            )}
             <Link
               href={`/${locale}/services`}
               className="rounded-full border border-border px-6 py-3 text-sm font-semibold text-foreground hover:bg-muted"

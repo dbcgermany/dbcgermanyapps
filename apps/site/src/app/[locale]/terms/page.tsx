@@ -48,7 +48,7 @@ const CONTENT = {
       },
       {
         heading: "Governing law",
-        body: "German law applies. Place of jurisdiction: Berlin.",
+        body: "German law applies. Place of jurisdiction: Düsseldorf.",
       },
     ],
   },
@@ -83,7 +83,7 @@ const CONTENT = {
       },
       {
         heading: "Recht",
-        body: "Es gilt deutsches Recht. Gerichtsstand: Berlin.",
+        body: "Es gilt deutsches Recht. Gerichtsstand: Düsseldorf.",
       },
     ],
   },
@@ -118,7 +118,7 @@ const CONTENT = {
       },
       {
         heading: "Droit applicable",
-        body: "Droit allemand. Juridiction compétente : Berlin.",
+        body: "Droit allemand. Juridiction compétente : Düsseldorf.",
       },
     ],
   },

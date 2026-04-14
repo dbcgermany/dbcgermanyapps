@@ -24,7 +24,7 @@ const CONTENT = {
     sections: [
       {
         heading: "Who we are",
-        body: "DBC Germany GmbH (\"DBC Germany\", \"we\") is the controller of personal data processed on dbc-germany.com and ticket.dbc-germany.com. Contact: hello@dbc-germany.com.",
+        body: "DBC Germany (UG i.G.) (\"DBC Germany\", \"we\") is the controller of personal data processed on dbc-germany.com and ticket.dbc-germany.com. Contact: hello@dbc-germany.com.",
       },
       {
         heading: "What we collect",
@@ -59,7 +59,7 @@ const CONTENT = {
     sections: [
       {
         heading: "Wer wir sind",
-        body: "Die DBC Germany GmbH („DBC Germany“, „wir“) ist Verantwortliche im Sinne der DSGVO für die auf dbc-germany.com und ticket.dbc-germany.com verarbeiteten personenbezogenen Daten. Kontakt: hello@dbc-germany.com.",
+        body: "Die DBC Germany (UG i.G.) („DBC Germany“, „wir“) ist Verantwortliche im Sinne der DSGVO für die auf dbc-germany.com und ticket.dbc-germany.com verarbeiteten personenbezogenen Daten. Kontakt: hello@dbc-germany.com.",
       },
       {
         heading: "Welche Daten wir erheben",
@@ -94,7 +94,7 @@ const CONTENT = {
     sections: [
       {
         heading: "Qui nous sommes",
-        body: "DBC Germany GmbH (« DBC Germany », « nous ») est responsable du traitement des données personnelles collectées sur dbc-germany.com et ticket.dbc-germany.com. Contact : hello@dbc-germany.com.",
+        body: "DBC Germany (UG i.G.) (« DBC Germany », « nous ») est responsable du traitement des données personnelles collectées sur dbc-germany.com et ticket.dbc-germany.com. Contact : hello@dbc-germany.com.",
       },
       {
         heading: "Ce que nous collectons",

@@ -110,7 +110,7 @@ export async function GET(request: Request) {
           from: fromAddress,
           to: order.recipient_email,
           subject,
-          html: `<div style="font-family:system-ui,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#111;"><p>Hi ${order.recipient_name},</p><div style="white-space:pre-wrap;line-height:1.6;">${body}</div><hr style="margin:24px 0;border:none;border-top:1px solid #e5e5e5;"/><p style="font-size:12px;color:#737373;">DBC Germany GmbH</p></div>`,
+          html: `<div style="font-family:system-ui,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#111;"><p>Hi ${order.recipient_name},</p><div style="white-space:pre-wrap;line-height:1.6;">${body}</div><hr style="margin:24px 0;border:none;border-top:1px solid #e5e5e5;"/><p style="font-size:12px;color:#737373;">DBC Germany (UG i.G.)</p></div>`,
         });
         if (result.error) totalFailed += 1;
         else totalSent += 1;
