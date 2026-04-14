@@ -5,8 +5,7 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { LocaleSwitch } from "./locale-switch";
-import { ThemeToggle } from "@dbc/ui";
+import { LocaleSwitch, ThemeToggle } from "@dbc/ui";
 import { DBC } from "@/lib/dbc-assets";
 
 export function SiteHeader({ locale }: { locale: string }) {

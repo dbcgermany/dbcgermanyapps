@@ -1,5 +1,12 @@
-import Link from "next/link";
 import type { Metadata } from "next";
+import {
+  Card,
+  Container,
+  Eyebrow,
+  Heading,
+  LinkButton,
+  Section,
+} from "@dbc/ui";
 
 export async function generateMetadata({
   params,
@@ -50,11 +57,7 @@ const ROLES: Role[] = [
       fr: "Event Producer — Richesses d'Afrique 2026",
     },
     location: "Essen (on-site, Q2 2026)",
-    type: {
-      en: "Contract",
-      de: "Freiberuflich",
-      fr: "Freelance",
-    },
+    type: { en: "Contract", de: "Freiberuflich", fr: "Freelance" },
     blurb: {
       en: "Own the Essen production: venue, suppliers, run-of-show, crew. Must have produced a 500+ pax conference in DACH.",
       de: "Verantwortung für die Produktion in Essen: Location, Dienstleister, Regieplan, Crew. Erfahrung mit Konferenzen ab 500 TN in DACH erforderlich.",
@@ -75,11 +78,7 @@ export default async function CareersPage({
     | "fr";
 
   const copy = {
-    eyebrow: {
-      en: "Careers",
-      de: "Karriere",
-      fr: "Carrières",
-    }[l],
+    eyebrow: { en: "Careers", de: "Karriere", fr: "Carrières" }[l],
     title: {
       en: "Work at DBC Germany.",
       de: "Arbeite bei DBC Germany.",
@@ -90,11 +89,7 @@ export default async function CareersPage({
       de: "Wir sind ein schlankes Team in Düsseldorf. Praktische Macher:innen willkommen — bevorzugt mit afrikanischen Wurzeln oder französischen Sprachkenntnissen.",
       fr: "Équipe resserrée à Düsseldorf. Profils opérationnels bienvenus — une préférence pour les candidat·e·s aux racines africaines ou francophones.",
     }[l],
-    apply: {
-      en: "Apply",
-      de: "Bewerben",
-      fr: "Postuler",
-    }[l],
+    apply: { en: "Apply", de: "Bewerben", fr: "Postuler" }[l],
     speculativeTitle: {
       en: "Don't see your role?",
       de: "Keine passende Rolle dabei?",
@@ -105,65 +100,57 @@ export default async function CareersPage({
       de: "Wir lernen gerne exzellente Operator:innen kennen. Schreib uns kurz, was du mit uns aufbauen willst.",
       fr: "Nous rencontrons volontiers d'excellents opérationnels. Écrivez-nous ce que vous construiriez avec nous.",
     }[l],
+    contact: { en: "Contact", de: "Kontakt", fr: "Contact" }[l],
   };
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
-      <p className="text-xs font-semibold uppercase tracking-wider text-primary">
-        {copy.eyebrow}
-      </p>
-      <h1 className="mt-3 font-heading text-4xl font-bold tracking-tight sm:text-5xl">
-        {copy.title}
-      </h1>
-      <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
-        {copy.intro}
-      </p>
-
-      <div className="mt-14 space-y-4">
-        {ROLES.map((r) => (
-          <article
-            key={r.title.en}
-            className="rounded-2xl border border-border bg-card p-6"
-          >
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <h2 className="font-heading text-lg font-bold">
-                  {r.title[l]}
-                </h2>
-                <p className="mt-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                  {r.location} · {r.type[l]}
-                </p>
-                <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                  {r.blurb[l]}
-                </p>
-              </div>
-              <a
-                href={`mailto:jay@dbc-germany.com?subject=${encodeURIComponent(
-                  `Application: ${r.title.en}`
-                )}`}
-                className="shrink-0 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
-              >
-                {copy.apply}
-              </a>
-            </div>
-          </article>
-        ))}
-      </div>
-
-      <div className="mt-14 rounded-2xl border border-dashed border-border bg-muted/30 p-6">
-        <h2 className="font-heading text-lg font-bold">
-          {copy.speculativeTitle}
-        </h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {copy.speculativeBody}
+    <Section>
+      <Container max="4xl">
+        <Eyebrow>{copy.eyebrow}</Eyebrow>
+        <Heading level={1} className="mt-3">
+          {copy.title}
+        </Heading>
+        <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
+          {copy.intro}
         </p>
-        <Link
-          href={`/${locale}/contact`}
-          className="mt-4 inline-flex rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
-        >
-          {l === "de" ? "Kontakt" : l === "fr" ? "Contact" : "Contact"}
-        </Link>
-      </div>
-    </div>
+
+        <div className="mt-14 space-y-4">
+          {ROLES.map((r) => (
+            <Card key={r.title.en}>
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <Heading level={4}>{r.title[l]}</Heading>
+                  <Eyebrow className="mt-1 text-muted-foreground">
+                    {r.location} · {r.type[l]}
+                  </Eyebrow>
+                  <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                    {r.blurb[l]}
+                  </p>
+                </div>
+                <LinkButton
+                  size="sm"
+                  href={`mailto:jay@dbc-germany.com?subject=${encodeURIComponent(
+                    `Application: ${r.title.en}`
+                  )}`}
+                  className="shrink-0"
+                >
+                  {copy.apply}
+                </LinkButton>
+              </div>
+            </Card>
+          ))}
+        </div>
+
+        <Card className="mt-14 border-dashed bg-muted/30">
+          <Heading level={4}>{copy.speculativeTitle}</Heading>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {copy.speculativeBody}
+          </p>
+          <LinkButton size="sm" href={`/${locale}/contact`} className="mt-4">
+            {copy.contact}
+          </LinkButton>
+        </Card>
+      </Container>
+    </Section>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { Button, FormField, Input, Textarea } from "@dbc/ui";
 import { submitIncubationApplication } from "@/actions/incubation";
 
 type Locale = "en" | "de" | "fr";
@@ -71,9 +72,6 @@ export function IncubationForm({ locale }: { locale: Locale }) {
     },
   }[locale];
 
-  const inputClass =
-    "w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring";
-
   return (
     <form action={formAction} className="mt-10 space-y-5">
       {state?.error && (
@@ -88,136 +86,39 @@ export function IncubationForm({ locale }: { locale: Locale }) {
       )}
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <div>
-          <label htmlFor="founder_name" className="mb-1 block text-sm font-medium">
-            {t.founderName} *
-          </label>
-          <input
-            id="founder_name"
-            name="founder_name"
-            type="text"
-            required
-            className={inputClass}
-          />
-        </div>
-        <div>
-          <label
-            htmlFor="founder_email"
-            className="mb-1 block text-sm font-medium"
-          >
-            {t.founderEmail} *
-          </label>
-          <input
-            id="founder_email"
-            name="founder_email"
-            type="email"
-            required
-            className={inputClass}
-          />
-        </div>
-        <div>
-          <label
-            htmlFor="founder_phone"
-            className="mb-1 block text-sm font-medium"
-          >
-            {t.founderPhone}
-          </label>
-          <input
-            id="founder_phone"
-            name="founder_phone"
-            type="tel"
-            className={inputClass}
-          />
-        </div>
-        <div>
-          <label htmlFor="country" className="mb-1 block text-sm font-medium">
-            {t.country}
-          </label>
-          <input id="country" name="country" type="text" className={inputClass} />
-        </div>
-        <div>
-          <label
-            htmlFor="company_name"
-            className="mb-1 block text-sm font-medium"
-          >
-            {t.companyName}
-          </label>
-          <input
-            id="company_name"
-            name="company_name"
-            type="text"
-            className={inputClass}
-          />
-        </div>
-        <div>
-          <label
-            htmlFor="company_website"
-            className="mb-1 block text-sm font-medium"
-          >
-            {t.companyWebsite}
-          </label>
-          <input
-            id="company_website"
-            name="company_website"
-            type="url"
-            placeholder="https://"
-            className={inputClass}
-          />
-        </div>
-        <div>
-          <label
-            htmlFor="company_stage"
-            className="mb-1 block text-sm font-medium"
-          >
-            {t.companyStage}
-          </label>
-          <input
-            id="company_stage"
-            name="company_stage"
-            type="text"
-            placeholder={t.companyStageHint}
-            className={inputClass}
-          />
-        </div>
-        <div>
-          <label
-            htmlFor="funding_needed_eur"
-            className="mb-1 block text-sm font-medium"
-          >
-            {t.funding}
-          </label>
-          <input
-            id="funding_needed_eur"
-            name="funding_needed_eur"
-            type="number"
-            min="0"
-            step="100"
-            className={inputClass}
-          />
-        </div>
+        <FormField label={t.founderName} required>
+          <Input name="founder_name" type="text" required />
+        </FormField>
+        <FormField label={t.founderEmail} required>
+          <Input name="founder_email" type="email" required />
+        </FormField>
+        <FormField label={t.founderPhone}>
+          <Input name="founder_phone" type="tel" />
+        </FormField>
+        <FormField label={t.country}>
+          <Input name="country" type="text" />
+        </FormField>
+        <FormField label={t.companyName}>
+          <Input name="company_name" type="text" />
+        </FormField>
+        <FormField label={t.companyWebsite}>
+          <Input name="company_website" type="url" placeholder="https://" />
+        </FormField>
+        <FormField label={t.companyStage} hint={t.companyStageHint}>
+          <Input name="company_stage" type="text" />
+        </FormField>
+        <FormField label={t.funding}>
+          <Input name="funding_needed_eur" type="number" min="0" step="100" />
+        </FormField>
       </div>
 
-      <div>
-        <label htmlFor="pitch" className="mb-1 block text-sm font-medium">
-          {t.pitch} *
-        </label>
-        <textarea
-          id="pitch"
-          name="pitch"
-          rows={8}
-          required
-          minLength={80}
-          className={inputClass}
-        />
-      </div>
+      <FormField label={t.pitch} required>
+        <Textarea name="pitch" rows={8} required minLength={80} />
+      </FormField>
 
-      <button
-        type="submit"
-        disabled={isPending || state?.success}
-        className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-      >
+      <Button type="submit" disabled={isPending || state?.success}>
         {isPending ? t.sending : t.submit}
-      </button>
+      </Button>
     </form>
   );
 }

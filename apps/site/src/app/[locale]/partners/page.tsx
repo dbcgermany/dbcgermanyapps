@@ -1,5 +1,12 @@
-import Link from "next/link";
 import type { Metadata } from "next";
+import {
+  Card,
+  Container,
+  Eyebrow,
+  Heading,
+  LinkButton,
+  Section,
+} from "@dbc/ui";
 
 export async function generateMetadata({
   params,
@@ -29,8 +36,8 @@ const TIERS: Tier[] = [
     price: "€25 000",
     deliverables: [
       {
-        en: "Named stage: \"<Your brand> Opening Keynote\"",
-        de: "Named Stage: \"<Ihre Marke> Opening Keynote\"",
+        en: 'Named stage: "<Your brand> Opening Keynote"',
+        de: 'Named Stage: "<Ihre Marke> Opening Keynote"',
         fr: "Scène parrainée : « <Votre marque> Opening Keynote »",
       },
       {
@@ -80,11 +87,7 @@ const TIERS: Tier[] = [
         de: "Gebrandeter Stand in der Ausstellerhalle",
         fr: "Stand de marque dans la zone exposants",
       },
-      {
-        en: "4 VIP passes",
-        de: "4 VIP-Pässe",
-        fr: "4 pass VIP",
-      },
+      { en: "4 VIP passes", de: "4 VIP-Pässe", fr: "4 pass VIP" },
       {
         en: "Logo on site, posters, programme",
         de: "Logo auf Website, Postern, Programm",
@@ -142,65 +145,57 @@ export default async function PartnersPage({
       de: "Sponsoring-Deck anfragen",
       fr: "Demander le dossier sponsor",
     }[l],
+    contact: { en: "Contact", de: "Kontakt", fr: "Contact" }[l],
   };
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
-      <p className="text-xs font-semibold uppercase tracking-wider text-primary">
-        {copy.eyebrow}
-      </p>
-      <h1 className="mt-3 font-heading text-4xl font-bold tracking-tight sm:text-5xl">
-        {copy.title}
-      </h1>
-      <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
-        {copy.intro}
-      </p>
+    <Section>
+      <Container max="5xl">
+        <Eyebrow>{copy.eyebrow}</Eyebrow>
+        <Heading level={1} className="mt-3">
+          {copy.title}
+        </Heading>
+        <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
+          {copy.intro}
+        </p>
 
-      <div className="mt-14 grid gap-6 md:grid-cols-2">
-        {TIERS.map((tier) => (
-          <article
-            key={tier.name.en}
-            className="flex flex-col rounded-2xl border border-border bg-card p-6"
+        <div className="mt-14 grid gap-6 md:grid-cols-2">
+          {TIERS.map((tier) => (
+            <Card key={tier.name.en} className="flex flex-col">
+              <div className="flex items-baseline justify-between">
+                <Heading level={3}>{tier.name[l]}</Heading>
+                <p className="font-heading text-xl font-bold text-primary">
+                  {tier.price}
+                </p>
+              </div>
+              <ul className="mt-6 space-y-2">
+                {tier.deliverables.map((d) => (
+                  <li key={d.en} className="flex gap-2 text-sm leading-6">
+                    <span
+                      aria-hidden
+                      className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary"
+                    />
+                    <span className="text-foreground">{d[l]}</span>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          ))}
+        </div>
+
+        <div className="mt-14 flex flex-wrap gap-3">
+          <LinkButton
+            href={`mailto:jay@dbc-germany.com?subject=${encodeURIComponent(
+              "Richesses d'Afrique 2026 sponsorship"
+            )}`}
           >
-            <div className="flex items-baseline justify-between">
-              <h2 className="font-heading text-2xl font-bold">
-                {tier.name[l]}
-              </h2>
-              <p className="font-heading text-xl font-bold text-primary">
-                {tier.price}
-              </p>
-            </div>
-            <ul className="mt-6 space-y-2">
-              {tier.deliverables.map((d) => (
-                <li key={d.en} className="flex gap-2 text-sm leading-6">
-                  <span
-                    aria-hidden
-                    className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary"
-                  />
-                  <span className="text-foreground">{d[l]}</span>
-                </li>
-              ))}
-            </ul>
-          </article>
-        ))}
-      </div>
-
-      <div className="mt-14 flex flex-wrap gap-3">
-        <a
-          href={`mailto:jay@dbc-germany.com?subject=${encodeURIComponent(
-            "Richesses d'Afrique 2026 sponsorship"
-          )}`}
-          className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
-        >
-          {copy.cta}
-        </a>
-        <Link
-          href={`/${locale}/contact`}
-          className="rounded-full border border-border px-6 py-3 text-sm font-semibold text-foreground hover:bg-muted"
-        >
-          {l === "de" ? "Kontakt" : l === "fr" ? "Contact" : "Contact"}
-        </Link>
-      </div>
-    </div>
+            {copy.cta}
+          </LinkButton>
+          <LinkButton href={`/${locale}/contact`} variant="secondary">
+            {copy.contact}
+          </LinkButton>
+        </div>
+      </Container>
+    </Section>
   );
 }

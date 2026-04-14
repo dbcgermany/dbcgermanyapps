@@ -1,5 +1,6 @@
 import Image from "next/image";
 import type { Metadata } from "next";
+import { Card, Container, Eyebrow, Heading, Section } from "@dbc/ui";
 import { DBC } from "@/lib/dbc-assets";
 
 export async function generateMetadata({
@@ -30,11 +31,7 @@ export default async function PressPage({
     | "fr";
 
   const copy = {
-    eyebrow: {
-      en: "Press",
-      de: "Presse",
-      fr: "Presse",
-    }[l],
+    eyebrow: { en: "Press", de: "Presse", fr: "Presse" }[l],
     title: {
       en: "Covering DBC Germany or Richesses d'Afrique 2026?",
       de: "Berichten Sie über DBC Germany oder Richesses d'Afrique 2026?",
@@ -82,9 +79,7 @@ export default async function PressPage({
       value: "Diambilay Business Center · Lubumbashi, DR Congo · 2021",
     },
     {
-      label: { en: "France entity", de: "Einheit Frankreich", fr: "Entité France" }[
-        l
-      ],
+      label: { en: "France entity", de: "Einheit Frankreich", fr: "Entité France" }[l],
       value: "DBC France SAS · SIREN 940 839 145 · Herblay-sur-Seine · 2025",
     },
     {
@@ -114,92 +109,85 @@ export default async function PressPage({
   ];
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
-      <p className="text-xs font-semibold uppercase tracking-wider text-primary">
-        {copy.eyebrow}
-      </p>
-      <h1 className="mt-3 font-heading text-4xl font-bold tracking-tight sm:text-5xl">
-        {copy.title}
-      </h1>
-      <p className="mt-6 text-lg leading-8 text-muted-foreground">
-        {copy.intro}
-      </p>
-
-      <section className="mt-14">
-        <h2 className="font-heading text-2xl font-bold">{copy.factsTitle}</h2>
-        <dl className="mt-6 grid gap-4 sm:grid-cols-2">
-          {facts.map((f) => (
-            <div
-              key={f.label}
-              className="rounded-lg border border-border bg-card p-5"
-            >
-              <dt className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                {f.label}
-              </dt>
-              <dd className="mt-2 text-base font-semibold text-foreground">
-                {f.value}
-              </dd>
-            </div>
-          ))}
-        </dl>
-      </section>
-
-      <section className="mt-14">
-        <h2 className="font-heading text-2xl font-bold">
-          {copy.logoKitTitle}
-        </h2>
-        <p className="mt-3 text-muted-foreground">{copy.logoKitBody}</p>
-        <div className="mt-6 flex items-center gap-6 rounded-2xl border border-border bg-card p-6">
-          <Image
-            src={DBC.logo}
-            alt="DBC"
-            width={96}
-            height={96}
-            className="h-24 w-24 object-contain"
-            referrerPolicy="no-referrer"
-          />
-          <div className="flex flex-col gap-2">
-            <a
-              href={DBC.logo}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:text-primary/80"
-            >
-              {l === "de"
-                ? "Logo (PNG) öffnen"
-                : l === "fr"
-                  ? "Ouvrir le logo (PNG)"
-                  : "Open logo (PNG)"}
-              <span aria-hidden>↗</span>
-            </a>
-            <a
-              href={`mailto:jay@dbc-germany.com?subject=${encodeURIComponent("DBC press assets request")}`}
-              className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-            >
-              {l === "de"
-                ? "Erweiterte Materialien anfragen"
-                : l === "fr"
-                  ? "Demander les visuels étendus"
-                  : "Request extended assets"}
-            </a>
-          </div>
-        </div>
-      </section>
-
-      <section className="mt-14">
-        <h2 className="font-heading text-2xl font-bold">
-          {copy.contactTitle}
-        </h2>
-        <p className="mt-3 text-muted-foreground">{copy.contactBody}</p>
-        <p className="mt-4">
-          <a
-            href="mailto:jay@dbc-germany.com"
-            className="text-primary hover:text-primary/80"
-          >
-            jay@dbc-germany.com
-          </a>
+    <Section>
+      <Container max="4xl">
+        <Eyebrow>{copy.eyebrow}</Eyebrow>
+        <Heading level={1} className="mt-3">
+          {copy.title}
+        </Heading>
+        <p className="mt-6 text-lg leading-8 text-muted-foreground">
+          {copy.intro}
         </p>
-      </section>
-    </div>
+
+        <div className="mt-14">
+          <Heading level={2}>{copy.factsTitle}</Heading>
+          <dl className="mt-6 grid gap-4 sm:grid-cols-2">
+            {facts.map((f) => (
+              <Card key={f.label} padding="md">
+                <dt className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  {f.label}
+                </dt>
+                <dd className="mt-2 text-base font-semibold text-foreground">
+                  {f.value}
+                </dd>
+              </Card>
+            ))}
+          </dl>
+        </div>
+
+        <div className="mt-14">
+          <Heading level={2}>{copy.logoKitTitle}</Heading>
+          <p className="mt-3 text-muted-foreground">{copy.logoKitBody}</p>
+          <Card className="mt-6 flex items-center gap-6">
+            <Image
+              src={DBC.logo}
+              alt="DBC"
+              width={96}
+              height={96}
+              className="h-24 w-24 object-contain"
+              referrerPolicy="no-referrer"
+            />
+            <div className="flex flex-col gap-2">
+              <a
+                href={DBC.logo}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:text-primary/80"
+              >
+                {l === "de"
+                  ? "Logo (PNG) öffnen"
+                  : l === "fr"
+                    ? "Ouvrir le logo (PNG)"
+                    : "Open logo (PNG)"}
+                <span aria-hidden>↗</span>
+              </a>
+              <a
+                href={`mailto:jay@dbc-germany.com?subject=${encodeURIComponent("DBC press assets request")}`}
+                className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+              >
+                {l === "de"
+                  ? "Erweiterte Materialien anfragen"
+                  : l === "fr"
+                    ? "Demander les visuels étendus"
+                    : "Request extended assets"}
+              </a>
+            </div>
+          </Card>
+        </div>
+
+        <div className="mt-14">
+          <Heading level={2}>{copy.contactTitle}</Heading>
+          <p className="mt-3 text-muted-foreground">{copy.contactBody}</p>
+          <p className="mt-4">
+            <a
+              href="mailto:jay@dbc-germany.com"
+              className="text-primary hover:text-primary/80"
+            >
+              jay@dbc-germany.com
+            </a>
+          </p>
+        </div>
+      </Container>
+    </Section>
   );
 }

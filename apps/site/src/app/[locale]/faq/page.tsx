@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Card, Container, Eyebrow, Heading, Section } from "@dbc/ui";
 
 export async function generateMetadata({
   params,
@@ -11,7 +12,10 @@ export async function generateMetadata({
   };
 }
 
-type Qa = { q: { en: string; de: string; fr: string }; a: { en: string; de: string; fr: string } };
+type Qa = {
+  q: { en: string; de: string; fr: string };
+  a: { en: string; de: string; fr: string };
+};
 
 const SECTIONS: Array<{
   title: { en: string; de: string; fr: string };
@@ -100,9 +104,9 @@ const SECTIONS: Array<{
           fr: "Comment candidater à l'incubation ?",
         },
         a: {
-          en: "The public application form on /services/incubation lands directly in our admin dashboard. We review applications weekly and respond within 10 business days.",
-          de: "Das öffentliche Bewerbungsformular unter /services/incubation landet direkt in unserem Admin-Dashboard. Wir sichten die Bewerbungen wöchentlich und antworten innerhalb von zehn Werktagen.",
-          fr: "Le formulaire public sur /services/incubation arrive directement dans notre tableau de bord admin. Nous étudions les candidatures chaque semaine et répondons sous 10 jours ouvrés.",
+          en: "The public application form at /services/incubation/apply lands directly in our admin dashboard. We review applications weekly and respond within 10 business days.",
+          de: "Das Bewerbungsformular unter /services/incubation/apply landet direkt in unserem Admin-Dashboard. Wir sichten Bewerbungen wöchentlich und antworten innerhalb von zehn Werktagen.",
+          fr: "Le formulaire sur /services/incubation/apply arrive directement dans notre tableau de bord admin. Nous étudions les candidatures chaque semaine et répondons sous 10 jours ouvrés.",
         },
       },
     ],
@@ -154,40 +158,37 @@ export default async function FaqPage({
     | "fr";
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
-      <p className="text-xs font-semibold uppercase tracking-wider text-primary">
-        FAQ
-      </p>
-      <h1 className="mt-3 font-heading text-4xl font-bold tracking-tight sm:text-5xl">
-        {l === "de"
-          ? "Häufige Fragen"
-          : l === "fr"
-            ? "Questions fréquentes"
-            : "Frequently asked questions"}
-      </h1>
+    <Section>
+      <Container max="3xl">
+        <Eyebrow>FAQ</Eyebrow>
+        <Heading level={1} className="mt-3">
+          {l === "de"
+            ? "Häufige Fragen"
+            : l === "fr"
+              ? "Questions fréquentes"
+              : "Frequently asked questions"}
+        </Heading>
 
-      <div className="mt-12 space-y-12">
-        {SECTIONS.map((section) => (
-          <section key={section.title.en}>
-            <h2 className="font-heading text-xl font-bold">
-              {section.title[l]}
-            </h2>
-            <dl className="mt-6 space-y-6">
-              {section.qas.map((qa) => (
-                <div
-                  key={qa.q.en}
-                  className="rounded-xl border border-border bg-card p-5"
-                >
-                  <dt className="font-semibold text-foreground">{qa.q[l]}</dt>
-                  <dd className="mt-2 text-sm leading-6 text-muted-foreground">
-                    {qa.a[l]}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          </section>
-        ))}
-      </div>
-    </div>
+        <div className="mt-12 space-y-12">
+          {SECTIONS.map((section) => (
+            <section key={section.title.en}>
+              <Heading level={3}>{section.title[l]}</Heading>
+              <dl className="mt-6 space-y-4">
+                {section.qas.map((qa) => (
+                  <Card key={qa.q.en} padding="md">
+                    <dt className="font-semibold text-foreground">
+                      {qa.q[l]}
+                    </dt>
+                    <dd className="mt-2 text-sm leading-6 text-muted-foreground">
+                      {qa.a[l]}
+                    </dd>
+                  </Card>
+                ))}
+              </dl>
+            </section>
+          ))}
+        </div>
+      </Container>
+    </Section>
   );
 }

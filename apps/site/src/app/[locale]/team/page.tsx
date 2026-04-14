@@ -1,5 +1,6 @@
 import Image from "next/image";
 import type { Metadata } from "next";
+import { Card, Container, Eyebrow, Heading, Section } from "@dbc/ui";
 import { DBC } from "@/lib/dbc-assets";
 
 export async function generateMetadata({
@@ -80,76 +81,68 @@ export default async function TeamPage({
     | "fr";
 
   const copy = {
-    eyebrow:
-      l === "de"
-        ? "Das Team hinter DBC Germany"
-        : l === "fr"
-          ? "L'équipe DBC Germany"
-          : "The people behind DBC Germany",
-    title:
-      l === "de"
-        ? "Ein DACH-Team, eng verbunden mit DBC International."
-        : l === "fr"
-          ? "Une équipe DACH, étroitement liée à DBC International."
-          : "A DACH team, tightly linked to DBC International.",
-    intro:
-      l === "de"
-        ? "Wir sind ein kleines Team in Düsseldorf, das die Programme, Investitionen und Veranstaltungen von DBC an Gründer:innen in Deutschland, Österreich und der Schweiz bringt."
-        : l === "fr"
-          ? "Nous sommes une petite équipe à Düsseldorf, qui relie les programmes, investissements et événements DBC aux entrepreneurs d'Allemagne, d'Autriche et de Suisse."
-          : "We're a small team in Düsseldorf connecting DBC's programmes, investments, and events to founders in Germany, Austria, and Switzerland.",
+    eyebrow: {
+      en: "The people behind DBC Germany",
+      de: "Das Team hinter DBC Germany",
+      fr: "L'équipe DBC Germany",
+    }[l],
+    title: {
+      en: "A DACH team, tightly linked to DBC International.",
+      de: "Ein DACH-Team, eng verbunden mit DBC International.",
+      fr: "Une équipe DACH, étroitement liée à DBC International.",
+    }[l],
+    intro: {
+      en: "We're a small team in Düsseldorf connecting DBC's programmes, investments, and events to founders in Germany, Austria, and Switzerland.",
+      de: "Wir sind ein kleines Team in Düsseldorf, das die Programme, Investitionen und Veranstaltungen von DBC an Gründer:innen in Deutschland, Österreich und der Schweiz bringt.",
+      fr: "Nous sommes une petite équipe à Düsseldorf, qui relie les programmes, investissements et événements DBC aux entrepreneurs d'Allemagne, d'Autriche et de Suisse.",
+    }[l],
   };
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
-      <p className="text-xs font-semibold uppercase tracking-wider text-primary">
-        {copy.eyebrow}
-      </p>
-      <h1 className="mt-3 font-heading text-4xl font-bold tracking-tight sm:text-5xl">
-        {copy.title}
-      </h1>
-      <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
-        {copy.intro}
-      </p>
+    <Section>
+      <Container max="5xl">
+        <Eyebrow>{copy.eyebrow}</Eyebrow>
+        <Heading level={1} className="mt-3">
+          {copy.title}
+        </Heading>
+        <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
+          {copy.intro}
+        </p>
 
-      <div className="mt-14 grid gap-6 md:grid-cols-3">
-        {TEAM.map((m) => (
-          <article
-            key={m.name}
-            className="overflow-hidden rounded-2xl border border-border bg-card"
-          >
-            {m.photo && (
-              <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
-                <Image
-                  src={m.photo}
-                  alt=""
-                  fill
-                  sizes="(min-width: 768px) 33vw, 100vw"
-                  className="object-cover"
-                  referrerPolicy="no-referrer"
-                />
-              </div>
-            )}
-            <div className="p-6">
-              <h2 className="font-heading text-lg font-bold">{m.name}</h2>
-              <p className="mt-1 text-xs font-medium uppercase tracking-wider text-primary">
-                {m.role[l]}
-              </p>
-              <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                {m.bio[l]}
-              </p>
-              {m.email && (
-                <a
-                  href={`mailto:${m.email}`}
-                  className="mt-4 inline-flex text-sm font-semibold text-primary hover:text-primary/80"
-                >
-                  {m.email}
-                </a>
+        <div className="mt-14 grid gap-6 md:grid-cols-3">
+          {TEAM.map((m) => (
+            <Card key={m.name} padding="none" className="overflow-hidden">
+              {m.photo && (
+                <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
+                  <Image
+                    src={m.photo}
+                    alt=""
+                    fill
+                    sizes="(min-width: 768px) 33vw, 100vw"
+                    className="object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
               )}
-            </div>
-          </article>
-        ))}
-      </div>
-    </div>
+              <div className="p-6">
+                <Heading level={4}>{m.name}</Heading>
+                <Eyebrow className="mt-1">{m.role[l]}</Eyebrow>
+                <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                  {m.bio[l]}
+                </p>
+                {m.email && (
+                  <a
+                    href={`mailto:${m.email}`}
+                    className="mt-4 inline-flex text-sm font-semibold text-primary hover:text-primary/80"
+                  >
+                    {m.email}
+                  </a>
+                )}
+              </div>
+            </Card>
+          ))}
+        </div>
+      </Container>
+    </Section>
   );
 }

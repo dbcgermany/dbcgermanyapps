@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Container, Heading, Section } from "@dbc/ui";
 
 export async function generateMetadata({
   params,
@@ -110,11 +111,7 @@ export default async function CookiePolicyPage({
     }[l],
     name: { en: "Name", de: "Name", fr: "Nom" }[l],
     purpose: { en: "Purpose", de: "Zweck", fr: "Finalité" }[l],
-    duration: {
-      en: "Duration",
-      de: "Dauer",
-      fr: "Durée",
-    }[l],
+    duration: { en: "Duration", de: "Dauer", fr: "Durée" }[l],
     manage: {
       en: "How to manage",
       de: "Verwaltung",
@@ -134,55 +131,53 @@ export default async function CookiePolicyPage({
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
-      <h1 className="font-heading text-4xl font-bold tracking-tight sm:text-5xl">
-        {copy.title}
-      </h1>
-      <p className="mt-6 text-lg leading-8 text-muted-foreground">
-        {copy.intro}
-      </p>
+    <Section>
+      <Container max="3xl">
+        <Heading level={1}>{copy.title}</Heading>
+        <p className="mt-6 text-lg leading-8 text-muted-foreground">
+          {copy.intro}
+        </p>
 
-      <div className="mt-12 overflow-hidden rounded-2xl border border-border">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-muted/50 text-xs uppercase tracking-wider text-muted-foreground">
-            <tr>
-              <th className="px-4 py-3">{copy.name}</th>
-              <th className="px-4 py-3">{copy.purpose}</th>
-              <th className="px-4 py-3">{copy.duration}</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {COOKIES.map((c) => (
-              <tr key={c.name}>
-                <td className="px-4 py-4 align-top">
-                  <p className="font-mono text-xs font-semibold">{c.name}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {catLabel(c.category)}
-                  </p>
-                </td>
-                <td className="px-4 py-4 align-top text-sm text-muted-foreground">
-                  {c.purpose[l]}
-                </td>
-                <td className="px-4 py-4 align-top text-xs text-muted-foreground">
-                  {c.duration}
-                </td>
+        <div className="mt-12 overflow-hidden rounded-2xl border border-border">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-muted/50 text-xs uppercase tracking-wider text-muted-foreground">
+              <tr>
+                <th className="px-4 py-3">{copy.name}</th>
+                <th className="px-4 py-3">{copy.purpose}</th>
+                <th className="px-4 py-3">{copy.duration}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {COOKIES.map((c) => (
+                <tr key={c.name}>
+                  <td className="px-4 py-4 align-top">
+                    <p className="font-mono text-xs font-semibold">{c.name}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {catLabel(c.category)}
+                    </p>
+                  </td>
+                  <td className="px-4 py-4 align-top text-sm text-muted-foreground">
+                    {c.purpose[l]}
+                  </td>
+                  <td className="px-4 py-4 align-top text-xs text-muted-foreground">
+                    {c.duration}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
-      <section className="mt-10 space-y-3">
-        <h2 className="font-heading text-xl font-bold">
-          {copy.categoryAnalytics}
-        </h2>
-        <p className="text-sm text-muted-foreground">{copy.analyticsNote}</p>
-      </section>
+        <section className="mt-10 space-y-3">
+          <Heading level={3}>{copy.categoryAnalytics}</Heading>
+          <p className="text-sm text-muted-foreground">{copy.analyticsNote}</p>
+        </section>
 
-      <section className="mt-10 space-y-3">
-        <h2 className="font-heading text-xl font-bold">{copy.manage}</h2>
-        <p className="text-sm text-muted-foreground">{copy.manageBody}</p>
-      </section>
-    </div>
+        <section className="mt-10 space-y-3">
+          <Heading level={3}>{copy.manage}</Heading>
+          <p className="text-sm text-muted-foreground">{copy.manageBody}</p>
+        </section>
+      </Container>
+    </Section>
   );
 }
