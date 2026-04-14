@@ -146,6 +146,54 @@ export async function SiteFooter({ locale }: { locale: string }) {
               </li>
               <li>
                 <Link
+                  href={`/${locale}/team`}
+                  className="text-foreground hover:text-primary"
+                >
+                  {tNav("team")}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={`/${locale}/news`}
+                  className="text-foreground hover:text-primary"
+                >
+                  {tNav("news")}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={`/${locale}/press`}
+                  className="text-foreground hover:text-primary"
+                >
+                  {tNav("press")}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={`/${locale}/partners`}
+                  className="text-foreground hover:text-primary"
+                >
+                  {tNav("partners")}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={`/${locale}/careers`}
+                  className="text-foreground hover:text-primary"
+                >
+                  {tNav("careers")}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={`/${locale}/faq`}
+                  className="text-foreground hover:text-primary"
+                >
+                  {tNav("faq")}
+                </Link>
+              </li>
+              <li>
+                <Link
                   href={`/${locale}/contact`}
                   className="text-foreground hover:text-primary"
                 >
@@ -191,6 +239,14 @@ export async function SiteFooter({ locale }: { locale: string }) {
                   className="text-foreground hover:text-primary"
                 >
                   {t("imprint")}
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={`/${locale}/cookies`}
+                  className="text-foreground hover:text-primary"
+                >
+                  {tNav("cookies")}
                 </Link>
               </li>
             </ul>

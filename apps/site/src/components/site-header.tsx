@@ -32,7 +32,9 @@ export function SiteHeader({ locale }: { locale: string }) {
   const primary: Array<{ href: string; label: string }> = [
     { href: `/${locale}/services`, label: t("services") },
     { href: `/${locale}/events`, label: t("events") },
+    { href: `/${locale}/news`, label: t("news") },
     { href: `/${locale}/about`, label: t("about") },
+    { href: `/${locale}/team`, label: t("team") },
     { href: `/${locale}/contact`, label: t("contact") },
   ];
 

@@ -17,6 +17,8 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Scan", href: "/scan", icon: "\u29C9", minRole: "team_member" },
   { label: "Door Sale", href: "/door-sale", icon: "\u2637", minRole: "team_member" },
   { label: "Events", href: "/events", icon: "\u2605", minRole: "manager" },
+  { label: "News", href: "/news", icon: "\u270E", minRole: "manager" },
+  { label: "Applications", href: "/applications", icon: "\u2618", minRole: "manager" },
   { label: "Orders", href: "/orders", icon: "\u2606", minRole: "manager" },
   { label: "Tickets", href: "/tickets/send", icon: "\u2709", minRole: "manager" },
   { label: "Staff", href: "/staff", icon: "\u263A", minRole: "admin" },
