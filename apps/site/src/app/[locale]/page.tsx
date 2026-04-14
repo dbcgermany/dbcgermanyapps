@@ -9,32 +9,32 @@ export const revalidate = 60;
 const SERVICES = [
   {
     key: "incubation",
-    photo: DBC.photo.incubation,
+    icon: DBC.serviceIcon.incubation,
     href: (l: string) => `/${l}/services/incubation`,
   },
   {
     key: "courses",
-    photo: DBC.photo.courses,
+    icon: DBC.serviceIcon.courses,
     href: (l: string) => `/${l}/services/courses`,
   },
   {
     key: "investments",
-    photo: DBC.photo.investments,
+    icon: DBC.serviceIcon.investments,
     href: (l: string) => `/${l}/services/investments`,
   },
   {
     key: "mentorship",
-    photo: DBC.photo.mentorship,
+    icon: DBC.serviceIcon.mentorship,
     href: (l: string) => `/${l}/services/mentorship`,
   },
   {
     key: "events",
-    photo: DBC.photo.events,
+    icon: DBC.serviceIcon.events,
     href: (l: string) => `/${l}/events`,
   },
   {
     key: "elearning",
-    photo: DBC.photo.cohort,
+    icon: DBC.serviceIcon.elearning,
     href: (l: string) => `/${l}/services/elearning`,
   },
 ] as const;
@@ -153,36 +153,37 @@ export default async function HomePage({
               <Link
                 key={s.key}
                 href={s.href(locale)}
-                className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg"
+                className="group relative flex flex-col rounded-2xl border border-border bg-card p-8 transition-all hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg"
               >
-                <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
+                <div
+                  aria-hidden
+                  className="absolute inset-x-0 top-0 h-1 rounded-t-2xl bg-gradient-to-r from-primary to-accent opacity-0 transition-opacity group-hover:opacity-100"
+                />
+                <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
                   <Image
-                    src={s.photo}
+                    src={s.icon}
                     alt=""
-                    fill
-                    sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    width={32}
+                    height={32}
+                    className="h-8 w-8 object-contain"
                     referrerPolicy="no-referrer"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                 </div>
-                <div className="p-8">
-                  <h3 className="font-heading text-xl font-bold">
-                    {t(`services.${s.key}.title`)}
-                  </h3>
-                  <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                    {t(`services.${s.key}.short`)}
-                  </p>
-                  <span className="mt-6 inline-flex items-center gap-1 text-sm font-semibold text-primary">
-                    {t("services.learnMore")}
-                    <span
-                      aria-hidden
-                      className="transition-transform group-hover:translate-x-1"
-                    >
-                      &rarr;
-                    </span>
+                <h3 className="mt-6 font-heading text-xl font-bold">
+                  {t(`services.${s.key}.title`)}
+                </h3>
+                <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                  {t(`services.${s.key}.short`)}
+                </p>
+                <span className="mt-6 inline-flex items-center gap-1 text-sm font-semibold text-primary">
+                  {t("services.learnMore")}
+                  <span
+                    aria-hidden
+                    className="transition-transform group-hover:translate-x-1"
+                  >
+                    &rarr;
                   </span>
-                </div>
+                </span>
               </Link>
             ))}
           </div>
@@ -273,38 +274,23 @@ export default async function HomePage({
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="grid items-center gap-10 md:grid-cols-2">
             <div className="grid grid-cols-2 gap-3">
-              <div className="relative aspect-[3/4] overflow-hidden rounded-2xl">
-                <Image
-                  src={DBC.gallery[0]}
-                  alt=""
-                  fill
-                  sizes="(min-width: 768px) 25vw, 50vw"
-                  className="object-cover"
-                  referrerPolicy="no-referrer"
-                />
-              </div>
-              <div className="flex flex-col gap-3">
-                <div className="relative aspect-square overflow-hidden rounded-2xl">
-                  <Image
-                    src={DBC.gallery[1]}
-                    alt=""
-                    fill
-                    sizes="(min-width: 768px) 25vw, 50vw"
-                    className="object-cover"
-                    referrerPolicy="no-referrer"
-                  />
-                </div>
-                <div className="relative aspect-square overflow-hidden rounded-2xl">
-                  <Image
-                    src={DBC.gallery[2]}
-                    alt=""
-                    fill
-                    sizes="(min-width: 768px) 25vw, 50vw"
-                    className="object-cover"
-                    referrerPolicy="no-referrer"
-                  />
-                </div>
-              </div>
+              {[DBC.gallery[0], DBC.gallery[1], DBC.gallery[2], DBC.gallery[3]].map(
+                (src, i) => (
+                  <div
+                    key={i}
+                    className="relative aspect-[4/3] overflow-hidden rounded-2xl"
+                  >
+                    <Image
+                      src={src}
+                      alt=""
+                      fill
+                      sizes="(min-width: 768px) 25vw, 50vw"
+                      className="object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                  </div>
+                )
+              )}
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-primary">

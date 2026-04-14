@@ -64,7 +64,7 @@ export default async function AboutPage({
 
       <section className="py-20 sm:py-28">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <div className="grid items-center gap-12 md:grid-cols-2">
+          <div className="grid items-center gap-12 md:grid-cols-[2fr_1fr]">
             <div>
               <h2 className="font-heading text-2xl font-bold">
                 {locale === "de"
@@ -81,15 +81,28 @@ export default async function AboutPage({
                     : "Dr. Jean-Clément Diambilay founded the Diambilay Business Center in Lubumbashi on one simple conviction: Africa's greatest economic asset is its people. DBC Germany carries that conviction to Europe and brings every pillar of our ecosystem to the African diaspora."}
               </p>
             </div>
-            <div className="relative aspect-[4/3] overflow-hidden rounded-2xl">
-              <Image
-                src={DBC.photo.mentorship}
-                alt=""
-                fill
-                sizes="(min-width: 768px) 50vw, 100vw"
-                className="object-cover"
-                referrerPolicy="no-referrer"
-              />
+            <div
+              aria-hidden
+              className="relative flex aspect-square items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-primary/15 via-primary/10 to-accent/20 p-8"
+            >
+              <div className="absolute inset-0 [background:radial-gradient(60%_60%_at_20%_20%,rgba(200,16,46,0.18)_0%,transparent_60%)]" />
+              <div className="relative text-center">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/20 font-heading text-xl font-bold text-primary">
+                  JCD
+                </div>
+                <p className="mt-4 font-heading text-lg font-bold leading-tight">
+                  Dr. Jean-Clément
+                  <br />
+                  Diambilay
+                </p>
+                <p className="mt-1 text-xs uppercase tracking-wider text-muted-foreground">
+                  {locale === "de"
+                    ? "Gründer · DBC Group"
+                    : locale === "fr"
+                      ? "Fondateur · DBC Group"
+                      : "Founder · DBC Group"}
+                </p>
+              </div>
             </div>
           </div>
 

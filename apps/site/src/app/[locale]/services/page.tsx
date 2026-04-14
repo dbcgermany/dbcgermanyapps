@@ -98,46 +98,37 @@ export default async function ServicesHubPage({
             <Link
               key={s.key}
               href={s.href(locale)}
-              className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg"
+              className="group relative flex flex-col rounded-2xl border border-border bg-card p-10 transition-all hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg"
             >
-              <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
+              <div
+                aria-hidden
+                className="absolute inset-x-0 top-0 h-1 rounded-t-2xl bg-gradient-to-r from-primary to-accent opacity-0 transition-opacity group-hover:opacity-100"
+              />
+              <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-primary/10">
                 <Image
-                  src={s.photo}
+                  src={s.icon}
                   alt=""
-                  fill
-                  sizes="(min-width: 768px) 50vw, 100vw"
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  width={40}
+                  height={40}
+                  className="h-10 w-10 object-contain"
                   referrerPolicy="no-referrer"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
               </div>
-              <div className="p-10">
-                <div className="flex items-center gap-3">
-                  <Image
-                    src={s.icon}
-                    alt=""
-                    width={32}
-                    height={32}
-                    className="h-8 w-8 object-contain"
-                    referrerPolicy="no-referrer"
-                  />
-                  <h2 className="font-heading text-2xl font-bold">
-                    {t(`services.${s.key}.title`)}
-                  </h2>
-                </div>
-                <p className="mt-4 text-base leading-7 text-muted-foreground">
-                  {t(`services.${s.key}.long`)}
-                </p>
-                <span className="mt-8 inline-flex items-center gap-1 text-sm font-semibold text-primary">
-                  {t("services.learnMore")}
-                  <span
-                    aria-hidden
-                    className="transition-transform group-hover:translate-x-1"
-                  >
-                    &rarr;
-                  </span>
+              <h2 className="mt-6 font-heading text-2xl font-bold">
+                {t(`services.${s.key}.title`)}
+              </h2>
+              <p className="mt-4 text-base leading-7 text-muted-foreground">
+                {t(`services.${s.key}.long`)}
+              </p>
+              <span className="mt-8 inline-flex items-center gap-1 text-sm font-semibold text-primary">
+                {t("services.learnMore")}
+                <span
+                  aria-hidden
+                  className="transition-transform group-hover:translate-x-1"
+                >
+                  &rarr;
                 </span>
-              </div>
+              </span>
             </Link>
           ))}
         </div>

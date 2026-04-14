@@ -254,10 +254,23 @@ export async function SiteFooter({ locale }: { locale: string }) {
         </div>
 
         <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-border pt-8 text-xs text-muted-foreground sm:flex-row sm:items-center">
-          <p>
-            &copy; {new Date().getFullYear()} DBC Germany (UG i.G.).{" "}
-            {t("rights")}
-          </p>
+          <div>
+            <p>
+              &copy; {new Date().getFullYear()} DBC Germany (UG i.G.).{" "}
+              {t("rights")}
+            </p>
+            <p className="mt-1">
+              Developed by{" "}
+              <a
+                href="https://narikia.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-foreground/80 hover:text-primary"
+              >
+                Narikia UG
+              </a>
+            </p>
+          </div>
           <p>Düsseldorf · Essen · Lubumbashi</p>
         </div>
       </div>
