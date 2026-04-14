@@ -44,16 +44,16 @@ export function LocaleSwitch({
             href={hrefFor(l)}
             aria-label={`Switch language to ${l.toUpperCase()}`}
             aria-current={active ? "page" : undefined}
-            className={`inline-flex h-8 items-center gap-1.5 rounded-full px-3 transition-colors ${
+            title={l.toUpperCase()}
+            className={`inline-flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
               active
-                ? "bg-foreground text-background"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                ? "ring-2 ring-foreground"
+                : "opacity-70 hover:opacity-100"
             }`}
           >
-            <span aria-hidden className="text-sm leading-none">
-              {FLAGS[l] ?? ""}
+            <span aria-hidden className="text-base leading-none">
+              {FLAGS[l] ?? l.toUpperCase()}
             </span>
-            <span className="uppercase tracking-wider">{l}</span>
           </Link>
         );
       })}
