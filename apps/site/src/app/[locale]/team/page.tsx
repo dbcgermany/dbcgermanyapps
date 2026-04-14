@@ -56,13 +56,8 @@ function initialsOf(name: string) {
     .toUpperCase();
 }
 
-function accentFor(i: number) {
-  if (i % 3 === 0)
-    return "bg-gradient-to-br from-primary/20 via-primary/10 to-accent/20 text-primary";
-  if (i % 3 === 1)
-    return "bg-gradient-to-br from-accent/30 via-accent/15 to-primary/20 text-accent";
-  return "bg-gradient-to-br from-muted via-muted/60 to-background text-foreground";
-}
+const AVATAR_GRADIENT =
+  "bg-gradient-to-br from-primary/25 via-primary/10 to-accent/25 text-primary ring-1 ring-primary/20";
 
 export default async function TeamPage({
   params,
@@ -128,7 +123,7 @@ export default async function TeamPage({
           </Card>
         ) : (
           <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {members.map((m, i) => {
+            {members.map((m) => {
               const role = localeField(m, "role");
               return (
                 <Link
@@ -150,7 +145,7 @@ export default async function TeamPage({
                       </div>
                     ) : (
                       <div
-                        className={`flex h-20 w-20 items-center justify-center rounded-full font-heading text-2xl font-bold ${accentFor(i)}`}
+                        className={`flex h-20 w-20 items-center justify-center rounded-full font-heading text-2xl font-bold ${AVATAR_GRADIENT}`}
                         aria-hidden
                       >
                         {initialsOf(m.name)}
