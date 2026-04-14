@@ -67,6 +67,53 @@ export async function createEmailSequence(formData: FormData) {
   return { success: true };
 }
 
+export async function updateEmailSequence(
+  sequenceId: string,
+  formData: FormData
+) {
+  const user = await requireRole("manager");
+  const supabase = await createServerClient();
+
+  const eventId = formData.get("event_id") as string;
+  const locale = formData.get("locale") as string;
+  const subjectEn = formData.get("subject_en") as string;
+  const bodyEn = formData.get("body_en") as string;
+
+  const delayDays = parseInt(formData.get("delay_days") as string, 10);
+  if (isNaN(delayDays) || delayDays < 0) {
+    return { error: "delay_days must be a non-negative integer" };
+  }
+
+  const seqData = {
+    delay_days: delayDays,
+    subject_en: subjectEn,
+    subject_de: (formData.get("subject_de") as string) || subjectEn,
+    subject_fr: (formData.get("subject_fr") as string) || subjectEn,
+    body_en: bodyEn,
+    body_de: (formData.get("body_de") as string) || bodyEn,
+    body_fr: (formData.get("body_fr") as string) || bodyEn,
+    sort_order: parseInt((formData.get("sort_order") as string) || "0", 10),
+  };
+
+  const { error } = await supabase
+    .from("event_email_sequences")
+    .update(seqData)
+    .eq("id", sequenceId);
+
+  if (error) return { error: error.message };
+
+  await supabase.from("audit_log").insert({
+    user_id: user.userId,
+    action: "update_email_sequence",
+    entity_type: "event_email_sequences",
+    entity_id: sequenceId,
+    details: { event_id: eventId, delay_days: delayDays },
+  });
+
+  revalidatePath(`/${locale}/events/${eventId}/emails`);
+  return { success: true };
+}
+
 export async function deleteEmailSequence(
   sequenceId: string,
   eventId: string,

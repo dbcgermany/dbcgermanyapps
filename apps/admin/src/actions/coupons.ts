@@ -80,6 +80,102 @@ export async function createCoupon(formData: FormData) {
   return { success: true };
 }
 
+export async function updateCoupon(couponId: string, formData: FormData) {
+  const user = await requireRole("manager");
+  const supabase = await createServerClient();
+
+  const eventId = formData.get("event_id") as string;
+  const locale = formData.get("locale") as string;
+  const code = (formData.get("code") as string).toUpperCase().trim();
+  const discountType = formData.get("discount_type") as string;
+
+  let discountValue: number;
+  if (discountType === "percentage") {
+    discountValue = parseInt(formData.get("discount_value") as string, 10);
+    if (discountValue < 1 || discountValue > 100) {
+      return { error: "Percentage must be between 1 and 100" };
+    }
+  } else {
+    discountValue = Math.round(
+      parseFloat(formData.get("discount_value") as string) * 100
+    );
+  }
+
+  const couponData = {
+    code,
+    discount_type: discountType,
+    discount_value: discountValue,
+    max_uses: formData.get("max_uses")
+      ? parseInt(formData.get("max_uses") as string, 10)
+      : null,
+    valid_from: (formData.get("valid_from") as string) || null,
+    valid_until: (formData.get("valid_until") as string) || null,
+  };
+
+  const { error } = await supabase
+    .from("coupons")
+    .update(couponData)
+    .eq("id", couponId);
+
+  if (error) {
+    if (error.code === "23505") {
+      return { error: `Coupon code "${code}" already exists.` };
+    }
+    return { error: error.message };
+  }
+
+  await supabase.from("audit_log").insert({
+    user_id: user.userId,
+    action: "update_coupon",
+    entity_type: "coupons",
+    entity_id: couponId,
+    details: { code, event_id: eventId },
+  });
+
+  revalidatePath(`/${locale}/events/${eventId}/coupons`);
+  return { success: true };
+}
+
+export async function deleteCoupon(
+  couponId: string,
+  eventId: string,
+  locale: string
+) {
+  const user = await requireRole("manager");
+  const supabase = await createServerClient();
+
+  const { data: coupon } = await supabase
+    .from("coupons")
+    .select("code, times_used")
+    .eq("id", couponId)
+    .single();
+
+  if (coupon && coupon.times_used > 0) {
+    return {
+      error:
+        "Cannot delete a coupon that has been used. Deactivate it instead.",
+    };
+  }
+
+  const { error } = await supabase
+    .from("coupons")
+    .delete()
+    .eq("id", couponId);
+
+  if (error) return { error: error.message };
+
+  await supabase.from("audit_log").insert({
+    user_id: user.userId,
+    action: "delete_coupon",
+    entity_type: "coupons",
+    entity_id: couponId,
+    details: { code: coupon?.code, event_id: eventId },
+  });
+
+  revalidatePath(`/${locale}/events/${eventId}/coupons`);
+  return { success: true };
+}
+
 export async function toggleCouponActive(
   couponId: string,
   eventId: string,

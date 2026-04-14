@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { getTiers, deleteTier } from "@/actions/tiers";
+import { getTiers } from "@/actions/tiers";
 import { TierForm } from "./tier-form";
+import { TierRow } from "./tier-row";
 
 export default async function TiersPage({
   params,
@@ -30,39 +31,12 @@ export default async function TiersPage({
       {tiers.length > 0 && (
         <div className="mt-6 space-y-3">
           {tiers.map((tier) => (
-            <div
+            <TierRow
               key={tier.id}
-              className="flex items-center justify-between rounded-lg border border-border p-4"
-            >
-              <div>
-                <div className="flex items-center gap-2">
-                  <p className="font-medium">{tier.name_en}</p>
-                  {!tier.is_public && (
-                    <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
-                      Hidden
-                    </span>
-                  )}
-                </div>
-                <p className="mt-0.5 text-sm text-muted-foreground">
-                  &euro;{(tier.price_cents / 100).toFixed(2)} &middot;{" "}
-                  {tier.quantity_sold}
-                  {tier.max_quantity ? ` / ${tier.max_quantity}` : ""} sold
-                </p>
-              </div>
-              <form
-                action={async () => {
-                  "use server";
-                  await deleteTier(tier.id, eventId, locale);
-                }}
-              >
-                <button
-                  type="submit"
-                  className="text-xs text-red-500 hover:text-red-700"
-                >
-                  Delete
-                </button>
-              </form>
-            </div>
+              tier={tier}
+              eventId={eventId}
+              locale={locale}
+            />
           ))}
         </div>
       )}

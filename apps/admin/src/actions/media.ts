@@ -64,6 +64,49 @@ export async function addEventMedia(formData: FormData) {
   return { success: true };
 }
 
+export async function updateEventMedia(mediaId: string, formData: FormData) {
+  const user = await requireRole("manager");
+  const supabase = await createServerClient();
+
+  const eventId = formData.get("event_id") as string;
+  const locale = formData.get("locale") as string;
+  const title = ((formData.get("title") as string) || "").trim();
+  const sortOrder = parseInt((formData.get("sort_order") as string) || "0", 10);
+  const url = ((formData.get("url") as string) || "").trim();
+
+  if (url) {
+    try {
+      new URL(url);
+    } catch {
+      return { error: "Invalid URL" };
+    }
+  }
+
+  const patch: Record<string, unknown> = {
+    title: title || null,
+    sort_order: sortOrder,
+  };
+  if (url) patch.url = url;
+
+  const { error } = await supabase
+    .from("event_media")
+    .update(patch)
+    .eq("id", mediaId);
+
+  if (error) return { error: error.message };
+
+  await supabase.from("audit_log").insert({
+    user_id: user.userId,
+    action: "update_event_media",
+    entity_type: "event_media",
+    entity_id: mediaId,
+    details: { event_id: eventId, title },
+  });
+
+  revalidatePath(`/${locale}/events/${eventId}/media`);
+  return { success: true };
+}
+
 export async function deleteEventMedia(
   mediaId: string,
   eventId: string,

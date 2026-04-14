@@ -1,10 +1,7 @@
 import Link from "next/link";
-import {
-  getEmailSequences,
-  deleteEmailSequence,
-  dispatchEmailSequence,
-} from "@/actions/email-sequences";
+import { getEmailSequences } from "@/actions/email-sequences";
 import { SequenceForm } from "./sequence-form";
+import { EmailRow } from "./email-row";
 
 export default async function EmailsPage({
   params,
@@ -43,60 +40,12 @@ export default async function EmailsPage({
       {sequences.length > 0 && (
         <div className="mt-6 space-y-3">
           {sequences.map((seq) => (
-            <div
+            <EmailRow
               key={seq.id}
-              className="rounded-lg border border-border p-4"
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                      +{seq.delay_days}d
-                    </span>
-                    <p className="font-medium">{seq.subject_en}</p>
-                    {seq.sent_at && (
-                      <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                        Sent
-                      </span>
-                    )}
-                  </div>
-                  <p className="mt-2 text-xs text-muted-foreground whitespace-pre-wrap line-clamp-3">
-                    {seq.body_en}
-                  </p>
-                </div>
-
-                <div className="flex flex-col gap-1 shrink-0">
-                  {!seq.sent_at && (
-                    <form
-                      action={async () => {
-                        "use server";
-                        await dispatchEmailSequence(seq.id, eventId, locale);
-                      }}
-                    >
-                      <button
-                        type="submit"
-                        className="text-xs text-primary hover:text-primary/80"
-                      >
-                        Send now
-                      </button>
-                    </form>
-                  )}
-                  <form
-                    action={async () => {
-                      "use server";
-                      await deleteEmailSequence(seq.id, eventId, locale);
-                    }}
-                  >
-                    <button
-                      type="submit"
-                      className="text-xs text-red-500 hover:text-red-700"
-                    >
-                      Delete
-                    </button>
-                  </form>
-                </div>
-              </div>
-            </div>
+              seq={seq}
+              eventId={eventId}
+              locale={locale}
+            />
           ))}
         </div>
       )}

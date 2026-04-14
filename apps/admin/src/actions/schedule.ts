@@ -63,6 +63,50 @@ export async function createScheduleItem(formData: FormData) {
   return { success: true };
 }
 
+export async function updateScheduleItem(
+  itemId: string,
+  formData: FormData
+) {
+  const user = await requireRole("manager");
+  const supabase = await createServerClient();
+
+  const eventId = formData.get("event_id") as string;
+  const locale = formData.get("locale") as string;
+  const titleEn = formData.get("title_en") as string;
+
+  const itemData = {
+    title_en: titleEn,
+    title_de: (formData.get("title_de") as string) || titleEn,
+    title_fr: (formData.get("title_fr") as string) || titleEn,
+    description_en: formData.get("description_en") as string,
+    description_de: formData.get("description_de") as string,
+    description_fr: formData.get("description_fr") as string,
+    starts_at: formData.get("starts_at") as string,
+    ends_at: formData.get("ends_at") as string,
+    speaker_name: formData.get("speaker_name") as string,
+    speaker_title: formData.get("speaker_title") as string,
+    sort_order: parseInt((formData.get("sort_order") as string) || "0", 10),
+  };
+
+  const { error } = await supabase
+    .from("event_schedule_items")
+    .update(itemData)
+    .eq("id", itemId);
+
+  if (error) return { error: error.message };
+
+  await supabase.from("audit_log").insert({
+    user_id: user.userId,
+    action: "update_schedule_item",
+    entity_type: "event_schedule_items",
+    entity_id: itemId,
+    details: { title: titleEn, event_id: eventId },
+  });
+
+  revalidatePath(`/${locale}/events/${eventId}/schedule`);
+  return { success: true };
+}
+
 export async function deleteScheduleItem(
   itemId: string,
   eventId: string,

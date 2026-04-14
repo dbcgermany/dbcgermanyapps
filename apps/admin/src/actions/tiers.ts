@@ -68,6 +68,86 @@ export async function createTier(formData: FormData) {
   return { success: true };
 }
 
+export async function updateTier(tierId: string, formData: FormData) {
+  const user = await requireRole("manager");
+  const supabase = await createServerClient();
+
+  const eventId = formData.get("event_id") as string;
+  const locale = formData.get("locale") as string;
+  const nameEn = formData.get("name_en") as string;
+
+  const tierData = {
+    name_en: nameEn,
+    name_de: (formData.get("name_de") as string) || nameEn,
+    name_fr: (formData.get("name_fr") as string) || nameEn,
+    description_en: formData.get("description_en") as string,
+    description_de: formData.get("description_de") as string,
+    description_fr: formData.get("description_fr") as string,
+    price_cents: Math.round(
+      parseFloat(formData.get("price") as string) * 100
+    ),
+    max_quantity: formData.get("max_quantity")
+      ? parseInt(formData.get("max_quantity") as string, 10)
+      : null,
+    sales_start_at: (formData.get("sales_start_at") as string) || null,
+    sales_end_at: (formData.get("sales_end_at") as string) || null,
+    sort_order: parseInt((formData.get("sort_order") as string) || "0", 10),
+  };
+
+  const { error } = await supabase
+    .from("ticket_tiers")
+    .update(tierData)
+    .eq("id", tierId);
+
+  if (error) return { error: error.message };
+
+  await supabase.from("audit_log").insert({
+    user_id: user.userId,
+    action: "update_tier",
+    entity_type: "ticket_tiers",
+    entity_id: tierId,
+    details: { name: nameEn, event_id: eventId },
+  });
+
+  revalidatePath(`/${locale}/events/${eventId}/tiers`);
+  return { success: true };
+}
+
+export async function toggleTierPublic(
+  tierId: string,
+  eventId: string,
+  locale: string
+) {
+  const user = await requireRole("manager");
+  const supabase = await createServerClient();
+
+  const { data: tier } = await supabase
+    .from("ticket_tiers")
+    .select("is_public, name_en")
+    .eq("id", tierId)
+    .single();
+
+  if (!tier) return { error: "Tier not found" };
+
+  const { error } = await supabase
+    .from("ticket_tiers")
+    .update({ is_public: !tier.is_public })
+    .eq("id", tierId);
+
+  if (error) return { error: error.message };
+
+  await supabase.from("audit_log").insert({
+    user_id: user.userId,
+    action: tier.is_public ? "hide_tier" : "publish_tier",
+    entity_type: "ticket_tiers",
+    entity_id: tierId,
+    details: { name: tier.name_en, event_id: eventId },
+  });
+
+  revalidatePath(`/${locale}/events/${eventId}/tiers`);
+  return { success: true };
+}
+
 export async function deleteTier(tierId: string, eventId: string, locale: string) {
   const user = await requireRole("manager");
   const supabase = await createServerClient();

@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { getEventMedia, deleteEventMedia } from "@/actions/media";
+import { getEventMedia } from "@/actions/media";
 import { MediaForm } from "./media-form";
+import { MediaRow } from "./media-row";
 
 export default async function MediaPage({
   params,
@@ -9,12 +10,6 @@ export default async function MediaPage({
 }) {
   const { locale, id: eventId } = await params;
   const media = await getEventMedia(eventId);
-
-  const typeIcons: Record<string, string> = {
-    photo: "\u{1F4F7}",
-    video: "\u{1F3AC}",
-    link: "\u{1F517}",
-  };
 
   return (
     <div className="p-8">
@@ -41,38 +36,12 @@ export default async function MediaPage({
       {media.length > 0 && (
         <div className="mt-6 grid gap-3 sm:grid-cols-2">
           {media.map((item) => (
-            <div
+            <MediaRow
               key={item.id}
-              className="flex items-start gap-3 rounded-lg border border-border p-4"
-            >
-              <span className="text-xl">{typeIcons[item.type]}</span>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium truncate">
-                  {item.title || item.type}
-                </p>
-                <a
-                  href={item.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-0.5 block truncate text-xs text-muted-foreground hover:text-primary"
-                >
-                  {item.url}
-                </a>
-              </div>
-              <form
-                action={async () => {
-                  "use server";
-                  await deleteEventMedia(item.id, eventId, locale);
-                }}
-              >
-                <button
-                  type="submit"
-                  className="shrink-0 text-xs text-red-500 hover:text-red-700"
-                >
-                  Delete
-                </button>
-              </form>
-            </div>
+              item={item}
+              eventId={eventId}
+              locale={locale}
+            />
           ))}
         </div>
       )}
