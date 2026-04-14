@@ -90,6 +90,10 @@ function SetPasswordForm({ locale }: { locale: string }) {
       return;
     }
 
+    // Clear the one-time flag set when the account was bootstrapped with a
+    // temporary password, so the middleware stops redirecting here on future logins.
+    await supabase.auth.updateUser({ data: { must_change_password: false } });
+
     setStage("done");
     setTimeout(() => {
       router.push(`/${locale}/dashboard`);

@@ -54,7 +54,17 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (user && isPublicPath) {
+  const mustChangePassword =
+    user?.user_metadata?.must_change_password === true;
+
+  if (user && mustChangePassword && pathWithoutLocale !== "/set-password") {
+    // Temporary password in use — force the user to /set-password until they change it.
+    const url = request.nextUrl.clone();
+    url.pathname = `/${locale}/set-password`;
+    return NextResponse.redirect(url);
+  }
+
+  if (user && isPublicPath && !mustChangePassword) {
     // Already authenticated — redirect to dashboard
     const url = request.nextUrl.clone();
     url.pathname = `/${locale}/dashboard`;
