@@ -3,6 +3,7 @@
 import { Fragment, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { AuditLogEntry } from "@/actions/audit";
+import { CsvExportButton } from "@/components/csv-export-button";
 
 interface FilterState {
   action: string;
@@ -175,9 +176,34 @@ export function AuditLogClient({
     <div className="mt-6">
       {/* Filters */}
       <div className="rounded-lg border border-border p-4">
-        <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          {t.filters}
-        </p>
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            {t.filters}
+          </p>
+          <CsvExportButton
+            rows={rows.map((r) => ({
+              timestamp: r.createdAt,
+              user_email: r.userEmail ?? "",
+              user_display: r.userDisplayName ?? "",
+              action: r.action,
+              entity_type: r.entityType,
+              entity_id: r.entityId ?? "",
+              ip: r.ipAddress ?? "",
+              details: r.details ? JSON.stringify(r.details) : "",
+            }))}
+            filename={`audit-log-${new Date().toISOString().slice(0, 10)}.csv`}
+            headers={[
+              { key: "timestamp", label: "Timestamp" },
+              { key: "user_email", label: "User email" },
+              { key: "user_display", label: "User" },
+              { key: "action", label: "Action" },
+              { key: "entity_type", label: "Entity" },
+              { key: "entity_id", label: "Entity ID" },
+              { key: "ip", label: "IP" },
+              { key: "details", label: "Details (JSON)" },
+            ]}
+          />
+        </div>
         <div className="flex flex-wrap items-center gap-3">
           <select
             value={currentActionFilter}

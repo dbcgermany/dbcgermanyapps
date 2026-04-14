@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getEvent, togglePublish } from "@/actions/events";
+import { getEvent, togglePublish, duplicateEvent } from "@/actions/events";
 import { DeleteEventButton } from "./delete-button";
 
 export default async function EventDetailPage({
@@ -62,6 +62,20 @@ export default async function EventDetailPage({
               className="rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
             >
               {event.is_published ? "Unpublish" : "Publish"}
+            </button>
+          </form>
+          <form
+            action={async () => {
+              "use server";
+              await duplicateEvent(id, locale);
+            }}
+          >
+            <button
+              type="submit"
+              className="rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
+              title="Duplicate this event as a new draft (dates shifted +1 year)"
+            >
+              Duplicate
             </button>
           </form>
           <Link

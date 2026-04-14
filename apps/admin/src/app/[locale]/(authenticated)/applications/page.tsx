@@ -1,4 +1,5 @@
 import { getIncubationApplications } from "@/actions/applications";
+import { CsvExportButton } from "@/components/csv-export-button";
 import { StatusSelect } from "./status-select";
 
 export default async function ApplicationsPage({
@@ -9,14 +10,58 @@ export default async function ApplicationsPage({
   const { locale } = await params;
   const apps = await getIncubationApplications();
 
+  const csvRows = apps.map((a) => ({
+    id: a.id,
+    created_at: a.created_at,
+    founder_name: a.founder_name,
+    founder_email: a.founder_email,
+    founder_phone: a.founder_phone ?? "",
+    country: a.country ?? "",
+    locale: a.locale,
+    company_name: a.company_name ?? "",
+    company_website: a.company_website ?? "",
+    company_stage: a.company_stage ?? "",
+    funding_needed_eur:
+      a.funding_needed_cents != null
+        ? (a.funding_needed_cents / 100).toFixed(2)
+        : "",
+    status: a.status,
+    reviewer_notes: a.reviewer_notes ?? "",
+    pitch: a.pitch,
+  }));
+
   return (
     <div className="p-8">
-      <h1 className="font-heading text-2xl font-bold">
-        Incubation applications
-      </h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Submissions from the public form at /services/incubation.
-      </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="font-heading text-2xl font-bold">
+            Incubation applications
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Submissions from the public form at /services/incubation.
+          </p>
+        </div>
+        <CsvExportButton
+          rows={csvRows}
+          filename={`applications-${new Date().toISOString().slice(0, 10)}.csv`}
+          headers={[
+            { key: "id", label: "ID" },
+            { key: "created_at", label: "Received" },
+            { key: "founder_name", label: "Founder" },
+            { key: "founder_email", label: "Email" },
+            { key: "founder_phone", label: "Phone" },
+            { key: "country", label: "Country" },
+            { key: "locale", label: "Locale" },
+            { key: "company_name", label: "Company" },
+            { key: "company_website", label: "Website" },
+            { key: "company_stage", label: "Stage" },
+            { key: "funding_needed_eur", label: "Funding sought (€)" },
+            { key: "status", label: "Status" },
+            { key: "reviewer_notes", label: "Notes" },
+            { key: "pitch", label: "Pitch" },
+          ]}
+        />
+      </div>
 
       {apps.length === 0 ? (
         <p className="mt-12 rounded-xl border border-dashed border-border bg-background p-12 text-center text-muted-foreground">

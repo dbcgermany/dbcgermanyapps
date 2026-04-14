@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { refundOrder } from "@/actions/orders";
+import { CsvExportButton } from "@/components/csv-export-button";
 
 interface Order {
   id: string;
@@ -104,31 +105,62 @@ export function OrdersClient({
 
   return (
     <div className="mt-6">
-      {/* Filters */}
-      <div className="flex flex-wrap gap-3">
-        <select
-          value={currentEventFilter}
-          onChange={(e) => updateFilters(e.target.value, undefined)}
-          className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-        >
-          <option value="">{t.all}</option>
-          {events.map((e) => (
-            <option key={e.id} value={e.id}>
-              {e.title}
-            </option>
-          ))}
-        </select>
-        <select
-          value={currentStatusFilter}
-          onChange={(e) => updateFilters(undefined, e.target.value)}
-          className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-        >
-          {STATUS_OPTIONS.map((s) => (
-            <option key={s || "all"} value={s}>
-              {s === "" ? t.allStatus : t[s as keyof typeof t]}
-            </option>
-          ))}
-        </select>
+      {/* Filters + export */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap gap-3">
+          <select
+            value={currentEventFilter}
+            onChange={(e) => updateFilters(e.target.value, undefined)}
+            className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          >
+            <option value="">{t.all}</option>
+            {events.map((e) => (
+              <option key={e.id} value={e.id}>
+                {e.title}
+              </option>
+            ))}
+          </select>
+          <select
+            value={currentStatusFilter}
+            onChange={(e) => updateFilters(undefined, e.target.value)}
+            className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          >
+            {STATUS_OPTIONS.map((s) => (
+              <option key={s || "all"} value={s}>
+                {s === "" ? t.allStatus : t[s as keyof typeof t]}
+              </option>
+            ))}
+          </select>
+        </div>
+        <CsvExportButton
+          filename={`orders-${new Date().toISOString().slice(0, 10)}.csv`}
+          rows={orders.map((o) => ({
+            id: o.id,
+            event: o.eventTitle,
+            recipient_name: o.recipientName,
+            recipient_email: o.recipientEmail,
+            status: o.status,
+            acquisition_type: o.acquisitionType,
+            payment_method: o.paymentMethod ?? "",
+            total_eur: (o.totalCents / 100).toFixed(2),
+            stripe_payment_intent: o.stripePaymentIntentId ?? "",
+            created_at: o.createdAt,
+            email_sent_at: o.emailSentAt ?? "",
+          }))}
+          headers={[
+            { key: "id", label: "Order ID" },
+            { key: "event", label: "Event" },
+            { key: "recipient_name", label: "Recipient" },
+            { key: "recipient_email", label: "Email" },
+            { key: "status", label: "Status" },
+            { key: "acquisition_type", label: "Acquisition" },
+            { key: "payment_method", label: "Payment" },
+            { key: "total_eur", label: "Total (€)" },
+            { key: "stripe_payment_intent", label: "Stripe PI" },
+            { key: "created_at", label: "Created at" },
+            { key: "email_sent_at", label: "Email sent at" },
+          ]}
+        />
       </div>
 
       {error && (

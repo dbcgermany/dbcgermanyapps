@@ -2,6 +2,18 @@
 
 import { createServerClient, requireRole } from "@dbc/supabase/server";
 import { createClient } from "@supabase/supabase-js";
+import { revalidatePath } from "next/cache";
+
+export interface SiteSettings {
+  support_email: string;
+  press_email: string;
+  maintenance_mode: boolean;
+  maintenance_message_en: string;
+  maintenance_message_de: string;
+  maintenance_message_fr: string;
+  default_currency: string;
+  updated_at: string;
+}
 
 export interface WebhookLogRow {
   id: string;
@@ -193,5 +205,60 @@ export async function deleteBuyerPII(
     },
   });
 
+  return { success: true };
+}
+
+export async function getSiteSettings(): Promise<SiteSettings | null> {
+  await requireRole("admin");
+  const supabase = await createServerClient();
+  const { data } = await supabase
+    .from("site_settings")
+    .select(
+      "support_email, press_email, maintenance_mode, maintenance_message_en, maintenance_message_de, maintenance_message_fr, default_currency, updated_at"
+    )
+    .eq("id", 1)
+    .maybeSingle();
+  return (data as SiteSettings | null) ?? null;
+}
+
+export async function updateSiteSettings(formData: FormData) {
+  const user = await requireRole("admin");
+  const supabase = await createServerClient();
+
+  const patch = {
+    support_email: ((formData.get("support_email") as string) || "").trim(),
+    press_email: ((formData.get("press_email") as string) || "").trim(),
+    maintenance_mode: formData.get("maintenance_mode") === "on",
+    maintenance_message_en:
+      ((formData.get("maintenance_message_en") as string) || "").trim(),
+    maintenance_message_de:
+      ((formData.get("maintenance_message_de") as string) || "").trim(),
+    maintenance_message_fr:
+      ((formData.get("maintenance_message_fr") as string) || "").trim(),
+    default_currency:
+      ((formData.get("default_currency") as string) || "EUR").trim(),
+    updated_by: user.userId,
+  };
+
+  if (!patch.support_email.includes("@")) {
+    return { error: "Support email must be a valid address." };
+  }
+
+  const { error } = await supabase
+    .from("site_settings")
+    .update(patch)
+    .eq("id", 1);
+  if (error) return { error: error.message };
+
+  await supabase.from("audit_log").insert({
+    user_id: user.userId,
+    action: "update_site_settings",
+    entity_type: "site_settings",
+    entity_id: "1",
+    details: { maintenance_mode: patch.maintenance_mode },
+  });
+
+  // Revalidate every locale's root so maintenance-mode toggle shows up fast.
+  revalidatePath("/", "layout");
   return { success: true };
 }

@@ -1,6 +1,7 @@
 import { requireRole } from "@dbc/supabase/server";
-import { getRecentWebhooks } from "@/actions/settings";
+import { getRecentWebhooks, getSiteSettings } from "@/actions/settings";
 import { SettingsClient } from "./settings-client";
+import { SiteSettingsForm } from "./site-settings-form";
 
 export default async function SettingsPage({
   params,
@@ -9,10 +10,13 @@ export default async function SettingsPage({
 }) {
   const { locale } = await params;
   const user = await requireRole("admin");
-  const webhooks = await getRecentWebhooks(50);
+  const [webhooks, siteSettings] = await Promise.all([
+    getRecentWebhooks(50),
+    getSiteSettings(),
+  ]);
 
   return (
-    <div className="p-8">
+    <div className="p-8 space-y-10">
       <h1 className="font-heading text-2xl font-bold">
         {locale === "de"
           ? "Einstellungen"
@@ -20,6 +24,10 @@ export default async function SettingsPage({
             ? "Param\u00e8tres"
             : "Settings"}
       </h1>
+
+      {siteSettings && (
+        <SiteSettingsForm locale={locale} initial={siteSettings} />
+      )}
 
       <SettingsClient
         locale={locale}
