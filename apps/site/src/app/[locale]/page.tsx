@@ -9,31 +9,37 @@ export const revalidate = 60;
 const SERVICES = [
   {
     key: "incubation",
+    photo: DBC.photo.incubation,
     icon: DBC.serviceIcon.incubation,
     href: (l: string) => `/${l}/services/incubation`,
   },
   {
     key: "courses",
+    photo: DBC.photo.courses,
     icon: DBC.serviceIcon.courses,
     href: (l: string) => `/${l}/services/courses`,
   },
   {
     key: "investments",
+    photo: DBC.photo.incubationSidebar,
     icon: DBC.serviceIcon.investments,
     href: (l: string) => `/${l}/services/investments`,
   },
   {
     key: "mentorship",
+    photo: DBC.photo.mentorship,
     icon: DBC.serviceIcon.mentorship,
     href: (l: string) => `/${l}/services/mentorship`,
   },
   {
     key: "events",
+    photo: DBC.photo.eventFallback,
     icon: DBC.serviceIcon.events,
     href: (l: string) => `/${l}/events`,
   },
   {
     key: "elearning",
+    photo: DBC.photo.cohort,
     icon: DBC.serviceIcon.elearning,
     href: (l: string) => `/${l}/services/elearning`,
   },
@@ -153,37 +159,46 @@ export default async function HomePage({
               <Link
                 key={s.key}
                 href={s.href(locale)}
-                className="group relative flex flex-col rounded-2xl border border-border bg-card p-8 transition-all hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg"
+                className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg"
               >
-                <div
-                  aria-hidden
-                  className="absolute inset-x-0 top-0 h-1 rounded-t-2xl bg-gradient-to-r from-primary to-accent opacity-0 transition-opacity group-hover:opacity-100"
-                />
-                <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
+                <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
                   <Image
-                    src={s.icon}
+                    src={s.photo}
                     alt=""
-                    width={32}
-                    height={32}
-                    className="h-8 w-8 object-contain"
+                    fill
+                    sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
                     referrerPolicy="no-referrer"
                   />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
+                  <div className="absolute bottom-3 left-3 flex h-12 w-12 items-center justify-center rounded-xl border border-white/30 bg-background/90 backdrop-blur">
+                    <Image
+                      src={s.icon}
+                      alt=""
+                      width={28}
+                      height={28}
+                      className="h-7 w-7 object-contain"
+                      referrerPolicy="no-referrer"
+                    />
+                  </div>
                 </div>
-                <h3 className="mt-6 font-heading text-xl font-bold">
-                  {t(`services.${s.key}.title`)}
-                </h3>
-                <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                  {t(`services.${s.key}.short`)}
-                </p>
-                <span className="mt-6 inline-flex items-center gap-1 text-sm font-semibold text-primary">
-                  {t("services.learnMore")}
-                  <span
-                    aria-hidden
-                    className="transition-transform group-hover:translate-x-1"
-                  >
-                    &rarr;
+                <div className="flex flex-1 flex-col p-8">
+                  <h3 className="font-heading text-xl font-bold">
+                    {t(`services.${s.key}.title`)}
+                  </h3>
+                  <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                    {t(`services.${s.key}.short`)}
+                  </p>
+                  <span className="mt-6 inline-flex items-center gap-1 text-sm font-semibold text-primary">
+                    {t("services.learnMore")}
+                    <span
+                      aria-hidden
+                      className="transition-transform group-hover:translate-x-1"
+                    >
+                      &rarr;
+                    </span>
                   </span>
-                </span>
+                </div>
               </Link>
             ))}
           </div>
@@ -215,9 +230,40 @@ export default async function HomePage({
           </div>
 
           {events.length === 0 ? (
-            <p className="mt-12 rounded-xl border border-dashed border-border bg-background p-12 text-center text-muted-foreground">
-              {t("events.noUpcoming")}
-            </p>
+            <div className="mt-12 grid overflow-hidden rounded-2xl border border-border bg-background md:grid-cols-2">
+              <div className="relative aspect-[4/3] w-full md:aspect-auto">
+                <Image
+                  src={DBC.photo.eventFallback}
+                  alt=""
+                  fill
+                  sizes="(min-width: 768px) 50vw, 100vw"
+                  className="object-cover"
+                  referrerPolicy="no-referrer"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-background/10 to-background/80" />
+              </div>
+              <div className="flex flex-col justify-center p-8 sm:p-12">
+                <p className="text-xs font-semibold uppercase tracking-wider text-primary">
+                  Richesses d&apos;Afrique 2026
+                </p>
+                <h3 className="mt-3 font-heading text-2xl font-bold sm:text-3xl">
+                  {locale === "de"
+                    ? "13. Juni 2026 · Essen"
+                    : locale === "fr"
+                      ? "13 juin 2026 · Essen"
+                      : "13 June 2026 · Essen"}
+                </h3>
+                <p className="mt-4 text-sm leading-6 text-muted-foreground">
+                  {t("events.noUpcoming")}
+                </p>
+                <a
+                  href={ticketsUrl}
+                  className="mt-6 inline-flex w-fit rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90"
+                >
+                  {t("events.cta")}
+                </a>
+              </div>
+            </div>
           ) : (
             <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {events.map((event) => {

@@ -1,5 +1,9 @@
+import Image from "next/image";
 import type { Metadata } from "next";
 import { Card, Container, Eyebrow, Heading, Section } from "@dbc/ui";
+import { createServerClient } from "@dbc/supabase/server";
+
+export const revalidate = 60;
 
 export async function generateMetadata({
   params,
@@ -8,73 +12,53 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   return {
-    title:
-      locale === "de" ? "Team" : locale === "fr" ? "Équipe" : "Team",
+    title: locale === "de" ? "Team" : locale === "fr" ? "Équipe" : "Team",
   };
 }
 
-type Member = {
+type PublicMember = {
+  id: string;
+  slug: string;
   name: string;
-  initials: string;
-  accent: "primary" | "accent" | "muted";
-  role: { en: string; de: string; fr: string };
-  bio: { en: string; de: string; fr: string };
-  email?: string;
+  role_en: string;
+  role_de: string | null;
+  role_fr: string | null;
+  bio_en: string | null;
+  bio_de: string | null;
+  bio_fr: string | null;
+  photo_url: string | null;
+  email: string | null;
+  linkedin_url: string | null;
+  sort_order: number;
 };
 
-const TEAM: Member[] = [
-  {
-    name: "Dr. Jean-Clément Diambilay",
-    initials: "JCD",
-    accent: "primary",
-    role: {
-      en: "Founder · DBC Group",
-      de: "Gründer · DBC Group",
-      fr: "Fondateur · DBC Group",
-    },
-    bio: {
-      en: "Founder of Diambilay Business Center (Lubumbashi) and of DBC France SAS. Drives the DBC vision to raise a generation of prosperous African entrepreneurs.",
-      de: "Gründer des Diambilay Business Center (Lubumbashi) und der DBC France SAS. Treibt die DBC-Vision voran, eine Generation erfolgreicher afrikanischer Unternehmer:innen aufzubauen.",
-      fr: "Fondateur du Diambilay Business Center (Lubumbashi) et de DBC France SAS. Porte la vision DBC d'élever une génération d'entrepreneurs africains prospères.",
-    },
-  },
-  {
-    name: "Ruth Bambi",
-    initials: "RB",
-    accent: "accent",
-    role: {
-      en: "Project Manager · Germany CEO",
-      de: "Projektleiterin · Germany CEO",
-      fr: "Chef de projet · Germany CEO",
-    },
-    bio: {
-      en: "Leads DBC Germany day-to-day. Single point of contact for German partners, sponsors, and DACH entrepreneurs joining DBC programmes.",
-      de: "Leitet das Tagesgeschäft von DBC Germany. Ansprechpartnerin für deutsche Partner, Sponsoren und DACH-Gründer:innen, die an DBC-Programmen teilnehmen.",
-      fr: "Dirige le quotidien de DBC Germany. Point de contact pour les partenaires allemands, sponsors et entrepreneurs DACH rejoignant les programmes DBC.",
-    },
-  },
-  {
-    name: "Jay N Kalala",
-    initials: "JK",
-    accent: "muted",
-    role: {
-      en: "Sales & Sponsorship Lead · V.i.S.d.P.",
-      de: "Sales- & Sponsoring-Lead · V.i.S.d.P.",
-      fr: "Responsable ventes & sponsoring · V.i.S.d.P.",
-    },
-    bio: {
-      en: "Heads sponsorship for Richesses d'Afrique Essen 2026 and oversees the digital platforms. Editorially responsible for site content per § 55 RStV.",
-      de: "Verantwortet das Sponsoring für Richesses d'Afrique Essen 2026 und die digitalen Plattformen. Redaktionell verantwortlich gemäß § 55 RStV.",
-      fr: "Responsable du sponsoring de Richesses d'Afrique Essen 2026 et des plateformes numériques. Responsable éditorial selon § 55 RStV.",
-    },
-    email: "jay@dbc-germany.com",
-  },
-];
+async function getPublicTeam(): Promise<PublicMember[]> {
+  const supabase = await createServerClient();
+  const { data } = await supabase
+    .from("team_members")
+    .select(
+      "id, slug, name, role_en, role_de, role_fr, bio_en, bio_de, bio_fr, photo_url, email, linkedin_url, sort_order"
+    )
+    .eq("visibility", "public")
+    .order("sort_order", { ascending: true })
+    .order("name", { ascending: true });
+  return (data as PublicMember[]) ?? [];
+}
 
-function accentClasses(a: Member["accent"]) {
-  if (a === "primary")
+function initialsOf(name: string) {
+  return name
+    .split(/\s+/)
+    .map((p) => p[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
+
+function accentFor(i: number) {
+  if (i % 3 === 0)
     return "bg-gradient-to-br from-primary/20 via-primary/10 to-accent/20 text-primary";
-  if (a === "accent")
+  if (i % 3 === 1)
     return "bg-gradient-to-br from-accent/30 via-accent/15 to-primary/20 text-accent";
   return "bg-gradient-to-br from-muted via-muted/60 to-background text-foreground";
 }
@@ -89,6 +73,8 @@ export default async function TeamPage({
     | "en"
     | "de"
     | "fr";
+
+  const members = await getPublicTeam();
 
   const copy = {
     eyebrow: {
@@ -106,7 +92,23 @@ export default async function TeamPage({
       de: "Wir sind ein kleines Team in Düsseldorf, das die Programme, Investitionen und Veranstaltungen von DBC an Gründer:innen in Deutschland, Österreich und der Schweiz bringt.",
       fr: "Nous sommes une petite équipe à Düsseldorf, qui relie les programmes, investissements et événements DBC aux entrepreneurs d'Allemagne, d'Autriche et de Suisse.",
     }[l],
+    empty: {
+      en: "Team profiles are being prepared.",
+      de: "Team-Profile werden vorbereitet.",
+      fr: "Les profils de l'équipe sont en préparation.",
+    }[l],
   };
+
+  function localeField(
+    m: PublicMember,
+    field: "role" | "bio"
+  ): string {
+    const key = `${field}_${l}` as keyof PublicMember;
+    const v = m[key] as string | null;
+    if (v) return v;
+    const en = m[`${field}_en` as keyof PublicMember] as string | null;
+    return en ?? "";
+  }
 
   return (
     <Section>
@@ -119,35 +121,70 @@ export default async function TeamPage({
           {copy.intro}
         </p>
 
-        <div className="mt-14 grid gap-6 md:grid-cols-3">
-          {TEAM.map((m) => (
-            <Card key={m.name} className="flex flex-col items-start">
-              <div
-                className={`flex h-20 w-20 items-center justify-center rounded-full font-heading text-2xl font-bold ${accentClasses(
-                  m.accent
-                )}`}
-                aria-hidden
-              >
-                {m.initials}
-              </div>
-              <Heading level={4} className="mt-5">
-                {m.name}
-              </Heading>
-              <Eyebrow className="mt-1">{m.role[l]}</Eyebrow>
-              <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                {m.bio[l]}
-              </p>
-              {m.email && (
-                <a
-                  href={`mailto:${m.email}`}
-                  className="mt-4 inline-flex text-sm font-semibold text-primary hover:text-primary/80"
-                >
-                  {m.email}
-                </a>
-              )}
-            </Card>
-          ))}
-        </div>
+        {members.length === 0 ? (
+          <Card className="mt-14 border-dashed text-center">
+            <p className="text-sm text-muted-foreground">{copy.empty}</p>
+          </Card>
+        ) : (
+          <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {members.map((m, i) => {
+              const role = localeField(m, "role");
+              const bio = localeField(m, "bio");
+              return (
+                <Card key={m.id} className="flex flex-col items-start">
+                  {m.photo_url ? (
+                    <div className="relative h-20 w-20 overflow-hidden rounded-full">
+                      <Image
+                        src={m.photo_url}
+                        alt=""
+                        fill
+                        sizes="80px"
+                        className="object-cover"
+                        referrerPolicy="no-referrer"
+                      />
+                    </div>
+                  ) : (
+                    <div
+                      className={`flex h-20 w-20 items-center justify-center rounded-full font-heading text-2xl font-bold ${accentFor(i)}`}
+                      aria-hidden
+                    >
+                      {initialsOf(m.name)}
+                    </div>
+                  )}
+                  <Heading level={4} className="mt-5">
+                    {m.name}
+                  </Heading>
+                  {role && <Eyebrow className="mt-1">{role}</Eyebrow>}
+                  {bio && (
+                    <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                      {bio}
+                    </p>
+                  )}
+                  <div className="mt-4 flex flex-wrap gap-3 text-sm font-semibold">
+                    {m.email && (
+                      <a
+                        href={`mailto:${m.email}`}
+                        className="text-primary hover:text-primary/80"
+                      >
+                        {m.email}
+                      </a>
+                    )}
+                    {m.linkedin_url && (
+                      <a
+                        href={m.linkedin_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-muted-foreground hover:text-foreground"
+                      >
+                        LinkedIn ↗
+                      </a>
+                    )}
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        )}
       </Container>
     </Section>
   );
