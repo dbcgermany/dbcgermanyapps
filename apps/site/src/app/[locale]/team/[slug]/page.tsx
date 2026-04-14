@@ -67,8 +67,9 @@ export default async function TeamMemberPage({
     | "de"
     | "fr";
 
-  const m = await getMember(slug);
-  if (!m) notFound();
+  const found = await getMember(slug);
+  if (!found) notFound();
+  const m: PublicMember = found;
 
   function field(f: "role" | "bio") {
     const localized = m[`${f}_${l}` as keyof PublicMember] as string | null;
