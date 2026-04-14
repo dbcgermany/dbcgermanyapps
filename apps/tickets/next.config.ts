@@ -11,6 +11,15 @@ const nextConfig: NextConfig = {
     "@dbc/ui",
     "@dbc/email",
   ],
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "diambilaybusinesscenter.org",
+        pathname: "/images/**",
+      },
+    ],
+  },
 };
 
 export default withNextIntl(nextConfig);

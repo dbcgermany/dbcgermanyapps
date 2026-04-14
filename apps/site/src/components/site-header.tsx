@@ -5,9 +5,11 @@ import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { LocaleSwitch } from "./locale-switch";
+import { ThemeToggle } from "@dbc/ui";
 
 export function SiteHeader({ locale }: { locale: string }) {
   const t = useTranslations("site.nav");
+  const tTheme = useTranslations("site.theme");
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -71,6 +73,13 @@ export function SiteHeader({ locale }: { locale: string }) {
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
+          <ThemeToggle
+            labels={{
+              light: tTheme("light"),
+              dark: tTheme("dark"),
+              system: tTheme("system"),
+            }}
+          />
           <LocaleSwitch currentLocale={locale} />
           <a
             href={ticketsUrl}
@@ -111,8 +120,15 @@ export function SiteHeader({ locale }: { locale: string }) {
             >
               {t("tickets")}
             </a>
-            <div className="mt-3">
+            <div className="mt-3 flex flex-wrap items-center gap-3">
               <LocaleSwitch currentLocale={locale} />
+              <ThemeToggle
+                labels={{
+                  light: tTheme("light"),
+                  dark: tTheme("dark"),
+                  system: tTheme("system"),
+                }}
+              />
             </div>
           </nav>
         </div>

@@ -298,6 +298,17 @@
       "menu": "Menu",
       "close": "Close"
     },
+    "theme": {
+      "light": "Light",
+      "dark": "Dark",
+      "system": "Auto"
+    },
+    "affiliation": {
+      "badge": "Part of Diambilay Business Center · Lubumbashi",
+      "footer": "DBC Germany is the European arm of Diambilay Business Center, founded in Lubumbashi by Dr Jean-Clément Diambilay.",
+      "sisterRichesses": "Richesses d'Afrique",
+      "sisterAcademie": "Académie Investir en Afrique"
+    },
     "hero": {
       "tag": "Africa's Top Business Group · Germany",
       "title": "Building a new generation of African entrepreneurs — from Germany.",
@@ -307,14 +318,14 @@
     },
     "stats": {
       "title": "DBC at a glance",
-      "countries": "Countries",
-      "countriesValue": "5+",
-      "founders": "Founders supported",
-      "foundersValue": "300+",
-      "capital": "Capital deployed",
-      "capitalValue": "€2M+",
-      "years": "Years of impact",
-      "yearsValue": "10+"
+      "countries": "Languages served",
+      "countriesValue": "EN · DE · FR",
+      "founders": "Startups accompanied",
+      "foundersValue": "213",
+      "capital": "Satisfied clients",
+      "capitalValue": "275",
+      "years": "Flagship 2026",
+      "yearsValue": "Essen · 13 June"
     },
     "services": {
       "eyebrow": "What we do",

@@ -1,16 +1,42 @@
 import Link from "next/link";
+import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { getUpcomingEvents } from "@/lib/queries";
+import { DBC } from "@/lib/dbc-assets";
 
 export const revalidate = 60;
 
 const SERVICES = [
-  { key: "incubation", href: (l: string) => `/${l}/services/incubation` },
-  { key: "courses", href: (l: string) => `/${l}/services/courses` },
-  { key: "investments", href: (l: string) => `/${l}/services/investments` },
-  { key: "mentorship", href: (l: string) => `/${l}/services/mentorship` },
-  { key: "events", href: (l: string) => `/${l}/events` },
-  { key: "elearning", href: (l: string) => `/${l}/services/elearning` },
+  {
+    key: "incubation",
+    photo: DBC.photo.incubation,
+    href: (l: string) => `/${l}/services/incubation`,
+  },
+  {
+    key: "courses",
+    photo: DBC.photo.courses,
+    href: (l: string) => `/${l}/services/courses`,
+  },
+  {
+    key: "investments",
+    photo: DBC.photo.investments,
+    href: (l: string) => `/${l}/services/investments`,
+  },
+  {
+    key: "mentorship",
+    photo: DBC.photo.mentorship,
+    href: (l: string) => `/${l}/services/mentorship`,
+  },
+  {
+    key: "events",
+    photo: DBC.photo.events,
+    href: (l: string) => `/${l}/events`,
+  },
+  {
+    key: "elearning",
+    photo: DBC.photo.cohort,
+    href: (l: string) => `/${l}/services/elearning`,
+  },
 ] as const;
 
 export default async function HomePage({
@@ -29,16 +55,29 @@ export default async function HomePage({
     <>
       {/* Hero ------------------------------------------------------------- */}
       <section className="relative overflow-hidden border-b border-border">
+        <Image
+          src={DBC.hero.home}
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover"
+          referrerPolicy="no-referrer"
+        />
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 -z-10"
+          className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/80 to-background/50 dark:from-background/95 dark:via-background/85 dark:to-background/50"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
           style={{
             background:
-              "radial-gradient(60% 60% at 15% 0%, rgba(200,16,46,0.10) 0%, transparent 60%), radial-gradient(50% 50% at 90% 10%, rgba(212,160,23,0.10) 0%, transparent 60%)",
+              "radial-gradient(60% 60% at 15% 0%, rgba(200,16,46,0.18) 0%, transparent 60%), radial-gradient(50% 50% at 90% 10%, rgba(212,160,23,0.18) 0%, transparent 60%)",
           }}
         />
 
-        <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-28 lg:px-8 lg:py-36">
+        <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-28 lg:px-8 lg:py-36">
           <p className="inline-flex items-center gap-2 rounded-full border border-border bg-background/80 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur">
             <span className="h-1.5 w-1.5 rounded-full bg-primary" />
             {t("hero.tag")}
@@ -61,7 +100,7 @@ export default async function HomePage({
             </a>
             <Link
               href={`/${locale}/contact`}
-              className="rounded-full border border-border px-6 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+              className="rounded-full border border-border bg-background/60 px-6 py-3 text-sm font-semibold text-foreground backdrop-blur transition-colors hover:bg-muted"
             >
               {t("hero.ctaSecondary")}
             </Link>
@@ -83,7 +122,7 @@ export default async function HomePage({
                 <dt className="text-xs uppercase tracking-wider text-muted-foreground">
                   {item.label}
                 </dt>
-                <dd className="mt-2 font-heading text-3xl font-bold text-foreground sm:text-4xl">
+                <dd className="mt-2 font-heading text-2xl font-bold text-foreground sm:text-3xl">
                   <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                     {item.value}
                   </span>
@@ -114,24 +153,36 @@ export default async function HomePage({
               <Link
                 key={s.key}
                 href={s.href(locale)}
-                className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card p-8 transition-all hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg"
+                className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg"
               >
-                <div
-                  aria-hidden
-                  className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary to-accent opacity-0 transition-opacity group-hover:opacity-100"
-                />
-                <h3 className="font-heading text-xl font-bold">
-                  {t(`services.${s.key}.title`)}
-                </h3>
-                <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                  {t(`services.${s.key}.short`)}
-                </p>
-                <span className="mt-6 inline-flex items-center gap-1 text-sm font-semibold text-primary">
-                  {t("services.learnMore")}
-                  <span aria-hidden className="transition-transform group-hover:translate-x-1">
-                    &rarr;
+                <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
+                  <Image
+                    src={s.photo}
+                    alt=""
+                    fill
+                    sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    referrerPolicy="no-referrer"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                </div>
+                <div className="p-8">
+                  <h3 className="font-heading text-xl font-bold">
+                    {t(`services.${s.key}.title`)}
+                  </h3>
+                  <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                    {t(`services.${s.key}.short`)}
+                  </p>
+                  <span className="mt-6 inline-flex items-center gap-1 text-sm font-semibold text-primary">
+                    {t("services.learnMore")}
+                    <span
+                      aria-hidden
+                      className="transition-transform group-hover:translate-x-1"
+                    >
+                      &rarr;
+                    </span>
                   </span>
-                </span>
+                </div>
               </Link>
             ))}
           </div>
@@ -149,7 +200,9 @@ export default async function HomePage({
               <h2 className="mt-3 font-heading text-3xl font-bold tracking-tight sm:text-4xl">
                 {t("events.title")}
               </h2>
-              <p className="mt-4 text-muted-foreground">{t("events.subtitle")}</p>
+              <p className="mt-4 text-muted-foreground">
+                {t("events.subtitle")}
+              </p>
             </div>
             <a
               href={ticketsUrl}
@@ -170,24 +223,23 @@ export default async function HomePage({
                 const titleKey = `title_${locale}` as keyof typeof event;
                 const title =
                   (event[titleKey] as string) || event.title_en;
+                const cover = event.cover_image_url ?? DBC.photo.eventFallback;
                 return (
                   <a
                     key={event.id}
                     href={`${ticketsUrl}/${locale}/events/${event.slug}`}
                     className="group overflow-hidden rounded-2xl border border-border bg-background transition-all hover:-translate-y-1 hover:shadow-lg"
                   >
-                    {event.cover_image_url ? (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img
-                        src={event.cover_image_url}
+                    <div className="relative aspect-video w-full overflow-hidden">
+                      <Image
+                        src={cover}
                         alt={title}
-                        className="aspect-video w-full object-cover transition-transform group-hover:scale-105"
+                        fill
+                        sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+                        className="object-cover transition-transform group-hover:scale-105"
+                        referrerPolicy="no-referrer"
                       />
-                    ) : (
-                      <div className="flex aspect-video items-center justify-center bg-gradient-to-br from-primary/10 to-accent/10">
-                        <span className="text-4xl text-primary">&#x1F3DB;</span>
-                      </div>
-                    )}
+                    </div>
                     <div className="p-6">
                       <p className="text-xs font-medium uppercase tracking-wider text-primary">
                         {event.event_type}
@@ -218,23 +270,72 @@ export default async function HomePage({
 
       {/* About snippet --------------------------------------------------- */}
       <section className="py-24 sm:py-32">
-        <div className="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
-          <p className="text-xs font-semibold uppercase tracking-wider text-primary">
-            {t("about.eyebrow")}
-          </p>
-          <h2 className="mt-3 font-heading text-3xl font-bold tracking-tight sm:text-4xl">
-            {t("about.title")}
-          </h2>
-          <p className="mt-6 text-lg leading-8 text-muted-foreground">
-            {t("about.body")}
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link
-              href={`/${locale}/about`}
-              className="rounded-full border border-border px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-muted"
-            >
-              {t("about.ctaFounder")}
-            </Link>
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="grid items-center gap-10 md:grid-cols-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="relative aspect-[3/4] overflow-hidden rounded-2xl">
+                <Image
+                  src={DBC.gallery[0]}
+                  alt=""
+                  fill
+                  sizes="(min-width: 768px) 25vw, 50vw"
+                  className="object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+              <div className="flex flex-col gap-3">
+                <div className="relative aspect-square overflow-hidden rounded-2xl">
+                  <Image
+                    src={DBC.gallery[1]}
+                    alt=""
+                    fill
+                    sizes="(min-width: 768px) 25vw, 50vw"
+                    className="object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+                <div className="relative aspect-square overflow-hidden rounded-2xl">
+                  <Image
+                    src={DBC.gallery[2]}
+                    alt=""
+                    fill
+                    sizes="(min-width: 768px) 25vw, 50vw"
+                    className="object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-primary">
+                {t("about.eyebrow")}
+              </p>
+              <h2 className="mt-3 font-heading text-3xl font-bold tracking-tight sm:text-4xl">
+                {t("about.title")}
+              </h2>
+              <p className="mt-6 text-lg leading-8 text-muted-foreground">
+                {t("about.body")}
+              </p>
+              <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-border bg-muted/60 px-3 py-1.5 text-xs font-medium text-muted-foreground">
+                <Image
+                  src={DBC.logo}
+                  alt=""
+                  width={18}
+                  height={18}
+                  className="h-4 w-4 object-contain"
+                  referrerPolicy="no-referrer"
+                />
+                {t("affiliation.badge")}
+              </div>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link
+                  href={`/${locale}/about`}
+                  className="rounded-full border border-border px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-muted"
+                >
+                  {t("about.ctaFounder")}
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -243,17 +344,17 @@ export default async function HomePage({
       <section className="relative overflow-hidden">
         <div
           aria-hidden
-          className="absolute inset-0 -z-10 bg-gradient-to-br from-primary via-primary/90 to-[#8d0a20]"
+          className="absolute inset-0 bg-gradient-to-br from-primary via-primary/90 to-[#8d0a20]"
         />
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 -z-10 opacity-30"
+          className="pointer-events-none absolute inset-0 opacity-30"
           style={{
             background:
               "radial-gradient(50% 50% at 80% 50%, rgba(212,160,23,0.40) 0%, transparent 60%)",
           }}
         />
-        <div className="mx-auto flex max-w-5xl flex-col items-start gap-8 px-4 py-20 text-primary-foreground sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
+        <div className="relative mx-auto flex max-w-5xl flex-col items-start gap-8 px-4 py-20 text-primary-foreground sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
           <div>
             <h2 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">
               {t("cta.ready")}

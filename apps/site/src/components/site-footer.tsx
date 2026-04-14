@@ -1,9 +1,12 @@
 import Link from "next/link";
+import Image from "next/image";
 import { getTranslations } from "next-intl/server";
+import { DBC } from "@/lib/dbc-assets";
 
 export async function SiteFooter({ locale }: { locale: string }) {
   const t = await getTranslations({ locale, namespace: "site.footer" });
   const tNav = await getTranslations({ locale, namespace: "site.nav" });
+  const tAff = await getTranslations({ locale, namespace: "site.affiliation" });
 
   const ticketsUrl =
     process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://ticket.dbc-germany.com";
@@ -26,9 +29,46 @@ export async function SiteFooter({ locale }: { locale: string }) {
             <p className="mt-3 max-w-sm text-sm text-muted-foreground">
               {t("tagline")}
             </p>
-            <p className="mt-2 max-w-sm text-xs text-muted-foreground">
-              {t("parentOrg")}
-            </p>
+
+            <div className="mt-6 flex items-start gap-3 rounded-lg border border-border bg-background/60 p-3">
+              <Image
+                src={DBC.logo}
+                alt="Diambilay Business Center"
+                width={40}
+                height={40}
+                className="mt-0.5 h-10 w-10 shrink-0 object-contain"
+                referrerPolicy="no-referrer"
+              />
+              <div className="text-xs leading-5 text-muted-foreground">
+                <p>{tAff("footer")}</p>
+                <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
+                  <a
+                    href={DBC.parentSite}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-foreground hover:text-primary"
+                  >
+                    diambilaybusinesscenter.org
+                  </a>
+                  <a
+                    href={DBC.sisterSites.richesses}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-primary"
+                  >
+                    {tAff("sisterRichesses")}
+                  </a>
+                  <a
+                    href={DBC.sisterSites.academie}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-primary"
+                  >
+                    {tAff("sisterAcademie")}
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Services */}
@@ -160,7 +200,7 @@ export async function SiteFooter({ locale }: { locale: string }) {
             &copy; {new Date().getFullYear()} DBC Germany GmbH.{" "}
             {t("rights")}
           </p>
-          <p>Berlin · Frankfurt · Lubumbashi</p>
+          <p>Düsseldorf · Essen · Lubumbashi</p>
         </div>
       </div>
     </footer>

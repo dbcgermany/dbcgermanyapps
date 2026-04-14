@@ -1,5 +1,6 @@
 import type { UserRole } from "@dbc/types";
 import { createServerClient } from "@dbc/supabase/server";
+import { ThemeToggle } from "@dbc/ui";
 import { AdminSidebar } from "./admin-sidebar";
 import { NotificationBell } from "./notification-bell";
 
@@ -38,7 +39,8 @@ export async function AdminShell({
       <AdminSidebar locale={locale} userRole={userRole} userEmail={userEmail} />
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Top bar */}
-        <header className="flex h-14 items-center justify-end border-b border-border bg-surface px-4">
+        <header className="flex h-14 items-center justify-end gap-3 border-b border-border bg-surface px-4">
+          <ThemeToggle />
           <NotificationBell
             userId={userId}
             locale={locale}

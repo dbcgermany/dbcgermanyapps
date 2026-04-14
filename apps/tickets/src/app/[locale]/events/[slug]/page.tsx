@@ -125,16 +125,16 @@ export default async function EventDetailPage({
       {/* HERO */}
       <section className="relative">
         <div className="relative aspect-[16/9] w-full overflow-hidden sm:aspect-[21/9] lg:aspect-[24/9]">
-          {event.cover_image_url ? (
-            /* eslint-disable-next-line @next/next/no-img-element */
-            <img
-              src={event.cover_image_url}
-              alt={loc("title")}
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <div className="h-full w-full bg-gradient-to-br from-primary/20 via-background to-accent/20" />
-          )}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={
+              event.cover_image_url ??
+              "https://diambilaybusinesscenter.org/images/2025_03_29_13_47_IMG_3075-copy.jpg"
+            }
+            alt={loc("title")}
+            className="h-full w-full object-cover"
+            referrerPolicy="no-referrer"
+          />
           <div
             aria-hidden
             className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent"

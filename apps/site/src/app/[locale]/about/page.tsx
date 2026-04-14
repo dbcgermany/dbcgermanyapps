@@ -1,6 +1,8 @@
 import Link from "next/link";
+import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
+import { DBC } from "@/lib/dbc-assets";
 
 export async function generateMetadata({
   params,
@@ -22,8 +24,21 @@ export default async function AboutPage({
 
   return (
     <>
-      <section className="border-b border-border">
-        <div className="mx-auto max-w-4xl px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
+      <section className="relative overflow-hidden border-b border-border">
+        <Image
+          src={DBC.photo.team}
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover"
+          referrerPolicy="no-referrer"
+        />
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/85 to-background/60"
+        />
+        <div className="relative mx-auto max-w-4xl px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
           <p className="text-xs font-semibold uppercase tracking-wider text-primary">
             {t("about.eyebrow")}
           </p>
@@ -33,12 +48,23 @@ export default async function AboutPage({
           <p className="mt-8 text-lg leading-8 text-muted-foreground">
             {t("about.body")}
           </p>
+          <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-border bg-background/80 px-3 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur">
+            <Image
+              src={DBC.logo}
+              alt=""
+              width={18}
+              height={18}
+              className="h-4 w-4 object-contain"
+              referrerPolicy="no-referrer"
+            />
+            {t("affiliation.badge")}
+          </div>
         </div>
       </section>
 
       <section className="py-20 sm:py-28">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-12 md:grid-cols-2">
+          <div className="grid items-center gap-12 md:grid-cols-2">
             <div>
               <h2 className="font-heading text-2xl font-bold">
                 {locale === "de"
@@ -55,6 +81,29 @@ export default async function AboutPage({
                     : "Dr. Jean-Clément Diambilay founded the Diambilay Business Center in Lubumbashi on one simple conviction: Africa's greatest economic asset is its people. DBC Germany carries that conviction to Europe and brings every pillar of our ecosystem to the African diaspora."}
               </p>
             </div>
+            <div className="relative aspect-[4/3] overflow-hidden rounded-2xl">
+              <Image
+                src={DBC.photo.mentorship}
+                alt=""
+                fill
+                sizes="(min-width: 768px) 50vw, 100vw"
+                className="object-cover"
+                referrerPolicy="no-referrer"
+              />
+            </div>
+          </div>
+
+          <div className="mt-20 grid items-center gap-12 md:grid-cols-2">
+            <div className="relative order-last aspect-[4/3] overflow-hidden rounded-2xl md:order-first">
+              <Image
+                src={DBC.photo.cohort}
+                alt=""
+                fill
+                sizes="(min-width: 768px) 50vw, 100vw"
+                className="object-cover"
+                referrerPolicy="no-referrer"
+              />
+            </div>
             <div>
               <h2 className="font-heading text-2xl font-bold">
                 {locale === "de"
@@ -70,7 +119,7 @@ export default async function AboutPage({
                     className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary"
                   />
                   <span>
-                    <strong>Berlin, Frankfurt</strong> —{" "}
+                    <strong>Düsseldorf, Essen, Berlin</strong> —{" "}
                     {locale === "de"
                       ? "Inkubation, Investmentteam, Events."
                       : locale === "fr"
@@ -84,12 +133,12 @@ export default async function AboutPage({
                     className="mt-1 h-2 w-2 shrink-0 rounded-full bg-accent"
                   />
                   <span>
-                    <strong>Lubumbashi, DRC</strong> —{" "}
+                    <strong>Lubumbashi, DR Congo</strong> —{" "}
                     {locale === "de"
-                      ? "Mutterorganisation, Curriculum, Partnerschaften."
+                      ? "Mutterorganisation · 378, Av Likasi · +243 820 121 513"
                       : locale === "fr"
-                        ? "Organisation mère, curriculum, partenariats."
-                        : "Parent organisation, curriculum, partnerships."}
+                        ? "Organisation mère · 378, Av Likasi · +243 820 121 513"
+                        : "Parent organisation · 378, Av Likasi · +243 820 121 513"}
                   </span>
                 </li>
                 <li className="flex items-start gap-3">

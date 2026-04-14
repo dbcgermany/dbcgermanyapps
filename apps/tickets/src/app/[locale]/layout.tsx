@@ -3,6 +3,7 @@ import { LOCALES } from "@dbc/types";
 import { loadMessages } from "@dbc/i18n";
 import { NextIntlClientProvider } from "next-intl";
 import { notFound } from "next/navigation";
+import { UtilityBar } from "@/components/utility-bar";
 
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }));
@@ -25,6 +26,7 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
+      <UtilityBar locale={locale} />
       {children}
     </NextIntlClientProvider>
   );

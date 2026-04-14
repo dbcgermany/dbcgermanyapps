@@ -1,7 +1,9 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
+import { DBC } from "@/lib/dbc-assets";
 
 const VALID_SERVICES = [
   "incubation",
@@ -11,6 +13,14 @@ const VALID_SERVICES = [
   "elearning",
 ] as const;
 type ValidService = (typeof VALID_SERVICES)[number];
+
+const SERVICE_PHOTOS: Record<ValidService, string> = {
+  incubation: DBC.photo.incubationSidebar,
+  courses: DBC.photo.coursesSidebar,
+  investments: DBC.photo.investments,
+  mentorship: DBC.photo.mentorshipSidebar,
+  elearning: DBC.photo.cohort,
+};
 
 function isValidService(s: string): s is ValidService {
   return (VALID_SERVICES as readonly string[]).includes(s);
@@ -98,20 +108,30 @@ export default async function ServiceDetailPage({
         </div>
 
         {/* Visual panel */}
-        <aside className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-background to-accent/10 p-8">
-          <div className="flex h-full flex-col justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-primary">
-                {t("services.eyebrow")}
-              </p>
-              <p className="mt-4 font-heading text-2xl font-bold">
-                {t(`services.${service}.title`)}
-              </p>
-              <p className="mt-3 text-sm text-muted-foreground">
-                {t(`services.${service}.short`)}
-              </p>
-            </div>
-            <div className="mt-10 border-t border-border pt-6 text-sm text-muted-foreground">
+        <aside className="relative overflow-hidden rounded-2xl border border-border">
+          <Image
+            src={SERVICE_PHOTOS[service as ValidService]}
+            alt=""
+            fill
+            sizes="(min-width: 768px) 40vw, 100vw"
+            className="object-cover"
+            referrerPolicy="no-referrer"
+          />
+          <div
+            aria-hidden
+            className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/50 to-black/20"
+          />
+          <div className="relative flex h-full min-h-[420px] flex-col justify-end p-8 text-white">
+            <p className="text-xs font-semibold uppercase tracking-wider text-white/80">
+              {t("services.eyebrow")}
+            </p>
+            <p className="mt-3 font-heading text-2xl font-bold">
+              {t(`services.${service}.title`)}
+            </p>
+            <p className="mt-3 text-sm text-white/80">
+              {t(`services.${service}.short`)}
+            </p>
+            <div className="mt-8 border-t border-white/25 pt-4 text-xs text-white/75">
               <p>{t("cta.readySub")}</p>
             </div>
           </div>
