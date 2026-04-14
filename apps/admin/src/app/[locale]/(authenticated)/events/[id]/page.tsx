@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getEvent, togglePublish, deleteEvent } from "@/actions/events";
+import { getEvent, togglePublish } from "@/actions/events";
+import { DeleteEventButton } from "./delete-button";
 
 export default async function EventDetailPage({
   params,
@@ -193,19 +194,11 @@ export default async function EventDetailPage({
         <p className="mt-1 text-sm text-muted-foreground">
           Deleting an event is irreversible and removes all associated tickets, orders, and data.
         </p>
-        <form
-          action={async () => {
-            "use server";
-            await deleteEvent(id, locale);
-          }}
-        >
-          <button
-            type="submit"
-            className="mt-4 rounded-md border border-red-300 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
-          >
-            Delete event
-          </button>
-        </form>
+        <DeleteEventButton
+          eventId={id}
+          eventTitle={event.title_en}
+          locale={locale}
+        />
       </div>
     </div>
   );

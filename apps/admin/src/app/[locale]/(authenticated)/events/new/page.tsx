@@ -203,6 +203,23 @@ export default function NewEventPage({
           </div>
         </div>
 
+        {/* Cover image */}
+        <div>
+          <label htmlFor="cover_image_url" className="block text-sm font-medium mb-1">
+            Cover image URL
+          </label>
+          <input
+            id="cover_image_url"
+            name="cover_image_url"
+            type="url"
+            placeholder="https://example.com/hero.jpg"
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          />
+          <p className="mt-1 text-xs text-muted-foreground">
+            Hero image shown on the public event page. Use a public URL (CDN / Supabase storage).
+          </p>
+        </div>
+
         <input type="hidden" name="timezone" value="Europe/Berlin" />
 
         <div className="flex gap-3 pt-4">

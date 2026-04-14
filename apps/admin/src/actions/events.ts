@@ -83,6 +83,8 @@ export async function createEvent(formData: FormData) {
       (formData.get("max_tickets_per_order") as string) || "10",
       10
     ),
+    cover_image_url:
+      ((formData.get("cover_image_url") as string) || "").trim() || null,
     is_published: false,
   };
 
@@ -134,6 +136,8 @@ export async function updateEvent(id: string, formData: FormData) {
       formData.get("max_tickets_per_order") as string,
       10
     ),
+    cover_image_url:
+      ((formData.get("cover_image_url") as string) || "").trim() || null,
   };
 
   const { error } = await supabase
