@@ -23,6 +23,8 @@ const PAYMENT_METHOD_MAP: Record<string, string> = {
   card: "card",
   sepa: "sepa_debit",
   paypal: "paypal",
+  klarna: "klarna",
+  link: "link",
 };
 
 // SSOT rule 65: max orders per email per event. Configurable via env,
@@ -360,12 +362,27 @@ export async function createCheckoutSession(input: CheckoutInput) {
     RESERVATION_TTL_MINUTES * 60 + 60
   );
 
+  // If the event row explicitly whitelists methods, use them. Otherwise let
+  // Stripe render every method the account has enabled that's eligible for
+  // this currency/amount/customer-country — so switching on PayPal, Klarna,
+  // Link, Apple Pay, etc. in the Stripe Dashboard flows through without a
+  // redeploy.
+  const paymentMethodConfig: Pick<
+    Stripe.Checkout.SessionCreateParams,
+    "payment_method_types" | "automatic_payment_methods"
+  > =
+    paymentMethodTypes.length > 0
+      ? {
+          payment_method_types:
+            paymentMethodTypes as Stripe.Checkout.SessionCreateParams["payment_method_types"],
+        }
+      : { automatic_payment_methods: { enabled: true } };
+
   let session: Stripe.Checkout.Session;
   try {
     session = await getStripe().checkout.sessions.create({
       mode: "payment",
-      payment_method_types:
-        (paymentMethodTypes.length > 0 ? paymentMethodTypes : ["card"]) as Stripe.Checkout.SessionCreateParams["payment_method_types"],
+      ...paymentMethodConfig,
       line_items: lineItems,
       discounts,
       expires_at: Math.floor(Date.now() / 1000) + stripeExpiresIn,

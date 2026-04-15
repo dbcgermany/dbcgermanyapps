@@ -27,7 +27,7 @@ export function DoorSaleClient({
   const [tierId, setTierId] = useState(initialTiers[0]?.id ?? "");
   const [attendeeName, setAttendeeName] = useState("");
   const [attendeeEmail, setAttendeeEmail] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("cash");
+  // payment_method is forced to "cash" on the server; no UI state needed
   const [result, setResult] = useState<{
     error?: string;
     success?: boolean;
@@ -242,34 +242,11 @@ export function DoorSaleClient({
         />
       </div>
 
-      {/* Payment method */}
-      <div>
-        <label className="block text-sm font-medium mb-1.5">{t.payment}</label>
-        <div className="flex gap-3">
-          {[
-            { value: "cash", label: t.cash },
-            { value: "card", label: t.card },
-          ].map((pm) => (
-            <label
-              key={pm.value}
-              className={`flex-1 flex items-center justify-center gap-2 rounded-md border p-3 cursor-pointer transition-colors ${
-                paymentMethod === pm.value
-                  ? "border-primary bg-primary/5"
-                  : "border-border hover:bg-muted/50"
-              }`}
-            >
-              <input
-                type="radio"
-                name="payment_method"
-                value={pm.value}
-                checked={paymentMethod === pm.value}
-                onChange={() => setPaymentMethod(pm.value)}
-                className="accent-primary"
-              />
-              <span className="text-sm font-medium">{pm.label}</span>
-            </label>
-          ))}
-        </div>
+      {/* Payment method — cash only at the door. Card buyers scan the
+          "buy online" poster to pay via Stripe on their phone. */}
+      <div className="rounded-md border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+        Payment: <strong className="text-foreground">{t.cash}</strong> ·
+        Card buyers should scan the online-purchase poster.
       </div>
 
       <button

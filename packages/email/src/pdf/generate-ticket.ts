@@ -17,6 +17,13 @@ export interface GenerateTicketInput {
   tierName: string;
   ticketToken: string;
   locale: "en" | "de" | "fr";
+  // Branding — pulled from company_info at call time
+  brandName?: string;
+  legalName?: string;
+  supportEmail?: string;
+  primaryColor?: string;
+  logoUrl?: string;
+  isInvitation?: boolean;
 }
 
 /**

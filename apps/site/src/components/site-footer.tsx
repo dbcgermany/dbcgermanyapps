@@ -26,7 +26,7 @@ export async function SiteFooter({ locale }: { locale: string }) {
   ].filter((s) => s.url);
 
   return (
-    <footer className="mt-24 border-t border-border bg-muted/40">
+    <footer className="mt-24 border-t border-border bg-surface-footer">
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="grid gap-12 md:grid-cols-5">
           {/* Brand column */}

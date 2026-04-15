@@ -25,6 +25,13 @@ export interface SendTicketEmailInput {
   locale: "en" | "de" | "fr";
   // Where to view the order online
   orderUrl: string;
+  // Branding — pulled from company_info at call time
+  brandName?: string;
+  legalName?: string;
+  supportEmail?: string;
+  primaryColor?: string;
+  logoUrl?: string;
+  isInvitation?: boolean;
 }
 
 const SUBJECT_TRANSLATIONS = {
@@ -55,6 +62,12 @@ export async function sendTicketEmail(
     tierName: input.tierName,
     ticketToken: input.ticketToken,
     locale: input.locale,
+    brandName: input.brandName,
+    legalName: input.legalName,
+    supportEmail: input.supportEmail,
+    primaryColor: input.primaryColor,
+    logoUrl: input.logoUrl,
+    isInvitation: input.isInvitation,
   });
 
   // 2. Render React Email template to HTML

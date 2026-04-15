@@ -11,13 +11,14 @@ import { sendTicketEmail } from "@dbc/email";
  */
 export async function sendTicketsForOrder(
   supabase: SupabaseClient,
-  orderId: string
+  orderId: string,
+  options: { forceResend?: boolean; overrideEmail?: string } = {}
 ): Promise<void> {
   // Fetch order
   const { data: order, error: orderError } = await supabase
     .from("orders")
     .select(
-      "id, event_id, locale, email_sent_at, status"
+      "id, event_id, locale, email_sent_at, status, acquisition_type"
     )
     .eq("id", orderId)
     .single();
@@ -26,8 +27,8 @@ export async function sendTicketsForOrder(
     throw new Error(`Order ${orderId} not found`);
   }
 
-  // Idempotency: skip if already sent
-  if (order.email_sent_at) {
+  // Idempotency: skip if already sent, unless caller asked for a resend
+  if (order.email_sent_at && !options.forceResend) {
     return;
   }
 
@@ -70,6 +71,15 @@ export async function sendTicketsForOrder(
 
   const tierMap = new Map((tiers ?? []).map((t) => [t.id, t]));
 
+  // Fetch branding once per batch
+  const { data: companyInfo } = await supabase
+    .from("company_info")
+    .select(
+      "brand_name, legal_name, legal_form, support_email, primary_color, logo_light_url"
+    )
+    .eq("id", 1)
+    .maybeSingle();
+
   const locale = (order.locale as "en" | "de" | "fr") ?? "en";
   const eventTitle =
     (event[`title_${locale}` as keyof typeof event] as string) ||
@@ -81,7 +91,7 @@ export async function sendTicketsForOrder(
 
   // Send each ticket
   for (const ticket of tickets) {
-    if (ticket.pdf_url) continue; // already sent
+    if (ticket.pdf_url && !options.forceResend) continue; // already sent
 
     const tier = tierMap.get(ticket.tier_id);
     const tierName = tier
@@ -89,10 +99,18 @@ export async function sendTicketsForOrder(
         tier.name_en)
       : "Ticket";
 
+    const legalName = companyInfo
+      ? [companyInfo.legal_name, companyInfo.legal_form]
+          .filter(Boolean)
+          .join(" ")
+      : undefined;
+
+    const recipientEmail = options.overrideEmail || ticket.attendee_email;
+
     try {
       const result = await sendTicketEmail({
         attendeeName: ticket.attendee_name,
-        attendeeEmail: ticket.attendee_email,
+        attendeeEmail: recipientEmail,
         eventTitle,
         eventType: event.event_type,
         startsAt: new Date(event.starts_at),
@@ -105,6 +123,14 @@ export async function sendTicketsForOrder(
         ticketToken: ticket.ticket_token,
         locale,
         orderUrl,
+        brandName: companyInfo?.brand_name ?? undefined,
+        legalName,
+        supportEmail: companyInfo?.support_email ?? undefined,
+        primaryColor: companyInfo?.primary_color ?? undefined,
+        logoUrl: companyInfo?.logo_light_url ?? undefined,
+        isInvitation:
+          order.acquisition_type === "invited" ||
+          order.acquisition_type === "assigned",
       });
 
       // Stamp the ticket as sent + persist the Resend message ID for

@@ -7,8 +7,8 @@ import {
   StyleSheet,
 } from "@react-pdf/renderer";
 
-// DBC brand colors (light mode)
-const COLORS = {
+// DBC brand colors used as fallback when company_info values aren't provided.
+const DEFAULT_COLORS = {
   primary: "#c8102e",
   accent: "#d4a017",
   text: "#111111",
@@ -20,35 +20,36 @@ const COLORS = {
 
 const styles = StyleSheet.create({
   page: {
-    backgroundColor: COLORS.bg,
+    backgroundColor: DEFAULT_COLORS.bg,
     padding: 40,
     fontFamily: "Helvetica",
     fontSize: 11,
-    color: COLORS.text,
+    color: DEFAULT_COLORS.text,
   },
-  // Header
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    borderBottom: `2pt solid ${COLORS.primary}`,
     paddingBottom: 16,
     marginBottom: 24,
+  },
+  brandStack: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  logoImage: {
+    width: 32,
+    height: 32,
   },
   brandName: {
     fontSize: 18,
     fontWeight: "bold",
-    color: COLORS.primary,
     letterSpacing: 1,
-  },
-  brandTagline: {
-    fontSize: 9,
-    color: COLORS.textMuted,
-    marginTop: 2,
   },
   ticketLabel: {
     fontSize: 9,
-    color: COLORS.textMuted,
+    color: DEFAULT_COLORS.textMuted,
     textTransform: "uppercase",
     letterSpacing: 1,
   },
@@ -57,67 +58,80 @@ const styles = StyleSheet.create({
     fontFamily: "Courier",
     marginTop: 2,
   },
-  // Event title
-  eventTitle: {
-    fontSize: 24,
+  invitationBadge: {
+    marginTop: 4,
+    alignSelf: "flex-start",
+    paddingVertical: 3,
+    paddingHorizontal: 8,
+    fontSize: 8,
     fontWeight: "bold",
-    marginBottom: 8,
-    color: COLORS.text,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    borderRadius: 3,
+  },
+  eventTitle: {
+    fontSize: 26,
+    fontWeight: "bold",
+    marginBottom: 6,
+    color: DEFAULT_COLORS.text,
   },
   eventType: {
     fontSize: 10,
-    color: COLORS.primary,
     textTransform: "uppercase",
     letterSpacing: 1,
-    marginBottom: 16,
+    marginBottom: 18,
   },
-  // Info grid
+  accentBar: {
+    height: 4,
+    marginBottom: 24,
+  },
   infoGrid: {
     flexDirection: "row",
     gap: 24,
     marginBottom: 24,
   },
-  infoColumn: {
-    flex: 1,
-  },
+  infoColumn: { flex: 1 },
   infoLabel: {
     fontSize: 8,
-    color: COLORS.textMuted,
+    color: DEFAULT_COLORS.textMuted,
     textTransform: "uppercase",
     letterSpacing: 0.5,
     marginBottom: 4,
   },
   infoValue: {
     fontSize: 12,
-    color: COLORS.text,
+    color: DEFAULT_COLORS.text,
     fontWeight: "bold",
   },
   infoSubvalue: {
     fontSize: 10,
-    color: COLORS.textMuted,
+    color: DEFAULT_COLORS.textMuted,
     marginTop: 2,
   },
-  // Attendee section (highlighted)
   attendeeSection: {
-    backgroundColor: COLORS.bgSubtle,
-    border: `1pt solid ${COLORS.border}`,
+    backgroundColor: DEFAULT_COLORS.bgSubtle,
+    border: `1pt solid ${DEFAULT_COLORS.border}`,
     borderRadius: 4,
-    padding: 16,
+    padding: 18,
     marginBottom: 24,
   },
-  // QR section
+  attendeeName: {
+    fontSize: 22,
+    fontWeight: "bold",
+    marginBottom: 4,
+  },
   qrSection: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     marginVertical: 24,
     padding: 24,
-    border: `1pt dashed ${COLORS.border}`,
+    border: `1pt dashed ${DEFAULT_COLORS.border}`,
     borderRadius: 4,
   },
   qrImage: {
-    width: 160,
-    height: 160,
+    width: 170,
+    height: 170,
   },
   qrInstructions: {
     marginLeft: 24,
@@ -130,33 +144,26 @@ const styles = StyleSheet.create({
   },
   qrText: {
     fontSize: 10,
-    color: COLORS.textMuted,
+    color: DEFAULT_COLORS.textMuted,
     lineHeight: 1.5,
   },
-  // Footer
   footer: {
     position: "absolute",
     bottom: 40,
     left: 40,
     right: 40,
-    borderTop: `1pt solid ${COLORS.border}`,
+    borderTop: `1pt solid ${DEFAULT_COLORS.border}`,
     paddingTop: 12,
     flexDirection: "row",
     justifyContent: "space-between",
   },
   footerText: {
     fontSize: 8,
-    color: COLORS.textMuted,
-  },
-  accentBar: {
-    height: 4,
-    backgroundColor: COLORS.accent,
-    marginBottom: 24,
+    color: DEFAULT_COLORS.textMuted,
   },
 });
 
 interface TicketPdfProps {
-  // Event
   eventTitle: string;
   eventType: string;
   startsAt: Date;
@@ -165,16 +172,18 @@ interface TicketPdfProps {
   venueAddress: string;
   city: string;
   timezone: string;
-  // Attendee
   attendeeName: string;
   attendeeEmail: string;
-  // Tier
   tierName: string;
-  // QR
   qrDataUrl: string;
   ticketToken: string;
-  // Locale
   locale: "en" | "de" | "fr";
+  brandName?: string;
+  legalName?: string;
+  supportEmail?: string;
+  primaryColor?: string;
+  logoUrl?: string;
+  isInvitation?: boolean;
 }
 
 const TRANSLATIONS = {
@@ -185,33 +194,43 @@ const TRANSLATIONS = {
     attendee: "Attendee",
     tierLabel: "Ticket Type",
     scanTitle: "Present at entrance",
-    scanText: "Show this QR code at the entrance for fast check-in. Each ticket is valid for one person only.",
-    footer: "DBC Germany (UG i.G.) \u00B7 ticket.dbc-germany.com",
+    scanText:
+      "Show this QR code at the entrance for fast check-in. One scan only — ticket cannot be reused.",
+    invitation: "Invited guest",
+    support: "Support",
   },
   de: {
     ticket: "Ticket",
     date: "Datum",
     venue: "Veranstaltungsort",
-    attendee: "Teilnehmer",
+    attendee: "Teilnehmer:in",
     tierLabel: "Ticketart",
     scanTitle: "Am Eingang vorzeigen",
-    scanText: "Zeigen Sie diesen QR-Code am Eingang f\u00FCr einen schnellen Check-in. Jedes Ticket ist nur f\u00FCr eine Person g\u00FCltig.",
-    footer: "DBC Germany (UG i.G.) \u00B7 ticket.dbc-germany.com",
+    scanText:
+      "Zeigen Sie diesen QR-Code am Eingang. Einmalige Verwendung — Ticket kann nicht wiederverwendet werden.",
+    invitation: "Eingeladener Gast",
+    support: "Support",
   },
   fr: {
     ticket: "Billet",
     date: "Date",
     venue: "Lieu",
-    attendee: "Participant",
+    attendee: "Participant·e",
     tierLabel: "Type de billet",
-    scanTitle: "\u00C0 pr\u00E9senter \u00E0 l\u2019entr\u00E9e",
-    scanText: "Montrez ce code QR \u00E0 l\u2019entr\u00E9e pour un enregistrement rapide. Chaque billet n\u2019est valable que pour une seule personne.",
-    footer: "DBC Germany (UG i.G.) \u00B7 ticket.dbc-germany.com",
+    scanTitle: "À présenter à l'entrée",
+    scanText:
+      "Montrez ce code QR à l'entrée. Usage unique — le billet ne peut pas être réutilisé.",
+    invitation: "Invité·e",
+    support: "Assistance",
   },
 };
 
 export function TicketPdf(props: TicketPdfProps) {
   const t = TRANSLATIONS[props.locale];
+  const primary = props.primaryColor || DEFAULT_COLORS.primary;
+  const brandName = props.brandName || "DBC Germany";
+  const legalName = props.legalName || "DBC Germany";
+  const supportEmail = props.supportEmail || "info@dbc-germany.com";
 
   const dateStr = props.startsAt.toLocaleDateString(props.locale, {
     weekday: "long",
@@ -219,7 +238,6 @@ export function TicketPdf(props: TicketPdfProps) {
     month: "long",
     day: "numeric",
   });
-
   const timeStr = `${props.startsAt.toLocaleTimeString(props.locale, {
     hour: "2-digit",
     minute: "2-digit",
@@ -232,11 +250,19 @@ export function TicketPdf(props: TicketPdfProps) {
     <Document>
       <Page size="A4" style={styles.page}>
         {/* Header */}
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.brandName}>DBC GERMANY</Text>
-            <Text style={styles.brandTagline}>
-              Africa\u2019s Top Business Group
+        <View
+          style={[
+            styles.header,
+            { borderBottom: `2pt solid ${primary}` },
+          ]}
+        >
+          <View style={styles.brandStack}>
+            {props.logoUrl && (
+              /* eslint-disable-next-line jsx-a11y/alt-text */
+              <Image src={props.logoUrl} style={styles.logoImage} />
+            )}
+            <Text style={[styles.brandName, { color: primary }]}>
+              {brandName.toUpperCase()}
             </Text>
           </View>
           <View>
@@ -244,16 +270,27 @@ export function TicketPdf(props: TicketPdfProps) {
             <Text style={styles.ticketNumber}>
               {props.ticketToken.slice(0, 8).toUpperCase()}
             </Text>
+            {props.isInvitation && (
+              <Text
+                style={[
+                  styles.invitationBadge,
+                  { backgroundColor: primary, color: "#ffffff" },
+                ]}
+              >
+                {t.invitation}
+              </Text>
+            )}
           </View>
         </View>
 
-        {/* Event Title */}
-        <Text style={styles.eventType}>{props.eventType}</Text>
+        {/* Event */}
+        <Text style={[styles.eventType, { color: primary }]}>
+          {props.eventType}
+        </Text>
         <Text style={styles.eventTitle}>{props.eventTitle}</Text>
+        <View style={[styles.accentBar, { backgroundColor: primary }]} />
 
-        <View style={styles.accentBar} />
-
-        {/* Info Grid */}
+        {/* Info */}
         <View style={styles.infoGrid}>
           <View style={styles.infoColumn}>
             <Text style={styles.infoLabel}>{t.date}</Text>
@@ -272,22 +309,17 @@ export function TicketPdf(props: TicketPdfProps) {
           </View>
         </View>
 
-        {/* Attendee */}
+        {/* Attendee — name prominent */}
         <View style={styles.attendeeSection}>
-          <View style={styles.infoGrid}>
-            <View style={styles.infoColumn}>
-              <Text style={styles.infoLabel}>{t.attendee}</Text>
-              <Text style={styles.infoValue}>{props.attendeeName}</Text>
-              <Text style={styles.infoSubvalue}>{props.attendeeEmail}</Text>
-            </View>
-            <View style={styles.infoColumn}>
-              <Text style={styles.infoLabel}>{t.tierLabel}</Text>
-              <Text style={styles.infoValue}>{props.tierName}</Text>
-            </View>
-          </View>
+          <Text style={styles.infoLabel}>{t.attendee}</Text>
+          <Text style={styles.attendeeName}>{props.attendeeName}</Text>
+          <Text style={styles.infoSubvalue}>{props.attendeeEmail}</Text>
+          <View style={{ height: 10 }} />
+          <Text style={styles.infoLabel}>{t.tierLabel}</Text>
+          <Text style={styles.infoValue}>{props.tierName}</Text>
         </View>
 
-        {/* QR Code Section */}
+        {/* QR */}
         <View style={styles.qrSection}>
           {/* eslint-disable-next-line jsx-a11y/alt-text */}
           <Image src={props.qrDataUrl} style={styles.qrImage} />
@@ -299,7 +331,9 @@ export function TicketPdf(props: TicketPdfProps) {
 
         {/* Footer */}
         <View style={styles.footer}>
-          <Text style={styles.footerText}>{t.footer}</Text>
+          <Text style={styles.footerText}>
+            {legalName} · {t.support}: {supportEmail}
+          </Text>
           <Text style={styles.footerText}>
             #{props.ticketToken.slice(0, 8).toUpperCase()}
           </Text>

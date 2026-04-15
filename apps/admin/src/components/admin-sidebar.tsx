@@ -34,7 +34,8 @@ const NAV_ITEMS: NavItem[] = [
   { label: "News", href: "/news", icon: "\u270E", minRole: "manager", dividerAbove: true },
   { label: "Applications", href: "/applications", icon: "\u2618", minRole: "manager" },
 
-  { label: "Team", href: "/team", icon: "\u2603", minRole: "manager", dividerAbove: true },
+  { label: "Contacts", href: "/contacts", icon: "\u2709", minRole: "manager", dividerAbove: true },
+  { label: "Team", href: "/team", icon: "\u2603", minRole: "manager" },
   { label: "Staff", href: "/staff", icon: "\u263A", minRole: "admin" },
 
   { label: "Notifications", href: "/notifications", icon: "\u266A", minRole: "team_member", dividerAbove: true },

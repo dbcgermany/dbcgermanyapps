@@ -16,8 +16,9 @@
   --dbc-color-bg:                #ffffff;
   --dbc-color-bg-secondary:      #fafafa;
   --dbc-color-bg-tertiary:       #f5f5f5;
-  --dbc-color-surface:           #ffffff;
+  --dbc-color-surface:           #f7f7f9;
   --dbc-color-surface-raised:    #fafafa;
+  --dbc-color-surface-footer:    #eef0f3;
   --dbc-color-text:              #111111;
   --dbc-color-text-secondary:    #737373;
   --dbc-color-text-muted:        #a3a3a3;
@@ -123,8 +124,9 @@
   --dbc-color-bg:                #0a0a0a;
   --dbc-color-bg-secondary:      #141414;
   --dbc-color-bg-tertiary:       #1e1e1e;
-  --dbc-color-surface:           #1a1a1a;
+  --dbc-color-surface:           #141416;
   --dbc-color-surface-raised:    #222222;
+  --dbc-color-surface-footer:    #18181b;
   --dbc-color-text:              #fafafa;
   --dbc-color-text-secondary:    #a3a3a3;
   --dbc-color-text-muted:        #666666;
@@ -180,6 +182,7 @@
 .bg-background { background-color: var(--dbc-color-bg); }
 .bg-surface { background-color: var(--dbc-color-surface); }
 .bg-surface-raised { background-color: var(--dbc-color-surface-raised); }
+.bg-surface-footer { background-color: var(--dbc-color-surface-footer); }
 
 /* Semantic text utilities */
 .text-foreground { color: var(--dbc-color-text); }

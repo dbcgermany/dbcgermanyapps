@@ -1,6 +1,7 @@
 "use server";
 
 import { createServerClient, requireRole } from "@dbc/supabase/server";
+import { sendTicketEmail } from "@dbc/email";
 import { revalidatePath } from "next/cache";
 
 export async function createDoorSale(formData: FormData) {
@@ -9,13 +10,19 @@ export async function createDoorSale(formData: FormData) {
 
   const eventId = formData.get("event_id") as string;
   const tierId = formData.get("tier_id") as string;
-  const attendeeName = formData.get("attendee_name") as string;
-  const attendeeEmail =
-    (formData.get("attendee_email") as string) || `door-sale-${Date.now()}@no-email.local`;
-  const paymentMethod = formData.get("payment_method") as string;
+  const rawName = (formData.get("attendee_name") as string) || "";
+  const rawEmail = (formData.get("attendee_email") as string) || "";
+  const attendeeName = rawName.trim();
+  const hasRealEmail = rawEmail.trim().length > 0 && rawEmail.includes("@");
+  const attendeeEmail = hasRealEmail
+    ? rawEmail.trim().toLowerCase()
+    : `door-sale-${Date.now()}@no-email.local`;
+  // Card-at-door is not integrated — all door sales are cash. Route card
+  // buyers to the online checkout via the poster.
+  const paymentMethod = "cash";
   const locale = formData.get("locale") as string;
 
-  if (!attendeeName.trim()) {
+  if (!attendeeName) {
     return { error: "Attendee name is required." };
   }
 
@@ -40,11 +47,29 @@ export async function createDoorSale(formData: FormData) {
     return { error: `"${tier.name_en}" is sold out.` };
   }
 
+  // Upsert contact (only if we have a real email)
+  const [firstName, ...rest] = attendeeName.split(/\s+/);
+  const lastName = rest.join(" ");
+  let contactId: string | null = null;
+  if (hasRealEmail) {
+    const { data: contactIdData } = await supabase.rpc(
+      "upsert_contact_from_checkout",
+      {
+        p_email: attendeeEmail,
+        p_first_name: firstName,
+        p_last_name: lastName || null,
+        p_auto_category_slug: "event_attendees",
+      }
+    );
+    contactId = (contactIdData as string | null) ?? null;
+  }
+
   // Create order (status: paid, marked as door_sale)
   const { data: order, error: orderError } = await supabase
     .from("orders")
     .insert({
       buyer_id: null,
+      contact_id: contactId,
       event_id: eventId,
       subtotal_cents: tier.price_cents,
       discount_cents: 0,
@@ -73,12 +98,25 @@ export async function createDoorSale(formData: FormData) {
     order_id: order.id,
     event_id: eventId,
     tier_id: tierId,
+    contact_id: contactId,
     attendee_name: attendeeName,
+    attendee_first_name: firstName || null,
+    attendee_last_name: lastName || null,
     attendee_email: attendeeEmail,
   });
 
   if (ticketError) {
     return { error: "Failed to create ticket." };
+  }
+
+  // Email the PDF immediately (only if we have a real inbox to send to)
+  if (hasRealEmail) {
+    try {
+      await deliverDoorSaleTicket(supabase, order.id, locale);
+    } catch (err) {
+      console.error("Door-sale email delivery failed:", err);
+      // Don't fail the sale — ticket exists, staff can resend from contact profile
+    }
   }
 
   // Audit log
@@ -196,4 +234,76 @@ export async function getEventTiers(eventId: string) {
     .order("sort_order", { ascending: true });
 
   return data ?? [];
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function deliverDoorSaleTicket(supabase: any, orderId: string, locale: string) {
+  const [{ data: ticket }, { data: event }, { data: companyInfo }] = await Promise.all([
+    supabase
+      .from("tickets")
+      .select(
+        "id, ticket_token, attendee_name, attendee_email, tier:ticket_tiers(name_en, name_de, name_fr)"
+      )
+      .eq("order_id", orderId)
+      .single(),
+    supabase
+      .from("orders")
+      .select(
+        "event:events(title_en, title_de, title_fr, event_type, starts_at, ends_at, venue_name, venue_address, city, timezone), acquisition_type"
+      )
+      .eq("id", orderId)
+      .single(),
+    supabase
+      .from("company_info")
+      .select(
+        "brand_name, legal_name, legal_form, support_email, primary_color, logo_light_url"
+      )
+      .eq("id", 1)
+      .maybeSingle(),
+  ]);
+
+  if (!ticket || !event?.event) return;
+
+  const loc = (locale as "en" | "de" | "fr") || "en";
+  const eventTitle = event.event[`title_${loc}`] || event.event.title_en;
+  const tierName = ticket.tier?.[`name_${loc}`] || ticket.tier?.name_en || "Ticket";
+  const legalName = companyInfo
+    ? [companyInfo.legal_name, companyInfo.legal_form].filter(Boolean).join(" ")
+    : undefined;
+
+  const result = await sendTicketEmail({
+    attendeeName: ticket.attendee_name,
+    attendeeEmail: ticket.attendee_email,
+    eventTitle,
+    eventType: event.event.event_type,
+    startsAt: new Date(event.event.starts_at),
+    endsAt: new Date(event.event.ends_at),
+    venueName: event.event.venue_name ?? "",
+    venueAddress: event.event.venue_address ?? "",
+    city: event.event.city ?? "",
+    timezone: event.event.timezone,
+    tierName,
+    ticketToken: ticket.ticket_token,
+    locale: loc,
+    orderUrl: `${process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://ticket.dbc-germany.com"}/${loc}/confirmation/${orderId}`,
+    brandName: companyInfo?.brand_name ?? undefined,
+    legalName,
+    supportEmail: companyInfo?.support_email ?? undefined,
+    primaryColor: companyInfo?.primary_color ?? undefined,
+    logoUrl: companyInfo?.logo_light_url ?? undefined,
+    isInvitation: event.acquisition_type === "invited" || event.acquisition_type === "assigned",
+  });
+
+  await supabase
+    .from("tickets")
+    .update({
+      pdf_url: `sent:${new Date().toISOString()}`,
+      email_message_id: result?.id ?? null,
+    })
+    .eq("id", ticket.id);
+
+  await supabase
+    .from("orders")
+    .update({ email_sent_at: new Date().toISOString() })
+    .eq("id", orderId);
 }

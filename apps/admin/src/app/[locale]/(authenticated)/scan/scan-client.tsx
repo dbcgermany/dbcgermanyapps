@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useTransition } from "react";
+import { toast } from "sonner";
 import { checkInTicket, getScanStats, type ScanResult } from "@/actions/scan";
+import { searchAttendees, manualCheckIn, resendTicketPdf, type AttendeeSearchResult } from "@/actions/tickets";
 
 type Status =
   | { kind: "idle" }
@@ -314,6 +316,142 @@ export function ScanClient({
           </button>
         </div>
       </form>
+
+      {/* Quick-find by name (for lost-ticket visitors) */}
+      <NameFindPanel eventId={eventId} onCheckedIn={() => refreshStats()} />
+    </div>
+  );
+
+  async function refreshStats() {
+    const s = await getScanStats(eventId);
+    setStats(s);
+  }
+}
+
+function NameFindPanel({
+  eventId,
+  onCheckedIn,
+}: {
+  eventId: string;
+  onCheckedIn: () => void;
+}) {
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<AttendeeSearchResult[]>([]);
+  const [searching, startSearch] = useTransition();
+  const [actionPending, startAction] = useTransition();
+
+  useEffect(() => {
+    if (query.trim().length < 2) return;
+    const handle = setTimeout(() => {
+      startSearch(async () => {
+        const rows = await searchAttendees({ query, eventId, limit: 20 });
+        setResults(rows);
+      });
+    }, 250);
+    return () => clearTimeout(handle);
+  }, [query, eventId]);
+
+  // Derive empty state from query length rather than mutating in an effect.
+  const shouldShowResults = query.trim().length >= 2;
+  const visibleResults = shouldShowResults ? results : [];
+
+  function handleCheckIn(r: AttendeeSearchResult) {
+    startAction(async () => {
+      const result = await manualCheckIn(r.ticket_token, eventId);
+      if ("error" in result) {
+        toast.error(
+          `${result.error}${
+            result.alreadyAt
+              ? ` (${new Date(result.alreadyAt).toLocaleTimeString()})`
+              : ""
+          }`
+        );
+      } else {
+        toast.success(`Checked in: ${result.attendee_name}`);
+        onCheckedIn();
+        setResults((rs) =>
+          rs.map((row) =>
+            row.ticket_id === r.ticket_id
+              ? { ...row, checked_in_at: new Date().toISOString() }
+              : row
+          )
+        );
+      }
+    });
+  }
+
+  function handleResend(r: AttendeeSearchResult) {
+    startAction(async () => {
+      const result = await resendTicketPdf(r.ticket_id);
+      if ("error" in result) toast.error(result.error);
+      else toast.success(`Ticket sent to ${r.attendee_email}.`);
+    });
+  }
+
+  return (
+    <div className="rounded-lg border border-border p-4">
+      <p className="text-sm font-medium mb-2">Can&apos;t scan? Find by name</p>
+      <input
+        type="search"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="Type a name, email, or surname…"
+        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+      />
+      {searching && shouldShowResults && (
+        <p className="mt-2 text-xs text-muted-foreground">Searching…</p>
+      )}
+      {visibleResults.length > 0 && (
+        <ul className="mt-3 space-y-2">
+          {visibleResults.map((r) => (
+            <li
+              key={r.ticket_id}
+              className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border p-3 text-sm"
+            >
+              <div>
+                <p className="font-medium">
+                  {[r.attendee_first_name, r.attendee_last_name]
+                    .filter(Boolean)
+                    .join(" ") || r.attendee_name}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {r.attendee_email} · {r.tier_name} ·{" "}
+                  {r.acquisition_type === "invited" ||
+                  r.acquisition_type === "assigned"
+                    ? "Invited"
+                    : r.acquisition_type === "door_sale"
+                      ? "Door"
+                      : "Paid"}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                {r.checked_in_at ? (
+                  <span className="text-xs font-medium text-green-600">
+                    ✓ Checked in
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => handleCheckIn(r)}
+                    disabled={actionPending}
+                    className="rounded-md bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                  >
+                    Check in
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => handleResend(r)}
+                  disabled={actionPending}
+                  className="rounded-md border border-border px-3 py-1 text-xs font-medium hover:bg-muted disabled:opacity-50"
+                >
+                  Resend PDF
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
