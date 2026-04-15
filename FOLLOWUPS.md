@@ -4,6 +4,39 @@ Living doc. Close items by editing this file; don't track them elsewhere.
 
 ---
 
+## 0. Mail architecture decision (locked 2026-04-16)
+
+**Two mail systems coexist on `dbc-germany.com`:**
+
+1. **Google Workspace** handles RECEIVING for every `@dbc-germany.com`
+   address + SENDING for human-staffed mailboxes (`info@`, `sales@`,
+   `marketing@`, `community@`, `support@`, `press@`, `careers@`, etc.).
+2. **Resend** handles SENDING only from six reserved addresses. Replies
+   to these don't reach humans — they bounce or silently drop.
+
+**Resend-only senders (no human reads these inboxes):**
+
+| Address | Used for |
+|---|---|
+| `noreply@dbc-germany.com` | Transactional default — admin alerts, waitlist, aftercare, staff-to-contact |
+| `tickets@dbc-germany.com` | Ticket delivery, order receipts, transfer confirmations |
+| `newsletter@dbc-germany.com` | Newsletter broadcasts + double-opt-in confirm |
+| `password@dbc-germany.com` | Supabase Auth (password reset, magic link, signup confirm, email change, reauth, invite) |
+| `security@dbc-germany.com` | _Future_: new-device login alerts, 2FA enabled/disabled, password-changed confirmation |
+| `unsubscribe@dbc-germany.com` | Sink only — referenced in `List-Unsubscribe: <mailto:unsubscribe@…>` header. Not monitored; Gmail + Apple Mail use it for one-click unsub. |
+
+**Reply-To on Resend emails**: _none_. Users who want to reply are directed
+to the website contact form or the appropriate Google mailbox.
+
+**DNS implications (critical)**:
+- Apex `dbc-germany.com` **MX + SPF + DKIM must stay** = Google Workspace.
+- Resend records live on **subdomains only** (`send.`, `resend._domainkey.`)
+  — zero overlap with Google.
+- Both systems coexist because Resend uses `send.dbc-germany.com` as its
+  Return-Path (hence its own SPF on that subdomain, not on apex).
+
+---
+
 ## 1. Resend: verify `dbc-germany.com` in Resend dashboard
 
 **Status**: BLOCKER for production email.
@@ -38,57 +71,98 @@ Propagation is usually 5–30 minutes. Once the records resolve, Resend will
 auto-verify. If it doesn't, tell me and I'll hit `POST /domains/:id/verify`
 from my side.
 
-### Strato-specific walkthrough (2026-04-15 status)
+### Strato-specific walkthrough (Google-Workspace-safe)
 
-As of 2026-04-15 20:57 UTC, Google DNS resolves:
-- `resend._domainkey.dbc-germany.com` → NXDOMAIN (record not set)
-- `send.dbc-germany.com` MX → `smtpin.rzone.de` (Strato's default, not Resend)
-- `send.dbc-germany.com` TXT → no TXT record
-- `_dmarc.dbc-germany.com` TXT → `v=DMARC1; p=none; rua=mailto:deine@email.de`
-  (placeholder — the mailto is literally "deine@email.de")
+**Do not touch these records** (they are Google Workspace):
+- Apex `dbc-germany.com` MX → `aspmx.l.google.com.` + `alt*.aspmx.l.google.com.`
+- Apex TXT → `v=spf1 include:_spf.google.com ~all`
+- Any TXT `google._domainkey` / `google2025._domainkey` etc. (Google DKIM selectors)
 
-Strato DNS-Verwaltung fields (Experten-Modus):
+**Add only these four records** (all on subdomains — none touch the apex):
 
 | Subdomain / Name | Typ | Prio | Wert |
 |---|---|---|---|
 | `resend._domainkey` | TXT | – | `p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDdl/Qv7BCbC3/BLyaTX/1zzwASK++NVP5NpaLQCx7RHh6CiCxST6e5jdCzU1rDpdsVWmIWG+Nctvx8bkVs+e/tjVpesSY5waQ5j9zgtH0Ff7bxgXMorSl0XvyR0DO6kkDWbg+GsSPKV4hws9XYwYvMMMUd9LH+IEzlHQtyUE3zLQIDAQAB` |
 | `send` | MX | `10` | `feedback-smtp.eu-west-1.amazonses.com.` (trailing dot is fine) |
 | `send` | TXT | – | `v=spf1 include:amazonses.com ~all` |
-| `_dmarc` | TXT | – | `v=DMARC1; p=none; rua=mailto:info@dbc-germany.com` (replace the `deine@email.de` placeholder) |
+| `_dmarc` | TXT | – | `v=DMARC1; p=none; rua=mailto:info@dbc-germany.com` (**replace the current** `deine@email.de` **placeholder**) |
 
 Notes for Strato's editor:
 - Strato shows subdomain only; you type `resend._domainkey` (not the full
   `resend._domainkey.dbc-germany.com`).
 - For MX, Strato wants the priority in its own field; use `10`.
 - Don't wrap the TXT values in extra quotes — Strato adds them.
-- After saving, click "Aktualisieren" in the Strato UI; propagation is
-  5–30 minutes.
+- The `send` MX here will have a note warning about "wildcard override" —
+  that's expected. Strato's default wildcard MX points at `smtpin.rzone.de`
+  (which is why `send.dbc-germany.com` currently resolves there). Adding
+  this specific MX overrides the wildcard for `send` only; all other
+  subdomains stay on Strato's default.
+- After saving, click "Aktualisieren"; propagation is 5–30 minutes.
 
-> **Cloudflare note** (not applicable here, but for future reference): TXT
-> records must be "DNS only", never proxied.
+The DMARC record is the only one that touches reporting — it's compatible
+with both Google and Resend. `rua=mailto:info@dbc-germany.com` sends the
+daily aggregate reports to Google Workspace (info@ goes to your inbox).
+Later, move to `p=quarantine` once you've verified nothing legitimate is
+bouncing.
 
-### Once verified — update Vercel env vars
+> **Not applicable** (we're on Strato, not Cloudflare): TXT records must be
+> "DNS only", never proxied.
 
-Set these on all three Vercel projects (admin, tickets, site):
+### Once verified — Vercel env vars
 
-- `RESEND_FROM_ADDRESS` = `DBC Germany <tickets@dbc-germany.com>` (transactional + receipts)
-- `RESEND_NEWSLETTER_FROM` = `DBC Germany <newsletter@dbc-germany.com>`
-- `RESEND_STAFF_FROM_ADDRESS` = `DBC Germany <hello@dbc-germany.com>`
+Env vars are already set on all three projects (admin, tickets, site) with
+these values; no further action unless you want to change them:
 
-Redeploy the three apps after the env vars are set. No code changes required — the
-fallback in `packages/email/src/client.ts` (`fromAddressFor`) will pick the env
-values automatically.
+```
+RESEND_FROM_ADDRESS        = DBC Germany <noreply@dbc-germany.com>
+RESEND_TICKETS_FROM        = DBC Germany <tickets@dbc-germany.com>
+RESEND_NEWSLETTER_FROM     = DBC Germany <newsletter@dbc-germany.com>
+RESEND_UNSUBSCRIBE_MAILTO  = unsubscribe@dbc-germany.com
+```
 
-### Mailbox reality check
-The reply-to addresses (`hello@`, `tickets@`, `newsletter@`) should actually
-receive mail — otherwise replies bounce. Point them to existing Google Workspace /
-Apple Mail / whatever aliases the team already uses.
+The three apps will auto-use them once Resend verifies the domain. Until
+then emails go through `onboarding@resend.dev` (Resend owner only).
 
-### List-Unsubscribe mailto fallback
-After the domain is verified, also set up `unsubscribe@dbc-germany.com` as
-an alias, and add it as a fallback to the existing HTTP unsubscribe URL in
-`packages/email/src/send-newsletter.ts`. Gmail's spam score improves when
-both headers are present.
+### Supabase Auth SMTP (for `password@`)
+
+Supabase Auth needs to be pointed at Resend's SMTP to send from
+`password@dbc-germany.com`. **I can't configure this via API without a
+Management PAT** — you (or I, if you share a PAT) set it in the dashboard:
+
+1. Go to **Supabase dashboard → Project `rcqgsexfuaoiiuqcqeka` → Authentication → Emails → SMTP Settings**.
+2. Enable **"Enable custom SMTP"** toggle.
+3. Fill in:
+   - **Sender email**: `password@dbc-germany.com`
+   - **Sender name**: `DBC Germany`
+   - **Host**: `smtp.resend.com`
+   - **Port**: `465` (SSL) — or `587` (STARTTLS), either works
+   - **Username**: `resend`
+   - **Password**: the Resend API key (saved in `credentials.md`)
+4. Save. Send a test email via the "Reset password" preview to confirm.
+
+All six Supabase Auth email types — Confirm signup, Magic Link, Reset
+Password, Change Email Address, Reauthentication, Invite — will now send
+from `password@`.
+
+### Reserved-but-not-yet-wired senders
+
+- `security@dbc-germany.com` — will be used by a future flow that emails
+  users on: new-device login, password changed, 2FA enabled/disabled,
+  email address changed. No current code sends from it. When we build
+  that flow, add `RESEND_SECURITY_FROM` env and a
+  `fromAddressFor("security")` branch.
+- `unsubscribe@dbc-germany.com` — sink only, not a real monitored mailbox.
+  Referenced in the `List-Unsubscribe: <mailto:...>` header on newsletter
+  sends so Gmail/Apple Mail one-click unsub lands somewhere acceptable.
+  You can optionally create it as an alias to a deleted folder in Google
+  Workspace.
+
+### Mailbox ownership
+
+Reply-To is **not set** on Resend emails — users are directed to the
+website contact form. If you later want conversational replies from any
+Resend sender, set a Reply-To pointing at the appropriate Google mailbox
+(`info@`, `support@`, etc.). The code supports it per-call.
 
 ---
 

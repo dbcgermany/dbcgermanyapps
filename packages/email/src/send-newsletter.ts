@@ -40,6 +40,10 @@ export async function sendNewsletterEmail(input: SendNewsletterInput) {
     input.fromName && input.fromEmail
       ? `${input.fromName} <${input.fromEmail}>`
       : fromAddressFor("newsletter");
+  // List-Unsubscribe with both HTTP AND mailto (per RFC 8058). Gmail + Apple
+  // Mail honour both; having the mailto fallback bumps inbox placement.
+  const unsubscribeMailto =
+    process.env.RESEND_UNSUBSCRIBE_MAILTO ?? "unsubscribe@dbc-germany.com";
   const res = await resend.emails.send({
     from,
     to: input.to,
@@ -47,7 +51,7 @@ export async function sendNewsletterEmail(input: SendNewsletterInput) {
     html,
     replyTo: input.replyTo,
     headers: {
-      "List-Unsubscribe": `<${input.unsubscribeUrl}>`,
+      "List-Unsubscribe": `<${input.unsubscribeUrl}>, <mailto:${unsubscribeMailto}>`,
       "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
     },
   });
