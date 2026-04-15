@@ -88,7 +88,7 @@ export default async function AboutPage({
                   alt="Dr. Jean-Clément Diambilay"
                   fill
                   sizes="(min-width: 768px) 33vw, 80vw"
-                  className="object-contain"
+                  className="object-cover object-top"
                   referrerPolicy="no-referrer"
                 />
               </div>
