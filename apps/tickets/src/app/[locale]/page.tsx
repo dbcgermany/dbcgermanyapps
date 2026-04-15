@@ -13,7 +13,7 @@ export default async function EventListingPage({
 
   const t = {
     en: {
-      tag: "Africa's Top Business Group · Germany",
+      tag: "International incubator · Europe chapter",
       title: "Richesses d'Afrique · Live events.",
       subtitle:
         "Masterclasses, conferences and meet-ups for founders, investors and operators building the EU ↔ Africa corridor.",
@@ -22,7 +22,7 @@ export default async function EventListingPage({
       soldOut: "Sold out",
     },
     de: {
-      tag: "Afrikas Top Business Group · Deutschland",
+      tag: "Internationaler Inkubator · Europa-Chapter",
       title: "Richesses d'Afrique · Live-Events.",
       subtitle:
         "Masterclasses, Konferenzen und Meet-ups für Gründer:innen, Investor:innen und Operator:innen, die den EU ↔ Afrika-Korridor gestalten.",
@@ -31,7 +31,7 @@ export default async function EventListingPage({
       soldOut: "Ausverkauft",
     },
     fr: {
-      tag: "Africa's Top Business Group · Allemagne",
+      tag: "Incubateur international · Chapitre Europe",
       title: "Richesses d'Afrique · Événements live.",
       subtitle:
         "Masterclasses, conférences et meet-ups pour les fondateur·ice·s, investisseur·euse·s et opérateur·ice·s qui bâtissent le corridor UE ↔ Afrique.",

@@ -2,7 +2,7 @@
 
 import { useTheme } from "./theme-provider";
 
-type Labels = { light: string; dark: string; system: string };
+type Labels = { light: string; dark: string };
 
 function SunIcon() {
   return (
@@ -48,28 +48,12 @@ function MoonIcon() {
   );
 }
 
-function MonitorIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <rect x="2" y="3" width="20" height="14" rx="2" />
-      <line x1="8" y1="21" x2="16" y2="21" />
-      <line x1="12" y1="17" x2="12" y2="21" />
-    </svg>
-  );
-}
-
+/**
+ * Binary light/dark toggle. "system" stays the implicit default when no user
+ * preference is set, but is never exposed as an option.
+ */
 export function ThemeToggle({
-  labels = { light: "Light", dark: "Dark", system: "System" },
+  labels = { light: "Light", dark: "Dark" },
   className = "",
 }: {
   labels?: Labels;
@@ -77,38 +61,30 @@ export function ThemeToggle({
 }) {
   const { theme, setTheme } = useTheme();
 
-  const modes: Array<{ key: keyof Labels; icon: React.ReactNode }> = [
-    { key: "light", icon: <SunIcon /> },
-    { key: "system", icon: <MonitorIcon /> },
-    { key: "dark", icon: <MoonIcon /> },
-  ];
+  // Treat the effective binary state: if theme is "system" (or unset), we
+  // still need a visual state — resolve to "dark" when the document has the
+  // dark class, otherwise "light".
+  const resolved: "light" | "dark" =
+    theme === "dark"
+      ? "dark"
+      : theme === "light"
+        ? "light"
+        : typeof document !== "undefined" &&
+            document.documentElement.classList.contains("dark")
+          ? "dark"
+          : "light";
+
+  const next = resolved === "dark" ? "light" : "dark";
 
   return (
-    <div
-      role="group"
-      aria-label={labels.system}
-      className={`inline-flex items-center gap-1 rounded-full border border-border bg-background/60 p-1 ${className}`}
+    <button
+      type="button"
+      onClick={() => setTheme(next)}
+      aria-label={resolved === "dark" ? labels.light : labels.dark}
+      title={resolved === "dark" ? labels.light : labels.dark}
+      className={`inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background/60 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground ${className}`}
     >
-      {modes.map((m) => {
-        const active = theme === m.key;
-        return (
-          <button
-            key={m.key}
-            type="button"
-            onClick={() => setTheme(m.key)}
-            aria-label={labels[m.key]}
-            aria-pressed={active}
-            title={labels[m.key]}
-            className={`inline-flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
-              active
-                ? "bg-foreground text-background"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
-            }`}
-          >
-            {m.icon}
-          </button>
-        );
-      })}
-    </div>
+      {resolved === "dark" ? <SunIcon /> : <MoonIcon />}
+    </button>
   );
 }

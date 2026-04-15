@@ -81,19 +81,20 @@ export default async function AboutPage({
                     : "Dr. Jean-Clément Diambilay founded the Diambilay Business Center in Lubumbashi on one simple conviction: Africa's greatest economic asset is its people. DBC Germany carries that conviction to Europe and brings every pillar of our ecosystem to the African diaspora."}
               </p>
             </div>
-            <div
-              aria-hidden
-              className="relative flex aspect-square items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-primary/15 via-primary/10 to-accent/20 p-8"
-            >
-              <div className="absolute inset-0 [background:radial-gradient(60%_60%_at_20%_20%,rgba(200,16,46,0.18)_0%,transparent_60%)]" />
-              <div className="relative text-center">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/20 font-heading text-xl font-bold text-primary">
-                  JCD
-                </div>
-                <p className="mt-4 font-heading text-lg font-bold leading-tight">
-                  Dr. Jean-Clément
-                  <br />
-                  Diambilay
+            <figure className="flex flex-col gap-3">
+              <div className="relative aspect-4/5 overflow-hidden rounded-2xl border border-border bg-muted shadow-sm">
+                <Image
+                  src={DBC.photo.founder}
+                  alt="Dr. Jean-Clément Diambilay"
+                  fill
+                  sizes="(min-width: 768px) 33vw, 80vw"
+                  className="object-contain"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+              <figcaption className="text-center">
+                <p className="font-heading text-base font-bold leading-tight">
+                  Dr. Jean-Clément Diambilay
                 </p>
                 <p className="mt-1 text-xs uppercase tracking-wider text-muted-foreground">
                   {locale === "de"
@@ -102,9 +103,18 @@ export default async function AboutPage({
                       ? "Fondateur · DBC Group"
                       : "Founder · DBC Group"}
                 </p>
-              </div>
-            </div>
+              </figcaption>
+            </figure>
           </div>
+
+          <blockquote className="mt-20 border-l-4 border-primary bg-muted/30 px-6 py-8 sm:px-10">
+            <p className="font-heading text-xl italic leading-relaxed text-foreground sm:text-2xl">
+              “{t("about.conviction")}”
+            </p>
+            <footer className="mt-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+              — {t("about.convictionAttribution")}
+            </footer>
+          </blockquote>
 
           <div className="mt-20 grid items-center gap-12 md:grid-cols-2">
             <div className="relative order-last aspect-[4/3] overflow-hidden rounded-2xl md:order-first">

@@ -27,3 +27,5 @@ export type {
   BadgeProps,
 } from "./atoms";
 export { CookieConsent, hasConsentedToCookies } from "./cookie-consent";
+export { ConfirmDialog } from "./confirm-dialog";
+export type { ConfirmDialogProps } from "./confirm-dialog";

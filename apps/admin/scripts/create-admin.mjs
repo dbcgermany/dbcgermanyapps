@@ -53,8 +53,7 @@ async function findUserByEmail(email) {
   // listUsers is paginated; scan until found or exhausted.
   let page = 1;
   // 1000 is the max per page.
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
+  for (;;) {
     const { data, error } = await service.auth.admin.listUsers({
       page,
       perPage: 1000,

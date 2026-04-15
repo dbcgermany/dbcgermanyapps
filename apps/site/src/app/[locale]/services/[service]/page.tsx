@@ -53,7 +53,6 @@ export default async function ServiceDetailPage({
   if (!isValidService(service)) notFound();
 
   const t = await getTranslations({ locale, namespace: "site" });
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const bullets = t.raw(`services.${service}.bullets`) as string[];
 
   return (

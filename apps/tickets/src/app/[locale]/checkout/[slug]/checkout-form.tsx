@@ -89,7 +89,7 @@ export function CheckoutForm({
   }, [turnstileSiteKey]);
 
   const [state, formAction, isPending] = useActionState(
-    async (_prev: { error?: string } | null) => {
+    async () => {
       for (let i = 0; i < attendees.length; i++) {
         if (!attendees[i].name.trim() || !attendees[i].email.trim()) {
           return {

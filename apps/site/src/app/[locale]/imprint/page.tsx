@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getCompanyInfo } from "@/lib/company-info";
 
 export async function generateMetadata({
   params,
@@ -89,6 +90,22 @@ export default async function ImprintPage({
 }) {
   const { locale } = await params;
   const t = HEADINGS[locale as keyof typeof HEADINGS] ?? HEADINGS.en;
+  const info = await getCompanyInfo();
+
+  const fullName = [info?.legal_name, info?.legal_form]
+    .filter(Boolean)
+    .join(" ");
+  const fullAddress = [
+    info?.registered_address,
+    [info?.registered_postal_code, info?.registered_city]
+      .filter(Boolean)
+      .join(" "),
+    info?.registered_country,
+  ].filter(Boolean);
+  const register =
+    info?.hrb_number && info?.hrb_court
+      ? `${info.hrb_court} · HRB ${info.hrb_number}`
+      : null;
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
@@ -101,42 +118,57 @@ export default async function ImprintPage({
           {t.info}
         </p>
         <p>
-          <strong>DBC Germany (UG in Gründung)</strong>
+          <strong>{fullName || "DBC Germany (UG in Gründung)"}</strong>
         </p>
-        <p>Speditionstraße 15a</p>
-        <p>40221 Düsseldorf</p>
-        <p>Deutschland</p>
+        {fullAddress.length > 0 ? (
+          fullAddress.map((line, i) => <p key={i}>{line}</p>)
+        ) : (
+          <>
+            <p>Speditionstraße 15a</p>
+            <p>40221 Düsseldorf</p>
+            <p>Deutschland</p>
+          </>
+        )}
       </section>
 
-      <section className="mt-8 space-y-2 text-base">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          {t.represented}
-        </p>
-        <p>Dr. Jean-Clément Diambilay — Founder, DBC</p>
-        <p>Ruth Bambi — Project Manager / Germany CEO</p>
-      </section>
+      {info?.managing_directors && (
+        <section className="mt-8 space-y-2 text-base">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            {t.represented}
+          </p>
+          {info.managing_directors.split(",").map((name, i) => (
+            <p key={i}>{name.trim()}</p>
+          ))}
+        </section>
+      )}
 
       <section className="mt-8 space-y-2 text-base">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           {t.contact}
         </p>
-        <p>
-          {locale === "de" ? "Telefon" : locale === "fr" ? "Téléphone" : "Phone"}
-          :{" "}
-          <a
-            href="tel:+4916314895470"
-            className="text-primary hover:text-primary/80"
-          >
-            +49 163 148 95 47
-          </a>
-        </p>
+        {info?.phone && (
+          <p>
+            {locale === "de"
+              ? "Telefon"
+              : locale === "fr"
+                ? "Téléphone"
+                : "Phone"}
+            :{" "}
+            <a
+              href={`tel:${info.phone.replace(/\s+/g, "")}`}
+              className="text-primary hover:text-primary/80"
+            >
+              {info.phone}
+            </a>
+          </p>
+        )}
         <p>
           E-Mail:{" "}
           <a
-            href="mailto:info@dbc-germany.com"
+            href={`mailto:${info?.primary_email ?? "info@dbc-germany.com"}`}
             className="text-primary hover:text-primary/80"
           >
-            info@dbc-germany.com
+            {info?.primary_email ?? "info@dbc-germany.com"}
           </a>
         </p>
       </section>
@@ -145,25 +177,35 @@ export default async function ImprintPage({
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           {t.register}
         </p>
-        <p className="text-muted-foreground">{t.pending}</p>
+        <p className={register ? "" : "text-muted-foreground"}>
+          {register ?? t.pending}
+        </p>
       </section>
 
       <section className="mt-8 space-y-2 text-base">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           {t.vat}
         </p>
-        <p className="text-muted-foreground">{t.pending}</p>
+        <p className={info?.vat_id ? "" : "text-muted-foreground"}>
+          {info?.vat_id ?? t.pending}
+        </p>
       </section>
 
-      <section className="mt-8 space-y-2 text-base">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          {t.responsible}
-        </p>
-        <p>Jay N Kalala — Sales &amp; Sponsorship Lead</p>
-        <p className="text-sm text-muted-foreground">
-          Anschrift wie oben
-        </p>
-      </section>
+      {info?.responsible_person && (
+        <section className="mt-8 space-y-2 text-base">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            {t.responsible}
+          </p>
+          <p>{info.responsible_person}</p>
+          <p className="text-sm text-muted-foreground">
+            {locale === "de"
+              ? "Anschrift wie oben"
+              : locale === "fr"
+                ? "Adresse comme ci-dessus"
+                : "Address as above"}
+          </p>
+        </section>
+      )}
 
       <section className="mt-10 space-y-4 text-base">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">

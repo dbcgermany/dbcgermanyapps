@@ -79,14 +79,14 @@ export default async function TeamPage({
       fr: "L'équipe DBC Germany",
     }[l],
     title: {
-      en: "A DACH team, tightly linked to DBC International.",
-      de: "Ein DACH-Team, eng verbunden mit DBC International.",
-      fr: "Une équipe DACH, étroitement liée à DBC International.",
+      en: "DBC Germany Team.",
+      de: "Das DBC Germany Team.",
+      fr: "L'équipe DBC Germany.",
     }[l],
     intro: {
-      en: "We're a small team in Düsseldorf connecting DBC's programmes, investments, and events to founders in Germany, Austria, and Switzerland.",
-      de: "Wir sind ein kleines Team in Düsseldorf, das die Programme, Investitionen und Veranstaltungen von DBC an Gründer:innen in Deutschland, Österreich und der Schweiz bringt.",
-      fr: "Nous sommes une petite équipe à Düsseldorf, qui relie les programmes, investissements et événements DBC aux entrepreneurs d'Allemagne, d'Autriche et de Suisse.",
+      en: "Senior operators in Düsseldorf. We run incubation, investments, courses, mentorship and the Richesses d'Afrique Germany conference for founders building between Europe and Africa.",
+      de: "Senior-Operator:innen in Düsseldorf. Wir betreiben Inkubation, Investitionen, Kurse, Mentoring und die Richesses d'Afrique Germany Konferenz für Gründer:innen, die zwischen Europa und Afrika bauen.",
+      fr: "Opérateur·ice·s senior à Düsseldorf. Nous opérons l'incubation, les investissements, les formations, le mentorat et la conférence Richesses d'Afrique Germany pour les fondateur·ice·s qui construisent entre l'Europe et l'Afrique.",
     }[l],
     empty: {
       en: "Team profiles are being prepared.",

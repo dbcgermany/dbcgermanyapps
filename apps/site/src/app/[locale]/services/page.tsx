@@ -92,7 +92,7 @@ export default async function ServicesHubPage({
         </div>
       </section>
 
-      <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 pt-20 sm:px-6 sm:pt-28 lg:px-8">
         <div className="grid gap-6 md:grid-cols-2">
           {SERVICES.map((s) => (
             <Link
@@ -142,6 +142,55 @@ export default async function ServicesHubPage({
           ))}
         </div>
       </div>
+
+      <section className="mx-auto max-w-7xl px-4 pb-20 pt-16 sm:px-6 sm:pb-28 sm:pt-20 lg:px-8">
+        <div className="max-w-3xl">
+          <p className="text-xs font-semibold uppercase tracking-wider text-primary">
+            {t("services.germanyBand.eyebrow")}
+          </p>
+          <h2 className="mt-3 font-heading text-3xl font-bold tracking-tight sm:text-4xl">
+            {t("services.germanyBand.title")}
+          </h2>
+          <p className="mt-4 text-lg text-muted-foreground">
+            {t("services.germanyBand.subtitle")}
+          </p>
+        </div>
+        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {(["meetups", "incubator", "fund", "tickets"] as const).map(
+            (key) => {
+              const href = t(`services.germanyBand.items.${key}.href`);
+              const external = href.startsWith("http");
+              const localHref = external ? href : `/${locale}${href}`;
+              return (
+                <Link
+                  key={key}
+                  href={localHref}
+                  {...(external
+                    ? { target: "_blank", rel: "noopener noreferrer" }
+                    : {})}
+                  className="group flex flex-col rounded-2xl border border-border bg-card p-6 transition-all hover:-translate-y-1 hover:border-primary/30 hover:shadow-md"
+                >
+                  <h3 className="font-heading text-lg font-bold">
+                    {t(`services.germanyBand.items.${key}.title`)}
+                  </h3>
+                  <p className="mt-3 flex-1 text-sm leading-6 text-muted-foreground">
+                    {t(`services.germanyBand.items.${key}.body`)}
+                  </p>
+                  <span className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-primary">
+                    {t(`services.germanyBand.items.${key}.cta`)}
+                    <span
+                      aria-hidden
+                      className="transition-transform group-hover:translate-x-1"
+                    >
+                      &rarr;
+                    </span>
+                  </span>
+                </Link>
+              );
+            }
+          )}
+        </div>
+      </section>
     </>
   );
 }

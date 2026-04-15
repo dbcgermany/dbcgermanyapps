@@ -317,10 +317,10 @@
       "sisterAcademie": "Académie Investir en Afrique"
     },
     "hero": {
-      "tag": "Afrikas Top Business Group · Deutschland",
+      "tag": "Internationaler Inkubator · Europa-Chapter",
       "title": "Wir bauen die nächste Generation afrikanischer Unternehmer:innen — aus Deutschland.",
-      "subtitle": "Das Diambilay Business Center Germany vereint Inkubation, Kapital, Mentoring und hochkarätige Events, damit Gründer:innen mit afrikanischen Wurzeln global skalieren.",
-      "ctaPrimary": "Richesses d'Afrique entdecken",
+      "subtitle": "DBC Germany ist das Europa-Chapter des Diambilay Business Center — ein internationaler Inkubator für die afrikanische Diaspora in Europa, auf Deutsch, Englisch und Französisch aus Düsseldorf.",
+      "ctaPrimary": "Richesses d'Afrique Germany entdecken",
       "ctaSecondary": "Mitglied werden"
     },
     "stats": {
@@ -328,9 +328,9 @@
       "countries": "Sprachen",
       "countriesValue": "EN · DE · FR",
       "founders": "Begleitete Startups",
-      "foundersValue": "213",
+      "foundersValue": "213+",
       "capital": "Zufriedene Kund:innen",
-      "capitalValue": "275",
+      "capitalValue": "750+",
       "years": "Flagship 2026",
       "yearsValue": "Essen · 13. Juni"
     },
@@ -341,7 +341,7 @@
       "incubation": {
         "title": "Inkubation",
         "short": "90-Tage-Programme, die frühe Ideen zu venture-fähigen Unternehmen machen.",
-        "long": "Das strukturierte Curriculum von DBC International, angepasst für Gründer:innen aus Deutschland und der DACH-Region, betreut aus unserem Düsseldorfer Büro mit klarem Übergang in die DBC-Investitionspipeline.",
+        "long": "Das 90-Tage-Inkubationscurriculum von DBC — konzipiert in Lubumbashi, umgesetzt aus Düsseldorf. In Deutschland: laufende Bewerbungen, quartalsweise Kohorten, Übergang in die DBC-Investitionspipeline.",
         "bullets": [
           "90-Tage-Gründer-Sprints",
           "Produkt-, Rechts- und Go-to-Market-Support",
@@ -351,7 +351,7 @@
       "courses": {
         "title": "Kurse",
         "short": "On-Demand- und Kohorten-Kurse mit den schärfsten Köpfen des Kontinents.",
-        "long": "Vom ersten Businessplan bis zu CFO-Finanzen: gebaut mit Praktiker:innen, die es getan haben. Verfügbar in EN, DE und FR.",
+        "long": "Der gesamte DBC-Katalog — vom ersten Businessplan bis zu CFO-Finanzen — inklusive Formation Excellentia und der Académie Investir en Afrique. Von Praktiker:innen gebaut, die es getan haben, auf Deutsch, Englisch und Französisch.",
         "bullets": [
           "Live-Kohorten mit Senior-Operator:innen",
           "Selbstbestimmte Podia-Masterclasses",
@@ -360,8 +360,8 @@
       },
       "investments": {
         "title": "Investitionen",
-        "short": "Pre-Seed- bis Series-A-Kapital für afrikanisch gegründete Unternehmen zwischen EU und Afrika.",
-        "long": "Wir setzen auf Operator:innen, die wir kennen — mit Kapital, Netzwerk und Exit-Optionen. Thesengetrieben, mit Fokus auf Menschen.",
+        "short": "Pre-Seed- bis Series-A-Kapital für afrikanisch gegründete Unternehmen in EU und Afrika.",
+        "long": "DBCs Pre-Seed- bis Series-A-Kapital für afrikanisch gegründete Unternehmen in EU und Afrika. In Deutschland: der DBC Germany Fund, thesengetriebene Co-Investments mit EU- und AU-Partnern, laufende LP-Anfragen.",
         "bullets": [
           "25k–500k € Erstinvestments",
           "Fokus: Fintech, Handel, Kreativwirtschaft",
@@ -371,7 +371,7 @@
       "mentorship": {
         "title": "Mentoring",
         "short": "1:1-Sessions mit Senior-Leader:innen, die gebaut haben, was Sie bauen.",
-        "long": "Unser Mentor:innen-Netzwerk umfasst Ex-Fortune-500-Exec:s, afrikanische Unicorn-Gründer:innen und europäische Venture-Partner:innen.",
+        "long": "DBCs Senior-Operator-Mentor:innen-Netzwerk — Ex-Fortune-500-Exec:s, afrikanische Unicorn-Gründer:innen, europäische Venture-Partner:innen. In Deutschland: quartalsweise DBC-Germany-Meetups in Düsseldorf, monatliches 1:1-Matching, langfristige Beziehungen.",
         "bullets": [
           "Monatliche 1:1-Sessions",
           "Branchengenau passende Mentor:innen",
@@ -379,11 +379,11 @@
         ]
       },
       "events": {
-        "title": "Richesses d'Afrique",
+        "title": "Richesses d'Afrique Germany",
         "short": "Flaggschiff-Konferenzen und Masterclasses, die das Ökosystem in einem Raum versammeln.",
-        "long": "Unsere jährliche Richesses-d'Afrique-Konferenz versammelt 950+ Gründer:innen, Investor:innen und Führungskräfte. 2026 am 13. Juni im Congress Center West, Messe Essen.",
+        "long": "DBC-Masterclasses und Flaggschiff-Konferenzen, die das Ökosystem zusammenbringen. In Deutschland: die Richesses d'Afrique Germany Konferenz — Ausgabe 2026 am 13. Juni im Congress Center West, Messe Essen, mit 950+ Gründer:innen, Investor:innen und Führungskräften.",
         "bullets": [
-          "Richesses d'Afrique 2026 · 13. Juni · Essen",
+          "Richesses d'Afrique Germany 2026 · 13. Juni · Essen",
           "DBC-Masterclasses wechseln zwischen afrikanischen und europäischen Hubs",
           "Tickets auf ticket.dbc-germany.com"
         ]
@@ -391,12 +391,43 @@
       "elearning": {
         "title": "E-Learning",
         "short": "Richesses d'Afrique by DBC — die Online-Akademie für afrikanisches Unternehmertum.",
-        "long": "Podia-Plattform mit Masterclasses der DBC-Fakultät. Gleiche Qualität wie vor Ort, in Ihrem Tempo.",
+        "long": "Richesses d'Afrique by DBC — die DBC-Online-Akademie auf Podia. Masterclasses der DBC-Fakultät in gleicher Qualität wie vor Ort, in Ihrem Tempo. Untertitel EN / DE / FR, monatlich neue Masterclass.",
         "bullets": [
           "Lebenslanger Zugang zu allen Kursen",
           "Untertitel in EN / DE / FR",
           "Neue Masterclass jeden Monat"
         ]
+      },
+      "germanyBand": {
+        "eyebrow": "Europa-Chapter",
+        "title": "So kommen Sie rein.",
+        "subtitle": "Vier Wege in den DBC-Katalog aus Europa — gebaut und betrieben aus Düsseldorf.",
+        "items": {
+          "meetups": {
+            "title": "Quartalsweise Gründer-Meetups",
+            "body": "Präsenztreffen in Düsseldorf für Gründer:innen mit afrikanischen Wurzeln, die in Europa bauen.",
+            "cta": "Platz reservieren",
+            "href": "/contact?topic=meetup"
+          },
+          "incubator": {
+            "title": "Bewerbung für den Inkubator",
+            "body": "Bewerben Sie sich für die nächste europäische Kohorte von DBCs 90-Tage-Inkubation.",
+            "cta": "Bewerben",
+            "href": "/services/incubation"
+          },
+          "fund": {
+            "title": "DBC Germany Fund",
+            "body": "LP-Gespräche und Portfolio-Partnerschaft für Investor:innen, die zur DBC-These passen.",
+            "cta": "Gespräch beginnen",
+            "href": "/contact?topic=fund"
+          },
+          "tickets": {
+            "title": "Richesses d'Afrique Germany Tickets",
+            "body": "Die Flaggschiff-Konferenz — 13. Juni 2026 im Congress Center West, Messe Essen.",
+            "cta": "Tickets sichern",
+            "href": "https://ticket.dbc-germany.com"
+          }
+        }
       },
       "learnMore": "Mehr erfahren"
     },
@@ -410,7 +441,9 @@
     "about": {
       "eyebrow": "Über DBC",
       "title": "Von Lubumbashi nach Düsseldorf — eine Mission.",
-      "body": "Gegründet in Lubumbashi von Dr. Jean-Clément Diambilay ist das Diambilay Business Center Afrikas aktivster grenzüberschreitender Inkubator. DBC Germany bringt jedes Programm, jede Investmentthese und jeden Kurs in die afrikanische Diaspora in Europa — ohne Kompromisse.",
+      "body": "Gegründet in Lubumbashi von Dr. Jean-Clément Diambilay ist das Diambilay Business Center ein internationaler Inkubator, der eine neue Generation afrikanischer Unternehmer:innen aufbaut. DBC Germany ist das Europa-Chapter und liefert den gesamten DBC-Katalog — Inkubation, Kapital, Mentoring, Kurse, Events — an Gründer:innen mit afrikanischen Wurzeln in Europa, auf Deutsch, Englisch und Französisch.",
+      "conviction": "Die stärksten Ideen verdienen solide Strukturen, um zu dauerhaften Unternehmen zu werden.",
+      "convictionAttribution": "Dr. Jean-Clément Diambilay, Gründer",
       "ctaFounder": "Gründer kennenlernen",
       "ctaCareers": "Zum Team stoßen"
     },
@@ -439,7 +472,7 @@
       "officeAddress": "DBC Germany · Speditionstraße 15a · 40221 Düsseldorf"
     },
     "footer": {
-      "tagline": "Afrikas Top Business Group.",
+      "tagline": "Internationaler Inkubator. Europa-Chapter.",
       "sections": {
         "services": "Leistungen",
         "company": "Unternehmen",

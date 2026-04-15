@@ -178,6 +178,36 @@ export async function setTeamMemberVisibility(
   return { success: true };
 }
 
+export async function reorderTeamMembers(
+  orderedIds: string[],
+  locale: string
+) {
+  const user = await requireRole("manager");
+  const supabase = await createServerClient();
+
+  const updates = orderedIds.map((id, index) =>
+    supabase
+      .from("team_members")
+      .update({ sort_order: (index + 1) * 10, updated_by: user.userId })
+      .eq("id", id)
+  );
+  const results = await Promise.all(updates);
+  const failed = results.find((r) => r.error);
+  if (failed?.error) return { error: failed.error.message };
+
+  await supabase.from("audit_log").insert({
+    user_id: user.userId,
+    action: "reorder_team_members",
+    entity_type: "team_members",
+    entity_id: null,
+    details: { order: orderedIds },
+  });
+
+  revalidatePath(`/${locale}/team`);
+  revalidatePath(`/team`);
+  return { success: true };
+}
+
 export async function deleteTeamMember(id: string, locale: string) {
   const user = await requireRole("admin");
   const supabase = await createServerClient();

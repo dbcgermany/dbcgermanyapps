@@ -2,14 +2,28 @@ import Link from "next/link";
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { DBC } from "@/lib/dbc-assets";
+import { getCompanyInfo, getTagline } from "@/lib/company-info";
 
 export async function SiteFooter({ locale }: { locale: string }) {
   const t = await getTranslations({ locale, namespace: "site.footer" });
   const tNav = await getTranslations({ locale, namespace: "site.nav" });
   const tAff = await getTranslations({ locale, namespace: "site.affiliation" });
+  const info = await getCompanyInfo();
 
   const ticketsUrl =
     process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://ticket.dbc-germany.com";
+
+  const logoUrl = info?.logo_light_url || DBC.logo;
+  const brandName = info?.brand_name || "DBC Germany";
+  const tagline = getTagline(info, locale) || t("tagline");
+  const socials: Array<{ label: string; url: string }> = [
+    { label: "LinkedIn", url: info?.linkedin_url || "" },
+    { label: "Instagram", url: info?.instagram_url || "" },
+    { label: "Facebook", url: info?.facebook_url || "" },
+    { label: "WhatsApp", url: info?.whatsapp_url || "" },
+    { label: "YouTube", url: info?.youtube_url || "" },
+    { label: "X", url: info?.twitter_url || "" },
+  ].filter((s) => s.url);
 
   return (
     <footer className="mt-24 border-t border-border bg-muted/40">
@@ -19,22 +33,39 @@ export async function SiteFooter({ locale }: { locale: string }) {
           <div className="md:col-span-2">
             <div className="flex items-center gap-2 font-heading text-lg font-bold">
               <Image
-                src={DBC.logo}
+                src={logoUrl}
                 alt=""
                 width={32}
                 height={32}
                 className="h-8 w-8 object-contain"
                 referrerPolicy="no-referrer"
               />
-              DBC Germany
+              {brandName}
             </div>
             <p className="mt-3 max-w-sm text-sm text-muted-foreground">
-              {t("tagline")}
+              {tagline}
             </p>
+
+            {socials.length > 0 && (
+              <ul className="mt-4 flex flex-wrap gap-3 text-xs">
+                {socials.map((s) => (
+                  <li key={s.label}>
+                    <a
+                      href={s.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="rounded-full border border-border px-3 py-1 text-muted-foreground hover:border-primary/40 hover:text-primary"
+                    >
+                      {s.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
 
             <div className="mt-6 flex items-start gap-3 rounded-lg border border-border bg-background/60 p-3">
               <Image
-                src={DBC.logo}
+                src={logoUrl}
                 alt="Diambilay Business Center"
                 width={40}
                 height={40}
@@ -256,8 +287,9 @@ export async function SiteFooter({ locale }: { locale: string }) {
         <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-border pt-8 text-xs text-muted-foreground sm:flex-row sm:items-center">
           <div>
             <p>
-              &copy; {new Date().getFullYear()} DBC Germany (UG i.G.).{" "}
-              {t("rights")}
+              &copy; {new Date().getFullYear()}{" "}
+              {info?.legal_name || "DBC Germany"}
+              {info?.legal_form ? ` ${info.legal_form}` : ""}. {t("rights")}
             </p>
             <p className="mt-1">
               Developed by{" "}

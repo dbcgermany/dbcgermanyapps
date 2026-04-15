@@ -11,23 +11,37 @@ interface NavItem {
   href: string;
   icon: string;
   minRole: UserRole;
+  dividerAbove?: boolean;
 }
 
+// Ordered for daily workflow:
+// 1) Dashboard & reports (overview)
+// 2) Events → Tickets → Orders → Door Sale → Scan (event-running cluster)
+// 3) News → Applications (incoming content/requests)
+// 4) Team → Staff (people: public then internal)
+// 5) Notifications (per-user inbox)
+// 6) Company Info → Settings → Audit Log (configuration, admin-only)
 const NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: "\u2302", minRole: "team_member" },
-  { label: "Scan", href: "/scan", icon: "\u29C9", minRole: "team_member" },
-  { label: "Door Sale", href: "/door-sale", icon: "\u2637", minRole: "team_member" },
-  { label: "Events", href: "/events", icon: "\u2605", minRole: "manager" },
-  { label: "News", href: "/news", icon: "\u270E", minRole: "manager" },
-  { label: "Applications", href: "/applications", icon: "\u2618", minRole: "manager" },
-  { label: "Orders", href: "/orders", icon: "\u2606", minRole: "manager" },
-  { label: "Tickets", href: "/tickets/send", icon: "\u2709", minRole: "manager" },
-  { label: "Staff", href: "/staff", icon: "\u263A", minRole: "admin" },
-  { label: "Team page", href: "/team", icon: "\u2603", minRole: "manager" },
   { label: "Reports", href: "/reports", icon: "\u2261", minRole: "admin" },
-  { label: "Notifications", href: "/notifications", icon: "\u266A", minRole: "team_member" },
-  { label: "Audit Log", href: "/audit-log", icon: "\u2318", minRole: "super_admin" },
+
+  { label: "Events", href: "/events", icon: "\u2605", minRole: "manager", dividerAbove: true },
+  { label: "Tickets", href: "/tickets/send", icon: "\u2709", minRole: "manager" },
+  { label: "Orders", href: "/orders", icon: "\u2606", minRole: "manager" },
+  { label: "Door Sale", href: "/door-sale", icon: "\u2637", minRole: "team_member" },
+  { label: "Scan", href: "/scan", icon: "\u29C9", minRole: "team_member" },
+
+  { label: "News", href: "/news", icon: "\u270E", minRole: "manager", dividerAbove: true },
+  { label: "Applications", href: "/applications", icon: "\u2618", minRole: "manager" },
+
+  { label: "Team", href: "/team", icon: "\u2603", minRole: "manager", dividerAbove: true },
+  { label: "Staff", href: "/staff", icon: "\u263A", minRole: "admin" },
+
+  { label: "Notifications", href: "/notifications", icon: "\u266A", minRole: "team_member", dividerAbove: true },
+
+  { label: "Company Info", href: "/company-info", icon: "\u2302", minRole: "manager", dividerAbove: true },
   { label: "Settings", href: "/settings", icon: "\u2699", minRole: "admin" },
+  { label: "Audit Log", href: "/audit-log", icon: "\u2318", minRole: "super_admin" },
 ];
 
 export function AdminSidebar({
@@ -46,11 +60,6 @@ export function AdminSidebar({
   const visibleItems = NAV_ITEMS.filter(
     (item) => userLevel >= ROLE_HIERARCHY[item.minRole]
   );
-
-  // Auto-close the drawer whenever the route changes (mobile).
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
 
   // Lock body scroll while the drawer is open (mobile).
   useEffect(() => {
@@ -83,15 +92,22 @@ export function AdminSidebar({
 
       <nav className="flex-1 overflow-y-auto px-3 py-4">
         <ul className="space-y-1">
-          {visibleItems.map((item) => {
+          {visibleItems.map((item, idx) => {
             const fullHref = `/${locale}${item.href}`;
             const isActive =
               pathname === fullHref || pathname.startsWith(fullHref + "/");
 
             return (
               <li key={item.href}>
+                {item.dividerAbove && idx > 0 && (
+                  <div
+                    aria-hidden
+                    className="my-2 h-px bg-border"
+                  />
+                )}
                 <Link
                   href={fullHref}
+                  onClick={() => setOpen(false)}
                   className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                     isActive
                       ? "bg-primary/10 text-primary"

@@ -122,9 +122,16 @@ export default async function EventDetailPage({
 
   return (
     <main className="pb-20">
-      {/* HERO */}
-      <section className="relative">
-        <div className="relative aspect-[16/9] w-full overflow-hidden sm:aspect-[21/9] lg:aspect-[24/9]">
+      <div className="mx-auto max-w-6xl px-5 pt-6 sm:px-8 sm:pt-10">
+        <Link
+          href={`/${locale}`}
+          className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <span aria-hidden>&larr;</span> {t.back}
+        </Link>
+
+        {/* HERO IMAGE — boxed */}
+        <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-border bg-muted shadow-sm sm:aspect-21/9">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={
@@ -135,57 +142,46 @@ export default async function EventDetailPage({
             className="h-full w-full object-cover"
             referrerPolicy="no-referrer"
           />
-          <div
-            aria-hidden
-            className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent"
-          />
         </div>
 
-        <div className="mx-auto -mt-10 max-w-6xl px-5 sm:-mt-16 sm:px-8 md:-mt-24">
-          <Link
-            href={`/${locale}`}
-            className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-          >
-            <span aria-hidden>&larr;</span> {t.back}
-          </Link>
-          <div className="rounded-2xl border border-border bg-card p-6 shadow-xl backdrop-blur sm:p-10">
-            <p className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
-              {event.event_type}
-            </p>
-            <h1 className="mt-4 font-heading text-3xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
-              {loc("title")}
-            </h1>
-            <div className="mt-6 grid gap-5 text-sm sm:grid-cols-2 sm:text-base">
-              <InfoBlock
-                label={t.when}
-                primary={startsAt.toLocaleDateString(locale, {
-                  weekday: "long",
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
-                secondary={`${startsAt.toLocaleTimeString(locale, {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })} – ${endsAt.toLocaleTimeString(locale, {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}`}
-              />
-              <InfoBlock
-                label={t.venue}
-                primary={event.venue_name ?? ""}
-                secondary={[event.venue_address, event.city]
-                  .filter(Boolean)
-                  .join(" · ")}
-              />
-            </div>
+        {/* INFO CARD — boxed, no overlay */}
+        <div className="mt-6 rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-10">
+          <p className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
+            {event.event_type}
+          </p>
+          <h1 className="mt-4 font-heading text-3xl font-bold leading-tight tracking-tight sm:text-5xl">
+            {loc("title")}
+          </h1>
+          <div className="mt-6 grid gap-5 text-sm sm:grid-cols-2 sm:text-base">
+            <InfoBlock
+              label={t.when}
+              primary={startsAt.toLocaleDateString(locale, {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+              secondary={`${startsAt.toLocaleTimeString(locale, {
+                hour: "2-digit",
+                minute: "2-digit",
+              })} – ${endsAt.toLocaleTimeString(locale, {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}`}
+            />
+            <InfoBlock
+              label={t.venue}
+              primary={event.venue_name ?? ""}
+              secondary={[event.venue_address, event.city]
+                .filter(Boolean)
+                .join(" · ")}
+            />
           </div>
         </div>
-      </section>
+      </div>
 
       {/* CONTENT */}
-      <div className="mx-auto mt-12 max-w-6xl px-5 sm:mt-16 sm:px-8">
+      <div className="mx-auto mt-10 max-w-6xl px-5 sm:mt-12 sm:px-8">
         <div className="grid gap-10 lg:grid-cols-[1.4fr_1fr]">
           {/* LEFT: description + schedule */}
           <div className="space-y-12">
