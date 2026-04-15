@@ -384,7 +384,11 @@ export async function createCheckoutSession(input: CheckoutInput) {
     sessionParams.payment_method_types =
       paymentMethodTypes as Stripe.Checkout.SessionCreateParams["payment_method_types"];
   } else {
-    sessionParams.automatic_payment_methods = { enabled: true };
+    // automatic_payment_methods exists at runtime on Stripe 2023-08+ but isn't
+    // in all type versions. Cast to index-access so TS stays happy.
+    (sessionParams as Record<string, unknown>).automatic_payment_methods = {
+      enabled: true,
+    };
   }
 
   let session: Stripe.Checkout.Session;
