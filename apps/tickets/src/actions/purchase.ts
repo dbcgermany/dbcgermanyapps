@@ -367,33 +367,29 @@ export async function createCheckoutSession(input: CheckoutInput) {
   // this currency/amount/customer-country — so switching on PayPal, Klarna,
   // Link, Apple Pay, etc. in the Stripe Dashboard flows through without a
   // redeploy.
-  const paymentMethodConfig: Pick<
-    Stripe.Checkout.SessionCreateParams,
-    "payment_method_types" | "automatic_payment_methods"
-  > =
-    paymentMethodTypes.length > 0
-      ? {
-          payment_method_types:
-            paymentMethodTypes as Stripe.Checkout.SessionCreateParams["payment_method_types"],
-        }
-      : { automatic_payment_methods: { enabled: true } };
+  const sessionParams: Stripe.Checkout.SessionCreateParams = {
+    mode: "payment",
+    line_items: lineItems,
+    discounts,
+    expires_at: Math.floor(Date.now() / 1000) + stripeExpiresIn,
+    metadata: {
+      order_id: order.id,
+      event_id: event.id,
+      coupon_id: couponId ?? "",
+    },
+    success_url: `${process.env.NEXT_PUBLIC_TICKETS_URL}/${input.locale}/confirmation/${order.id}?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${process.env.NEXT_PUBLIC_TICKETS_URL}/${input.locale}/events/${input.eventSlug}`,
+  };
+  if (paymentMethodTypes.length > 0) {
+    sessionParams.payment_method_types =
+      paymentMethodTypes as Stripe.Checkout.SessionCreateParams["payment_method_types"];
+  } else {
+    sessionParams.automatic_payment_methods = { enabled: true };
+  }
 
   let session: Stripe.Checkout.Session;
   try {
-    session = await getStripe().checkout.sessions.create({
-      mode: "payment",
-      ...paymentMethodConfig,
-      line_items: lineItems,
-      discounts,
-      expires_at: Math.floor(Date.now() / 1000) + stripeExpiresIn,
-      metadata: {
-        order_id: order.id,
-        event_id: event.id,
-        coupon_id: couponId ?? "",
-      },
-      success_url: `${process.env.NEXT_PUBLIC_TICKETS_URL}/${input.locale}/confirmation/${order.id}?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_TICKETS_URL}/${input.locale}/events/${input.eventSlug}`,
-    });
+    session = await getStripe().checkout.sessions.create(sessionParams);
   } catch (err) {
     // Roll back the reservation if Stripe refused to create the session.
     for (const prev of reserved) {
