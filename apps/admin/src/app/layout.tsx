@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { Montserrat, Ubuntu, DM_Sans } from "next/font/google";
-import { ThemeProvider } from "@dbc/ui";
+import { ThemeProvider, NO_FLASH_THEME_SCRIPT } from "@dbc/ui";
 import { Toaster } from "sonner";
 import "./globals.css";
 
@@ -29,19 +30,30 @@ export const metadata: Metadata = {
   robots: "noindex, nofollow",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const themeCookie = cookieStore.get("dbc-theme")?.value;
+  const initialTheme =
+    themeCookie === "light" || themeCookie === "dark" || themeCookie === "system"
+      ? themeCookie
+      : "system";
+
   return (
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${montserrat.variable} ${ubuntu.variable} ${dmSans.variable} h-full antialiased`}
+      data-theme={initialTheme === "dark" ? "dark" : "light"}
+      className={`${initialTheme === "dark" ? "dark " : ""}${montserrat.variable} ${ubuntu.variable} ${dmSans.variable} h-full antialiased`}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: NO_FLASH_THEME_SCRIPT }} />
+      </head>
       <body className="min-h-full flex flex-col bg-background text-foreground font-body">
-        <ThemeProvider defaultTheme="system">
+        <ThemeProvider initialTheme={initialTheme}>
           {children}
           <Toaster
             position="top-right"

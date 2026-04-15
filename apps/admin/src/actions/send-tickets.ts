@@ -4,25 +4,40 @@ import { createServerClient, requireRole } from "@dbc/supabase/server";
 import { sendTicketEmail } from "@dbc/email";
 import { revalidatePath } from "next/cache";
 
-interface SingleSendInput {
+export interface SingleSendInput {
   eventId: string;
   tierId: string;
-  attendeeName: string;
+  title: string;
+  firstName: string;
+  lastName: string;
   attendeeEmail: string;
   acquisitionType: "invited" | "assigned";
   locale: string;
 }
 
-interface BulkRecipient {
-  name: string;
+export interface BulkRecipient {
+  title: string;
+  firstName: string;
+  lastName: string;
   email: string;
-  tierName?: string;
+}
+
+function joinAttendeeName(
+  title: string,
+  firstName: string,
+  lastName: string
+): string {
+  return [title.trim(), firstName.trim(), lastName.trim()]
+    .filter(Boolean)
+    .join(" ");
 }
 
 async function sendSingleTicket(
   eventId: string,
   tierId: string,
-  attendeeName: string,
+  title: string,
+  firstName: string,
+  lastName: string,
   attendeeEmail: string,
   acquisitionType: "invited" | "assigned",
   locale: string,
@@ -30,7 +45,16 @@ async function sendSingleTicket(
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createServerClient();
 
-  // Fetch event + tier in parallel
+  const cleanTitle = title.trim();
+  const cleanFirst = firstName.trim();
+  const cleanLast = lastName.trim();
+  const email = attendeeEmail.trim().toLowerCase();
+  const attendeeName = joinAttendeeName(cleanTitle, cleanFirst, cleanLast);
+
+  if (!cleanFirst || !email) {
+    return { success: false, error: "First name and email are required" };
+  }
+
   const [eventRes, tierRes] = await Promise.all([
     supabase
       .from("events")
@@ -57,7 +81,6 @@ async function sendSingleTicket(
   const event = eventRes.data;
   const tier = tierRes.data;
 
-  // Atomic reservation
   const { data: reserved } = await supabase.rpc("reserve_tickets", {
     p_tier_id: tierId,
     p_quantity: 1,
@@ -67,18 +90,32 @@ async function sendSingleTicket(
     return { success: false, error: `"${tier.name_en}" is sold out` };
   }
 
-  // Create order (comped, free)
+  // Upsert contact so the person is linked to orders + tickets. Categorise
+  // invited guests / assignments correctly.
+  const { data: contactId } = await supabase.rpc(
+    "upsert_contact_from_checkout",
+    {
+      p_email: email,
+      p_first_name: cleanFirst || null,
+      p_last_name: cleanLast || null,
+      p_country: null,
+      p_auto_category_slug:
+        acquisitionType === "invited" ? "invited_guests" : null,
+    }
+  );
+
   const { data: order, error: orderError } = await supabase
     .from("orders")
     .insert({
       buyer_id: null,
+      contact_id: (contactId as string | null) ?? null,
       event_id: eventId,
       subtotal_cents: 0,
       discount_cents: 0,
       total_cents: 0,
       status: "comped",
       acquisition_type: acquisitionType,
-      recipient_email: attendeeEmail,
+      recipient_email: email,
       recipient_name: attendeeName,
       locale,
     })
@@ -86,31 +123,43 @@ async function sendSingleTicket(
     .single();
 
   if (orderError || !order) {
+    await supabase.rpc("release_tickets", { p_tier_id: tierId, p_quantity: 1 });
     return { success: false, error: "Failed to create order" };
   }
 
-  // Create ticket
   const { data: ticket, error: ticketError } = await supabase
     .from("tickets")
     .insert({
       order_id: order.id,
       event_id: eventId,
       tier_id: tierId,
+      contact_id: (contactId as string | null) ?? null,
       attendee_name: attendeeName,
-      attendee_email: attendeeEmail,
+      attendee_first_name: cleanFirst || null,
+      attendee_last_name: cleanLast || null,
+      attendee_email: email,
     })
     .select("id, ticket_token")
     .single();
 
   if (ticketError || !ticket) {
+    await supabase.from("orders").update({ status: "cancelled" }).eq("id", order.id);
+    await supabase.rpc("release_tickets", { p_tier_id: tierId, p_quantity: 1 });
     return { success: false, error: "Failed to create ticket" };
   }
 
-  // Send email synchronously (admin is waiting for confirmation)
   const localizedTitle =
     (event[`title_${locale}` as keyof typeof event] as string) || event.title_en;
   const localizedTierName =
     (tier[`name_${locale}` as keyof typeof tier] as string) || tier.name_en;
+
+  const { data: companyInfo } = await supabase
+    .from("company_info")
+    .select(
+      "brand_name, legal_name, legal_form, support_email, primary_color, logo_light_url"
+    )
+    .eq("id", 1)
+    .maybeSingle();
 
   const ticketsBaseUrl =
     process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://ticket.dbc-germany.com";
@@ -118,7 +167,7 @@ async function sendSingleTicket(
   try {
     await sendTicketEmail({
       attendeeName,
-      attendeeEmail,
+      attendeeEmail: email,
       eventTitle: localizedTitle,
       eventType: event.event_type,
       startsAt: new Date(event.starts_at),
@@ -131,9 +180,18 @@ async function sendSingleTicket(
       ticketToken: ticket.ticket_token,
       locale: locale as "en" | "de" | "fr",
       orderUrl: `${ticketsBaseUrl}/${locale}/confirmation/${order.id}`,
+      brandName: companyInfo?.brand_name ?? undefined,
+      legalName: companyInfo
+        ? [companyInfo.legal_name, companyInfo.legal_form]
+            .filter(Boolean)
+            .join(" ")
+        : undefined,
+      supportEmail: companyInfo?.support_email ?? undefined,
+      primaryColor: companyInfo?.primary_color ?? undefined,
+      logoUrl: companyInfo?.logo_light_url ?? undefined,
+      isInvitation: acquisitionType === "invited",
     });
 
-    // Stamp as sent
     await supabase
       .from("tickets")
       .update({ pdf_url: `sent:${new Date().toISOString()}` })
@@ -148,13 +206,17 @@ async function sendSingleTicket(
     return { success: false, error: "Ticket created but email failed to send" };
   }
 
-  // Audit log
   await supabase.from("audit_log").insert({
     user_id: actorId,
     action: acquisitionType === "invited" ? "invite_ticket" : "assign_ticket",
     entity_type: "tickets",
     entity_id: ticket.id,
-    details: { attendee: attendeeName, tier: tier.name_en, event_id: eventId },
+    details: {
+      attendee: attendeeName,
+      title: cleanTitle || null,
+      tier: tier.name_en,
+      event_id: eventId,
+    },
   });
 
   return { success: true };
@@ -165,7 +227,9 @@ export async function sendSingleTicketAction(input: SingleSendInput) {
   const result = await sendSingleTicket(
     input.eventId,
     input.tierId,
-    input.attendeeName,
+    input.title,
+    input.firstName,
+    input.lastName,
     input.attendeeEmail,
     input.acquisitionType,
     input.locale,
@@ -192,7 +256,9 @@ export async function sendBulkTicketsAction(
   const errors: string[] = [];
 
   for (const recipient of recipients) {
-    if (!recipient.name.trim() || !recipient.email.trim()) {
+    const first = recipient.firstName?.trim();
+    const email = recipient.email?.trim();
+    if (!first || !email) {
       failed += 1;
       continue;
     }
@@ -200,8 +266,10 @@ export async function sendBulkTicketsAction(
     const result = await sendSingleTicket(
       eventId,
       tierId,
-      recipient.name.trim(),
-      recipient.email.trim(),
+      recipient.title ?? "",
+      first,
+      recipient.lastName?.trim() ?? "",
+      email,
       "invited",
       locale,
       user.userId
@@ -212,7 +280,7 @@ export async function sendBulkTicketsAction(
     } else {
       failed += 1;
       if (errors.length < 5 && result.error) {
-        errors.push(`${recipient.email}: ${result.error}`);
+        errors.push(`${email}: ${result.error}`);
       }
     }
   }

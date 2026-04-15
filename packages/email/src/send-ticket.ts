@@ -1,6 +1,6 @@
 import { render } from "@react-email/components";
 import React from "react";
-import { createEmailClient } from "./client";
+import { createEmailClient, fromAddressFor } from "./client";
 import { generateTicketPdf } from "./pdf/generate-ticket";
 import { TicketDeliveryEmail } from "./templates/ticket-delivery";
 
@@ -108,8 +108,7 @@ export async function sendTicketEmail(
 
   // 4. Send via Resend
   const resend = createEmailClient();
-  const fromAddress =
-    process.env.RESEND_FROM_ADDRESS ?? "DBC Germany <tickets@dbc-germany.com>";
+  const fromAddress = fromAddressFor("transactional");
 
   const result = await resend.emails.send({
     from: fromAddress,

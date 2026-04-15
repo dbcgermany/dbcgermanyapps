@@ -1,7 +1,12 @@
 import { getAccountProfile } from "@/actions/account";
 import { AccountTabs } from "./account-tabs";
 
-export default async function AccountPage() {
+export default async function AccountPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
   const profile = await getAccountProfile();
 
   return (
@@ -14,7 +19,7 @@ export default async function AccountPage() {
         </p>
       </div>
 
-      <AccountTabs profile={profile} />
+      <AccountTabs profile={profile} locale={locale} />
     </div>
   );
 }

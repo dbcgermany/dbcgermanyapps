@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getScheduleItems } from "@/actions/schedule";
 import { ScheduleForm } from "./schedule-form";
-import { ScheduleRow } from "./schedule-row";
+import { ScheduleSortable } from "./schedule-sortable";
 
 export default async function SchedulePage({
   params,
@@ -27,15 +27,12 @@ export default async function SchedulePage({
 
       {/* Existing schedule items */}
       {items.length > 0 && (
-        <div className="mt-6 space-y-3">
-          {items.map((item) => (
-            <ScheduleRow
-              key={item.id}
-              item={item}
-              eventId={eventId}
-              locale={locale}
-            />
-          ))}
+        <div className="mt-6">
+          <ScheduleSortable
+            items={items}
+            eventId={eventId}
+            locale={locale}
+          />
         </div>
       )}
 

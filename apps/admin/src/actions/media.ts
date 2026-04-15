@@ -3,6 +3,31 @@
 import { createServerClient, requireRole } from "@dbc/supabase/server";
 import { revalidatePath } from "next/cache";
 
+/**
+ * Upload a media file into the event-covers bucket under
+ * event-covers/<eventId>/media/ and return its public URL. Does NOT create
+ * the event_media row — the caller fills the URL into the add-media form
+ * and submits normally.
+ */
+export async function uploadEventMediaFile(eventId: string, file: File) {
+  await requireRole("manager");
+  const supabase = await createServerClient();
+
+  const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+  const path = `${eventId}/media/${Date.now()}.${ext}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from("event-covers")
+    .upload(path, file, { upsert: false, contentType: file.type });
+  if (uploadError) return { error: uploadError.message };
+
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from("event-covers").getPublicUrl(path);
+
+  return { success: true as const, url: publicUrl };
+}
+
 export async function getEventMedia(eventId: string) {
   await requireRole("manager");
   const supabase = await createServerClient();
@@ -101,6 +126,37 @@ export async function updateEventMedia(mediaId: string, formData: FormData) {
     entity_type: "event_media",
     entity_id: mediaId,
     details: { event_id: eventId, title },
+  });
+
+  revalidatePath(`/${locale}/events/${eventId}/media`);
+  return { success: true };
+}
+
+export async function reorderEventMedia(
+  eventId: string,
+  orderedIds: string[],
+  locale: string
+) {
+  const user = await requireRole("manager");
+  const supabase = await createServerClient();
+
+  const updates = orderedIds.map((id, index) =>
+    supabase
+      .from("event_media")
+      .update({ sort_order: index })
+      .eq("id", id)
+      .eq("event_id", eventId)
+  );
+  const results = await Promise.all(updates);
+  const failed = results.find((r) => r.error);
+  if (failed?.error) return { error: failed.error.message };
+
+  await supabase.from("audit_log").insert({
+    user_id: user.userId,
+    action: "reorder_media",
+    entity_type: "event_media",
+    entity_id: eventId,
+    details: { count: orderedIds.length },
   });
 
   revalidatePath(`/${locale}/events/${eventId}/media`);

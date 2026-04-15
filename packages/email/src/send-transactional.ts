@@ -9,10 +9,10 @@ import { AdminAlertEmail } from "./templates/admin-alert";
 
 type Locale = "en" | "de" | "fr";
 
+import { fromAddressFor } from "./client";
+
 function fromAddress() {
-  return (
-    process.env.RESEND_FROM_ADDRESS ?? "DBC Germany <tickets@dbc-germany.com>"
-  );
+  return fromAddressFor("transactional");
 }
 
 export interface SendTransferConfirmationInput {

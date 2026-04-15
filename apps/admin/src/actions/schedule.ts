@@ -107,6 +107,37 @@ export async function updateScheduleItem(
   return { success: true };
 }
 
+export async function reorderScheduleItems(
+  eventId: string,
+  orderedIds: string[],
+  locale: string
+) {
+  const user = await requireRole("manager");
+  const supabase = await createServerClient();
+
+  const updates = orderedIds.map((id, index) =>
+    supabase
+      .from("event_schedule_items")
+      .update({ sort_order: index })
+      .eq("id", id)
+      .eq("event_id", eventId)
+  );
+  const results = await Promise.all(updates);
+  const failed = results.find((r) => r.error);
+  if (failed?.error) return { error: failed.error.message };
+
+  await supabase.from("audit_log").insert({
+    user_id: user.userId,
+    action: "reorder_schedule",
+    entity_type: "event_schedule_items",
+    entity_id: eventId,
+    details: { count: orderedIds.length },
+  });
+
+  revalidatePath(`/${locale}/events/${eventId}/schedule`);
+  return { success: true };
+}
+
 export async function deleteScheduleItem(
   itemId: string,
   eventId: string,

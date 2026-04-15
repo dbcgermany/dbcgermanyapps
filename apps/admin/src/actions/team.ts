@@ -178,6 +178,43 @@ export async function setTeamMemberVisibility(
   return { success: true };
 }
 
+/**
+ * Upload a team member photo to the team-photos bucket and return its public
+ * URL. If a member id is passed, also persists the URL onto the member row
+ * so the change is live even before the full form is saved.
+ */
+export async function uploadTeamMemberPhoto(
+  file: File,
+  memberId: string | null
+) {
+  const user = await requireRole("manager");
+  const supabase = await createServerClient();
+
+  const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+  const folder = memberId ?? `draft/${user.userId}`;
+  const path = `${folder}/photo-${Date.now()}.${ext}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from("team-photos")
+    .upload(path, file, { upsert: false, contentType: file.type });
+  if (uploadError) return { error: uploadError.message };
+
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from("team-photos").getPublicUrl(path);
+
+  if (memberId) {
+    const { error } = await supabase
+      .from("team_members")
+      .update({ photo_url: publicUrl, updated_by: user.userId })
+      .eq("id", memberId);
+    if (error) return { error: error.message };
+    revalidatePath("/[locale]/team", "layout");
+  }
+
+  return { success: true as const, url: publicUrl };
+}
+
 export async function reorderTeamMembers(
   orderedIds: string[],
   locale: string

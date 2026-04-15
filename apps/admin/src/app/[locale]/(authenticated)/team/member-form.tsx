@@ -1,10 +1,13 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { AssetUpload } from "@dbc/ui";
 import {
   createTeamMember,
   updateTeamMember,
+  uploadTeamMemberPhoto,
   type TeamMember,
 } from "@/actions/team";
 
@@ -23,14 +26,31 @@ export function TeamMemberForm({
 }) {
   const router = useRouter();
 
+  const [photoUrl, setPhotoUrl] = useState(initial?.photo_url ?? "");
+
   const [state, formAction, isPending] = useActionState<FormState, FormData>(
     async (_prev, formData) => {
       formData.set("locale", locale);
+      // Ensure the uploader's latest URL wins over any stale defaultValue.
+      formData.set("photo_url", photoUrl);
       if (mode === "create") return createTeamMember(formData);
       return updateTeamMember(initial!.id, formData);
     },
     null
   );
+
+  async function handlePhotoUpload(file: File): Promise<string> {
+    const result = await uploadTeamMemberPhoto(file, initial?.id ?? null);
+    if ("error" in result && result.error) {
+      throw new Error(result.error);
+    }
+    if ("url" in result && result.url) {
+      setPhotoUrl(result.url);
+      toast.success("Photo uploaded.");
+      return result.url;
+    }
+    throw new Error("Upload returned no URL.");
+  }
 
   useEffect(() => {
     if (state?.success && mode === "edit") {
@@ -89,13 +109,29 @@ export function TeamMemberForm({
             <option value="hidden">Hidden (archived)</option>
           </select>
         </div>
-        <Field
-          label="Photo URL"
-          name="photo_url"
-          type="url"
-          defaultValue={initial?.photo_url ?? ""}
-          hint="Use a public URL (upload via Supabase Storage if needed)."
-        />
+        <div className="sm:col-span-2">
+          <AssetUpload
+            label="Photo"
+            description="JPG / PNG / WebP up to 5 MB. Square crops look best."
+            value={photoUrl || null}
+            onUpload={handlePhotoUpload}
+            onChange={setPhotoUrl}
+            onRemove={() => setPhotoUrl("")}
+          />
+          <label className="mt-3 block">
+            <span className="mb-1 block text-xs font-medium text-muted-foreground">
+              Or paste a CDN URL
+            </span>
+            <input
+              type="url"
+              name="photo_url"
+              value={photoUrl}
+              onChange={(e) => setPhotoUrl(e.target.value)}
+              placeholder="https://…"
+              className={`${inputClass} font-mono`}
+            />
+          </label>
+        </div>
       </div>
 
       <div>

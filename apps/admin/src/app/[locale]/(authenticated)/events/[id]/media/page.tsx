@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getEventMedia } from "@/actions/media";
 import { MediaForm } from "./media-form";
-import { MediaRow } from "./media-row";
+import { MediaSortable } from "./media-sortable";
 
 export default async function MediaPage({
   params,
@@ -34,15 +34,8 @@ export default async function MediaPage({
 
       {/* Existing media */}
       {media.length > 0 && (
-        <div className="mt-6 grid gap-3 sm:grid-cols-2">
-          {media.map((item) => (
-            <MediaRow
-              key={item.id}
-              item={item}
-              eventId={eventId}
-              locale={locale}
-            />
-          ))}
+        <div className="mt-6">
+          <MediaSortable items={media} eventId={eventId} locale={locale} />
         </div>
       )}
 

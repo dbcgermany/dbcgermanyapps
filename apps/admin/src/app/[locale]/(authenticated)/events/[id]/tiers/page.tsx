@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getTiers } from "@/actions/tiers";
 import { TierForm } from "./tier-form";
-import { TierRow } from "./tier-row";
+import { TiersSortable } from "./tiers-sortable";
 
 export default async function TiersPage({
   params,
@@ -29,15 +29,8 @@ export default async function TiersPage({
 
       {/* Existing tiers */}
       {tiers.length > 0 && (
-        <div className="mt-6 space-y-3">
-          {tiers.map((tier) => (
-            <TierRow
-              key={tier.id}
-              tier={tier}
-              eventId={eventId}
-              locale={locale}
-            />
-          ))}
+        <div className="mt-6">
+          <TiersSortable tiers={tiers} eventId={eventId} locale={locale} />
         </div>
       )}
 

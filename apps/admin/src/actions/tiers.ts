@@ -148,6 +148,37 @@ export async function toggleTierPublic(
   return { success: true };
 }
 
+export async function reorderTiers(
+  eventId: string,
+  orderedIds: string[],
+  locale: string
+) {
+  const user = await requireRole("manager");
+  const supabase = await createServerClient();
+
+  const updates = orderedIds.map((id, index) =>
+    supabase
+      .from("ticket_tiers")
+      .update({ sort_order: index })
+      .eq("id", id)
+      .eq("event_id", eventId)
+  );
+  const results = await Promise.all(updates);
+  const failed = results.find((r) => r.error);
+  if (failed?.error) return { error: failed.error.message };
+
+  await supabase.from("audit_log").insert({
+    user_id: user.userId,
+    action: "reorder_tiers",
+    entity_type: "ticket_tiers",
+    entity_id: eventId,
+    details: { count: orderedIds.length },
+  });
+
+  revalidatePath(`/${locale}/events/${eventId}/tiers`);
+  return { success: true };
+}
+
 export async function deleteTier(tierId: string, eventId: string, locale: string) {
   const user = await requireRole("manager");
   const supabase = await createServerClient();

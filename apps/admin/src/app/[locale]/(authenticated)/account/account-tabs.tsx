@@ -4,13 +4,20 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 import {
+  Toggle,
+  DatePicker,
+  AddressFields,
+  PhoneInput,
+  EMPTY_ADDRESS,
+  type Address,
+} from "@dbc/ui";
+import {
   updateAccountProfile,
   updateAccountPreferences,
   uploadAccountAvatar,
-  requestPasswordReset,
-  signOutEverywhere,
   type AccountProfile,
 } from "@/actions/account";
+import { SecurityTab } from "./security-tab";
 
 type Tab = "profile" | "preferences" | "security";
 
@@ -20,9 +27,19 @@ const TABS: Array<{ id: Tab; label: string }> = [
   { id: "security", label: "Security" },
 ];
 
-function initialsOf(name: string | null, email: string) {
-  const source = name?.trim() || email;
-  return source
+function initialsOf(firstName: string | null, lastName: string | null, email: string) {
+  const source =
+    (firstName || "").trim() + " " + (lastName || "").trim();
+  if (source.trim()) {
+    return source
+      .split(/\s+/)
+      .map((p) => p[0])
+      .filter(Boolean)
+      .slice(0, 2)
+      .join("")
+      .toUpperCase();
+  }
+  return email
     .split(/[\s@]+/)
     .map((p) => p[0])
     .filter(Boolean)
@@ -31,7 +48,13 @@ function initialsOf(name: string | null, email: string) {
     .toUpperCase();
 }
 
-export function AccountTabs({ profile }: { profile: AccountProfile }) {
+export function AccountTabs({
+  profile,
+  locale,
+}: {
+  profile: AccountProfile;
+  locale: string;
+}) {
   const params = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
@@ -64,7 +87,7 @@ export function AccountTabs({ profile }: { profile: AccountProfile }) {
       </div>
 
       <div className="mt-6 max-w-2xl">
-        {tab === "profile" && <ProfileTab profile={profile} />}
+        {tab === "profile" && <ProfileTab profile={profile} locale={locale} />}
         {tab === "preferences" && <PreferencesTab profile={profile} />}
         {tab === "security" && <SecurityTab />}
       </div>
@@ -72,20 +95,53 @@ export function AccountTabs({ profile }: { profile: AccountProfile }) {
   );
 }
 
-function ProfileTab({ profile }: { profile: AccountProfile }) {
+function ProfileTab({
+  profile,
+  locale,
+}: {
+  profile: AccountProfile;
+  locale: string;
+}) {
   const [isPending, startTransition] = useTransition();
   const [avatarPending, startAvatarTransition] = useTransition();
   const fileRef = useRef<HTMLInputElement>(null);
   const [avatar, setAvatar] = useState(profile.avatar_url);
 
+  const [firstName, setFirstName] = useState(profile.first_name ?? "");
+  const [lastName, setLastName] = useState(profile.last_name ?? "");
+  const [birthday, setBirthday] = useState<string | null>(profile.birthday);
+  const [phone, setPhone] = useState(profile.phone ?? "");
+  const [address, setAddress] = useState<Address>({
+    line1: profile.address_line1 ?? "",
+    line2: profile.address_line2 ?? "",
+    city: profile.address_city ?? "",
+    state: profile.address_state ?? "",
+    postal_code: profile.address_postal_code ?? "",
+    country: profile.address_country ?? "",
+  });
+
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
     startTransition(async () => {
-      const result = await updateAccountProfile(formData);
-      if ("error" in result) toast.error(result.error);
+      const result = await updateAccountProfile({
+        first_name: firstName,
+        last_name: lastName,
+        birthday,
+        phone: phone || null,
+        address_line1: address.line1 || null,
+        address_line2: address.line2 || null,
+        address_city: address.city || null,
+        address_state: address.state || null,
+        address_postal_code: address.postal_code || null,
+        address_country: address.country || null,
+      });
+      if ("error" in result && result.error) toast.error(result.error);
       else toast.success("Profile saved.");
     });
+  }
+
+  function resetAddress() {
+    setAddress(EMPTY_ADDRESS);
   }
 
   function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -93,8 +149,8 @@ function ProfileTab({ profile }: { profile: AccountProfile }) {
     if (!file) return;
     startAvatarTransition(async () => {
       const result = await uploadAccountAvatar(file);
-      if ("error" in result) toast.error(result.error);
-      else {
+      if ("error" in result && result.error) toast.error(result.error);
+      else if ("url" in result && result.url) {
         setAvatar(result.url);
         toast.success("Avatar updated.");
       }
@@ -102,14 +158,14 @@ function ProfileTab({ profile }: { profile: AccountProfile }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-8">
       <div className="flex items-center gap-4">
         <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border border-border bg-primary/10 text-xl font-semibold text-primary">
           {avatar ? (
-            // eslint-disable-next-line @next/next/no-img-element
+            /* eslint-disable-next-line @next/next/no-img-element */
             <img src={avatar} alt="" className="h-full w-full object-cover" />
           ) : (
-            initialsOf(profile.display_name, profile.email)
+            initialsOf(firstName, lastName, profile.email)
           )}
         </div>
         <div>
@@ -134,21 +190,64 @@ function ProfileTab({ profile }: { profile: AccountProfile }) {
         </div>
       </div>
 
-      <label className="block">
-        <span className="mb-1 block text-sm font-medium">Display name</span>
-        <input
-          type="text"
-          name="display_name"
-          defaultValue={profile.display_name ?? ""}
-          className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
-        />
-      </label>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <label className="block">
+          <span className="mb-1 block text-sm font-medium">
+            First name<span className="ml-0.5 text-red-500">*</span>
+          </span>
+          <input
+            type="text"
+            required
+            autoComplete="given-name"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          />
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-sm font-medium">Last name</span>
+          <input
+            type="text"
+            autoComplete="family-name"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          />
+        </label>
+      </div>
 
       <div className="rounded-md border border-border bg-muted/30 px-3 py-2">
         <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
           Sign-in email
         </p>
         <p className="mt-1 text-sm">{profile.email}</p>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <label className="block">
+          <span className="mb-1 block text-sm font-medium">Birthday</span>
+          <DatePicker value={birthday} onChange={setBirthday} />
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-sm font-medium">Phone</span>
+          <PhoneInput value={phone} onChange={setPhone} />
+        </label>
+      </div>
+
+      <div>
+        <div className="mb-2 flex items-center justify-between">
+          <h3 className="text-sm font-semibold">Address</h3>
+          {(address.line1 || address.city || address.country) && (
+            <button
+              type="button"
+              onClick={resetAddress}
+              className="text-xs text-muted-foreground hover:text-foreground"
+            >
+              Clear address
+            </button>
+          )}
+        </div>
+        <AddressFields value={address} onChange={setAddress} locale={locale} />
       </div>
 
       <div className="flex justify-end">
@@ -166,14 +265,37 @@ function ProfileTab({ profile }: { profile: AccountProfile }) {
 
 function PreferencesTab({ profile }: { profile: AccountProfile }) {
   const [isPending, startTransition] = useTransition();
+  const [locale, setLocale] = useState(profile.locale);
+  const [theme, setTheme] = useState<"light" | "dark">(
+    profile.theme === "dark" ? "dark" : "light"
+  );
+  const [emailNotifs, setEmailNotifs] = useState(profile.email_notifications);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
     startTransition(async () => {
-      const result = await updateAccountPreferences(formData);
-      if ("error" in result) toast.error(result.error);
-      else toast.success("Preferences saved.");
+      const result = await updateAccountPreferences({
+        locale,
+        theme,
+        email_notifications: emailNotifs,
+      });
+      if ("error" in result && result.error) toast.error(result.error);
+      else {
+        toast.success("Preferences saved.");
+        // Apply theme immediately without a full reload and persist in both
+        // cookie (so the SSR layout picks it up on the next request) and
+        // localStorage (so the ThemeProvider stays in sync).
+        if (typeof document !== "undefined") {
+          document.documentElement.dataset.theme = theme;
+          document.documentElement.classList.toggle("dark", theme === "dark");
+          document.cookie = `dbc-theme=${theme}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
+          try {
+            localStorage.setItem("dbc-theme", theme);
+          } catch {
+            /* Safari private mode */
+          }
+        }
+      }
     });
   }
 
@@ -182,9 +304,9 @@ function PreferencesTab({ profile }: { profile: AccountProfile }) {
       <label className="block">
         <span className="mb-1 block text-sm font-medium">Language</span>
         <select
-          name="locale"
-          defaultValue={profile.locale}
-          className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+          value={locale}
+          onChange={(e) => setLocale(e.target.value)}
+          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
         >
           <option value="en">English</option>
           <option value="de">Deutsch</option>
@@ -192,54 +314,35 @@ function PreferencesTab({ profile }: { profile: AccountProfile }) {
         </select>
       </label>
 
-      <fieldset>
-        <legend className="mb-1 block text-sm font-medium">Theme</legend>
+      <div>
+        <p className="mb-2 block text-sm font-medium">Theme</p>
         <div className="inline-flex rounded-md border border-border bg-background p-1">
-          {(["light", "dark"] as const).map((t) => {
-            const active = profile.theme === t;
+          {(["light", "dark"] as const).map((v) => {
+            const active = theme === v;
             return (
-              <label
-                key={t}
-                className={`cursor-pointer rounded px-4 py-1.5 text-sm font-medium capitalize transition-colors ${
+              <button
+                type="button"
+                key={v}
+                onClick={() => setTheme(v)}
+                className={`rounded px-4 py-1.5 text-sm font-medium capitalize transition-colors ${
                   active
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:bg-muted"
                 }`}
               >
-                <input
-                  type="radio"
-                  name="theme"
-                  value={t}
-                  defaultChecked={active}
-                  className="sr-only"
-                />
-                {t}
-              </label>
+                {v}
+              </button>
             );
           })}
         </div>
-        <p className="mt-1 text-xs text-muted-foreground">
-          The app follows your system theme until you pick one here.
-        </p>
-      </fieldset>
+      </div>
 
-      <label className="flex items-start gap-3">
-        <input
-          type="checkbox"
-          name="email_notifications"
-          defaultChecked={profile.email_notifications}
-          className="mt-1 h-4 w-4"
-        />
-        <span>
-          <span className="block text-sm font-medium">
-            Email notifications
-          </span>
-          <span className="block text-xs text-muted-foreground">
-            Transactional alerts for orders, applications, and system events
-            you&apos;re responsible for.
-          </span>
-        </span>
-      </label>
+      <Toggle
+        checked={emailNotifs}
+        onChange={setEmailNotifs}
+        label="Email notifications"
+        description="Transactional alerts for orders, applications, and system events you’re responsible for."
+      />
 
       <div className="flex justify-end">
         <button
@@ -251,65 +354,5 @@ function PreferencesTab({ profile }: { profile: AccountProfile }) {
         </button>
       </div>
     </form>
-  );
-}
-
-function SecurityTab() {
-  const [resetPending, startResetTransition] = useTransition();
-  const [soePending, startSoeTransition] = useTransition();
-
-  function handleReset() {
-    startResetTransition(async () => {
-      const result = await requestPasswordReset();
-      if ("error" in result) toast.error(result.error);
-      else
-        toast.success(
-          "Password-reset link sent to your email.",
-          { description: "Check your inbox." }
-        );
-    });
-  }
-
-  function handleSignOutEverywhere() {
-    startSoeTransition(async () => {
-      const result = await signOutEverywhere();
-      if ("error" in result) toast.error(result.error);
-      else toast.success("Signed out on all devices.");
-    });
-  }
-
-  return (
-    <div className="space-y-6">
-      <div className="rounded-md border border-border p-4">
-        <h3 className="font-heading text-base font-bold">Password</h3>
-        <p className="mt-1 text-sm text-muted-foreground">
-          We&apos;ll email you a secure reset link.
-        </p>
-        <button
-          type="button"
-          onClick={handleReset}
-          disabled={resetPending}
-          className="mt-3 rounded-md border border-border px-3 py-1.5 text-sm font-medium hover:bg-muted disabled:opacity-50"
-        >
-          {resetPending ? "Sending…" : "Send password-reset email"}
-        </button>
-      </div>
-
-      <div className="rounded-md border border-border p-4">
-        <h3 className="font-heading text-base font-bold">Sessions</h3>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Sign out of every browser and device you&apos;re currently logged in
-          on.
-        </p>
-        <button
-          type="button"
-          onClick={handleSignOutEverywhere}
-          disabled={soePending}
-          className="mt-3 rounded-md border border-red-300 px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/30"
-        >
-          {soePending ? "Signing out…" : "Sign out everywhere"}
-        </button>
-      </div>
-    </div>
   );
 }

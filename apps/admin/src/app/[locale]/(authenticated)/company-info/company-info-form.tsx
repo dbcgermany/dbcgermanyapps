@@ -2,10 +2,19 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
+import { AssetUpload } from "@dbc/ui";
 import {
   updateCompanyInfoSection,
+  uploadBrandAsset,
   type CompanyInfo,
 } from "@/actions/company-info";
+
+type BrandAssetField =
+  | "logo_light_url"
+  | "logo_dark_url"
+  | "logo_wordmark_url"
+  | "favicon_url"
+  | "og_default_image_url";
 
 type Section = "legal" | "contact" | "brand" | "social" | "seo" | "banking";
 
@@ -21,7 +30,7 @@ const TABS: Array<{ id: Section; label: string }> = [
 interface FieldDef {
   name: keyof CompanyInfo;
   label: string;
-  type?: "text" | "email" | "url" | "textarea" | "color";
+  type?: "text" | "email" | "url" | "textarea" | "color" | "asset";
   placeholder?: string;
   help?: string;
 }
@@ -79,22 +88,22 @@ const FIELDS: Record<Section, FieldDef[]> = {
     { name: "brand_tagline_fr", label: "Tagline (FR)" },
     {
       name: "logo_light_url",
-      label: "Logo (light mode) URL",
-      type: "url",
+      label: "Logo (light mode)",
+      type: "asset",
       help: "Dark logo that reads well on a light background.",
     },
     {
       name: "logo_dark_url",
-      label: "Logo (dark mode) URL",
-      type: "url",
+      label: "Logo (dark mode)",
+      type: "asset",
       help: "Light logo that reads well on a dark background.",
     },
-    { name: "logo_wordmark_url", label: "Wordmark URL", type: "url" },
-    { name: "favicon_url", label: "Favicon URL", type: "url" },
+    { name: "logo_wordmark_url", label: "Wordmark", type: "asset" },
+    { name: "favicon_url", label: "Favicon", type: "asset" },
     {
       name: "og_default_image_url",
-      label: "Default OG / share image URL",
-      type: "url",
+      label: "Default OG / share image",
+      type: "asset",
     },
     { name: "primary_color", label: "Primary color (hex)", type: "color" },
   ],
@@ -173,6 +182,15 @@ function SectionForm({
   fields: FieldDef[];
 }) {
   const [isPending, startTransition] = useTransition();
+  const [assetValues, setAssetValues] = useState<Record<string, string>>(() => {
+    const out: Record<string, string> = {};
+    for (const f of fields) {
+      if (f.type === "asset") {
+        out[String(f.name)] = (info[f.name] ?? "") as string;
+      }
+    }
+    return out;
+  });
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -187,11 +205,71 @@ function SectionForm({
     });
   }
 
+  async function handleAssetUpload(field: BrandAssetField, file: File) {
+    const result = await uploadBrandAsset(field, file);
+    if ("error" in result && result.error) {
+      throw new Error(result.error);
+    }
+    if ("url" in result && result.url) {
+      setAssetValues((prev) => ({ ...prev, [field]: result.url }));
+      toast.success("Asset uploaded.");
+      return result.url;
+    }
+    throw new Error("Upload returned no URL.");
+  }
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid gap-4 md:grid-cols-2">
         {fields.map((f) => {
           const value = (info[f.name] ?? "") as string;
+
+          if (f.type === "asset") {
+            const field = String(f.name) as BrandAssetField;
+            const current = assetValues[field] ?? value;
+            return (
+              <div
+                key={String(f.name)}
+                className="col-span-full grid gap-3 rounded-md border border-border p-4 md:grid-cols-[240px_1fr]"
+              >
+                <AssetUpload
+                  value={current || null}
+                  label={f.label}
+                  description={f.help}
+                  onUpload={(file) => handleAssetUpload(field, file)}
+                  onChange={(url) =>
+                    setAssetValues((prev) => ({ ...prev, [field]: url }))
+                  }
+                  onRemove={() =>
+                    setAssetValues((prev) => ({ ...prev, [field]: "" }))
+                  }
+                />
+                <label className="block">
+                  <span className="mb-1 block text-xs font-medium text-muted-foreground">
+                    Or paste a CDN URL
+                  </span>
+                  <input
+                    type="url"
+                    name={String(f.name)}
+                    value={current}
+                    onChange={(e) =>
+                      setAssetValues((prev) => ({
+                        ...prev,
+                        [field]: e.target.value,
+                      }))
+                    }
+                    placeholder="https://…"
+                    className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm font-mono"
+                  />
+                  <p className="mt-1 text-[11px] text-muted-foreground">
+                    The uploader writes the URL here automatically. Click Save to
+                    commit a pasted URL.
+                  </p>
+                </label>
+              </div>
+            );
+          }
+
           if (f.type === "textarea") {
             return (
               <label key={String(f.name)} className="col-span-full block">

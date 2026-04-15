@@ -1,6 +1,6 @@
 import { render } from "@react-email/components";
 import React from "react";
-import { createEmailClient } from "./client";
+import { createEmailClient, fromAddressFor, DEFAULT_FROM } from "./client";
 import { NewsletterEmail } from "./templates/newsletter";
 import {
   NewsletterConfirmEmail,
@@ -34,10 +34,14 @@ export async function sendNewsletterEmail(input: SendNewsletterInput) {
   );
 
   const resend = createEmailClient();
-  const fromName = input.fromName ?? "DBC Germany";
-  const fromEmail = input.fromEmail ?? "newsletter@dbc-germany.com";
+  // Prefer explicit from fields on the call, then the newsletter env var,
+  // then the shared Resend onboarding sender.
+  const from =
+    input.fromName && input.fromEmail
+      ? `${input.fromName} <${input.fromEmail}>`
+      : fromAddressFor("newsletter");
   const res = await resend.emails.send({
-    from: `${fromName} <${fromEmail}>`,
+    from,
     to: input.to,
     subject: input.subject,
     html,
@@ -67,7 +71,7 @@ export async function sendNewsletterConfirm(input: SendNewsletterConfirmInput) {
   const subject = NEWSLETTER_CONFIRM_SUBJECT[input.locale];
   const resend = createEmailClient();
   const res = await resend.emails.send({
-    from: "DBC Germany <newsletter@dbc-germany.com>",
+    from: fromAddressFor("newsletter"),
     to: input.to,
     subject,
     html,
@@ -96,8 +100,16 @@ export async function sendStaffMessage(input: SendStaffMessageInput) {
     })
   );
   const resend = createEmailClient();
+  // During onboarding we can't send from arbitrary @dbc-germany.com addresses,
+  // so fall back to the shared Resend sender with the staff member's name in
+  // the display portion and reply-to pointing at their real mailbox.
+  const staffFrom =
+    process.env.RESEND_STAFF_FROM_ADDRESS ?? process.env.RESEND_FROM_ADDRESS;
+  const from = staffFrom
+    ? `${input.senderName} <${staffFrom.replace(/^[^<]*<|>$/g, "")}>`
+    : `${input.senderName} <${DEFAULT_FROM.replace(/^[^<]*<|>$/g, "")}>`;
   const res = await resend.emails.send({
-    from: `${input.senderName} <${input.senderEmail}>`,
+    from,
     to: input.to,
     subject: input.subject,
     replyTo: input.replyTo ?? input.senderEmail,

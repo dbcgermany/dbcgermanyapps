@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 import { createBrowserClient } from "@dbc/supabase";
 
 interface Notification {
@@ -48,11 +49,23 @@ export function NotificationBell({
           setNotifications((prev) => [newNotif, ...prev].slice(0, 10));
           setUnreadCount((c) => c + 1);
 
-          // Browser notification API (if granted)
+          // In-app toast — user sees it whether or not the bell is open.
+          toast.message(newNotif.title, {
+            description: newNotif.body ?? undefined,
+            action: {
+              label: "View",
+              onClick: () => {
+                window.location.href = `/${locale}/notifications`;
+              },
+            },
+          });
+
+          // Browser notification API (for backgrounded tabs if granted)
           if (
             typeof window !== "undefined" &&
             "Notification" in window &&
-            Notification.permission === "granted"
+            Notification.permission === "granted" &&
+            document.visibilityState !== "visible"
           ) {
             new Notification(newNotif.title, {
               body: newNotif.body ?? undefined,
@@ -61,12 +74,31 @@ export function NotificationBell({
           }
         }
       )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          const updated = payload.new as Notification;
+          setNotifications((prev) => {
+            const oldRow = prev.find((n) => n.id === updated.id);
+            if (oldRow && !oldRow.read_at && updated.read_at) {
+              setUnreadCount((c) => Math.max(0, c - 1));
+            }
+            return prev.map((n) => (n.id === updated.id ? updated : n));
+          });
+        }
+      )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [userId]);
+  }, [userId, locale]);
 
   // Close dropdown on outside click
   useEffect(() => {
