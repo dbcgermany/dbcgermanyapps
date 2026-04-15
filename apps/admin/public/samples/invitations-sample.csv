@@ -1,0 +1,4 @@
+email,first_name,last_name,country,occupation,category_tags,tier_slug,locale,note
+ada.lovelace@example.com,Ada,Lovelace,GB,Mathematician,press;diaspora,vip,en,Keynote context
+ousmane.sow@example.com,Ousmane,Sow,SN,Sculptor,diaspora,general,fr,
+ingrid.jonker@example.com,Ingrid,Jonker,ZA,Journalist,press,press,en,Attending day 1 only

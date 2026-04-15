@@ -29,3 +29,7 @@ export type {
 export { CookieConsent, hasConsentedToCookies } from "./cookie-consent";
 export { ConfirmDialog } from "./confirm-dialog";
 export type { ConfirmDialogProps } from "./confirm-dialog";
+export { CountrySelect } from "./country-select";
+export type { CountrySelectProps } from "./country-select";
+export { PhoneInput, isValidE164, normalizeE164 } from "./phone-input";
+export type { PhoneInputProps } from "./phone-input";

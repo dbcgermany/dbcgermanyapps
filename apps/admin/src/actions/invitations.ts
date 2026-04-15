@@ -10,6 +10,10 @@ export interface InvitationInput {
   firstName: string;
   lastName: string;
   email: string;
+  country?: string | null;
+  occupation?: string | null;
+  extraCategoryTags?: string[];
+  sendEmail?: boolean;
   note?: string;
   locale?: string;
 }
@@ -23,6 +27,12 @@ export async function createInvitation(input: InvitationInput) {
   const lastName = input.lastName.trim();
   const fullName = [firstName, lastName].filter(Boolean).join(" ");
   const locale = input.locale || "en";
+  const country = input.country?.trim().toUpperCase() || null;
+  const occupation = input.occupation?.trim() || null;
+  const extraTags = (input.extraCategoryTags ?? [])
+    .map((t) => t.trim())
+    .filter(Boolean);
+  const sendEmail = input.sendEmail !== false;
 
   if (!email || !email.includes("@")) return { error: "A valid email is required." };
   if (!fullName) return { error: "At least a first name is required." };
@@ -51,12 +61,15 @@ export async function createInvitation(input: InvitationInput) {
   });
   if (!reserved) return { error: "That tier is sold out." };
 
-  // Upsert contact + auto-tag as invited_guests
+  // Upsert contact + auto-tag as invited_guests, plus any extra tags from CSV
   const { data: contactId } = await supabase.rpc("upsert_contact_from_checkout", {
     p_email: email,
     p_first_name: firstName || null,
     p_last_name: lastName || null,
+    p_country: country,
+    p_occupation: occupation,
     p_auto_category_slug: "invited_guests",
+    p_extra_category_slugs: extraTags,
   });
 
   // Create comped order
@@ -122,6 +135,24 @@ export async function createInvitation(input: InvitationInput) {
   const tierName =
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ((tier as any)[`name_${loc}`] as string) || tier.name_en;
+
+  if (!sendEmail) {
+    await supabase.from("audit_log").insert({
+      user_id: user.userId,
+      action: "create_invitation",
+      entity_type: "orders",
+      entity_id: order.id,
+      details: {
+        email,
+        fullName,
+        tier: tier.name_en,
+        note: input.note ?? null,
+        email_skipped: true,
+      },
+    });
+    revalidatePath(`/[locale]/events/${input.eventId}/invitations`, "layout");
+    return { success: true, orderId: order.id };
+  }
 
   try {
     const result = await sendTicketEmail({

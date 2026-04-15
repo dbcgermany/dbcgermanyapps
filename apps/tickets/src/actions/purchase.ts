@@ -68,6 +68,7 @@ async function verifyTurnstile(token: string | undefined): Promise<boolean> {
 interface AttendeeInfo {
   name: string;
   email: string;
+  country: string;
   tierId: string;
 }
 
@@ -77,6 +78,15 @@ interface CheckoutInput {
   couponCode?: string;
   locale: string;
   turnstileToken?: string;
+  source?: string;
+}
+
+function splitName(full: string): { first: string | null; last: string | null } {
+  const trimmed = full.trim();
+  if (!trimmed) return { first: null, last: null };
+  const parts = trimmed.split(/\s+/);
+  if (parts.length === 1) return { first: parts[0], last: null };
+  return { first: parts[0], last: parts.slice(1).join(" ") };
 }
 
 export async function createCheckoutSession(input: CheckoutInput) {
@@ -252,11 +262,26 @@ export async function createCheckoutSession(input: CheckoutInput) {
     Date.now() + RESERVATION_TTL_MINUTES * 60_000
   ).toISOString();
 
+  // 8a. Upsert contacts for every attendee (country + demographics are captured
+  // at checkout). The primary contact for the order is the buyer (attendee 0).
+  const buyerSplit = splitName(input.attendees[0].name);
+  const { data: buyerContactId } = await supabase.rpc(
+    "upsert_contact_from_checkout",
+    {
+      p_email: buyerEmail,
+      p_first_name: buyerSplit.first,
+      p_last_name: buyerSplit.last,
+      p_country: input.attendees[0].country || null,
+      p_auto_category_slug: "event_attendees",
+    }
+  );
+
   // 9. Create order (status: pending) with explicit reservation window.
   const { data: order, error: orderError } = await supabase
     .from("orders")
     .insert({
       buyer_id: user?.id ?? null,
+      contact_id: (buyerContactId as string | null) ?? null,
       event_id: event.id,
       subtotal_cents: subtotalCents,
       discount_cents: discountCents,
@@ -267,6 +292,7 @@ export async function createCheckoutSession(input: CheckoutInput) {
       recipient_email: buyerEmail,
       recipient_name: input.attendees[0].name,
       locale: input.locale,
+      source: input.source ?? null,
       reservation_expires_at:
         totalCents === 0 ? null : reservationExpiresAt,
     })
@@ -283,15 +309,36 @@ export async function createCheckoutSession(input: CheckoutInput) {
     return { error: "Failed to create order. Please try again." };
   }
 
-  // 10. Create ticket rows (linked to pending order)
-  const ticketRows = input.attendees.map((attendee) => ({
-    order_id: order.id,
-    event_id: event.id,
-    tier_id: attendee.tierId,
-    buyer_id: user?.id ?? null,
-    attendee_name: attendee.name,
-    attendee_email: attendee.email,
-  }));
+  // 10. Create ticket rows (linked to pending order + upsert per-attendee contact)
+  const ticketRows: Array<Record<string, unknown>> = [];
+  for (const attendee of input.attendees) {
+    const attendeeEmail = attendee.email.trim().toLowerCase();
+    const split = splitName(attendee.name);
+    const isBuyer = attendeeEmail === buyerEmail;
+    const contactId = isBuyer
+      ? (buyerContactId as string | null)
+      : ((
+          await supabase.rpc("upsert_contact_from_checkout", {
+            p_email: attendeeEmail,
+            p_first_name: split.first,
+            p_last_name: split.last,
+            p_country: attendee.country || null,
+            p_auto_category_slug: "event_attendees",
+          })
+        ).data as string | null);
+
+    ticketRows.push({
+      order_id: order.id,
+      event_id: event.id,
+      tier_id: attendee.tierId,
+      buyer_id: user?.id ?? null,
+      contact_id: contactId,
+      attendee_name: attendee.name,
+      attendee_first_name: split.first,
+      attendee_last_name: split.last,
+      attendee_email: attendeeEmail,
+    });
+  }
 
   await supabase.from("tickets").insert(ticketRows);
 

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useActionState } from "react";
 import Script from "next/script";
+import { CountrySelect } from "@dbc/ui";
 import { createCheckoutSession } from "@/actions/purchase";
 
 interface Tier {
@@ -13,6 +14,7 @@ interface Tier {
 interface Attendee {
   name: string;
   email: string;
+  country: string;
   tierId: string;
 }
 
@@ -41,15 +43,17 @@ export function CheckoutForm({
   tiers,
   maxPerOrder,
   turnstileSiteKey,
+  source,
 }: {
   eventSlug: string;
   locale: string;
   tiers: Tier[];
   maxPerOrder: number;
   turnstileSiteKey: string | null;
+  source?: string | null;
 }) {
   const [attendees, setAttendees] = useState<Attendee[]>([
-    { name: "", email: "", tierId: tiers[0]?.id ?? "" },
+    { name: "", email: "", country: "", tierId: tiers[0]?.id ?? "" },
   ]);
   const [couponCode, setCouponCode] = useState("");
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
@@ -91,9 +95,18 @@ export function CheckoutForm({
   const [state, formAction, isPending] = useActionState(
     async () => {
       for (let i = 0; i < attendees.length; i++) {
-        if (!attendees[i].name.trim() || !attendees[i].email.trim()) {
+        if (
+          !attendees[i].name.trim() ||
+          !attendees[i].email.trim() ||
+          !attendees[i].country
+        ) {
           return {
-            error: `Please fill in name and email for ticket ${i + 1}.`,
+            error:
+              locale === "de"
+                ? `Bitte f\u00fcllen Sie Name, E-Mail und Land f\u00fcr Ticket ${i + 1} aus.`
+                : locale === "fr"
+                  ? `Veuillez renseigner le nom, l'e-mail et le pays pour le billet ${i + 1}.`
+                  : `Please fill in name, email and country for ticket ${i + 1}.`,
           };
         }
       }
@@ -115,6 +128,7 @@ export function CheckoutForm({
         couponCode: couponCode.trim() || undefined,
         locale,
         turnstileToken: turnstileToken ?? undefined,
+        source: source ?? undefined,
       });
 
       // Reset widget after submission so retries get a fresh token.
@@ -132,7 +146,7 @@ export function CheckoutForm({
     if (attendees.length >= maxPerOrder) return;
     setAttendees([
       ...attendees,
-      { name: "", email: "", tierId: tiers[0]?.id ?? "" },
+      { name: "", email: "", country: "", tierId: tiers[0]?.id ?? "" },
     ]);
   }
 
@@ -189,7 +203,7 @@ export function CheckoutForm({
               )}
             </div>
 
-            <div className="mt-3 grid gap-3 sm:grid-cols-3">
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
               <div>
                 <label className="block text-xs text-muted-foreground mb-1">
                   {locale === "de" ? "Ticketart" : locale === "fr" ? "Type de billet" : "Ticket type"}
@@ -210,11 +224,33 @@ export function CheckoutForm({
               </div>
               <div>
                 <label className="block text-xs text-muted-foreground mb-1">
+                  {locale === "de" ? "Land" : locale === "fr" ? "Pays" : "Country"}
+                </label>
+                <CountrySelect
+                  locale={locale}
+                  value={attendee.country}
+                  required
+                  autoComplete="country"
+                  onChange={(e) =>
+                    updateAttendee(index, "country", e.target.value)
+                  }
+                  placeholder={
+                    locale === "de"
+                      ? "Land ausw\u00e4hlen"
+                      : locale === "fr"
+                        ? "S\u00e9lectionner le pays"
+                        : "Select country"
+                  }
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">
                   {locale === "de" ? "Name" : locale === "fr" ? "Nom" : "Name"}
                 </label>
                 <input
                   type="text"
                   required
+                  autoComplete="name"
                   value={attendee.name}
                   onChange={(e) =>
                     updateAttendee(index, "name", e.target.value)
@@ -229,6 +265,7 @@ export function CheckoutForm({
                 <input
                   type="email"
                   required
+                  autoComplete="email"
                   value={attendee.email}
                   onChange={(e) =>
                     updateAttendee(index, "email", e.target.value)

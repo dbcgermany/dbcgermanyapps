@@ -26,10 +26,10 @@ export default async function DoorSalePage({
         {events.length === 0 ? (
           <div className="mt-8 rounded-lg border border-dashed border-border p-8 text-center text-muted-foreground">
             {locale === "de"
-              ? "Keine bevorstehenden Veranstaltungen in den n\u00E4chsten 7 Tagen."
+              ? "Keine bevorstehenden Veranstaltungen in den n\u00E4chsten 30 Tagen."
               : locale === "fr"
-                ? "Aucun \u00E9v\u00E9nement \u00E0 venir dans les 7 prochains jours."
-                : "No upcoming events in the next 7 days."}
+                ? "Aucun \u00E9v\u00E9nement \u00E0 venir dans les 30 prochains jours."
+                : "No upcoming events in the next 30 days."}
           </div>
         ) : (
           <DoorSaleClient

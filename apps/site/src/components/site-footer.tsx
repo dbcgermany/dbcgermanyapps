@@ -3,6 +3,7 @@ import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { DBC } from "@/lib/dbc-assets";
 import { getCompanyInfo, getTagline } from "@/lib/company-info";
+import { NewsletterFooterSignup } from "./newsletter-footer-signup";
 
 export async function SiteFooter({ locale }: { locale: string }) {
   const t = await getTranslations({ locale, namespace: "site.footer" });
@@ -46,8 +47,10 @@ export async function SiteFooter({ locale }: { locale: string }) {
               {tagline}
             </p>
 
+            <NewsletterFooterSignup locale={locale} />
+
             {socials.length > 0 && (
-              <ul className="mt-4 flex flex-wrap gap-3 text-xs">
+              <ul className="mt-6 flex flex-wrap gap-3 text-xs">
                 {socials.map((s) => (
                   <li key={s.label}>
                     <a

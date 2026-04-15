@@ -210,14 +210,16 @@ export async function getDoorSaleEvents() {
   await requireRole("team_member");
   const supabase = await createServerClient();
 
-  // Events happening today or in the next 7 days
+  // Door sale opens 30 days before the event and stays open until the event
+  // ends. The public checkout flow is the day-of buyers' path; staff use this
+  // screen to ring cash/card sales at the venue.
   const { data } = await supabase
     .from("events")
     .select(
       "id, title_en, title_de, title_fr, starts_at, ends_at, venue_name"
     )
     .gte("ends_at", new Date().toISOString())
-    .lte("starts_at", new Date(Date.now() + 7 * 86400000).toISOString())
+    .lte("starts_at", new Date(Date.now() + 30 * 86400000).toISOString())
     .order("starts_at", { ascending: true });
 
   return data ?? [];

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { getContact } from "@/actions/contacts";
+import { listContactMessages } from "@/actions/contact-messages";
 import { ContactProfileTabs } from "./profile-tabs";
+import { ComposeDialog } from "./compose-dialog";
 
 export default async function ContactDetailPage({
   params,
@@ -9,6 +11,7 @@ export default async function ContactDetailPage({
 }) {
   const { locale, id } = await params;
   const data = await getContact(id);
+  const messages = await listContactMessages(id);
 
   const displayName =
     [data.contact.first_name, data.contact.last_name]
@@ -56,6 +59,11 @@ export default async function ContactDetailPage({
             ))}
           </div>
         </div>
+        <ComposeDialog
+          contactId={data.contact.id}
+          contactEmail={data.contact.email}
+          defaultLocale={locale}
+        />
       </div>
 
       <ContactProfileTabs
@@ -67,6 +75,30 @@ export default async function ContactDetailPage({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         tickets={data.tickets as any[]}
       />
+
+      {messages.length > 0 && (
+        <section className="mt-10">
+          <h2 className="font-heading text-lg font-bold">Message history</h2>
+          <ul className="mt-4 space-y-3">
+            {messages.map((m) => (
+              <li
+                key={m.id}
+                className="rounded-lg border border-border p-4 text-sm"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <p className="font-medium">{m.subject}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {new Date(m.sent_at).toLocaleString()}
+                  </p>
+                </div>
+                <p className="mt-2 whitespace-pre-wrap text-xs text-muted-foreground">
+                  {m.body_md}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </div>
   );
 }

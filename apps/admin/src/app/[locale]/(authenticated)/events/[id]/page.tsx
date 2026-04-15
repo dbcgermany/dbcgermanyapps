@@ -197,6 +197,15 @@ export default async function EventDetailPage({
               Manage event agenda
             </p>
           </Link>
+          <Link
+            href={`/${locale}/events/${id}/poster`}
+            className="rounded-lg border border-border p-4 hover:bg-muted/50 transition-colors"
+          >
+            <p className="font-medium">Door-sale poster</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Printable QR poster for the venue entrance
+            </p>
+          </Link>
         </div>
       </div>
 

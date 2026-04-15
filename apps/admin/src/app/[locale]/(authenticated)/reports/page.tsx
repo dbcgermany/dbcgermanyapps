@@ -5,6 +5,7 @@ import {
   getReportsEvents,
 } from "@/actions/reports";
 import { ReportsClient } from "./reports-client";
+import { EventPdfPanel } from "./event-pdf-panel";
 
 export default async function ReportsPage({
   params,
@@ -74,6 +75,22 @@ export default async function ReportsPage({
         currentFromFilter={sp.from ?? ""}
         currentToFilter={sp.to ?? ""}
       />
+
+      {sp.event &&
+        (() => {
+          const selected = events.find((e) => e.id === sp.event);
+          if (!selected) return null;
+          const title =
+            (selected[`title_${locale}` as keyof typeof selected] as string) ||
+            selected.title_en;
+          return (
+            <EventPdfPanel
+              locale={locale}
+              eventId={selected.id}
+              eventTitle={title}
+            />
+          );
+        })()}
     </div>
   );
 }

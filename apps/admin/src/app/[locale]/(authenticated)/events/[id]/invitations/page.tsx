@@ -22,7 +22,15 @@ export default async function EventInvitationsPage({
       >
         ← Event
       </Link>
-      <h1 className="mt-3 font-heading text-2xl font-bold">Invitations</h1>
+      <div className="mt-3 flex items-center justify-between gap-3">
+        <h1 className="font-heading text-2xl font-bold">Invitations</h1>
+        <Link
+          href={`/${locale}/events/${id}/invitations/bulk`}
+          className="rounded-md border border-border px-3 py-1.5 text-sm font-medium hover:bg-muted"
+        >
+          Bulk import CSV →
+        </Link>
+      </div>
       <p className="mt-1 text-sm text-muted-foreground">
         Comped tickets — guests receive a branded PDF and are tagged
         <code className="mx-1 rounded bg-muted px-1 py-0.5 text-xs">invited_guests</code>

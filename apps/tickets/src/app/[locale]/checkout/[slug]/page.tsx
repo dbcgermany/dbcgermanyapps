@@ -2,12 +2,24 @@ import { notFound } from "next/navigation";
 import { getEventBySlug, getPublicTiers } from "@/lib/queries";
 import { CheckoutForm } from "./checkout-form";
 
+const ALLOWED_SOURCES = new Set([
+  "door_poster",
+  "newsletter",
+  "direct",
+  "partner",
+  "press",
+]);
+
 export default async function CheckoutPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; slug: string }>;
+  searchParams: Promise<{ src?: string }>;
 }) {
   const { locale, slug } = await params;
+  const { src } = await searchParams;
+  const source = src && ALLOWED_SOURCES.has(src) ? src : null;
   const event = await getEventBySlug(slug);
 
   if (!event) notFound();
@@ -40,6 +52,7 @@ export default async function CheckoutPage({
         }))}
         maxPerOrder={event.max_tickets_per_order}
         turnstileSiteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? null}
+        source={source}
       />
     </main>
   );

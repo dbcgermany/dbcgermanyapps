@@ -24,3 +24,16 @@ export type {
   SendAftercareSequenceInput,
   SendAdminAlertInput,
 } from "./send-transactional";
+export {
+  sendNewsletterEmail,
+  sendNewsletterConfirm,
+  sendStaffMessage,
+} from "./send-newsletter";
+export type {
+  SendNewsletterInput,
+  SendNewsletterConfirmInput,
+  SendStaffMessageInput,
+} from "./send-newsletter";
+export { NewsletterEmail } from "./templates/newsletter";
+export { NewsletterConfirmEmail } from "./templates/newsletter-confirm";
+export { StaffMessageEmail } from "./templates/staff-message";
