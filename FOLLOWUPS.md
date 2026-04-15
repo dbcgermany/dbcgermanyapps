@@ -38,8 +38,34 @@ Propagation is usually 5–30 minutes. Once the records resolve, Resend will
 auto-verify. If it doesn't, tell me and I'll hit `POST /domains/:id/verify`
 from my side.
 
-> **Cloudflare note**: make sure the TXT records are NOT proxied (grey cloud
-> only applies to CNAME/A, but verify the "DNS only" badge anyway).
+### Strato-specific walkthrough (2026-04-15 status)
+
+As of 2026-04-15 20:57 UTC, Google DNS resolves:
+- `resend._domainkey.dbc-germany.com` → NXDOMAIN (record not set)
+- `send.dbc-germany.com` MX → `smtpin.rzone.de` (Strato's default, not Resend)
+- `send.dbc-germany.com` TXT → no TXT record
+- `_dmarc.dbc-germany.com` TXT → `v=DMARC1; p=none; rua=mailto:deine@email.de`
+  (placeholder — the mailto is literally "deine@email.de")
+
+Strato DNS-Verwaltung fields (Experten-Modus):
+
+| Subdomain / Name | Typ | Prio | Wert |
+|---|---|---|---|
+| `resend._domainkey` | TXT | – | `p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDdl/Qv7BCbC3/BLyaTX/1zzwASK++NVP5NpaLQCx7RHh6CiCxST6e5jdCzU1rDpdsVWmIWG+Nctvx8bkVs+e/tjVpesSY5waQ5j9zgtH0Ff7bxgXMorSl0XvyR0DO6kkDWbg+GsSPKV4hws9XYwYvMMMUd9LH+IEzlHQtyUE3zLQIDAQAB` |
+| `send` | MX | `10` | `feedback-smtp.eu-west-1.amazonses.com.` (trailing dot is fine) |
+| `send` | TXT | – | `v=spf1 include:amazonses.com ~all` |
+| `_dmarc` | TXT | – | `v=DMARC1; p=none; rua=mailto:info@dbc-germany.com` (replace the `deine@email.de` placeholder) |
+
+Notes for Strato's editor:
+- Strato shows subdomain only; you type `resend._domainkey` (not the full
+  `resend._domainkey.dbc-germany.com`).
+- For MX, Strato wants the priority in its own field; use `10`.
+- Don't wrap the TXT values in extra quotes — Strato adds them.
+- After saving, click "Aktualisieren" in the Strato UI; propagation is
+  5–30 minutes.
+
+> **Cloudflare note** (not applicable here, but for future reference): TXT
+> records must be "DNS only", never proxied.
 
 ### Once verified — update Vercel env vars
 
