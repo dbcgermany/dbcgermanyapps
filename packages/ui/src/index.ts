@@ -45,3 +45,5 @@ export { AddressFields, EMPTY_ADDRESS } from "./address-fields";
 export type { Address, AddressFieldsProps } from "./address-fields";
 export { AssetUpload } from "./asset-upload";
 export type { AssetUploadProps } from "./asset-upload";
+export { NotFoundHero } from "./not-found-hero";
+export type { NotFoundHeroProps } from "./not-found-hero";
