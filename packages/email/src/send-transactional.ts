@@ -11,8 +11,19 @@ type Locale = "en" | "de" | "fr";
 
 import { fromAddressFor } from "./client";
 
-function fromAddress() {
-  return fromAddressFor("transactional");
+/**
+ * Email-role routing for transactional templates:
+ *   - ticket-related (transfer confirmations, order receipts) → `tickets@`
+ *   - everything else (waitlist, aftercare, admin alerts)     → `noreply@`
+ *
+ * The apex-level @dbc-germany.com inboxes (info@, sales@, marketing@, …)
+ * stay on Google Workspace — this code never sends from them.
+ */
+function transactionalFrom() {
+  return fromAddressFor("transactional"); // noreply@
+}
+function ticketsFrom() {
+  return fromAddressFor("tickets");
 }
 
 export interface SendTransferConfirmationInput {
@@ -59,7 +70,7 @@ export async function sendTransferConfirmation(
   );
   const resend = createEmailClient();
   const res = await resend.emails.send({
-    from: fromAddress(),
+    from: ticketsFrom(),
     to: input.to,
     subject,
     html,
@@ -102,7 +113,7 @@ export async function sendWaitlistNotification(
   );
   const resend = createEmailClient();
   const res = await resend.emails.send({
-    from: fromAddress(),
+    from: transactionalFrom(),
     to: input.to,
     subject,
     html,
@@ -152,7 +163,7 @@ export async function sendOrderReceipt(input: SendOrderReceiptInput) {
   );
   const resend = createEmailClient();
   const res = await resend.emails.send({
-    from: fromAddress(),
+    from: ticketsFrom(),
     to: input.to,
     subject,
     html,
@@ -182,7 +193,7 @@ export async function sendAftercareSequence(input: SendAftercareSequenceInput) {
   );
   const resend = createEmailClient();
   const res = await resend.emails.send({
-    from: fromAddress(),
+    from: transactionalFrom(),
     to: input.to,
     subject: input.subject,
     html,
@@ -216,7 +227,7 @@ export async function sendAdminAlert(input: SendAdminAlertInput) {
   );
   const resend = createEmailClient();
   const res = await resend.emails.send({
-    from: fromAddress(),
+    from: transactionalFrom(),
     to: input.to,
     subject: input.subject,
     html,

@@ -108,7 +108,7 @@ export async function sendTicketEmail(
 
   // 4. Send via Resend
   const resend = createEmailClient();
-  const fromAddress = fromAddressFor("transactional");
+  const fromAddress = fromAddressFor("tickets");
 
   const result = await resend.emails.send({
     from: fromAddress,
