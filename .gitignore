@@ -43,3 +43,7 @@ pnpm-debug.log*
 supabase/.temp/
 .vercel
 .env*.local
+
+# Secrets (never commit)
+credentials.md
+credentials/
