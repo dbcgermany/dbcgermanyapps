@@ -197,3 +197,40 @@ export async function signOutEverywhere() {
   if (error) return { error: error.message };
   return { success: true };
 }
+
+export interface SessionRow {
+  id: string;
+  created_at: string;
+  updated_at: string | null;
+  not_after: string | null;
+  aal: string;
+  user_agent: string | null;
+  ip: string | null;
+}
+
+export async function listMySessions(): Promise<SessionRow[]> {
+  await requireRole("team_member");
+  const supabase = await createServerClient();
+  const { data } = await supabase.rpc("list_my_sessions");
+  return (data as SessionRow[] | null) ?? [];
+}
+
+export async function revokeMySession(sessionId: string) {
+  const user = await requireRole("team_member");
+  const supabase = await createServerClient();
+  const { data, error } = await supabase.rpc("revoke_my_session", {
+    p_session_id: sessionId,
+  });
+  if (error) return { error: error.message };
+  if (data !== true) return { error: "Session not found or not yours." };
+
+  await supabase.from("audit_log").insert({
+    user_id: user.userId,
+    action: "revoke_session",
+    entity_type: "auth.sessions",
+    entity_id: sessionId,
+    details: {},
+  });
+
+  return { success: true as const };
+}

@@ -20,18 +20,26 @@ other than the Resend account owner (Resend anti-abuse policy). That means:
 **Fix**: verify `dbc-germany.com` (or another owned domain) in Resend so we
 can send from dedicated addresses to arbitrary recipients.
 
-### Steps for whoever has DNS access
+### Domain registered in Resend (2026-04-15)
 
-1. Log into [resend.com/domains](https://resend.com/domains) and click
-   **Add domain**. Enter `dbc-germany.com`.
-2. Resend will show 3–4 DNS records to add:
-   - One **SPF** TXT record on the apex (if not already set).
-   - Three **DKIM** CNAME records on the `resend._domainkey.dbc-germany.com` (and related) subdomains.
-   - One **DMARC** TXT record on `_dmarc.dbc-germany.com`
-     (policy `p=none` is fine to start; strict reject is for later).
-3. Add each record exactly as Resend shows it in your DNS manager (Cloudflare,
-   OVH, registrar, …). Propagation is usually 5–30 minutes.
-4. Click **Verify** in Resend. Status should turn green.
+Domain ID: `8263c261-d29e-4120-89af-2a7934b0bf3f` · Region: `eu-west-1`
+
+Add these **four records** to `dbc-germany.com` in your DNS manager exactly
+as shown:
+
+| # | Type | Name / host | Value / content | Notes |
+|---|------|-------------|-----------------|-------|
+| 1 | TXT | `resend._domainkey` | `p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDdl/Qv7BCbC3/BLyaTX/1zzwASK++NVP5NpaLQCx7RHh6CiCxST6e5jdCzU1rDpdsVWmIWG+Nctvx8bkVs+e/tjVpesSY5waQ5j9zgtH0Ff7bxgXMorSl0XvyR0DO6kkDWbg+GsSPKV4hws9XYwYvMMMUd9LH+IEzlHQtyUE3zLQIDAQAB` | DKIM — **no quotes needed** in most DNS editors; paste the whole `p=…` string verbatim |
+| 2 | MX | `send` | `feedback-smtp.eu-west-1.amazonses.com` priority **10** | Bounce/complaint feedback (EU region) |
+| 3 | TXT | `send` | `v=spf1 include:amazonses.com ~all` | SPF for the `send` subdomain |
+| 4 | TXT | `_dmarc` | `v=DMARC1; p=none; rua=mailto:dmarc@dbc-germany.com` | **Recommended**. Start with `p=none`; raise to `p=quarantine` later once you've monitored aggregate reports for a week |
+
+Propagation is usually 5–30 minutes. Once the records resolve, Resend will
+auto-verify. If it doesn't, tell me and I'll hit `POST /domains/:id/verify`
+from my side.
+
+> **Cloudflare note**: make sure the TXT records are NOT proxied (grey cloud
+> only applies to CNAME/A, but verify the "DNS only" badge anyway).
 
 ### Once verified — update Vercel env vars
 

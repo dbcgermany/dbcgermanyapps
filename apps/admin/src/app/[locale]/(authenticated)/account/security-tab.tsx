@@ -8,7 +8,13 @@ import {
   countRemainingBackupCodes,
   clearBackupCodes,
 } from "@/actions/mfa";
-import { requestPasswordReset, signOutEverywhere } from "@/actions/account";
+import {
+  requestPasswordReset,
+  signOutEverywhere,
+  listMySessions,
+  revokeMySession,
+  type SessionRow,
+} from "@/actions/account";
 
 type Factor = {
   id: string;
@@ -40,6 +46,8 @@ export function SecurityTab() {
   const [enrollment, setEnrollment] = useState<EnrollmentState>({ kind: "idle" });
   const [verifyCode, setVerifyCode] = useState("");
   const [remainingCodes, setRemainingCodes] = useState<number | null>(null);
+  const [sessions, setSessions] = useState<SessionRow[]>([]);
+  const [revokingId, setRevokingId] = useState<string | null>(null);
 
   const verifiedFactor = factors.find(
     (f) => f.factor_type === "totp" && f.status === "verified"
@@ -58,6 +66,20 @@ export function SecurityTab() {
     setLoadingFactors(false);
     const remaining = await countRemainingBackupCodes();
     setRemainingCodes(remaining);
+    const rows = await listMySessions();
+    setSessions(rows);
+  }
+
+  async function revokeSession(sessionId: string) {
+    setRevokingId(sessionId);
+    const result = await revokeMySession(sessionId);
+    setRevokingId(null);
+    if ("error" in result && result.error) {
+      toast.error(result.error);
+    } else {
+      toast.success("Session revoked.");
+      setSessions((prev) => prev.filter((s) => s.id !== sessionId));
+    }
   }
 
   useEffect(() => {
@@ -205,6 +227,28 @@ export function SecurityTab() {
       if ("error" in result && result.error) toast.error(result.error);
       else toast.success("Signed out on all devices.");
     });
+  }
+
+  function shortUserAgent(ua: string): string {
+    // Keep it readable without a full UA parser
+    if (/iPhone/i.test(ua)) return "Safari on iPhone";
+    if (/iPad/i.test(ua)) return "Safari on iPad";
+    if (/Android/i.test(ua))
+      return /Chrome/i.test(ua) ? "Chrome on Android" : "Browser on Android";
+    if (/Macintosh/i.test(ua)) {
+      if (/Safari/i.test(ua) && !/Chrome/i.test(ua)) return "Safari on macOS";
+      if (/Chrome/i.test(ua)) return "Chrome on macOS";
+      if (/Firefox/i.test(ua)) return "Firefox on macOS";
+      return "macOS browser";
+    }
+    if (/Windows/i.test(ua)) {
+      if (/Chrome/i.test(ua)) return "Chrome on Windows";
+      if (/Firefox/i.test(ua)) return "Firefox on Windows";
+      if (/Edg/i.test(ua)) return "Edge on Windows";
+      return "Windows browser";
+    }
+    if (/Linux/i.test(ua)) return "Linux browser";
+    return ua.slice(0, 80);
   }
 
   function downloadCodes(codes: string[]) {
@@ -408,19 +452,65 @@ export function SecurityTab() {
       </div>
 
       <div className="rounded-md border border-border p-4">
-        <h3 className="font-heading text-base font-bold">Active sessions</h3>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Sign out of every browser and device you’re currently logged in on.
-          Per-session revoke is tracked as a follow-up.
-        </p>
-        <button
-          type="button"
-          onClick={handleSignOutEverywhere}
-          disabled={soePending}
-          className="mt-3 rounded-md border border-red-300 px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/30"
-        >
-          {soePending ? "Signing out…" : "Sign out everywhere"}
-        </button>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h3 className="font-heading text-base font-bold">Active sessions</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Devices and browsers currently signed in to this account. Revoke
+              any you don’t recognise.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleSignOutEverywhere}
+            disabled={soePending}
+            className="rounded-md border border-red-300 px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/30"
+          >
+            {soePending ? "Signing out…" : "Sign out everywhere"}
+          </button>
+        </div>
+
+        {sessions.length === 0 ? (
+          <p className="mt-4 text-xs text-muted-foreground">
+            No session data available (load the tab again to refresh).
+          </p>
+        ) : (
+          <ul className="mt-4 divide-y divide-border rounded-md border border-border">
+            {sessions.map((s) => {
+              const ua = s.user_agent ?? "Unknown device";
+              const last = s.updated_at ?? s.created_at;
+              return (
+                <li
+                  key={s.id}
+                  className="flex flex-wrap items-start justify-between gap-3 px-3 py-2 text-xs"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-medium text-foreground">
+                      {shortUserAgent(ua)}
+                    </p>
+                    <p className="text-muted-foreground">
+                      {s.ip ? `${s.ip} · ` : ""}
+                      Last active {new Date(last).toLocaleString()}
+                      {s.aal === "aal2" && (
+                        <span className="ml-2 rounded-full bg-green-100 px-1.5 py-0.5 text-[10px] font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                          2FA
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => revokeSession(s.id)}
+                    disabled={revokingId === s.id}
+                    className="text-xs font-medium text-red-600 hover:opacity-80 disabled:opacity-50"
+                  >
+                    {revokingId === s.id ? "Revoking…" : "Revoke"}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </div>
     </div>
   );

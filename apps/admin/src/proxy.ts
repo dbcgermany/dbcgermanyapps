@@ -2,7 +2,12 @@ import { type NextRequest, NextResponse } from "next/server";
 import { createMiddlewareClient } from "@dbc/supabase";
 import { LOCALES, DEFAULT_LOCALE, type Locale } from "@dbc/types";
 
-const PUBLIC_PATHS = ["/login", "/set-password", "/auth/callback"];
+const PUBLIC_PATHS = [
+  "/login",
+  "/set-password",
+  "/auth/callback",
+  "/mfa-challenge",
+];
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -64,8 +69,31 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // --- MFA (AAL2) gate ---
+  // If the user has a verified MFA factor but this session is only aal1,
+  // block everything except the challenge page until they prove the factor.
+  if (user && !mustChangePassword && pathWithoutLocale !== "/mfa-challenge") {
+    const { data: aal } =
+      await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (aal?.currentLevel === "aal1" && aal?.nextLevel === "aal2") {
+      const url = request.nextUrl.clone();
+      url.pathname = `/${locale}/mfa-challenge`;
+      url.searchParams.set("redirect", pathname);
+      return NextResponse.redirect(url);
+    }
+  }
+
   if (user && isPublicPath && !mustChangePassword) {
-    // Already authenticated — redirect to dashboard
+    // Already authenticated — redirect to dashboard.
+    // Exception: the MFA challenge page needs to stay reachable while aal1.
+    if (pathWithoutLocale === "/mfa-challenge") {
+      const { data: aal } =
+        await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (aal?.currentLevel === "aal1" && aal?.nextLevel === "aal2") {
+        // Let the page render so the user can complete the challenge.
+        return response;
+      }
+    }
     const url = request.nextUrl.clone();
     url.pathname = `/${locale}/dashboard`;
     return NextResponse.redirect(url);
