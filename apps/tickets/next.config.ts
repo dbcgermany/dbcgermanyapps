@@ -18,6 +18,11 @@ const nextConfig: NextConfig = {
         hostname: "diambilaybusinesscenter.org",
         pathname: "/images/**",
       },
+      {
+        protocol: "https",
+        hostname: "rcqgsexfuaoiiuqcqeka.supabase.co",
+        pathname: "/storage/v1/object/public/**",
+      },
     ],
   },
 };
