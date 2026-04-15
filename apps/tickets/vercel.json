@@ -1,5 +1,4 @@
 {
-  "_comment": "HOBBY PLAN WORKAROUND: All crons forced to daily. Restore hourly + 5-min schedules once team is upgraded to Pro. See plan file for production schedule.",
   "crons": [
     {
       "path": "/api/cron/email-sequences",
