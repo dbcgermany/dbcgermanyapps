@@ -1,0 +1,68 @@
+name: Deploy to Vercel
+
+# Bridges GitHub pushes to Vercel deployments. Each of the three Vercel
+# projects (admin, tickets, site) is triggered in parallel with the push SHA.
+#
+# Why this workflow exists:
+#   The Vercel GitHub App is not installed on this account, so Vercel's
+#   native auto-deploy does not fire on push. This workflow replaces it
+#   using the Vercel REST API with a never-expiring account token stored
+#   in the VERCEL_TOKEN repo secret.
+#
+# If the Vercel GitHub App is installed later, delete this file and native
+# auto-deploys will resume automatically.
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: vercel-deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: dbcgermanyapps-admin
+            project_id: prj_tR1Lt3cPHTRDH4PKRZR5bzR47Ysz
+          - name: dbcgermanyapps-tickets
+            project_id: prj_wrJNDjQVFDOmaEq95OHvEDz4dFgt
+          - name: dbcgermanyapps-site
+            project_id: prj_AkJ7RBy4LCBC5PutJYWLQMoGUAAC
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_TEAM_ID: team_EEPrSTrl7mHIWDZmZhIbtlUb
+      GITHUB_REPO_ID: "1208995711"
+    steps:
+      - name: Trigger production deployment
+        run: |
+          set -euo pipefail
+          payload=$(jq -nc \
+            --arg name "${{ matrix.name }}" \
+            --arg project "${{ matrix.project_id }}" \
+            --arg ref "$GITHUB_REF_NAME" \
+            --arg sha "$GITHUB_SHA" \
+            --argjson repoId "$GITHUB_REPO_ID" \
+            '{name:$name, target:"production", project:$project,
+              gitSource:{type:"github", ref:$ref, repoId:$repoId, sha:$sha}}')
+          response=$(curl -sS -X POST \
+            "https://api.vercel.com/v13/deployments?teamId=${VERCEL_TEAM_ID}&forceNew=1&skipAutoDetectionConfirmation=1" \
+            -H "Authorization: Bearer ${VERCEL_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "$payload")
+          echo "$response" | jq .
+          error=$(echo "$response" | jq -r '.error // empty')
+          if [ -n "$error" ]; then
+            echo "::error title=${{ matrix.name }} deploy failed::$(echo "$response" | jq -r .error.message)"
+            exit 1
+          fi
+          id=$(echo "$response" | jq -r '.id // "?"')
+          url=$(echo "$response" | jq -r '.url // "?"')
+          echo "::notice title=${{ matrix.name }}::Deployment $id triggered at https://$url"
