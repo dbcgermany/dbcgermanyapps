@@ -285,7 +285,7 @@ export async function SiteFooter({ locale }: { locale: string }) {
                 </Link>
               </li>
               <li>
-                <CookieSettingsButton className="text-foreground hover:text-primary text-left">
+                <CookieSettingsButton className="cursor-pointer text-sm text-foreground hover:text-primary text-left">
                   {locale === "de"
                     ? "Cookie-Einstellungen"
                     : locale === "fr"

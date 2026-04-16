@@ -35,7 +35,7 @@ export function TermsOfService({ company, locale, marketingSiteUrl }: LegalConte
   };
 
   return (
-    <article className="prose prose-sm dark:prose-invert mx-auto max-w-3xl">
+    <article>
       <h1>{t(heading, locale)}</h1>
 
       {/* ——— 1. Acceptance & parties ——— */}

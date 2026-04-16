@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 @import "@dbc/ui/tokens/base.css";
 
 @theme inline {

@@ -1,3 +1,4 @@
+export { LegalPageShell } from "./legal-page-shell";
 export { Impressum } from "./impressum";
 export { CookiePolicy } from "./cookies";
 export { PrivacyPolicy } from "./privacy";

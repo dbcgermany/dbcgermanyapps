@@ -16,7 +16,7 @@ export function UsPrivacyNotice({
   const privacyEmail = c?.privacy_email ?? c?.primary_email ?? "";
 
   return (
-    <article className="prose prose-sm dark:prose-invert mx-auto max-w-3xl">
+    <article>
       <h1>US Privacy Notice</h1>
       <p className="lead">
         Supplemental privacy notice for residents of the United States, including

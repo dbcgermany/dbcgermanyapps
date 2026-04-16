@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getCompanyInfo, CookiePolicy, type LegalLocale } from "@dbc/legal";
+import { getCompanyInfo, CookiePolicy, LegalPageShell, type LegalLocale } from "@dbc/legal";
 
 const titles: Record<string, string> = {
   en: "Cookie Policy — DBC Germany Tickets",
@@ -26,7 +26,7 @@ export default async function CookiePolicyPage({
   const l = (locale === "de" || locale === "fr" ? locale : "en") as LegalLocale;
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-16 sm:py-24">
+    <LegalPageShell locale={l} homeHref={`/${locale}`}>
       <CookiePolicy
         company={company}
         locale={l}
@@ -34,6 +34,6 @@ export default async function CookiePolicyPage({
         marketingSiteUrl="https://dbc-germany.com"
         ticketsSiteUrl="https://tickets.dbc-germany.com"
       />
-    </div>
+    </LegalPageShell>
   );
 }

@@ -94,7 +94,7 @@ export function Impressum({ company, locale }: LegalContext) {
   const c = company;
 
   return (
-    <article className="prose prose-sm dark:prose-invert mx-auto max-w-3xl">
+    <article>
       <h1>{t(heading, locale)}</h1>
 
       <h2>{t(copy.informationPer, locale)}</h2>

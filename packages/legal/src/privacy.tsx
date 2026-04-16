@@ -34,7 +34,7 @@ export function PrivacyPolicy({ company, locale, marketingSiteUrl }: LegalContex
   const contactFormUrl = c?.contact_form_url ?? `${marketingSiteUrl}/${locale}/contact`;
 
   return (
-    <article className="prose prose-sm dark:prose-invert mx-auto max-w-3xl">
+    <article>
       <h1>{t(heading, locale)}</h1>
 
       {/* ——— 1. Controller ——— */}
