@@ -55,10 +55,21 @@
   --ring:                 350 85% 42%;
   --radius:               0.5rem;
 
-  /* --- Typography --- */
+  /* --- Typography (Apple-style editorial — premium body text) --- */
   --font-heading: var(--font-montserrat), system-ui, sans-serif;
   --font-body: var(--font-ubuntu), system-ui, sans-serif;
   --font-ui: var(--font-dm-sans), system-ui, sans-serif;
+
+  /* Body text tokens — Apple-style editorial defaults */
+  --dbc-text-body-size:           17px;
+  --dbc-text-body-line-height:    1.6;
+  --dbc-text-body-letter-spacing: -0.011em;
+  --dbc-text-small-size:          15px;
+  --dbc-text-small-line-height:   1.55;
+  --dbc-text-small-letter-spacing:-0.006em;
+  --dbc-text-paragraph-spacing:   1em;
+  --dbc-text-measure-long:        65ch;
+  --dbc-text-measure-card:        72ch;
 
   /* --- Spacing (4px base) --- */
   --dbc-spacing-0:    0px;

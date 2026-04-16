@@ -139,7 +139,7 @@ export async function transferTicket(input: TransferInput) {
     ? ((tier[`name_${locale}` as keyof typeof tier] as string) || tier.name_en)
     : "Ticket";
   const ticketsBaseUrl =
-    process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://ticket.dbc-germany.com";
+    process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://tickets.dbc-germany.com";
 
   after(async () => {
     // 1. Send the notification that the ticket was transferred.

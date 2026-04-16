@@ -37,7 +37,7 @@ const TRANSLATIONS = {
     ticketLabel: "Ticket #",
     instructions: "Present the QR code on your PDF ticket at the entrance for fast check-in. You can also access your order online anytime.",
     viewOrder: "View order online",
-    footer: "Sent by DBC Germany (UG i.G.) \u00B7 ticket.dbc-germany.com",
+    footer: "Sent by DBC Germany (UG i.G.) \u00B7 tickets.dbc-germany.com",
     questions: "Questions? Reply to this email or contact us at hello@dbc-germany.com.",
   },
   de: {
@@ -51,7 +51,7 @@ const TRANSLATIONS = {
     ticketLabel: "Ticket-Nr.",
     instructions: "Zeigen Sie den QR-Code auf Ihrem PDF-Ticket am Eingang f\u00FCr einen schnellen Check-in vor. Sie k\u00F6nnen Ihre Bestellung jederzeit online einsehen.",
     viewOrder: "Bestellung online ansehen",
-    footer: "Gesendet von DBC Germany (UG i.G.) \u00B7 ticket.dbc-germany.com",
+    footer: "Gesendet von DBC Germany (UG i.G.) \u00B7 tickets.dbc-germany.com",
     questions: "Fragen? Antworten Sie auf diese E-Mail oder kontaktieren Sie uns unter hello@dbc-germany.com.",
   },
   fr: {
@@ -65,7 +65,7 @@ const TRANSLATIONS = {
     ticketLabel: "Billet n\u00B0",
     instructions: "Pr\u00E9sentez le code QR sur votre billet PDF \u00E0 l\u2019entr\u00E9e pour un enregistrement rapide. Vous pouvez \u00E9galement consulter votre commande en ligne \u00E0 tout moment.",
     viewOrder: "Voir la commande en ligne",
-    footer: "Envoy\u00E9 par DBC Germany (UG i.G.) \u00B7 ticket.dbc-germany.com",
+    footer: "Envoy\u00E9 par DBC Germany (UG i.G.) \u00B7 tickets.dbc-germany.com",
     questions: "Des questions ? R\u00E9pondez \u00E0 cet e-mail ou contactez-nous \u00E0 hello@dbc-germany.com.",
   },
 };

@@ -18,7 +18,26 @@ export default async function CompanyInfoPage() {
 
       <LegalReadinessWidget info={info} />
 
-      <CompanyInfoForm info={info} />
+      {info ? (
+        <CompanyInfoForm info={info} />
+      ) : (
+        <EmptyState />
+      )}
+    </div>
+  );
+}
+
+function EmptyState() {
+  return (
+    <div className="mt-8 rounded-lg border border-dashed border-border bg-surface p-8 text-sm">
+      <h2 className="font-heading text-lg font-semibold">
+        No company info row yet
+      </h2>
+      <p className="mt-2 max-w-xl text-muted-foreground">
+        The <code className="rounded bg-muted px-1 py-0.5 text-xs">company_info</code>{" "}
+        table has no row with <code className="rounded bg-muted px-1 py-0.5 text-xs">id = 1</code>.
+        Seed it by running the initial Supabase migration, then refresh this page.
+      </p>
     </div>
   );
 }

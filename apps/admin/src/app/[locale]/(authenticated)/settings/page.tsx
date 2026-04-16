@@ -1,7 +1,9 @@
 import { requireRole } from "@dbc/supabase/server";
 import { getRecentWebhooks, getSiteSettings } from "@/actions/settings";
+import { listAppSecrets } from "@/actions/app-secrets";
 import { SettingsClient } from "./settings-client";
 import { SiteSettingsForm } from "./site-settings-form";
+import { AppSecretsSection } from "./app-secrets-section";
 
 export default async function SettingsPage({
   params,
@@ -10,9 +12,12 @@ export default async function SettingsPage({
 }) {
   const { locale } = await params;
   const user = await requireRole("admin");
-  const [webhooks, siteSettings] = await Promise.all([
+
+  const isSuperAdmin = user.role === "super_admin";
+  const [webhooks, siteSettings, appSecrets] = await Promise.all([
     getRecentWebhooks(50),
     getSiteSettings(),
+    isSuperAdmin ? listAppSecrets() : Promise.resolve([]),
   ]);
 
   return (
@@ -28,6 +33,8 @@ export default async function SettingsPage({
       {siteSettings && (
         <SiteSettingsForm locale={locale} initial={siteSettings} />
       )}
+
+      {isSuperAdmin && <AppSecretsSection secrets={appSecrets} />}
 
       <SettingsClient
         locale={locale}

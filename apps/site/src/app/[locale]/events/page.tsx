@@ -37,7 +37,7 @@ export default async function EventsPage({
   const events = await getUpcomingEvents(20);
 
   const ticketsUrl =
-    process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://ticket.dbc-germany.com";
+    process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://tickets.dbc-germany.com";
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-28 lg:px-8">

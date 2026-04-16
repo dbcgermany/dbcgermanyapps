@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
+import { Menu, X } from "lucide-react";
 import { LocaleSwitch, ThemeToggle } from "@dbc/ui";
 import { DBC } from "@/lib/dbc-assets";
 
@@ -31,7 +32,7 @@ export function SiteHeader({ locale }: { locale: string }) {
   ];
 
   const ticketsUrl =
-    process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://ticket.dbc-germany.com";
+    process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://tickets.dbc-germany.com";
 
   return (
     <header
@@ -90,13 +91,15 @@ export function SiteHeader({ locale }: { locale: string }) {
         <button
           type="button"
           onClick={() => setOpen((o) => !o)}
-          className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-md text-foreground hover:bg-muted"
+          className="md:hidden inline-flex h-12 w-12 items-center justify-center rounded-md text-foreground hover:bg-muted"
           aria-label={open ? t("close") : t("menu")}
           aria-expanded={open}
         >
-          <span aria-hidden className="text-xl">
-            {open ? "\u2715" : "\u2630"}
-          </span>
+          {open ? (
+            <X className="h-7 w-7" strokeWidth={1.75} aria-hidden />
+          ) : (
+            <Menu className="h-7 w-7" strokeWidth={1.75} aria-hidden />
+          )}
         </button>
       </div>
 

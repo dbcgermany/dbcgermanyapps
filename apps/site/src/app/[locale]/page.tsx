@@ -55,7 +55,7 @@ export default async function HomePage({
   const events = await getUpcomingEvents(3);
 
   const ticketsUrl =
-    process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://ticket.dbc-germany.com";
+    process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://tickets.dbc-germany.com";
 
   return (
     <>

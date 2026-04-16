@@ -246,7 +246,7 @@ export async function POST(request: Request) {
             eventRow.title_en;
           const ticketsBaseUrl =
             process.env.NEXT_PUBLIC_TICKETS_URL ??
-            "https://ticket.dbc-germany.com";
+            "https://tickets.dbc-germany.com";
           const currency = (order.currency || "EUR").toUpperCase();
 
           const fmt = (cents: number) =>

@@ -142,7 +142,7 @@ export async function resendTicketPdf(
       ticketToken: tAny.ticket_token,
       locale,
       orderUrl: `${
-        process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://ticket.dbc-germany.com"
+        process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://tickets.dbc-germany.com"
       }/${locale}/confirmation/${tAny.order_id}`,
       brandName: companyInfo?.brand_name ?? undefined,
       legalName,

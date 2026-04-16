@@ -128,16 +128,16 @@ const COLUMNS = `
   bing_site_verification, bank_name, account_holder, iban, bic, updated_at
 `;
 
-export async function getCompanyInfo(): Promise<CompanyInfo> {
+export async function getCompanyInfo(): Promise<CompanyInfo | null> {
   await requireRole("manager");
   const supabase = await createServerClient();
   const { data, error } = await supabase
     .from("company_info")
     .select(COLUMNS)
     .eq("id", 1)
-    .single();
+    .maybeSingle();
   if (error) throw new Error(error.message);
-  return data as CompanyInfo;
+  return (data as CompanyInfo | null) ?? null;
 }
 
 type Section =

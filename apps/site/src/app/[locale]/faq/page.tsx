@@ -35,9 +35,9 @@ const SECTIONS: Array<{
           fr: "Quand et où a lieu Richesses d'Afrique 2026 ?",
         },
         a: {
-          en: "Saturday, 13 June 2026, in Essen, Germany. Tickets are available at ticket.dbc-germany.com.",
-          de: "Samstag, 13. Juni 2026, in Essen. Tickets unter ticket.dbc-germany.com.",
-          fr: "Samedi 13 juin 2026 à Essen (Allemagne). Billets sur ticket.dbc-germany.com.",
+          en: "Saturday, 13 June 2026, in Essen, Germany. Tickets are available at tickets.dbc-germany.com.",
+          de: "Samstag, 13. Juni 2026, in Essen. Tickets unter tickets.dbc-germany.com.",
+          fr: "Samedi 13 juin 2026 à Essen (Allemagne). Billets sur tickets.dbc-germany.com.",
         },
       },
       {
@@ -59,9 +59,9 @@ const SECTIONS: Array<{
           fr: "Puis-je transférer mon billet à un collègue ?",
         },
         a: {
-          en: "Yes. Sign in at ticket.dbc-germany.com, open the order, and use the transfer flow — a new QR code is issued to the new attendee.",
-          de: "Ja. Auf ticket.dbc-germany.com einloggen, die Bestellung öffnen und den Transfer nutzen — der neue Gast erhält einen neuen QR-Code.",
-          fr: "Oui. Connectez-vous sur ticket.dbc-germany.com, ouvrez la commande et utilisez la fonction de transfert — un nouveau QR est généré pour le nouveau participant.",
+          en: "Yes. Sign in at tickets.dbc-germany.com, open the order, and use the transfer flow — a new QR code is issued to the new attendee.",
+          de: "Ja. Auf tickets.dbc-germany.com einloggen, die Bestellung öffnen und den Transfer nutzen — der neue Gast erhält einen neuen QR-Code.",
+          fr: "Oui. Connectez-vous sur tickets.dbc-germany.com, ouvrez la commande et utilisez la fonction de transfert — un nouveau QR est généré pour le nouveau participant.",
         },
       },
     ],

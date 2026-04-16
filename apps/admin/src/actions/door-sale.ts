@@ -287,7 +287,7 @@ async function deliverDoorSaleTicket(supabase: any, orderId: string, locale: str
     tierName,
     ticketToken: ticket.ticket_token,
     locale: loc,
-    orderUrl: `${process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://ticket.dbc-germany.com"}/${loc}/confirmation/${orderId}`,
+    orderUrl: `${process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://tickets.dbc-germany.com"}/${loc}/confirmation/${orderId}`,
     brandName: companyInfo?.brand_name ?? undefined,
     legalName,
     supportEmail: companyInfo?.support_email ?? undefined,

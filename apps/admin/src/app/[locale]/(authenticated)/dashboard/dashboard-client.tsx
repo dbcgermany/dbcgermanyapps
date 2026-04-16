@@ -13,6 +13,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { ArrowDownRight, ArrowUpRight, Minus } from "lucide-react";
 import {
   DateRangeSelect,
   type DateRange,
@@ -31,6 +32,20 @@ type T = {
   viewAll: string;
   noData: string;
   noEvents: string;
+  aov: string;
+  aovSub: string;
+  arpa: string;
+  arpaSub: string;
+  netRevenue: string;
+  netRevenueSub: string;
+  refundRate: string;
+  refundRateSub: string;
+  velocity: string;
+  velocitySub: string;
+  vsPrior: string;
+  sellThrough: string;
+  sellThroughSub: string;
+  capacity: string;
 };
 
 export function DashboardClient({
@@ -68,6 +83,9 @@ export function DashboardClient({
     count: d.count,
   }));
 
+  const fmtEur = (cents: number) =>
+    `\u20AC${(cents / 100).toLocaleString(locale, { maximumFractionDigits: 0 })}`;
+
   return (
     <>
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
@@ -77,21 +95,74 @@ export function DashboardClient({
         </p>
       </div>
 
-      {/* KPI Grid */}
+      {/* Headline KPI Grid */}
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard
           label={t.totalRevenue}
-          value={`\u20AC${(kpis.totalRevenueCents / 100).toLocaleString(locale, { maximumFractionDigits: 0 })}`}
+          value={fmtEur(kpis.totalRevenueCents)}
+          delta={pctChange(kpis.current.revenueCents, kpis.prior.revenueCents)}
+          deltaLabel={t.vsPrior}
         />
         <KpiCard
           label={t.ticketsSold}
           value={kpis.ticketsSold.toLocaleString(locale)}
+          delta={pctChange(kpis.current.ticketsSold, kpis.prior.ticketsSold)}
+          deltaLabel={t.vsPrior}
         />
         <KpiCard
           label={t.activeEvents}
           value={kpis.activeEventCount.toLocaleString(locale)}
         />
         <KpiCard label={t.checkInRate} value={`${kpis.checkInRate}%`} />
+      </div>
+
+      {/* Phase A KPIs */}
+      <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <KpiCard
+          label={t.aov}
+          sub={t.aovSub}
+          value={fmtEur(kpis.current.aovCents)}
+          delta={pctChange(kpis.current.aovCents, kpis.prior.aovCents)}
+          deltaLabel={t.vsPrior}
+          dense
+        />
+        <KpiCard
+          label={t.arpa}
+          sub={t.arpaSub}
+          value={fmtEur(kpis.current.arpaCents)}
+          delta={pctChange(kpis.current.arpaCents, kpis.prior.arpaCents)}
+          deltaLabel={t.vsPrior}
+          dense
+        />
+        <KpiCard
+          label={t.netRevenue}
+          sub={t.netRevenueSub}
+          value={fmtEur(kpis.current.netRevenueCents)}
+          delta={pctChange(
+            kpis.current.netRevenueCents,
+            kpis.prior.netRevenueCents
+          )}
+          deltaLabel={t.vsPrior}
+          dense
+        />
+        <KpiCard
+          label={t.refundRate}
+          sub={t.refundRateSub}
+          value={`${kpis.refundRatePct.toFixed(1)}%`}
+          // Lower is better for refund rate — flip the direction tint
+          delta={-pctChange(
+            kpis.current.refundCents,
+            kpis.prior.refundCents
+          )}
+          deltaLabel={t.vsPrior}
+          dense
+        />
+        <KpiCard
+          label={t.velocity}
+          sub={t.velocitySub}
+          value={kpis.velocity7dAvg.toFixed(1)}
+          dense
+        />
       </div>
 
       {/* Charts */}
@@ -198,6 +269,41 @@ export function DashboardClient({
         </div>
       </div>
 
+      {/* Sell-through per active event */}
+      {kpis.sellThrough.length > 0 && (
+        <div className="mt-8 rounded-lg border border-border p-6">
+          <h2 className="font-heading text-lg font-semibold">
+            {t.sellThrough}
+          </h2>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {t.sellThroughSub}
+          </p>
+          <ul className="mt-4 space-y-3">
+            {kpis.sellThrough.map((s) => (
+              <li key={s.eventId}>
+                <div className="flex items-center justify-between text-sm">
+                  <Link
+                    href={`/${locale}/events/${s.eventId}`}
+                    className="truncate pr-4 font-medium hover:text-primary"
+                  >
+                    {s.eventTitle}
+                  </Link>
+                  <span className="shrink-0 font-mono text-xs text-muted-foreground">
+                    {s.sold}/{s.capacity} {t.capacity} · {s.pct}%
+                  </span>
+                </div>
+                <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                  <div
+                    className="h-full rounded-full bg-primary transition-all"
+                    style={{ width: `${Math.min(100, s.pct)}%` }}
+                  />
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* Top events */}
       <div className="mt-8">
         <div className="flex items-center justify-between">
@@ -243,7 +349,7 @@ export function DashboardClient({
                       </Link>
                     </td>
                     <td className="px-4 py-3 text-right font-medium">
-                      &euro;{(e.revenue / 100).toFixed(2)}
+                      {fmtEur(e.revenue)}
                     </td>
                     <td className="px-4 py-3 text-right text-muted-foreground">
                       {e.sold}
@@ -259,13 +365,88 @@ export function DashboardClient({
   );
 }
 
-function KpiCard({ label, value }: { label: string; value: string }) {
+function pctChange(current: number, prior: number): number {
+  if (prior === 0) return current === 0 ? 0 : 100;
+  return ((current - prior) / prior) * 100;
+}
+
+function KpiCard({
+  label,
+  sub,
+  value,
+  delta,
+  deltaLabel,
+  dense,
+}: {
+  label: string;
+  sub?: string;
+  value: string;
+  delta?: number;
+  deltaLabel?: string;
+  dense?: boolean;
+}) {
+  const direction =
+    delta === undefined
+      ? null
+      : Math.abs(delta) < 0.5
+        ? "flat"
+        : delta > 0
+          ? "up"
+          : "down";
+
   return (
     <div className="rounded-lg border border-border p-4">
-      <p className="text-xs text-muted-foreground uppercase tracking-wider">
-        {label}
+      <div className="flex items-baseline justify-between">
+        <p className="text-xs uppercase tracking-wider text-muted-foreground">
+          {label}
+        </p>
+      </div>
+      <p
+        className={`mt-1 font-heading font-bold ${dense ? "text-xl" : "text-2xl"}`}
+      >
+        {value}
       </p>
-      <p className="mt-1 font-heading text-2xl font-bold">{value}</p>
+      {sub && (
+        <p className="mt-0.5 text-[11px] text-muted-foreground">{sub}</p>
+      )}
+      {direction && deltaLabel && (
+        <div className="mt-2 flex items-center gap-1 text-xs">
+          {direction === "up" && (
+            <ArrowUpRight
+              className="h-3.5 w-3.5 text-green-600 dark:text-green-400"
+              strokeWidth={1.75}
+            />
+          )}
+          {direction === "down" && (
+            <ArrowDownRight
+              className="h-3.5 w-3.5 text-red-600 dark:text-red-400"
+              strokeWidth={1.75}
+            />
+          )}
+          {direction === "flat" && (
+            <Minus
+              className="h-3.5 w-3.5 text-muted-foreground"
+              strokeWidth={1.75}
+            />
+          )}
+          <span
+            className={
+              direction === "up"
+                ? "text-green-600 dark:text-green-400"
+                : direction === "down"
+                  ? "text-red-600 dark:text-red-400"
+                  : "text-muted-foreground"
+            }
+          >
+            {delta !== undefined && Math.abs(delta) < 0.5
+              ? "~"
+              : delta !== undefined
+                ? `${delta > 0 ? "+" : ""}${delta.toFixed(0)}%`
+                : ""}
+          </span>
+          <span className="text-muted-foreground">{deltaLabel}</span>
+        </div>
+      )}
     </div>
   );
 }

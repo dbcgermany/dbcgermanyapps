@@ -169,7 +169,7 @@ export async function createInvitation(input: InvitationInput) {
       tierName,
       ticketToken: ticket.ticket_token,
       locale: loc,
-      orderUrl: `${process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://ticket.dbc-germany.com"}/${loc}/confirmation/${order.id}`,
+      orderUrl: `${process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://tickets.dbc-germany.com"}/${loc}/confirmation/${order.id}`,
       brandName: companyInfo?.brand_name ?? undefined,
       legalName: companyInfo
         ? [companyInfo.legal_name, companyInfo.legal_form].filter(Boolean).join(" ")

@@ -63,7 +63,7 @@ export async function GET(request: Request) {
   const eventMap = new Map((events ?? []).map((e) => [e.id, e]));
 
   const ticketsBaseUrl =
-    process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://ticket.dbc-germany.com";
+    process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://tickets.dbc-germany.com";
 
   // Resolve the locale and tier name for a given buyer email. We fall back
   // to EN when we don't know the buyer's preferred language.

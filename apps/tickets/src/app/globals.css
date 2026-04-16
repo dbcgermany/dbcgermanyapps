@@ -33,8 +33,34 @@
   --radius-xl: var(--dbc-radius-xl);
 }
 
+/* Apple-style editorial base (shared across all DBC apps) */
+html {
+  font-size: 106.25%; /* 17px */
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   background-color: var(--dbc-color-bg);
   color: var(--dbc-color-text);
   font-family: var(--font-body);
+  font-size: var(--dbc-text-body-size);
+  line-height: var(--dbc-text-body-line-height);
+  letter-spacing: var(--dbc-text-body-letter-spacing);
+  font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+.prose-dbc {
+  font-size: var(--dbc-text-body-size);
+  line-height: var(--dbc-text-body-line-height);
+  letter-spacing: var(--dbc-text-body-letter-spacing);
+}
+
+.prose-dbc p {
+  margin-top: var(--dbc-text-paragraph-spacing);
+  margin-bottom: var(--dbc-text-paragraph-spacing);
+  max-width: var(--dbc-text-measure-long);
 }

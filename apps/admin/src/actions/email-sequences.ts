@@ -210,7 +210,7 @@ export async function dispatchEmailSequence(
     .single();
 
   const ticketsBaseUrl =
-    process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://ticket.dbc-germany.com";
+    process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://tickets.dbc-germany.com";
 
   let sent = 0;
   let failed = 0;

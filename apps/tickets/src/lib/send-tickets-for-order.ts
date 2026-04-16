@@ -86,7 +86,7 @@ export async function sendTicketsForOrder(
     event.title_en;
 
   const ticketsBaseUrl =
-    process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://ticket.dbc-germany.com";
+    process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://tickets.dbc-germany.com";
   const orderUrl = `${ticketsBaseUrl}/${locale}/confirmation/${orderId}`;
 
   // Send each ticket

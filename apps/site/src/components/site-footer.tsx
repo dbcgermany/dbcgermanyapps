@@ -13,7 +13,7 @@ export async function SiteFooter({ locale }: { locale: string }) {
   const info = await getCompanyInfo();
 
   const ticketsUrl =
-    process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://ticket.dbc-germany.com";
+    process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://tickets.dbc-germany.com";
 
   const logoUrl = info?.logo_light_url || DBC.logo;
   const brandName = info?.brand_name || "DBC Germany";

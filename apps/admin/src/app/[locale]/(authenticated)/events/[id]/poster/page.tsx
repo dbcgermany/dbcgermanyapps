@@ -41,7 +41,7 @@ export default async function EventPosterPage({
     .maybeSingle();
 
   const ticketsBaseUrl =
-    process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://ticket.dbc-germany.com";
+    process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://tickets.dbc-germany.com";
   const checkoutUrl = `${ticketsBaseUrl}/${locale}/checkout/${event.slug}?src=door_poster`;
 
   // Generate QR as data URL on the server so the page renders without JS.
