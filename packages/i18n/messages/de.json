@@ -254,7 +254,7 @@
       "about": {
         "title": "Über Narikia UG",
         "legalName": "Narikia UG (i.G.)",
-        "intro": "{name} ist ein Software-Studio, das Veranstaltungstechnologie, Ticketing-Plattformen und Admin-Systeme für Organisationen mit afrikanischen Wurzeln in Europa baut.",
+        "intro": "{name} ist ein Softwareunternehmen. Wir entwickeln Software für Organisationen und selbstständige Unternehmer:innen verschiedener Branchen — SaaS, Web-Plattformen und mobile Apps — und betreiben zudem unsere eigenen Produkte, darunter Bossmetics.",
         "foundersLabel": "Gründer:innen",
         "founderGeraldName": "Gerald Ngongo Kalala",
         "founderGeraldRole": "Geschäftsführer und Gründer",
@@ -266,17 +266,20 @@
         "foundedValue": "2026",
         "hrbLabel": "Handelsregister",
         "hrbValue": "In Gründung — HRB wird nach Eintragung veröffentlicht",
-        "mission": "Wir bauen die Softwareplattformen, die Veranstaltungsunternehmen und community-getriebene Organisationen tatsächlich brauchen, um auf Premium-Niveau zu arbeiten."
+        "mission": "Unser Fokus liegt auf operativer Software — Plattformen, auf die Teams täglich vertrauen, entwickelt nach dem Standard führender Consumer-Produkte."
       },
       "services": {
         "title": "Was Narikia baut",
         "items": [
-          "Ticketing-Plattformen für Veranstaltungen (Stripe, mehrsprachig, atomares Inventar)",
-          "Admin-Dashboards mit Echtzeit-KPIs und Berichten",
-          "KI-gestützte Automatisierungen für Content, Newsletter und CRM",
-          "Mehrsprachige Marketing-Websites (EN / DE / FR und mehr)",
-          "Interne Betriebstools (Scan-Apps, Tageskasse, Team-CRM)",
-          "Rechtskonforme Web-Infrastruktur (Impressum, DSGVO, GDPR)"
+          "Maßgeschneiderte SaaS-Produkte für Kunden verschiedener Branchen",
+          "Eigene SaaS-Produkte, entwickelt und betrieben von uns — darunter Bossmetics",
+          "Web-Plattformen und -Anwendungen (Next.js, React, Full-Stack)",
+          "iOS-, Android- und plattformübergreifende mobile Anwendungen",
+          "Ticketing-, Registrierungs- und Event-Management-Plattformen",
+          "Admin-Panels, operative Dashboards und interne Tools",
+          "Mehrsprachige Websites mit vollständiger rechtlicher Compliance",
+          "KI-gesteuerte Automatisierung, Integrationen und Entscheidungsunterstützung",
+          "Maßgeschneiderte CRMs und Software für Geschäftsprozesse"
         ]
       },
       "contact": {

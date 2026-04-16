@@ -254,7 +254,7 @@
       "about": {
         "title": "À propos de Narikia UG",
         "legalName": "Narikia UG (i.G.)",
-        "intro": "{name} est un studio logiciel qui construit des technologies événementielles, des plateformes de billetterie et des systèmes d’administration pour les organisations aux racines africaines opérant en Europe.",
+        "intro": "{name} est une entreprise logicielle. Nous construisons des logiciels pour des organisations et des entrepreneur·euse·s indépendant·e·s de tous secteurs — SaaS, plateformes web et applications mobiles — et développons également nos propres produits, notamment Bossmetics.",
         "foundersLabel": "Fondateur·ice·s",
         "founderGeraldName": "Gerald Ngongo Kalala",
         "founderGeraldRole": "Directeur général et fondateur",
@@ -266,17 +266,20 @@
         "foundedValue": "2026",
         "hrbLabel": "Registre du commerce",
         "hrbValue": "En cours d’immatriculation — HRB publié dès attribution",
-        "mission": "Nous construisons les plateformes logicielles dont les entreprises événementielles et les organisations communautaires ont réellement besoin pour opérer au niveau premium."
+        "mission": "Notre focus : des logiciels opérationnels — des plateformes sur lesquelles les équipes s'appuient au quotidien, conçues au niveau des meilleurs produits grand public."
       },
       "services": {
         "title": "Ce que Narikia construit",
         "items": [
-          "Plateformes de billetterie événementielle (Stripe, multilingue, stocks atomiques)",
-          "Tableaux de bord admin avec KPIs et rapports en temps réel",
-          "Automatisations IA pour contenu, newsletters et CRM",
-          "Sites marketing multilingues (EN / DE / FR et plus)",
-          "Outils d’opérations internes (apps de scan, caisse, CRM d’équipe)",
-          "Infrastructure web conforme à la loi (Impressum, GDPR, DSGVO)"
+          "Produits SaaS sur mesure pour des clients de tous secteurs",
+          "Produits SaaS propriétaires que nous développons et exploitons — notamment Bossmetics",
+          "Plateformes et applications web (Next.js, React, full-stack)",
+          "Applications mobiles iOS, Android et multiplateformes",
+          "Plateformes de billetterie, d'inscription et de gestion d'événements",
+          "Tableaux de bord administrateurs, interfaces opérationnelles et outils internes",
+          "Sites multilingues avec conformité légale complète",
+          "Automatisations, intégrations et systèmes d'aide à la décision basés sur l'IA",
+          "CRMs sur mesure et logiciels pour les opérations métier"
         ]
       },
       "contact": {

@@ -254,7 +254,7 @@
       "about": {
         "title": "About Narikia UG",
         "legalName": "Narikia UG (i.G.)",
-        "intro": "{name} is a software studio building event technology, ticketing platforms, and admin systems for African-rooted organizations operating in Europe.",
+        "intro": "{name} is a software company. We build software for organizations and independent entrepreneurs across industries — SaaS, web platforms, and mobile apps — and we also develop and operate our own products, including Bossmetics.",
         "foundersLabel": "Founders",
         "founderGeraldName": "Gerald Ngongo Kalala",
         "founderGeraldRole": "Managing Director and Founder",
@@ -266,17 +266,20 @@
         "foundedValue": "2026",
         "hrbLabel": "Register",
         "hrbValue": "In registration — HRB to be published once issued",
-        "mission": "We build the software platforms that event companies and community-driven organizations actually need to operate at a premium standard."
+        "mission": "Our focus is operational software — platforms teams depend on daily, engineered to the standard of flagship consumer products."
       },
       "services": {
         "title": "What Narikia builds",
         "items": [
-          "Event ticketing platforms (Stripe, multilingual, atomic inventory)",
-          "Admin dashboards with real-time KPIs and reports",
-          "AI-powered automations for content, newsletters, and CRM",
-          "Multilingual marketing sites (EN / DE / FR and beyond)",
-          "Internal operations tooling (scan apps, door-sale, team CRM)",
-          "Legal-compliant web infrastructure (Impressum, GDPR, DSGVO)"
+          "Custom SaaS products for clients across industries",
+          "Proprietary SaaS products we own and operate — Bossmetics and more",
+          "Web platforms and applications (Next.js, React, full-stack)",
+          "iOS, Android, and cross-platform mobile applications",
+          "Ticketing, registration, and event management platforms",
+          "Admin panels, operational dashboards, and internal tooling",
+          "Multilingual websites with full legal compliance",
+          "AI-driven automation, integrations, and decision-support systems",
+          "Custom CRMs and business operations software"
         ]
       },
       "contact": {
