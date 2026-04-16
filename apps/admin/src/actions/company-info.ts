@@ -93,6 +93,8 @@ export interface CompanyInfo {
   seo_description_en: string | null;
   seo_description_de: string | null;
   seo_description_fr: string | null;
+  google_site_verification: string | null;
+  bing_site_verification: string | null;
   // Banking
   bank_name: string | null;
   account_holder: string | null;
@@ -122,8 +124,8 @@ const COLUMNS = `
   favicon_url, og_default_image_url, primary_color, linkedin_url,
   instagram_url, facebook_url, whatsapp_url, youtube_url, twitter_url,
   seo_title_en, seo_title_de, seo_title_fr, seo_description_en,
-  seo_description_de, seo_description_fr, bank_name, account_holder, iban,
-  bic, updated_at
+  seo_description_de, seo_description_fr, google_site_verification,
+  bing_site_verification, bank_name, account_holder, iban, bic, updated_at
 `;
 
 export async function getCompanyInfo(): Promise<CompanyInfo> {
@@ -245,6 +247,8 @@ const SECTION_FIELDS: Record<Section, Array<keyof CompanyInfo>> = {
     "seo_description_en",
     "seo_description_de",
     "seo_description_fr",
+    "google_site_verification",
+    "bing_site_verification",
   ],
   banking: ["bank_name", "account_holder", "iban", "bic"],
 };

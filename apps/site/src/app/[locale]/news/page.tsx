@@ -96,7 +96,7 @@ export default async function NewsIndexPage({
                 <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
                   <Image
                     src={cover}
-                    alt=""
+                    alt={title}
                     fill
                     sizes="(min-width: 768px) 50vw, 100vw"
                     className="object-cover transition-transform group-hover:scale-105"

@@ -11,7 +11,20 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "site" });
-  return { title: t("events.title") };
+  const BASE = "https://dbc-germany.com";
+  return {
+    title: t("events.title"),
+    description:
+      locale === "de"
+        ? "Entdecken Sie Veranstaltungen von DBC Germany \u2014 Konferenzen, Workshops und Networking f\u00FCr afrikanische Unternehmer in Europa."
+        : locale === "fr"
+          ? "D\u00E9couvrez les \u00E9v\u00E9nements de DBC Germany \u2014 conf\u00E9rences, ateliers et networking pour les entrepreneurs africains en Europe."
+          : "Discover upcoming events by DBC Germany \u2014 conferences, workshops, and networking for African entrepreneurs in Europe.",
+    alternates: {
+      canonical: `${BASE}/${locale}/events`,
+      languages: { en: `${BASE}/en/events`, de: `${BASE}/de/events`, fr: `${BASE}/fr/events`, "x-default": `${BASE}/en/events` },
+    },
+  };
 }
 
 export default async function EventsPage({
@@ -63,7 +76,7 @@ export default async function EventsPage({
                     className="aspect-video w-full object-cover transition-transform group-hover:scale-105"
                   />
                 ) : (
-                  <div className="flex aspect-video items-center justify-center bg-gradient-to-br from-primary/10 to-accent/10">
+                  <div className="flex aspect-video items-center justify-center bg-linear-to-br from-primary/10 to-accent/10">
                     <span className="text-5xl text-primary">&#x1F3DB;</span>
                   </div>
                 )}

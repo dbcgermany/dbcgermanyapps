@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { Montserrat, Ubuntu, DM_Sans } from "next/font/google";
 import { ThemeProvider, CookieConsent } from "@dbc/ui";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { getCompanyInfo } from "@/lib/company-info";
+import { JsonLd, organizationJsonLd } from "@/lib/json-ld";
 import "./globals.css";
 
 const montserrat = Montserrat({
@@ -22,32 +26,56 @@ const dmSans = DM_Sans({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ?? "https://dbc-germany.com"
-  ),
-  title: {
-    default: "DBC Germany — Africa's Top Business Group",
-    template: "%s — DBC Germany",
-  },
-  description:
-    "Diambilay Business Center Germany: incubation, courses, investments, mentorship and Richesses d'Afrique events for entrepreneurs with African roots.",
-  openGraph: {
-    type: "website",
-    siteName: "DBC Germany",
-    locale: "en_US",
-    alternateLocale: ["de_DE", "fr_FR"],
-  },
-  twitter: {
-    card: "summary_large_image",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const company = await getCompanyInfo();
+  const verification: Metadata["verification"] = {};
+  if (company?.google_site_verification)
+    verification.google = company.google_site_verification;
+  if (company?.bing_site_verification)
+    verification.other = { "msvalidate.01": company.bing_site_verification };
 
-export default function RootLayout({
+  return {
+    metadataBase: new URL(
+      process.env.NEXT_PUBLIC_SITE_URL ?? "https://dbc-germany.com"
+    ),
+    title: {
+      default:
+        company?.seo_title_en ??
+        "DBC Germany — Africa's Top Business Group",
+      template: "%s — DBC Germany",
+    },
+    description:
+      company?.seo_description_en ??
+      "Diambilay Business Center Germany: incubation, courses, investments, mentorship and Richesses d'Afrique events for entrepreneurs with African roots.",
+    openGraph: {
+      type: "website",
+      siteName: company?.brand_name ?? "DBC Germany",
+      locale: "en_US",
+      alternateLocale: ["de_DE", "fr_FR"],
+      images: company?.og_default_image_url
+        ? [{ url: company.og_default_image_url }]
+        : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+    },
+    verification,
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: { index: true, follow: true },
+    },
+  };
+}
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const company = await getCompanyInfo();
+  const orgSchema = organizationJsonLd(company);
+
   return (
     <html
       lang="en"
@@ -55,6 +83,7 @@ export default function RootLayout({
       className={`${montserrat.variable} ${ubuntu.variable} ${dmSans.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground font-body">
+        {orgSchema && <JsonLd data={orgSchema} />}
         <ThemeProvider defaultTheme="system">
           {children}
           <CookieConsent
@@ -67,6 +96,8 @@ export default function RootLayout({
             }}
           />
         </ThemeProvider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

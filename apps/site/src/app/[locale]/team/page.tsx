@@ -136,7 +136,7 @@ export default async function TeamPage({
                       <div className="relative h-20 w-20 overflow-hidden rounded-full">
                         <Image
                           src={m.photo_url}
-                          alt=""
+                          alt={m.name}
                           fill
                           sizes="80px"
                           className="object-cover"

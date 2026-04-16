@@ -1,16 +1,61 @@
+import type { Metadata } from "next";
 import type { Locale } from "@dbc/types";
 import { LOCALES } from "@dbc/types";
 import { loadMessages } from "@dbc/i18n";
 import { NextIntlClientProvider } from "next-intl";
 import { notFound } from "next/navigation";
 import { createServerClient } from "@dbc/supabase/server";
+import { getCompanyInfo } from "@/lib/company-info";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+
+const BASE = "https://dbc-germany.com";
 
 export const revalidate = 30;
 
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const company = await getCompanyInfo();
+  const seoKey = `seo_title_${locale}` as
+    | "seo_title_en"
+    | "seo_title_de"
+    | "seo_title_fr";
+  const descKey = `seo_description_${locale}` as
+    | "seo_description_en"
+    | "seo_description_de"
+    | "seo_description_fr";
+
+  return {
+    title: {
+      default:
+        (company?.[seoKey] as string | null) ??
+        "DBC Germany \u2014 Africa\u2019s Top Business Group",
+      template: "%s \u2014 DBC Germany",
+    },
+    description: (company?.[descKey] as string | null) ?? undefined,
+    alternates: {
+      canonical: `${BASE}/${locale}`,
+      languages: {
+        en: `${BASE}/en`,
+        de: `${BASE}/de`,
+        fr: `${BASE}/fr`,
+        "x-default": `${BASE}/en`,
+      },
+    },
+    openGraph: {
+      images: company?.og_default_image_url
+        ? [{ url: company.og_default_image_url }]
+        : undefined,
+    },
+  };
 }
 
 export default async function LocaleLayout({

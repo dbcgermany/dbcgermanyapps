@@ -66,7 +66,7 @@ export default async function ServicesHubPage({
       <section className="relative overflow-hidden border-b border-border">
         <Image
           src={DBC.hero.services}
-          alt=""
+          alt="DBC Germany services overview"
           fill
           priority
           sizes="100vw"
@@ -103,7 +103,7 @@ export default async function ServicesHubPage({
               <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
                 <Image
                   src={s.photo}
-                  alt=""
+                  alt={t(`services.${s.key}.title`)}
                   fill
                   sizes="(min-width: 768px) 50vw, 100vw"
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -116,6 +116,7 @@ export default async function ServicesHubPage({
                     alt=""
                     width={32}
                     height={32}
+                    aria-hidden
                     className="h-8 w-8 object-contain"
                     referrerPolicy="no-referrer"
                   />

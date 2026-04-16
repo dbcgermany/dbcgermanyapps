@@ -136,7 +136,7 @@ export default async function ServiceDetailPage({
         <aside className="relative overflow-hidden rounded-2xl border border-border">
           <Image
             src={SERVICE_PHOTOS[service as ValidService]}
-            alt=""
+            alt={t(`services.${service}.title`)}
             fill
             sizes="(min-width: 768px) 40vw, 100vw"
             className="object-cover"

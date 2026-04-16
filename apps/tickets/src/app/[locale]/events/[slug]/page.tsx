@@ -1,9 +1,47 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getEventBySlug, getPublicTiers, getEventSchedule } from "@/lib/queries";
+import { getCompanyInfo } from "@/lib/company-info";
 import { WaitlistButton } from "./waitlist-button";
 
 export const revalidate = 30;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string; slug: string }>;
+}): Promise<Metadata> {
+  const { locale, slug } = await params;
+  const event = await getEventBySlug(slug);
+  if (!event) return {};
+  const l = locale === "de" || locale === "fr" ? locale : "en";
+  const titleKey = `title_${l}` as "title_en" | "title_de" | "title_fr";
+  const descKey = `description_${l}` as "description_en" | "description_de" | "description_fr";
+  const title = (event.seo_title as string | null) ?? (event[titleKey] as string);
+  const rawDesc = (event.seo_description as string | null) ?? (event[descKey] as string) ?? "";
+  const description = rawDesc.length > 160 ? rawDesc.slice(0, 157) + "..." : rawDesc;
+  const image = (event.og_image_url as string | null) ?? event.cover_image_url;
+  const BASE = "https://tickets.dbc-germany.com";
+  return {
+    title,
+    description: description || undefined,
+    openGraph: {
+      title,
+      description: description || undefined,
+      images: image ? [{ url: image }] : undefined,
+      type: "website",
+    },
+    alternates: {
+      canonical: `${BASE}/${locale}/events/${slug}`,
+      languages: {
+        en: `${BASE}/en/events/${slug}`,
+        de: `${BASE}/de/events/${slug}`,
+        fr: `${BASE}/fr/events/${slug}`,
+      },
+    },
+  };
+}
 
 export default async function EventDetailPage({
   params,
@@ -16,11 +54,41 @@ export default async function EventDetailPage({
   if (!eventOrNull) return notFound();
 
   const event = eventOrNull;
+  const company = await getCompanyInfo();
 
   const [tiers, schedule] = await Promise.all([
     getPublicTiers(event.id),
     getEventSchedule(event.id),
   ]);
+
+  const minPrice = tiers.length > 0
+    ? Math.min(...tiers.map((t) => t.price_cents)) / 100
+    : null;
+
+  const eventJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Event",
+    name: event.title_en,
+    description: event.description_en ?? "",
+    startDate: event.starts_at,
+    endDate: event.ends_at,
+    eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+    eventStatus: "https://schema.org/EventScheduled",
+    image: event.cover_image_url ?? undefined,
+    location: event.venue_name ? {
+      "@type": "Place",
+      name: event.venue_name,
+      address: { "@type": "PostalAddress", addressLocality: event.city ?? undefined, addressCountry: event.country ?? "DE" },
+    } : undefined,
+    organizer: { "@type": "Organization", name: company?.legal_name ?? "DBC Germany", url: "https://dbc-germany.com" },
+    offers: minPrice != null ? {
+      "@type": "Offer",
+      url: `https://tickets.dbc-germany.com/en/events/${event.slug}`,
+      price: minPrice,
+      priceCurrency: tiers[0]?.currency ?? "EUR",
+      availability: "https://schema.org/InStock",
+    } : undefined,
+  };
 
   function loc(field: string) {
     const key = `${field}_${locale}` as keyof typeof event;
@@ -122,6 +190,10 @@ export default async function EventDetailPage({
 
   return (
     <main className="pb-20">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(eventJsonLd) }}
+      />
       <div className="mx-auto max-w-6xl px-5 pt-6 sm:px-8 sm:pt-10">
         <Link
           href={`/${locale}`}

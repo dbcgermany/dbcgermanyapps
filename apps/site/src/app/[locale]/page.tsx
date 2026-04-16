@@ -63,7 +63,7 @@ export default async function HomePage({
       <section className="relative overflow-hidden border-b border-border">
         <Image
           src={DBC.hero.home}
-          alt=""
+          alt="African entrepreneurs networking at a DBC Germany event"
           fill
           priority
           sizes="100vw"
@@ -164,7 +164,7 @@ export default async function HomePage({
                 <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
                   <Image
                     src={s.photo}
-                    alt=""
+                    alt={t(`services.${s.key}.title`)}
                     fill
                     sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -177,6 +177,7 @@ export default async function HomePage({
                       alt=""
                       width={28}
                       height={28}
+                      aria-hidden
                       className="h-7 w-7 object-contain"
                       referrerPolicy="no-referrer"
                     />
@@ -234,7 +235,7 @@ export default async function HomePage({
               <div className="relative aspect-[4/3] w-full md:aspect-auto">
                 <Image
                   src={DBC.photo.eventFallback}
-                  alt=""
+                  alt="Richesses d'Afrique Germany 2026 conference"
                   fill
                   sizes="(min-width: 768px) 50vw, 100vw"
                   className="object-cover"
@@ -328,7 +329,7 @@ export default async function HomePage({
                   >
                     <Image
                       src={src}
-                      alt=""
+                      alt={`DBC Germany gallery photo ${i + 1}`}
                       fill
                       sizes="(min-width: 768px) 25vw, 50vw"
                       className="object-cover"
@@ -351,7 +352,7 @@ export default async function HomePage({
               <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-border bg-muted/60 px-3 py-1.5 text-xs font-medium text-muted-foreground">
                 <Image
                   src={DBC.logo}
-                  alt=""
+                  alt="DBC Germany"
                   width={18}
                   height={18}
                   className="h-4 w-4 object-contain"

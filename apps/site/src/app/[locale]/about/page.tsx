@@ -27,7 +27,7 @@ export default async function AboutPage({
       <section className="relative overflow-hidden border-b border-border">
         <Image
           src={DBC.photo.team}
-          alt=""
+          alt="The DBC Germany team"
           fill
           priority
           sizes="100vw"
@@ -51,7 +51,7 @@ export default async function AboutPage({
           <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-border bg-background/80 px-3 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur">
             <Image
               src={DBC.logo}
-              alt=""
+              alt="DBC Germany"
               width={18}
               height={18}
               className="h-4 w-4 object-contain"
@@ -120,7 +120,7 @@ export default async function AboutPage({
             <div className="relative order-last aspect-[4/3] overflow-hidden rounded-2xl md:order-first">
               <Image
                 src={DBC.photo.cohort}
-                alt=""
+                alt="DBC Germany incubation cohort participants"
                 fill
                 sizes="(min-width: 768px) 50vw, 100vw"
                 className="object-cover"

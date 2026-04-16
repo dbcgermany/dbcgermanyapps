@@ -36,7 +36,7 @@ export async function SiteFooter({ locale }: { locale: string }) {
             <div className="flex items-center gap-2 font-heading text-lg font-bold">
               <Image
                 src={logoUrl}
-                alt=""
+                alt={brandName}
                 width={32}
                 height={32}
                 className="h-8 w-8 object-contain"

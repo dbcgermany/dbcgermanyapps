@@ -49,7 +49,7 @@ export function SiteHeader({ locale }: { locale: string }) {
         >
           <Image
             src={DBC.logo}
-            alt=""
+            alt="DBC Germany"
             width={32}
             height={32}
             className="h-8 w-8 object-contain"

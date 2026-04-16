@@ -316,6 +316,16 @@ const FIELDS: Record<Section, FieldDef[]> = {
       label: "Default description (FR)",
       type: "textarea",
     },
+    {
+      name: "google_site_verification",
+      label: "Google Search Console verification",
+      help: "Paste the content value from Google Search Console > Settings > Ownership verification > HTML tag.",
+    },
+    {
+      name: "bing_site_verification",
+      label: "Bing Webmaster Tools verification",
+      help: "Paste the content value from Bing Webmaster Tools > Settings > Verify ownership > HTML Meta Tag.",
+    },
   ],
   banking: [
     { name: "bank_name", label: "Bank name" },

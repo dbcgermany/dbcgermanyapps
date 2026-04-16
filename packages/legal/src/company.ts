@@ -103,6 +103,8 @@ export interface PublicCompanyInfo {
   seo_description_en: string | null;
   seo_description_de: string | null;
   seo_description_fr: string | null;
+  google_site_verification: string | null;
+  bing_site_verification: string | null;
 
   // Banking
   bank_name: string | null;

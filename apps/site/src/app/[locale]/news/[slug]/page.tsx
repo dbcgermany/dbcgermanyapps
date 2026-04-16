@@ -3,6 +3,8 @@ import Image from "next/image";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createServerClient } from "@dbc/supabase/server";
+import { getCompanyInfo } from "@/lib/company-info";
+import { JsonLd, articleJsonLd } from "@/lib/json-ld";
 import { DBC } from "@/lib/dbc-assets";
 
 export const revalidate = 60;
@@ -12,7 +14,7 @@ async function getPost(slug: string) {
   const { data } = await supabase
     .from("news_posts")
     .select(
-      "id, slug, title_en, title_de, title_fr, body_en, body_de, body_fr, cover_image_url, author_name, published_at, is_published"
+      "id, slug, title_en, title_de, title_fr, excerpt_en, excerpt_de, excerpt_fr, body_en, body_de, body_fr, cover_image_url, author_name, published_at, updated_at, is_published, seo_title, seo_description, og_image_url"
     )
     .eq("slug", slug)
     .eq("is_published", true)
@@ -28,14 +30,39 @@ export async function generateMetadata({
   const { locale, slug } = await params;
   const post = await getPost(slug);
   if (!post) return {};
-  const l = (locale === "de" || locale === "fr" ? locale : "en") as
-    | "en"
-    | "de"
-    | "fr";
+  const l = (locale === "de" || locale === "fr" ? locale : "en") as "en" | "de" | "fr";
+  const title =
+    (post.seo_title as string | null) ??
+    (post[`title_${l}` as "title_en" | "title_de" | "title_fr"] as string) ??
+    post.title_en;
+  const excerptKey = `excerpt_${l}` as "excerpt_en" | "excerpt_de" | "excerpt_fr";
+  const bodyKey = `body_${l}` as "body_en" | "body_de" | "body_fr";
+  const rawDesc =
+    (post.seo_description as string | null) ??
+    (post[excerptKey] as string | null) ??
+    ((post[bodyKey] as string) ?? "").slice(0, 160);
+  const description = rawDesc.length > 160 ? rawDesc.slice(0, 157) + "..." : rawDesc;
+  const image = (post.og_image_url as string | null) ?? post.cover_image_url;
+  const BASE = "https://dbc-germany.com";
   return {
-    title:
-      (post[`title_${l}` as "title_en" | "title_de" | "title_fr"] as string) ||
-      post.title_en,
+    title,
+    description: description || undefined,
+    openGraph: {
+      title,
+      description: description || undefined,
+      type: "article",
+      publishedTime: post.published_at ?? undefined,
+      modifiedTime: (post.updated_at as string | null) ?? undefined,
+      images: image ? [{ url: image }] : undefined,
+    },
+    alternates: {
+      canonical: `${BASE}/${locale}/news/${slug}`,
+      languages: {
+        en: `${BASE}/en/news/${slug}`,
+        de: `${BASE}/de/news/${slug}`,
+        fr: `${BASE}/fr/news/${slug}`,
+      },
+    },
   };
 }
 
@@ -59,9 +86,25 @@ export default async function NewsArticlePage({
     (post[`body_${l}` as "body_en" | "body_de" | "body_fr"] as string) ||
     post.body_en;
   const cover = post.cover_image_url ?? DBC.hero.home;
+  const company = await getCompanyInfo();
+  const excerptKey = `excerpt_${l}` as "excerpt_en" | "excerpt_de" | "excerpt_fr";
+  const excerpt = (post[excerptKey] as string | null) ?? body.slice(0, 200);
+
+  const jsonLd = articleJsonLd({
+    title,
+    description: excerpt,
+    slug: post.slug,
+    published_at: post.published_at ?? "",
+    updated_at: (post.updated_at as string | null) ?? post.published_at ?? "",
+    author_name: post.author_name,
+    cover_image_url: post.cover_image_url,
+    publisher: company?.legal_name ?? "DBC Germany",
+    publisher_logo: company?.logo_light_url ?? null,
+  });
 
   return (
     <article className="mx-auto max-w-3xl px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
+      <JsonLd data={jsonLd} />
       <Link
         href={`/${locale}/news`}
         className="text-sm text-muted-foreground hover:text-foreground"
@@ -90,7 +133,7 @@ export default async function NewsArticlePage({
       <div className="relative mt-10 aspect-[16/9] w-full overflow-hidden rounded-2xl">
         <Image
           src={cover}
-          alt=""
+          alt={title}
           fill
           sizes="(min-width: 768px) 768px, 100vw"
           className="object-cover"
