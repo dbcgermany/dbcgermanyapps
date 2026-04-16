@@ -324,7 +324,7 @@ export async function SiteFooter({ locale }: { locale: string }) {
               </a>
             </p>
           </div>
-          <p>Düsseldorf · Essen · Lubumbashi</p>
+          <p>{t("presence")}</p>
         </div>
       </div>
     </footer>
