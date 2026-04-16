@@ -246,6 +246,64 @@
       "confirm": "Are you sure you want to refund this order? This will restore ticket inventory and process a Stripe refund.",
       "processing": "Processing refund...",
       "success": "Refund processed successfully."
+    },
+    "devInfo": {
+      "eyebrow": "Dev Info",
+      "pageTitle": "About Narikia UG",
+      "pageSub": "The studio that designed and built the DBC Germany platform — visible to super-admins only.",
+      "about": {
+        "title": "About Narikia UG",
+        "legalName": "Narikia UG (i.G.)",
+        "intro": "{name} is a software studio building event technology, ticketing platforms, and admin systems for African-rooted organizations operating in Europe.",
+        "foundersLabel": "Founders",
+        "founderGeraldName": "Gerald Ngongo Kalala",
+        "founderGeraldRole": "Managing Director and Founder",
+        "founderFannyName": "Fanny Kananga Kumande",
+        "founderFannyRole": "Managing Director and Founder",
+        "hqLabel": "Headquarters",
+        "hqValue": "Düsseldorf, Germany",
+        "foundedLabel": "Founded",
+        "foundedValue": "2026",
+        "hrbLabel": "Register",
+        "hrbValue": "In registration — HRB to be published once issued",
+        "mission": "We build the software platforms that event companies and community-driven organizations actually need to operate at a premium standard."
+      },
+      "services": {
+        "title": "What Narikia builds",
+        "items": [
+          "Event ticketing platforms (Stripe, multilingual, atomic inventory)",
+          "Admin dashboards with real-time KPIs and reports",
+          "AI-powered automations for content, newsletters, and CRM",
+          "Multilingual marketing sites (EN / DE / FR and beyond)",
+          "Internal operations tooling (scan apps, door-sale, team CRM)",
+          "Legal-compliant web infrastructure (Impressum, GDPR, DSGVO)"
+        ]
+      },
+      "contact": {
+        "title": "Contact & website",
+        "website": "narikia.com",
+        "emailLabel": "Email",
+        "note": "For anything involving this platform — bugs, feature requests, or engagement — reach Narikia directly."
+      },
+      "stack": {
+        "title": "Tech stack powering DBC Germany",
+        "items": [
+          "Next.js 16 (App Router) + React 19",
+          "TypeScript",
+          "Supabase (Postgres + Auth + Storage + RLS)",
+          "Stripe Checkout + webhooks",
+          "Resend (transactional email)",
+          "next-intl (EN / DE / FR)",
+          "Tailwind CSS 4",
+          "lucide-react (icons)",
+          "Vercel (hosting + cron)",
+          "Cloudflare Turnstile",
+          "@react-pdf/renderer (ticket PDFs)",
+          "Recharts (analytics)"
+        ],
+        "deploymentNote": "Three apps deployed: admin.dbc-germany.com, tickets.dbc-germany.com, dbc-germany.com. Shared packages under packages/."
+      },
+      "footer": "Built and maintained by"
     }
   },
   "gdpr": {
