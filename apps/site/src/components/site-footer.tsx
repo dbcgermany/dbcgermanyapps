@@ -295,7 +295,7 @@ export async function SiteFooter({ locale }: { locale: string }) {
               </li>
               <li>
                 <Link
-                  href="/us-privacy-notice"
+                  href={`/${locale}/us-privacy-notice`}
                   className="text-foreground hover:text-primary"
                 >
                   Do Not Sell or Share

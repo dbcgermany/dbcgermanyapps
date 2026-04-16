@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 const CONSENT_KEY = "dbc-cookie-consent";
+const RESET_EVENT = "cookie-consent-reset";
 
 type ConsentState = "undecided" | "accepted" | "rejected";
 
@@ -19,11 +20,21 @@ export function CookieConsent({
   const [consent, setConsent] = useState<ConsentState>("undecided");
   const [mounted, setMounted] = useState(false);
 
+  const syncFromStorage = useCallback(() => {
+    const stored = localStorage.getItem(CONSENT_KEY) as ConsentState | null;
+    setConsent(stored ?? "undecided");
+  }, []);
+
   useEffect(() => {
     setMounted(true);
-    const stored = localStorage.getItem(CONSENT_KEY) as ConsentState | null;
-    if (stored) setConsent(stored);
-  }, []);
+    syncFromStorage();
+
+    function handleReset() {
+      setConsent("undecided");
+    }
+    window.addEventListener(RESET_EVENT, handleReset);
+    return () => window.removeEventListener(RESET_EVENT, handleReset);
+  }, [syncFromStorage]);
 
   function handleAccept() {
     localStorage.setItem(CONSENT_KEY, "accepted");
@@ -35,7 +46,6 @@ export function CookieConsent({
     setConsent("rejected");
   }
 
-  // Don't render during SSR or if consent already given
   if (!mounted || consent !== "undecided") return null;
 
   return (
@@ -78,11 +88,11 @@ export function hasConsentedToCookies(): boolean {
   return localStorage.getItem(CONSENT_KEY) === "accepted";
 }
 
-/** Reset consent state so the banner re-appears */
+/** Reset consent state so the banner re-appears instantly (no reload needed) */
 export function resetCookieConsent(): void {
   if (typeof window === "undefined") return;
   localStorage.removeItem(CONSENT_KEY);
-  window.dispatchEvent(new Event("cookie-consent-reset"));
+  window.dispatchEvent(new Event(RESET_EVENT));
 }
 
 export function CookieSettingsButton({
@@ -95,10 +105,7 @@ export function CookieSettingsButton({
   return (
     <button
       type="button"
-      onClick={() => {
-        resetCookieConsent();
-        window.location.reload();
-      }}
+      onClick={() => resetCookieConsent()}
       className={className}
     >
       {children}
