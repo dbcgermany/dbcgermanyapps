@@ -77,3 +77,31 @@ export function hasConsentedToCookies(): boolean {
   if (typeof window === "undefined") return false;
   return localStorage.getItem(CONSENT_KEY) === "accepted";
 }
+
+/** Reset consent state so the banner re-appears */
+export function resetCookieConsent(): void {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(CONSENT_KEY);
+  window.dispatchEvent(new Event("cookie-consent-reset"));
+}
+
+export function CookieSettingsButton({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        resetCookieConsent();
+        window.location.reload();
+      }}
+      className={className}
+    >
+      {children}
+    </button>
+  );
+}

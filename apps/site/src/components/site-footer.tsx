@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { DBC } from "@/lib/dbc-assets";
 import { getCompanyInfo, getTagline } from "@/lib/company-info";
 import { NewsletterFooterSignup } from "./newsletter-footer-signup";
+import { CookieSettingsButton } from "@dbc/ui";
 
 export async function SiteFooter({ locale }: { locale: string }) {
   const t = await getTranslations({ locale, namespace: "site.footer" });
@@ -281,6 +282,23 @@ export async function SiteFooter({ locale }: { locale: string }) {
                   className="text-foreground hover:text-primary"
                 >
                   {tNav("cookies")}
+                </Link>
+              </li>
+              <li>
+                <CookieSettingsButton className="text-foreground hover:text-primary text-left">
+                  {locale === "de"
+                    ? "Cookie-Einstellungen"
+                    : locale === "fr"
+                      ? "Paramètres des cookies"
+                      : "Cookie settings"}
+                </CookieSettingsButton>
+              </li>
+              <li>
+                <Link
+                  href="/us-privacy-notice"
+                  className="text-foreground hover:text-primary"
+                >
+                  Do Not Sell or Share
                 </Link>
               </li>
             </ul>

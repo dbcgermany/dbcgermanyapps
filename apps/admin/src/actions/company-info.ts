@@ -5,9 +5,10 @@ import { revalidatePath } from "next/cache";
 
 export interface CompanyInfo {
   id: number;
-  // Legal
+  // Legal — identity
   legal_name: string;
   legal_form: string | null;
+  trade_name: string | null;
   registered_address: string | null;
   registered_postal_code: string | null;
   registered_city: string | null;
@@ -18,16 +19,55 @@ export interface CompanyInfo {
   tax_id: string | null;
   managing_directors: string | null;
   responsible_person: string | null;
+  chamber_of_commerce: string | null;
+  professional_liability_insurance: string | null;
+  supervisory_authority: string | null;
+  // Parent org (e.g., Diambilay Business Center SARL, Lubumbashi DRC)
+  parent_company_name: string | null;
+  parent_company_address: string | null;
+  parent_company_city: string | null;
+  parent_company_country: string | null;
+  // French entity (structured)
   fr_legal_name: string | null;
+  fr_legal_form: string | null;
   fr_siren: string | null;
   fr_registered_address: string | null;
+  fr_line1: string | null;
+  fr_line2: string | null;
+  fr_postal_code: string | null;
+  fr_city: string | null;
+  fr_country: string | null;
+  fr_director: string | null;
   // Contact
   primary_email: string;
   support_email: string;
   press_email: string;
+  privacy_email: string | null;
+  legal_email: string | null;
+  careers_email: string | null;
+  contact_form_url: string | null;
   phone: string | null;
   office_address: string | null;
+  office_line1: string | null;
+  office_line2: string | null;
+  office_postal_code: string | null;
+  office_city: string | null;
+  office_country: string | null;
   office_hours: string | null;
+  // Data protection
+  dpo_required: boolean | null;
+  dpo_name: string | null;
+  dpo_email: string | null;
+  eu_representative_name: string | null;
+  eu_representative_address: string | null;
+  uk_representative_name: string | null;
+  uk_representative_address: string | null;
+  popia_info_officer_name: string | null;
+  popia_info_officer_email: string | null;
+  ndpr_dpco_name: string | null;
+  ndpr_dpco_email: string | null;
+  eu_odr_link: string | null;
+  vsbg_statement: "not_willing" | "willing_specified" | "willing_general" | null;
   // Brand
   brand_name: string;
   brand_tagline_en: string | null;
@@ -62,11 +102,22 @@ export interface CompanyInfo {
 }
 
 const COLUMNS = `
-  id, legal_name, legal_form, registered_address, registered_postal_code,
+  id, legal_name, legal_form, trade_name, registered_address, registered_postal_code,
   registered_city, registered_country, hrb_number, hrb_court, vat_id, tax_id,
-  managing_directors, responsible_person, fr_legal_name, fr_siren,
-  fr_registered_address, primary_email, support_email, press_email, phone,
-  office_address, office_hours, brand_name, brand_tagline_en, brand_tagline_de,
+  managing_directors, responsible_person, chamber_of_commerce,
+  professional_liability_insurance, supervisory_authority,
+  parent_company_name, parent_company_address, parent_company_city, parent_company_country,
+  fr_legal_name, fr_legal_form, fr_siren, fr_registered_address,
+  fr_line1, fr_line2, fr_postal_code, fr_city, fr_country, fr_director,
+  primary_email, support_email, press_email, privacy_email, legal_email,
+  careers_email, contact_form_url, phone, office_address,
+  office_line1, office_line2, office_postal_code, office_city, office_country,
+  office_hours, dpo_required, dpo_name, dpo_email,
+  eu_representative_name, eu_representative_address,
+  uk_representative_name, uk_representative_address,
+  popia_info_officer_name, popia_info_officer_email,
+  ndpr_dpco_name, ndpr_dpco_email, eu_odr_link, vsbg_statement,
+  brand_name, brand_tagline_en, brand_tagline_de,
   brand_tagline_fr, logo_light_url, logo_dark_url, logo_wordmark_url,
   favicon_url, og_default_image_url, primary_color, linkedin_url,
   instagram_url, facebook_url, whatsapp_url, youtube_url, twitter_url,
@@ -87,12 +138,22 @@ export async function getCompanyInfo(): Promise<CompanyInfo> {
   return data as CompanyInfo;
 }
 
-type Section = "legal" | "contact" | "brand" | "social" | "seo" | "banking";
+type Section =
+  | "legal"
+  | "parent"
+  | "france"
+  | "contact"
+  | "privacy"
+  | "brand"
+  | "social"
+  | "seo"
+  | "banking";
 
 const SECTION_FIELDS: Record<Section, Array<keyof CompanyInfo>> = {
   legal: [
     "legal_name",
     "legal_form",
+    "trade_name",
     "registered_address",
     "registered_postal_code",
     "registered_city",
@@ -103,17 +164,59 @@ const SECTION_FIELDS: Record<Section, Array<keyof CompanyInfo>> = {
     "tax_id",
     "managing_directors",
     "responsible_person",
+    "chamber_of_commerce",
+    "professional_liability_insurance",
+    "supervisory_authority",
+  ],
+  parent: [
+    "parent_company_name",
+    "parent_company_address",
+    "parent_company_city",
+    "parent_company_country",
+  ],
+  france: [
     "fr_legal_name",
+    "fr_legal_form",
     "fr_siren",
+    "fr_director",
     "fr_registered_address",
+    "fr_line1",
+    "fr_line2",
+    "fr_postal_code",
+    "fr_city",
+    "fr_country",
   ],
   contact: [
     "primary_email",
     "support_email",
     "press_email",
+    "privacy_email",
+    "legal_email",
+    "careers_email",
+    "contact_form_url",
     "phone",
     "office_address",
+    "office_line1",
+    "office_line2",
+    "office_postal_code",
+    "office_city",
+    "office_country",
     "office_hours",
+  ],
+  privacy: [
+    "dpo_required",
+    "dpo_name",
+    "dpo_email",
+    "eu_representative_name",
+    "eu_representative_address",
+    "uk_representative_name",
+    "uk_representative_address",
+    "popia_info_officer_name",
+    "popia_info_officer_email",
+    "ndpr_dpco_name",
+    "ndpr_dpco_email",
+    "eu_odr_link",
+    "vsbg_statement",
   ],
   brand: [
     "brand_name",
@@ -156,8 +259,12 @@ export async function updateCompanyInfoSection(
   const fields = SECTION_FIELDS[section];
   if (!fields) return { error: "Unknown section." };
 
-  const patch: Record<string, string | null> = {};
+  const patch: Record<string, string | boolean | null> = {};
   for (const field of fields) {
+    if (field === "dpo_required") {
+      patch[field] = formData.get(field) === "on";
+      continue;
+    }
     const raw = formData.get(field);
     const value = typeof raw === "string" ? raw.trim() : "";
     patch[field] = value === "" ? null : value;

@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { getCompanyInfo, Impressum, type LegalLocale } from "@dbc/legal";
+import { getCompanyInfo, CookiePolicy, type LegalLocale } from "@dbc/legal";
 
 const titles: Record<string, string> = {
-  en: "Imprint — DBC Germany",
-  de: "Impressum — DBC Germany",
-  fr: "Mentions légales — DBC Germany",
+  en: "Cookie Policy — DBC Germany Tickets",
+  de: "Cookie-Richtlinie — DBC Germany Tickets",
+  fr: "Politique des cookies — DBC Germany Tickets",
 };
 
 export async function generateMetadata({
@@ -16,7 +16,7 @@ export async function generateMetadata({
   return { title: titles[locale] ?? titles.en };
 }
 
-export default async function ImprintPage({
+export default async function CookiePolicyPage({
   params,
 }: {
   params: Promise<{ locale: string }>;
@@ -27,10 +27,10 @@ export default async function ImprintPage({
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-16 sm:py-24">
-      <Impressum
+      <CookiePolicy
         company={company}
         locale={l}
-        siteUrl="https://dbc-germany.com"
+        siteUrl="https://tickets.dbc-germany.com"
         marketingSiteUrl="https://dbc-germany.com"
         ticketsSiteUrl="https://tickets.dbc-germany.com"
       />

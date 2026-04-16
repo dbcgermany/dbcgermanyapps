@@ -3,7 +3,5 @@ export {
   getTagline,
   formatOfficeAddress,
   formatRegisteredAddress,
-  formatFrenchAddress,
-  formatParentAddress,
 } from "@dbc/legal";
 export type { PublicCompanyInfo } from "@dbc/legal";

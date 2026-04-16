@@ -16,11 +16,23 @@ type BrandAssetField =
   | "favicon_url"
   | "og_default_image_url";
 
-type Section = "legal" | "contact" | "brand" | "social" | "seo" | "banking";
+type Section =
+  | "legal"
+  | "parent"
+  | "france"
+  | "contact"
+  | "privacy"
+  | "brand"
+  | "social"
+  | "seo"
+  | "banking";
 
 const TABS: Array<{ id: Section; label: string }> = [
   { id: "legal", label: "Legal · Impressum" },
+  { id: "parent", label: "Parent org" },
+  { id: "france", label: "France entity" },
   { id: "contact", label: "Contact" },
+  { id: "privacy", label: "Data protection" },
   { id: "brand", label: "Brand assets" },
   { id: "social", label: "Social links" },
   { id: "seo", label: "SEO defaults" },
@@ -30,9 +42,18 @@ const TABS: Array<{ id: Section; label: string }> = [
 interface FieldDef {
   name: keyof CompanyInfo;
   label: string;
-  type?: "text" | "email" | "url" | "textarea" | "color" | "asset";
+  type?:
+    | "text"
+    | "email"
+    | "url"
+    | "textarea"
+    | "color"
+    | "asset"
+    | "checkbox"
+    | "select";
   placeholder?: string;
   help?: string;
+  options?: Array<{ value: string; label: string }>;
 }
 
 const FIELDS: Record<Section, FieldDef[]> = {
@@ -41,12 +62,22 @@ const FIELDS: Record<Section, FieldDef[]> = {
     {
       name: "legal_form",
       label: "Legal form",
-      placeholder: "GmbH / UG / e.K.",
+      placeholder: "UG (haftungsbeschränkt) i.G. / GmbH / SAS …",
+    },
+    {
+      name: "trade_name",
+      label: "Trade name (if different)",
+      help: "Optional public-facing name if it differs from the legal name.",
     },
     { name: "registered_address", label: "Street & number" },
     { name: "registered_postal_code", label: "Postal code" },
     { name: "registered_city", label: "City" },
-    { name: "registered_country", label: "Country" },
+    {
+      name: "registered_country",
+      label: "Country (ISO-2)",
+      placeholder: "DE",
+      help: "Two-letter ISO-3166 code.",
+    },
     { name: "hrb_number", label: "HRB number" },
     {
       name: "hrb_court",
@@ -62,23 +93,174 @@ const FIELDS: Record<Section, FieldDef[]> = {
     },
     {
       name: "responsible_person",
-      label: "Responsible per §18 MStV",
+      label: "Responsible per §18 Abs. 2 MStV",
       help: "Named person legally accountable for published content.",
     },
-    { name: "fr_legal_name", label: "FR entity legal name" },
+    {
+      name: "chamber_of_commerce",
+      label: "Chamber of commerce",
+      placeholder: "IHK Düsseldorf",
+    },
+    {
+      name: "professional_liability_insurance",
+      label: "Professional liability insurance (if applicable)",
+      help: "Leave blank for non-regulated activities.",
+    },
+    {
+      name: "supervisory_authority",
+      label: "Supervisory authority (if applicable)",
+      help: "Leave blank for non-regulated activities.",
+    },
+  ],
+  parent: [
+    {
+      name: "parent_company_name",
+      label: "Parent company name",
+      placeholder: "Diambilay Business Center SARL",
+    },
+    { name: "parent_company_address", label: "Parent company address" },
+    { name: "parent_company_city", label: "Parent company city" },
+    {
+      name: "parent_company_country",
+      label: "Parent company country (ISO-2)",
+      placeholder: "CD",
+    },
+  ],
+  france: [
+    { name: "fr_legal_name", label: "FR legal name" },
+    { name: "fr_legal_form", label: "FR legal form", placeholder: "SAS" },
     { name: "fr_siren", label: "FR SIREN" },
-    { name: "fr_registered_address", label: "FR registered address" },
+    { name: "fr_director", label: "FR Directeur(s) Général(aux)" },
+    { name: "fr_line1", label: "FR Street & number" },
+    { name: "fr_line2", label: "FR Line 2 (optional)" },
+    { name: "fr_postal_code", label: "FR Postal code" },
+    { name: "fr_city", label: "FR City" },
+    { name: "fr_country", label: "FR Country (ISO-2)", placeholder: "FR" },
+    {
+      name: "fr_registered_address",
+      label: "FR address (legacy single-line, optional)",
+      help: "Kept for backward compatibility; prefer the structured fields above.",
+    },
   ],
   contact: [
-    { name: "primary_email", label: "Primary email", type: "email" },
-    { name: "support_email", label: "Support email", type: "email" },
+    {
+      name: "primary_email",
+      label: "Primary email (info@)",
+      type: "email",
+      help: "Appears in Impressum and general contact.",
+    },
+    {
+      name: "support_email",
+      label: "Support email",
+      type: "email",
+      placeholder: "hello@ or support@",
+    },
     { name: "press_email", label: "Press email", type: "email" },
-    { name: "phone", label: "Phone" },
-    { name: "office_address", label: "Office address" },
+    {
+      name: "privacy_email",
+      label: "Privacy email",
+      type: "email",
+      placeholder: "privacy@dbc-germany.com",
+      help: "Shown on Privacy Policy — add as a Google Workspace alias.",
+    },
+    {
+      name: "legal_email",
+      label: "Legal email",
+      type: "email",
+      placeholder: "legal@dbc-germany.com",
+      help: "Used for ToS dispute notice + arbitration notifications.",
+    },
+    {
+      name: "careers_email",
+      label: "Careers email",
+      type: "email",
+      placeholder: "careers@dbc-germany.com",
+    },
+    {
+      name: "contact_form_url",
+      label: "Contact form URL",
+      type: "url",
+      placeholder: "https://dbc-germany.com/en/contact",
+    },
+    {
+      name: "phone",
+      label: "Phone (E.164)",
+      placeholder: "+4921199999999",
+    },
+    {
+      name: "office_address",
+      label: "Office address (legacy single-line)",
+      help: "Kept for backward compatibility; prefer the structured fields below.",
+    },
+    { name: "office_line1", label: "Office street & number" },
+    { name: "office_line2", label: "Office line 2 (optional)" },
+    { name: "office_postal_code", label: "Office postal code" },
+    { name: "office_city", label: "Office city" },
+    {
+      name: "office_country",
+      label: "Office country (ISO-2)",
+      placeholder: "DE",
+    },
     {
       name: "office_hours",
       label: "Office hours",
       placeholder: "Mon–Fri · 09:00–18:00 CET",
+    },
+  ],
+  privacy: [
+    {
+      name: "dpo_required",
+      label: "Data Protection Officer is legally required",
+      type: "checkbox",
+      help: "Tick only if Art. 37 GDPR threshold is met. When unticked, the Privacy Policy renders 'not required'.",
+    },
+    { name: "dpo_name", label: "DPO name (if designated)" },
+    { name: "dpo_email", label: "DPO email", type: "email" },
+    {
+      name: "eu_representative_name",
+      label: "EU representative (Art. 27, only if no EU establishment)",
+    },
+    {
+      name: "eu_representative_address",
+      label: "EU representative address",
+      type: "textarea",
+    },
+    { name: "uk_representative_name", label: "UK representative (if any)" },
+    {
+      name: "uk_representative_address",
+      label: "UK representative address",
+      type: "textarea",
+    },
+    {
+      name: "popia_info_officer_name",
+      label: "POPIA Information Officer (ZA)",
+      help: "Required if processing personal info of South African data subjects.",
+    },
+    {
+      name: "popia_info_officer_email",
+      label: "POPIA Information Officer email",
+      type: "email",
+    },
+    { name: "ndpr_dpco_name", label: "NDPR DPCO (Nigeria)" },
+    { name: "ndpr_dpco_email", label: "NDPR DPCO email", type: "email" },
+    {
+      name: "eu_odr_link",
+      label: "EU ODR link",
+      type: "url",
+      placeholder: "https://ec.europa.eu/consumers/odr",
+    },
+    {
+      name: "vsbg_statement",
+      label: "VSBG § 36 statement",
+      type: "select",
+      options: [
+        {
+          value: "not_willing",
+          label: "Not willing/obliged (default for events)",
+        },
+        { value: "willing_specified", label: "Willing — specified authority" },
+        { value: "willing_general", label: "Willing — general" },
+      ],
     },
   ],
   brand: [
@@ -267,6 +449,55 @@ function SectionForm({
                   </p>
                 </label>
               </div>
+            );
+          }
+
+          if (f.type === "checkbox") {
+            return (
+              <label
+                key={String(f.name)}
+                className="col-span-full flex items-start gap-3"
+              >
+                <input
+                  type="checkbox"
+                  name={String(f.name)}
+                  defaultChecked={Boolean(info[f.name])}
+                  className="mt-1 h-4 w-4 rounded border-border"
+                />
+                <span className="flex-1">
+                  <span className="block text-sm font-medium">{f.label}</span>
+                  {f.help && (
+                    <span className="mt-0.5 block text-xs text-muted-foreground">
+                      {f.help}
+                    </span>
+                  )}
+                </span>
+              </label>
+            );
+          }
+
+          if (f.type === "select") {
+            return (
+              <label key={String(f.name)} className="block">
+                <span className="mb-1 block text-sm font-medium">{f.label}</span>
+                <select
+                  name={String(f.name)}
+                  defaultValue={value}
+                  className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+                >
+                  <option value="">—</option>
+                  {(f.options ?? []).map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+                {f.help && (
+                  <span className="mt-1 block text-xs text-muted-foreground">
+                    {f.help}
+                  </span>
+                )}
+              </label>
             );
           }
 

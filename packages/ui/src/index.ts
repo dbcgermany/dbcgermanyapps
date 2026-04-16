@@ -30,7 +30,12 @@ export type {
   TextareaProps,
   BadgeProps,
 } from "./atoms";
-export { CookieConsent, hasConsentedToCookies } from "./cookie-consent";
+export {
+  CookieConsent,
+  hasConsentedToCookies,
+  resetCookieConsent,
+  CookieSettingsButton,
+} from "./cookie-consent";
 export { ConfirmDialog } from "./confirm-dialog";
 export type { ConfirmDialogProps } from "./confirm-dialog";
 export { CountrySelect } from "./country-select";

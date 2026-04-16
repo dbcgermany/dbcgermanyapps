@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { getCompanyInfo, Impressum, type LegalLocale } from "@dbc/legal";
 
 const titles: Record<string, string> = {
-  en: "Imprint — DBC Germany",
-  de: "Impressum — DBC Germany",
-  fr: "Mentions légales — DBC Germany",
+  en: "Imprint — DBC Germany Tickets",
+  de: "Impressum — DBC Germany Tickets",
+  fr: "Mentions légales — DBC Germany Tickets",
 };
 
 export async function generateMetadata({
@@ -30,7 +30,7 @@ export default async function ImprintPage({
       <Impressum
         company={company}
         locale={l}
-        siteUrl="https://dbc-germany.com"
+        siteUrl="https://tickets.dbc-germany.com"
         marketingSiteUrl="https://dbc-germany.com"
         ticketsSiteUrl="https://tickets.dbc-germany.com"
       />

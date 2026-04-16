@@ -11,6 +11,7 @@
   "dependencies": {
     "@dbc/email": "workspace:*",
     "@dbc/i18n": "workspace:*",
+    "@dbc/legal": "workspace:*",
     "@dbc/supabase": "workspace:*",
     "@dbc/types": "workspace:*",
     "@dbc/ui": "workspace:*",

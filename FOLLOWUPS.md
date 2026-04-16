@@ -238,3 +238,48 @@ provider (Twilio, Messagebird) + new plan file.
 The audit_log table accumulates rows fast. Basic list view exists; filtering
 by actor, entity_type, action, date range would make incident response
 faster.
+
+---
+
+## 7. Legal texts — lawyer review (MANDATORY before commercial launch)
+
+**Status**: BLOCKER for production.
+
+All four legal pages (Terms of Service, Privacy Policy, Cookie Policy,
+Impressum) plus the US Privacy Notice were drafted by AI on 2026-04-19.
+They cover: Germany/EU (GDPR, BGB, DDG, CRD, ePrivacy), UK (UK GDPR, PECR),
+US (CCPA/CPRA, AAA arbitration, class-action waiver), and Africa (POPIA ZA,
+NDPR NG, DRC). All company-identifying facts render dynamically from
+`company_info` in the admin panel — zero hardcoded strings.
+
+**Next step**: retain a German-admitted Rechtsanwalt (ideally a Düsseldorf
+firm specializing in IT/media/event law) to review and sign off. Suggested
+firms:
+
+- **Kanzlei WBS** (Köln/nationwide) — IT law + consumer law
+- **Schindhelm** (Düsseldorf) — commercial + data protection
+- **Taylor Wessing** (Düsseldorf) — tech + media + events
+
+**Expected fee range**: €1,500–3,500 for a full-stack review of all five
+documents (three languages each for the main four + EN-only US notice).
+Budget €500–800 for each subsequent annual refresh.
+
+**What the lawyer needs**:
+- Access to all five documents on the staging site (or exported PDFs)
+- A brief explaining the business model: event ticketing, newsletter,
+  Stripe for payment, Supabase/Resend/Vercel as processors
+- Confirmation of entity status (UG i.G. vs registered UG/GmbH) and HRB
+
+---
+
+## 8. Google Workspace aliases for privacy@ + legal@
+
+**Status**: user action required.
+
+The Privacy Policy references `privacy@dbc-germany.com` and the ToS
+references `legal@dbc-germany.com`. Both need to be created as aliases in
+Google Workspace Admin Console → Directory → Groups (or Users → Aliases),
+routing to `info@dbc-germany.com` (or a dedicated inbox if preferred).
+
+These are already set as editable fields in Company Info → Contact in the
+admin panel (`privacy_email`, `legal_email`).
