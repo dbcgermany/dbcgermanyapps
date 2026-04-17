@@ -142,6 +142,7 @@ export async function sendTicketEmail(
         locale: input.locale,
         senderName: "DBC Germany Team",
         senderTitle: "Event Management",
+        logoUrl: input.logoUrl,
       })
     );
 
@@ -163,6 +164,7 @@ export async function sendTicketEmail(
         ticketShortId,
         orderUrl: input.orderUrl,
         locale: input.locale,
+        logoUrl: input.logoUrl,
       })
     );
 

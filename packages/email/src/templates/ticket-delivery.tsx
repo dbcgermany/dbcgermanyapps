@@ -3,6 +3,7 @@ import {
   Head,
   Body,
   Container,
+  Img,
   Section,
   Heading,
   Text,
@@ -23,6 +24,7 @@ interface TicketDeliveryEmailProps {
   ticketShortId: string;
   orderUrl: string;
   locale: "en" | "de" | "fr";
+  logoUrl?: string;
 }
 
 const TRANSLATIONS = {
@@ -87,12 +89,23 @@ export function TicketDeliveryEmail(props: TicketDeliveryEmailProps) {
           <Container className="mx-auto my-8 max-w-xl rounded-lg bg-white p-8 shadow-sm">
             {/* Brand header */}
             <Section className="border-b-2 border-[#c8102e] pb-4">
-              <Text className="m-0 text-xl font-bold tracking-wider text-[#c8102e]">
-                DBC GERMANY
-              </Text>
-              <Text className="m-0 mt-1 text-xs text-neutral-500">
-                Africa\u2019s Top Business Group
-              </Text>
+              <table cellPadding={0} cellSpacing={0} role="presentation">
+                <tr>
+                  {props.logoUrl && (
+                    <td style={{ paddingRight: 12, verticalAlign: "middle" }}>
+                      <Img src={props.logoUrl} alt="" width={36} height={36} style={{ borderRadius: 4 }} />
+                    </td>
+                  )}
+                  <td style={{ verticalAlign: "middle" }}>
+                    <Text className="m-0 text-xl font-bold tracking-wider text-[#c8102e]">
+                      DBC GERMANY
+                    </Text>
+                    <Text className="m-0 mt-1 text-xs text-neutral-500">
+                      Africa&rsquo;s Top Business Group
+                    </Text>
+                  </td>
+                </tr>
+              </table>
             </Section>
 
             <Section className="mt-6">
