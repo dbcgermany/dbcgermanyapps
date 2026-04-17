@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useTransition } from "react";
+import { Badge } from "@dbc/ui";
 import { updateAttendeeNotes } from "@/actions/attendees";
 
 interface Attendee {
@@ -178,7 +179,7 @@ export function AttendeesList({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t.search}
-          className="flex-1 min-w-[240px] rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          className="flex-1 min-w-60 rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
         />
         <div className="flex gap-1 rounded-md border border-border p-1">
           {(
@@ -243,17 +244,17 @@ export function AttendeesList({
                   </td>
                   <td className="px-4 py-3">
                     {a.checkedInAt ? (
-                      <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                      <Badge variant="success">
                         &#x2713;{" "}
                         {new Date(a.checkedInAt).toLocaleTimeString(locale, {
                           hour: "2-digit",
                           minute: "2-digit",
                         })}
-                      </span>
+                      </Badge>
                     ) : (
-                      <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                      <Badge variant="default">
                         {t.notScanned}
-                      </span>
+                      </Badge>
                     )}
                   </td>
                   <td className="px-4 py-3">

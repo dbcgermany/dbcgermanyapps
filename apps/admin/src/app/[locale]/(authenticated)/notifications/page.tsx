@@ -3,6 +3,8 @@ import {
   markReadAction,
   markAllReadAction,
 } from "@/actions/notifications";
+import { PageHeader } from "@/components/page-header";
+import { EmptyState } from "@/components/empty-state";
 
 export default async function NotificationsPage({
   params,
@@ -33,16 +35,10 @@ export default async function NotificationsPage({
 
   return (
     <div>
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-heading text-2xl font-bold">{t.title}</h1>
-          {unreadCount > 0 && (
-            <p className="mt-1 text-sm text-muted-foreground">
-              {unreadCount} {t.unread}
-            </p>
-          )}
-        </div>
-        {unreadCount > 0 && (
+      <PageHeader
+        title={t.title}
+        description={unreadCount > 0 ? `${unreadCount} ${t.unread}` : undefined}
+        cta={unreadCount > 0 ? (
           <form
             action={async () => {
               "use server";
@@ -56,13 +52,11 @@ export default async function NotificationsPage({
               {t.markAll}
             </button>
           </form>
-        )}
-      </div>
+        ) : undefined}
+      />
 
       {notifications.length === 0 ? (
-        <div className="mt-12 rounded-lg border border-dashed border-border p-12 text-center text-muted-foreground">
-          {t.empty}
-        </div>
+        <EmptyState message={t.empty} className="mt-12" />
       ) : (
         <div className="mt-6 space-y-2">
           {notifications.map((n) => (

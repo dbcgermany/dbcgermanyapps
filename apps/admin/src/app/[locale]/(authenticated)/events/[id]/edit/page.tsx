@@ -1,5 +1,6 @@
 import { getEvent } from "@/actions/events";
 import { EditEventForm } from "./edit-form";
+import { PageHeader } from "@/components/page-header";
 
 export default async function EditEventPage({
   params,
@@ -11,8 +12,7 @@ export default async function EditEventPage({
 
   return (
     <div>
-      <h1 className="font-heading text-2xl font-bold">Edit Event</h1>
-      <p className="mt-1 text-sm text-muted-foreground">{event.title_en}</p>
+      <PageHeader title="Edit Event" description={event.title_en} />
 
       <EditEventForm locale={locale} event={event} />
     </div>

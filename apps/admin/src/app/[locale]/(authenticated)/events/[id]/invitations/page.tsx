@@ -2,6 +2,8 @@ import Link from "next/link";
 import { listInvitationsForEvent } from "@/actions/invitations";
 import { getEventTiers } from "@/actions/door-sale";
 import { InviteForm } from "./invite-form";
+import { Card, Badge } from "@dbc/ui";
+import { PageHeader } from "@/components/page-header";
 
 export default async function EventInvitationsPage({
   params,
@@ -22,19 +24,21 @@ export default async function EventInvitationsPage({
       >
         ← Event
       </Link>
-      <div className="mt-3 flex items-center justify-between gap-3">
-        <h1 className="font-heading text-2xl font-bold">Invitations</h1>
-        <Link
-          href={`/${locale}/events/${id}/invitations/bulk`}
-          className="rounded-md border border-border px-3 py-1.5 text-sm font-medium hover:bg-muted"
-        >
-          Bulk import CSV →
-        </Link>
-      </div>
+      <PageHeader
+        title="Invitations"
+        description="Comped tickets — guests receive a branded PDF and are tagged invited_guests in Contacts."
+        cta={
+          <Link
+            href={`/${locale}/events/${id}/invitations/bulk`}
+            className="rounded-md border border-border px-3 py-1.5 text-sm font-medium hover:bg-muted"
+          >
+            Bulk import CSV →
+          </Link>
+        }
+        className="mt-3"
+      />
       <p className="mt-1 text-sm text-muted-foreground">
-        Comped tickets — guests receive a branded PDF and are tagged
-        <code className="mx-1 rounded bg-muted px-1 py-0.5 text-xs">invited_guests</code>
-        in Contacts. Filter reports by{" "}
+        Filter reports by{" "}
         <code className="rounded bg-muted px-1 py-0.5 text-xs">acquisition_type = invited</code>.
       </p>
 
@@ -69,9 +73,10 @@ export default async function EventInvitationsPage({
               (invitations as any[]).map((inv) => {
                 const ticket = inv.tickets?.[0];
                 return (
-                  <div
+                  <Card
                     key={inv.id}
-                    className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border p-3 text-sm"
+                    padding="sm"
+                    className="flex flex-wrap items-center justify-between gap-2 text-sm"
                   >
                     <div>
                       <p className="font-medium">{inv.recipient_name}</p>
@@ -83,20 +88,14 @@ export default async function EventInvitationsPage({
                     </div>
                     <div className="text-right">
                       {ticket?.checked_in_at ? (
-                        <span className="text-xs font-medium text-green-600">
-                          ✓ Attended
-                        </span>
+                        <Badge variant="success">✓ Attended</Badge>
                       ) : inv.email_sent_at ? (
-                        <span className="text-xs text-muted-foreground">
-                          Sent
-                        </span>
+                        <Badge variant="default">Sent</Badge>
                       ) : (
-                        <span className="text-xs text-destructive">
-                          Email pending
-                        </span>
+                        <Badge variant="error">Email pending</Badge>
                       )}
                     </div>
-                  </div>
+                  </Card>
                 );
               })
             )}

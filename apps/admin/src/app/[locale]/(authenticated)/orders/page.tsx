@@ -1,4 +1,5 @@
 import { getOrders, getOrdersEvents } from "@/actions/orders";
+import { PageHeader } from "@/components/page-header";
 import { OrdersClient } from "./orders-client";
 
 export default async function OrdersPage({
@@ -18,9 +19,9 @@ export default async function OrdersPage({
 
   return (
     <div>
-      <h1 className="font-heading text-2xl font-bold">
-        {locale === "de" ? "Bestellungen" : locale === "fr" ? "Commandes" : "Orders"}
-      </h1>
+      <PageHeader
+        title={locale === "de" ? "Bestellungen" : locale === "fr" ? "Commandes" : "Orders"}
+      />
 
       <OrdersClient
         locale={locale}

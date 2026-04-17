@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import { Badge } from "@dbc/ui";
 import { toast } from "sonner";
 import { createBrowserClient } from "@dbc/supabase";
 import {
@@ -492,9 +493,9 @@ export function SecurityTab() {
                       {s.ip ? `${s.ip} · ` : ""}
                       Last active {new Date(last).toLocaleString()}
                       {s.aal === "aal2" && (
-                        <span className="ml-2 rounded-full bg-green-100 px-1.5 py-0.5 text-[10px] font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                        <Badge variant="success" className="ml-2 text-[10px]">
                           2FA
-                        </span>
+                        </Badge>
                       )}
                     </p>
                   </div>

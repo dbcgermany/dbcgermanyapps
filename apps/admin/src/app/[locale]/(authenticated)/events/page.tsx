@@ -1,5 +1,8 @@
 import Link from "next/link";
+import { Badge } from "@dbc/ui";
 import { getEvents, togglePublish } from "@/actions/events";
+import { PageHeader } from "@/components/page-header";
+import { EmptyState } from "@/components/empty-state";
 
 export default async function EventsPage({
   params,
@@ -11,23 +14,24 @@ export default async function EventsPage({
 
   return (
     <div>
-      <div className="flex items-center justify-between">
-        <h1 className="font-heading text-2xl font-bold">Events</h1>
-        <Link
-          href={`/${locale}/events/new`}
-          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-        >
-          Create Event
-        </Link>
-      </div>
+      <PageHeader
+        title="Events"
+        cta={
+          <Link
+            href={`/${locale}/events/new`}
+            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+          >
+            Create Event
+          </Link>
+        }
+      />
 
       {events.length === 0 ? (
-        <div className="mt-12 rounded-lg border border-dashed border-border p-12 text-center text-muted-foreground">
-          <p className="text-lg font-medium">No events yet</p>
-          <p className="mt-1 text-sm">
-            Create your first event to get started.
-          </p>
-        </div>
+        <EmptyState
+          message="No events yet. Create your first event to get started."
+          cta={{ label: "Create Event", href: `/${locale}/events/new` }}
+          className="mt-12"
+        />
       ) : (
         <div className="mt-6 overflow-hidden rounded-lg border border-border">
           <table className="w-full text-sm">
@@ -77,15 +81,9 @@ export default async function EventsPage({
                     {event.capacity}
                   </td>
                   <td className="px-4 py-3">
-                    <span
-                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                        event.is_published
-                          ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                          : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
-                      }`}
-                    >
+                    <Badge variant={event.is_published ? "success" : "warning"}>
                       {event.is_published ? "Published" : "Draft"}
-                    </span>
+                    </Badge>
                   </td>
                   <td className="px-4 py-3 text-right">
                     <form

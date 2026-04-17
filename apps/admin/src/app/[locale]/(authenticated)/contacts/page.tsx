@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { listContacts } from "@/actions/contacts";
+import { PageHeader } from "@/components/page-header";
 
 export default async function ContactsListPage({
   searchParams,
@@ -15,15 +16,10 @@ export default async function ContactsListPage({
 
   return (
     <div>
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="font-heading text-2xl font-bold">Contacts</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Every person who ever bought a ticket, was invited, or subscribed
-            to the newsletter. Click a row for their full history.
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        title="Contacts"
+        description="Every person who ever bought a ticket, was invited, or subscribed to the newsletter. Click a row for their full history."
+      />
 
       <form className="mt-6 flex flex-wrap gap-2" method="get">
         <input

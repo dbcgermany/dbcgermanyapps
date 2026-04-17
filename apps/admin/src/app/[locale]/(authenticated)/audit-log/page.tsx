@@ -1,4 +1,5 @@
 import { getAuditLog } from "@/actions/audit";
+import { PageHeader } from "@/components/page-header";
 import { AuditLogClient } from "./audit-log-client";
 
 const PAGE_SIZE = 100;
@@ -82,13 +83,13 @@ export default async function AuditLogPage({
 
   return (
     <div>
-      <h1 className="font-heading text-2xl font-bold">
-        {locale === "de"
+      <PageHeader
+        title={locale === "de"
           ? "Audit-Protokoll"
           : locale === "fr"
             ? "Journal d\u2019audit"
             : "Audit Log"}
-      </h1>
+      />
 
       <AuditLogClient
         locale={locale}

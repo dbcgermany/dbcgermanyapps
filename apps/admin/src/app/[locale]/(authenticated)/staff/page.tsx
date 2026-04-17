@@ -1,4 +1,5 @@
 import { getStaff, getEventsForAssignment } from "@/actions/staff";
+import { PageHeader } from "@/components/page-header";
 import { StaffClient } from "./staff-client";
 
 export default async function StaffPage({
@@ -15,13 +16,15 @@ export default async function StaffPage({
 
   return (
     <div>
-      <h1 className="font-heading text-2xl font-bold">
-        {locale === "de"
-          ? "Mitarbeiterverwaltung"
-          : locale === "fr"
-            ? "Gestion du personnel"
-            : "Staff Management"}
-      </h1>
+      <PageHeader
+        title={
+          locale === "de"
+            ? "Mitarbeiterverwaltung"
+            : locale === "fr"
+              ? "Gestion du personnel"
+              : "Staff Management"
+        }
+      />
 
       <StaffClient
         locale={locale}

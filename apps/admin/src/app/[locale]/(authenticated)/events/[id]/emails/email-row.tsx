@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { Badge } from "@dbc/ui";
 import {
   updateEmailSequence,
   deleteEmailSequence,
@@ -161,9 +162,9 @@ export function EmailRow({
             </span>
             <p className="font-medium">{seq.subject_en}</p>
             {seq.sent_at && (
-              <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
+              <Badge variant="success">
                 Sent
-              </span>
+              </Badge>
             )}
           </div>
           <p className="mt-2 text-xs text-muted-foreground whitespace-pre-wrap line-clamp-3">

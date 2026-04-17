@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { Badge } from "@dbc/ui";
 import {
   updateCoupon,
   deleteCoupon,
@@ -140,9 +141,9 @@ export function CouponRow({
             {coupon.code}
           </code>
           {!coupon.is_active && (
-            <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-400">
+            <Badge variant="error">
               Inactive
-            </span>
+            </Badge>
           )}
         </div>
         <p className="mt-0.5 text-sm text-muted-foreground">

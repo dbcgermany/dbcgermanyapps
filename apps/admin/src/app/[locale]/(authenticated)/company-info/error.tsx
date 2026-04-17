@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { Card } from "@dbc/ui";
 
 export default function CompanyInfoError({
   error,
@@ -15,7 +16,7 @@ export default function CompanyInfoError({
 
   return (
     <div>
-      <div className="rounded-lg border border-red-500/30 bg-red-50 p-6 dark:bg-red-950/20">
+      <Card padding="md" className="border-red-500/30 bg-red-50 dark:bg-red-950/20">
         <h1 className="font-heading text-lg font-semibold text-red-900 dark:text-red-200">
           Company Info failed to load
         </h1>
@@ -34,7 +35,7 @@ export default function CompanyInfoError({
         >
           Try again
         </button>
-      </div>
+      </Card>
     </div>
   );
 }

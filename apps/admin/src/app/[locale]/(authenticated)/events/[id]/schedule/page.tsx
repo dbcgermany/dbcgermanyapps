@@ -2,6 +2,8 @@ import Link from "next/link";
 import { getScheduleItems } from "@/actions/schedule";
 import { ScheduleForm } from "./schedule-form";
 import { ScheduleSortable } from "./schedule-sortable";
+import { Card } from "@dbc/ui";
+import { PageHeader } from "@/components/page-header";
 
 export default async function SchedulePage({
   params,
@@ -20,9 +22,7 @@ export default async function SchedulePage({
         >
           &larr; Back to event
         </Link>
-        <h1 className="mt-2 font-heading text-2xl font-bold">
-          Schedule & Speakers
-        </h1>
+        <PageHeader title="Schedule & Speakers" className="mt-2" />
       </div>
 
       {/* Existing schedule items */}
@@ -37,12 +37,12 @@ export default async function SchedulePage({
       )}
 
       {/* Add new schedule item */}
-      <div className="mt-8 rounded-lg border border-border p-6">
+      <Card padding="md" className="mt-8">
         <h2 className="font-heading text-lg font-semibold">
           Add Schedule Item
         </h2>
         <ScheduleForm eventId={eventId} locale={locale} />
-      </div>
+      </Card>
     </div>
   );
 }

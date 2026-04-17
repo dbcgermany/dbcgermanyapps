@@ -2,6 +2,8 @@ import Link from "next/link";
 import { getTiers } from "@/actions/tiers";
 import { TierForm } from "./tier-form";
 import { TiersSortable } from "./tiers-sortable";
+import { Card } from "@dbc/ui";
+import { PageHeader } from "@/components/page-header";
 
 export default async function TiersPage({
   params,
@@ -21,9 +23,7 @@ export default async function TiersPage({
           >
             &larr; Back to event
           </Link>
-          <h1 className="mt-2 font-heading text-2xl font-bold">
-            Ticket Tiers
-          </h1>
+          <PageHeader title="Ticket Tiers" className="mt-2" />
         </div>
       </div>
 
@@ -35,10 +35,10 @@ export default async function TiersPage({
       )}
 
       {/* Add new tier form */}
-      <div className="mt-8 rounded-lg border border-border p-6">
+      <Card padding="md" className="mt-8">
         <h2 className="font-heading text-lg font-semibold">Add Tier</h2>
         <TierForm eventId={eventId} locale={locale} />
-      </div>
+      </Card>
     </div>
   );
 }

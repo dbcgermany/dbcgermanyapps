@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getEventTiers } from "@/actions/door-sale";
 import { BulkInviteClient } from "./bulk-invite-client";
+import { PageHeader } from "@/components/page-header";
 
 export default async function BulkInvitationsPage({
   params,
@@ -18,9 +19,7 @@ export default async function BulkInvitationsPage({
       >
         ← Invitations
       </Link>
-      <h1 className="mt-3 font-heading text-2xl font-bold">
-        Bulk invite from CSV
-      </h1>
+      <PageHeader title="Bulk invite from CSV" className="mt-3" />
       <p className="mt-1 text-sm text-muted-foreground">
         Upload a CSV with one guest per row. Header required; columns —{" "}
         <code className="rounded bg-muted px-1 py-0.5 text-xs">email</code>{" "}

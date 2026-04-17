@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import type { UserRole } from "@dbc/types";
+import { Card } from "@dbc/ui";
 import {
   inviteStaff,
   updateStaffRole,
@@ -9,6 +10,7 @@ import {
   unassignStaffFromEvent,
   removeStaff,
 } from "@/actions/staff";
+import { EmptyState } from "@/components/empty-state";
 
 interface StaffMember {
   id: string;
@@ -192,10 +194,8 @@ export function StaffClient({
 
       {/* Invite form */}
       {inviteOpen && (
-        <form
-          action={handleInvite}
-          className="mt-4 rounded-lg border border-border p-6 space-y-4"
-        >
+        <Card padding="md" className="mt-4 rounded-lg">
+          <form action={handleInvite} className="space-y-4">
           {inviteError && (
             <div className="rounded-md bg-red-50 p-3 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
               {inviteError}
@@ -258,14 +258,13 @@ export function StaffClient({
               {t.cancel}
             </button>
           </div>
-        </form>
+          </form>
+        </Card>
       )}
 
       {/* Staff list */}
       {staff.length === 0 ? (
-        <div className="mt-12 rounded-lg border border-dashed border-border p-12 text-center text-muted-foreground">
-          {t.noStaff}
-        </div>
+        <EmptyState message={t.noStaff} className="mt-12" />
       ) : (
         <div className="mt-6 overflow-hidden rounded-lg border border-border">
           <table className="w-full text-sm">

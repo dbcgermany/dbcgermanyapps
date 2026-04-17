@@ -2,6 +2,8 @@ import Link from "next/link";
 import { getCoupons } from "@/actions/coupons";
 import { CouponForm } from "./coupon-form";
 import { CouponRow } from "./coupon-row";
+import { Card } from "@dbc/ui";
+import { PageHeader } from "@/components/page-header";
 
 export default async function CouponsPage({
   params,
@@ -20,7 +22,7 @@ export default async function CouponsPage({
         >
           &larr; Back to event
         </Link>
-        <h1 className="mt-2 font-heading text-2xl font-bold">Coupon Codes</h1>
+        <PageHeader title="Coupon Codes" className="mt-2" />
       </div>
 
       {/* Existing coupons */}
@@ -38,10 +40,10 @@ export default async function CouponsPage({
       )}
 
       {/* Add new coupon */}
-      <div className="mt-8 rounded-lg border border-border p-6">
+      <Card padding="md" className="mt-8">
         <h2 className="font-heading text-lg font-semibold">Add Coupon</h2>
         <CouponForm eventId={eventId} locale={locale} />
-      </div>
+      </Card>
     </div>
   );
 }

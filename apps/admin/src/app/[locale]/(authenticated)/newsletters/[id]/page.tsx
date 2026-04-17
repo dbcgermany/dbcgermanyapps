@@ -4,6 +4,7 @@ import {
   getNewsletter,
   listContactCategories,
 } from "@/actions/newsletters";
+import { PageHeader } from "@/components/page-header";
 import { NewsletterComposer } from "../composer";
 
 export default async function NewsletterEditPage({
@@ -24,12 +25,13 @@ export default async function NewsletterEditPage({
         href={`/${locale}/newsletters`}
         className="text-sm text-muted-foreground hover:text-foreground"
       >
-        ← All newsletters
+        &larr; All newsletters
       </Link>
-      <h1 className="mt-3 font-heading text-2xl font-bold">
-        {nl.subject || "(untitled)"}
-      </h1>
-      <p className="mt-1 text-sm text-muted-foreground">Status: {nl.status}</p>
+      <PageHeader
+        title={nl.subject || "(untitled)"}
+        description={`Status: ${nl.status}`}
+        className="mt-3"
+      />
 
       <NewsletterComposer
         categories={categories.map((c) => ({ slug: c.slug, name: c.name_en }))}

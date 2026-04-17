@@ -1,14 +1,15 @@
 import { listContactCategories } from "@/actions/newsletters";
+import { PageHeader } from "@/components/page-header";
 import { NewsletterComposer } from "../composer";
 
 export default async function NewNewsletterPage() {
   const categories = await listContactCategories();
   return (
     <div>
-      <h1 className="font-heading text-2xl font-bold">New newsletter</h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Save as a draft, preview the recipient count, and send when ready.
-      </p>
+      <PageHeader
+        title="New newsletter"
+        description="Save as a draft, preview the recipient count, and send when ready."
+      />
       <NewsletterComposer
         categories={categories.map((c) => ({
           slug: c.slug,

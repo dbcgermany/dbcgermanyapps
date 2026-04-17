@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Key, Plus, Trash2 } from "lucide-react";
 import type { AppSecret } from "@/actions/app-secrets";
+import { Badge } from "@dbc/ui";
 import { upsertAppSecret } from "@/actions/app-secrets";
 
 const KNOWN_KEYS: Array<{ key: string; note: string }> = [
@@ -163,15 +164,9 @@ function SecretRow({
           <p className="mt-1 text-xs text-muted-foreground">{note}</p>
           {secret && (
             <p className="mt-2 flex items-center gap-2 text-xs">
-              <span
-                className={
-                  hasValue
-                    ? "rounded-full bg-green-100 px-2 py-0.5 font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                    : "rounded-full bg-amber-100 px-2 py-0.5 font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
-                }
-              >
+              <Badge variant={hasValue ? "success" : "warning"}>
                 {hasValue ? `Set \u2022 ${secret.value_masked}` : "Not set"}
-              </span>
+              </Badge>
               <span className="text-muted-foreground">
                 Updated {new Date(secret.updated_at).toLocaleDateString()}
               </span>

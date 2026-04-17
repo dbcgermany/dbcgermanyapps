@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Badge } from "@dbc/ui";
 import { SortableList } from "@/components/sortable-list";
 import type { TeamMember } from "@/actions/team";
 import { reorderTeamMembers } from "@/actions/team";
@@ -16,12 +17,14 @@ function initialsOf(name: string) {
     .toUpperCase();
 }
 
-function badgeClass(visibility: TeamMember["visibility"]) {
+function visibilityVariant(
+  visibility: TeamMember["visibility"]
+): "success" | "warning" | "default" {
   return visibility === "public"
-    ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+    ? "success"
     : visibility === "internal"
-      ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
-      : "bg-muted text-muted-foreground";
+      ? "warning"
+      : "default";
 }
 
 export function TeamSortableList({
@@ -70,11 +73,9 @@ export function TeamSortableList({
             <div>
               <div className="flex items-center gap-2">
                 <p className="font-medium">{member.name}</p>
-                <span
-                  className={`rounded-full px-2 py-0.5 text-xs font-medium ${badgeClass(member.visibility)}`}
-                >
+                <Badge variant={visibilityVariant(member.visibility)}>
                   {member.visibility}
-                </span>
+                </Badge>
               </div>
               <p className="mt-0.5 text-sm text-muted-foreground">
                 {member.role_en} · sort {member.sort_order}

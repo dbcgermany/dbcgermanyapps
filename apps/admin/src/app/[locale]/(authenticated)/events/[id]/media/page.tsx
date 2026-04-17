@@ -2,6 +2,8 @@ import Link from "next/link";
 import { getEventMedia } from "@/actions/media";
 import { MediaForm } from "./media-form";
 import { MediaSortable } from "./media-sortable";
+import { Card } from "@dbc/ui";
+import { PageHeader } from "@/components/page-header";
 
 export default async function MediaPage({
   params,
@@ -20,16 +22,15 @@ export default async function MediaPage({
         >
           &larr; Back to event
         </Link>
-        <h1 className="mt-2 font-heading text-2xl font-bold">
-          {locale === "de" ? "Medien" : locale === "fr" ? "M\u00E9dias" : "Media"}
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {locale === "de"
+        <PageHeader
+          title={locale === "de" ? "Medien" : locale === "fr" ? "M\u00E9dias" : "Media"}
+          description={locale === "de"
             ? "F\u00FCgen Sie Fotos, Videos und Links nach der Veranstaltung hinzu."
             : locale === "fr"
               ? "Ajoutez des photos, vid\u00E9os et liens apr\u00E8s l\u2019\u00E9v\u00E9nement."
               : "Add post-event photos, videos, and links."}
-        </p>
+          className="mt-2"
+        />
       </div>
 
       {/* Existing media */}
@@ -40,10 +41,10 @@ export default async function MediaPage({
       )}
 
       {/* Add form */}
-      <div className="mt-8 rounded-lg border border-border p-6">
+      <Card padding="md" className="mt-8">
         <h2 className="font-heading text-lg font-semibold">Add Media</h2>
         <MediaForm eventId={eventId} locale={locale} />
-      </div>
+      </Card>
     </div>
   );
 }

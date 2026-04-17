@@ -1,4 +1,6 @@
 import { getTranslations } from "next-intl/server";
+import { Card as SharedCard } from "@dbc/ui";
+import { PageHeader } from "@/components/page-header";
 import { requireRole } from "@dbc/supabase/server";
 import {
   Building2,
@@ -31,14 +33,11 @@ export default async function DevInfoPage({
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
           {t("eyebrow")}
         </p>
-        <h1 className="mt-2 font-heading text-2xl font-bold">
-          {t("pageTitle")}
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">{t("pageSub")}</p>
+        <PageHeader title={t("pageTitle")} description={t("pageSub")} className="mt-2" />
       </div>
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
-        <Card icon={Building2} title={t("about.title")}>
+        <DevCard icon={Building2} title={t("about.title")}>
           <p>
             {t("about.intro", { name: legalName })}
           </p>
@@ -61,17 +60,17 @@ export default async function DevInfoPage({
           <p className="mt-4 text-sm italic text-muted-foreground">
             {t("about.mission")}
           </p>
-        </Card>
+        </DevCard>
 
-        <Card icon={Briefcase} title={t("services.title")}>
+        <DevCard icon={Briefcase} title={t("services.title")}>
           <ul className="grid gap-2 text-sm">
             {services.map((item, i) => (
               <li key={i}>{item}</li>
             ))}
           </ul>
-        </Card>
+        </DevCard>
 
-        <Card icon={Mail} title={t("contact.title")}>
+        <DevCard icon={Mail} title={t("contact.title")}>
           <div className="space-y-3 text-sm">
             <p>
               <a
@@ -97,9 +96,9 @@ export default async function DevInfoPage({
             </p>
             <p className="text-muted-foreground">{t("contact.note")}</p>
           </div>
-        </Card>
+        </DevCard>
 
-        <Card icon={Layers} title={t("stack.title")}>
+        <DevCard icon={Layers} title={t("stack.title")}>
           <ul className="grid gap-x-4 gap-y-1 text-sm sm:grid-cols-2">
             {stackItems.map((item, i) => (
               <li key={i}>{item}</li>
@@ -108,10 +107,10 @@ export default async function DevInfoPage({
           <p className="mt-4 text-xs text-muted-foreground">
             {t("stack.deploymentNote")}
           </p>
-        </Card>
+        </DevCard>
       </div>
 
-      <div className="mt-8 rounded-lg border border-border bg-surface p-5 text-xs text-muted-foreground">
+      <SharedCard padding="sm" className="mt-8 text-xs text-muted-foreground">
         <p className="flex items-center gap-2">
           <Globe className="h-4 w-4" strokeWidth={1.75} />
           <span>
@@ -127,12 +126,12 @@ export default async function DevInfoPage({
             .
           </span>
         </p>
-      </div>
+      </SharedCard>
     </div>
   );
 }
 
-function Card({
+function DevCard({
   icon: Icon,
   title,
   children,
@@ -142,12 +141,12 @@ function Card({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-lg border border-border bg-card p-6">
+    <SharedCard padding="md">
       <div className="flex items-center gap-2">
         <Icon className="h-5 w-5 text-primary" strokeWidth={1.75} />
         <h2 className="font-heading text-base font-semibold">{title}</h2>
       </div>
       <div className="mt-4 text-sm text-foreground/90">{children}</div>
-    </div>
+    </SharedCard>
   );
 }

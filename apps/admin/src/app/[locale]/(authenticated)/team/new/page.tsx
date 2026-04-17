@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/page-header";
 import { TeamMemberForm } from "../member-form";
 
 export default async function NewTeamMemberPage({
@@ -9,7 +10,7 @@ export default async function NewTeamMemberPage({
 
   return (
     <div>
-      <h1 className="font-heading text-2xl font-bold">New team member</h1>
+      <PageHeader title="New team member" />
       <TeamMemberForm locale={locale} mode="create" />
     </div>
   );

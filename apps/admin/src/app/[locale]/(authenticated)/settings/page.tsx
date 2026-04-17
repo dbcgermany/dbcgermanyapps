@@ -1,6 +1,7 @@
 import { requireRole } from "@dbc/supabase/server";
 import { getRecentWebhooks, getSiteSettings } from "@/actions/settings";
 import { listAppSecrets } from "@/actions/app-secrets";
+import { PageHeader } from "@/components/page-header";
 import { SettingsClient } from "./settings-client";
 import { SiteSettingsForm } from "./site-settings-form";
 import { AppSecretsSection } from "./app-secrets-section";
@@ -22,13 +23,13 @@ export default async function SettingsPage({
 
   return (
     <div className="space-y-10">
-      <h1 className="font-heading text-2xl font-bold">
-        {locale === "de"
+      <PageHeader
+        title={locale === "de"
           ? "Einstellungen"
           : locale === "fr"
             ? "Param\u00e8tres"
             : "Settings"}
-      </h1>
+      />
 
       {siteSettings && (
         <SiteSettingsForm locale={locale} initial={siteSettings} />

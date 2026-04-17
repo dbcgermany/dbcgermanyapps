@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { Badge } from "@dbc/ui";
 import { listNewsletters } from "@/actions/newsletters";
+import { PageHeader } from "@/components/page-header";
 
 export default async function NewslettersIndexPage({
   params,
@@ -11,19 +13,18 @@ export default async function NewslettersIndexPage({
 
   return (
     <div>
-      <div className="flex items-center justify-between">
-        <h1 className="font-heading text-2xl font-bold">Newsletters</h1>
-        <Link
-          href={`/${locale}/newsletters/new`}
-          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
-        >
-          + New newsletter
-        </Link>
-      </div>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Broadcasts to confirmed, non-unsubscribed contacts. Every email includes
-        a one-click unsubscribe link.
-      </p>
+      <PageHeader
+        title="Newsletters"
+        description="Broadcasts to confirmed, non-unsubscribed contacts. Every email includes a one-click unsubscribe link."
+        cta={
+          <Link
+            href={`/${locale}/newsletters/new`}
+            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+          >
+            + New newsletter
+          </Link>
+        }
+      />
 
       <div className="mt-6 overflow-hidden rounded-lg border border-border">
         <table className="w-full text-sm">
@@ -58,7 +59,21 @@ export default async function NewslettersIndexPage({
                   </Link>
                 </td>
                 <td className="px-4 py-3">
-                  <StatusBadge status={n.status} />
+                  <Badge
+                    variant={
+                      n.status === "sent"
+                        ? "success"
+                        : n.status === "sending"
+                          ? "warning"
+                          : n.status === "scheduled"
+                            ? "info"
+                            : n.status === "failed"
+                              ? "error"
+                              : "default"
+                    }
+                  >
+                    {n.status}
+                  </Badge>
                 </td>
                 <td className="px-4 py-3 uppercase">{n.locale}</td>
                 <td className="px-4 py-3 text-right">
@@ -78,21 +93,3 @@ export default async function NewslettersIndexPage({
   );
 }
 
-function StatusBadge({ status }: { status: string }) {
-  const map: Record<string, string> = {
-    draft: "bg-muted text-muted-foreground",
-    scheduled: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-    sending: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
-    sent: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-    failed: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
-  };
-  return (
-    <span
-      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-        map[status] ?? map.draft
-      }`}
-    >
-      {status}
-    </span>
-  );
-}

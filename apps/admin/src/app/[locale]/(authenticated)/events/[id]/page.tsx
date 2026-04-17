@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Badge, Card } from "@dbc/ui";
 import { getEvent, togglePublish, duplicateEvent } from "@/actions/events";
+import { PageHeader } from "@/components/page-header";
 import { DeleteEventButton } from "./delete-button";
 
 export default async function EventDetailPage({
@@ -23,67 +25,61 @@ export default async function EventDetailPage({
   return (
     <div>
       {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <Link
-            href={`/${locale}/events`}
-            className="text-sm text-muted-foreground hover:text-foreground"
-          >
-            &larr; Back to events
-          </Link>
-          <h1 className="mt-2 font-heading text-2xl font-bold">
-            {(event[titleKey] as string) || event.title_en}
-          </h1>
-          <div className="mt-1 flex items-center gap-3">
-            <span
-              className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                event.is_published
-                  ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                  : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
-              }`}
-            >
-              {event.is_published ? "Published" : "Draft"}
-            </span>
-            <span className="text-sm text-muted-foreground capitalize">
-              {event.event_type}
-            </span>
-          </div>
-        </div>
-
-        <div className="flex gap-2">
-          <form
-            action={async () => {
-              "use server";
-              await togglePublish(id, locale);
-            }}
-          >
-            <button
-              type="submit"
-              className="rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
-            >
-              {event.is_published ? "Unpublish" : "Publish"}
-            </button>
-          </form>
-          <form
-            action={async () => {
-              "use server";
-              await duplicateEvent(id, locale);
-            }}
-          >
-            <button
-              type="submit"
-              className="rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
-              title="Duplicate this event as a new draft (dates shifted +1 year)"
-            >
-              Duplicate
-            </button>
-          </form>
-          <Link
-            href={`/${locale}/events/${id}/edit`}
-            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-          >
-            Edit
-          </Link>
+      <div>
+        <Link
+          href={`/${locale}/events`}
+          className="text-sm text-muted-foreground hover:text-foreground"
+        >
+          &larr; Back to events
+        </Link>
+        <PageHeader
+          title={(event[titleKey] as string) || event.title_en}
+          className="mt-2"
+          cta={
+            <div className="flex gap-2">
+              <form
+                action={async () => {
+                  "use server";
+                  await togglePublish(id, locale);
+                }}
+              >
+                <button
+                  type="submit"
+                  className="rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
+                >
+                  {event.is_published ? "Unpublish" : "Publish"}
+                </button>
+              </form>
+              <form
+                action={async () => {
+                  "use server";
+                  await duplicateEvent(id, locale);
+                }}
+              >
+                <button
+                  type="submit"
+                  className="rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
+                  title="Duplicate this event as a new draft (dates shifted +1 year)"
+                >
+                  Duplicate
+                </button>
+              </form>
+              <Link
+                href={`/${locale}/events/${id}/edit`}
+                className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+              >
+                Edit
+              </Link>
+            </div>
+          }
+        />
+        <div className="mt-1 flex items-center gap-3">
+          <Badge variant={event.is_published ? "success" : "warning"}>
+            {event.is_published ? "Published" : "Draft"}
+          </Badge>
+          <span className="text-sm text-muted-foreground capitalize">
+            {event.event_type}
+          </span>
         </div>
       </div>
 
@@ -143,12 +139,9 @@ export default async function EventDetailPage({
             </h2>
             <div className="mt-1 flex gap-2">
               {event.enabled_payment_methods?.map((method: string) => (
-                <span
-                  key={method}
-                  className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium capitalize"
-                >
+                <Badge key={method} variant="default" className="capitalize">
                   {method}
-                </span>
+                </Badge>
               ))}
             </div>
           </section>
@@ -170,42 +163,38 @@ export default async function EventDetailPage({
       <div className="mt-12 border-t border-border pt-8">
         <h2 className="font-heading text-lg font-semibold">Manage</h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-3">
-          <Link
-            href={`/${locale}/events/${id}/tiers`}
-            className="rounded-lg border border-border p-4 hover:bg-muted/50 transition-colors"
-          >
-            <p className="font-medium">Ticket Tiers</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Create and manage ticket pricing
-            </p>
-          </Link>
-          <Link
-            href={`/${locale}/events/${id}/coupons`}
-            className="rounded-lg border border-border p-4 hover:bg-muted/50 transition-colors"
-          >
-            <p className="font-medium">Coupon Codes</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Create discount codes
-            </p>
-          </Link>
-          <Link
-            href={`/${locale}/events/${id}/schedule`}
-            className="rounded-lg border border-border p-4 hover:bg-muted/50 transition-colors"
-          >
-            <p className="font-medium">Schedule & Speakers</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Manage event agenda
-            </p>
-          </Link>
-          <Link
-            href={`/${locale}/events/${id}/poster`}
-            className="rounded-lg border border-border p-4 hover:bg-muted/50 transition-colors"
-          >
-            <p className="font-medium">Door-sale poster</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Printable QR poster for the venue entrance
-            </p>
-          </Link>
+          <Card padding="sm" className="rounded-lg hover:bg-muted/50 transition-colors">
+            <Link href={`/${locale}/events/${id}/tiers`}>
+              <p className="font-medium">Ticket Tiers</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Create and manage ticket pricing
+              </p>
+            </Link>
+          </Card>
+          <Card padding="sm" className="rounded-lg hover:bg-muted/50 transition-colors">
+            <Link href={`/${locale}/events/${id}/coupons`}>
+              <p className="font-medium">Coupon Codes</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Create discount codes
+              </p>
+            </Link>
+          </Card>
+          <Card padding="sm" className="rounded-lg hover:bg-muted/50 transition-colors">
+            <Link href={`/${locale}/events/${id}/schedule`}>
+              <p className="font-medium">Schedule & Speakers</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Manage event agenda
+              </p>
+            </Link>
+          </Card>
+          <Card padding="sm" className="rounded-lg hover:bg-muted/50 transition-colors">
+            <Link href={`/${locale}/events/${id}/poster`}>
+              <p className="font-medium">Door-sale poster</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Printable QR poster for the venue entrance
+              </p>
+            </Link>
+          </Card>
         </div>
       </div>
 

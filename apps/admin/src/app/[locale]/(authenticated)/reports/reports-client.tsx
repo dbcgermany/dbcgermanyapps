@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@dbc/ui";
 import { useRouter } from "next/navigation";
 import type {
   OrdersReportRow,
@@ -465,17 +466,17 @@ export function ReportsClient({
                       </p>
                     </td>
                     <td className="px-4 py-3">
-                      <span
-                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                      <Badge
+                        variant={
                           o.status === "paid" || o.status === "comped"
-                            ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                            ? "success"
                             : o.status === "pending"
-                              ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
-                              : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                        }`}
+                              ? "warning"
+                              : "error"
+                        }
                       >
                         {statusLabel}
-                      </span>
+                      </Badge>
                     </td>
                     <td className="px-4 py-3 text-right font-medium">
                       {o.totalCents === 0
@@ -543,13 +544,13 @@ export function ReportsClient({
                     </td>
                     <td className="px-4 py-3">
                       {a.checkedInAt ? (
-                        <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                        <Badge variant="success">
                           {formatDateTime(a.checkedInAt, locale)}
-                        </span>
+                        </Badge>
                       ) : (
-                        <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                        <Badge variant="default">
                           {t.notScanned}
-                        </span>
+                        </Badge>
                       )}
                     </td>
                   </tr>

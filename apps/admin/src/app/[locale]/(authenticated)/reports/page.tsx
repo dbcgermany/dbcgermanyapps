@@ -4,6 +4,7 @@ import {
   getRevenueByEventReport,
   getReportsEvents,
 } from "@/actions/reports";
+import { PageHeader } from "@/components/page-header";
 import { ReportsClient } from "./reports-client";
 import { EventPdfPanel } from "./event-pdf-panel";
 
@@ -51,13 +52,13 @@ export default async function ReportsPage({
 
   return (
     <div>
-      <h1 className="font-heading text-2xl font-bold">
-        {locale === "de"
+      <PageHeader
+        title={locale === "de"
           ? "Berichte"
           : locale === "fr"
             ? "Rapports"
             : "Reports"}
-      </h1>
+      />
 
       <ReportsClient
         locale={locale}

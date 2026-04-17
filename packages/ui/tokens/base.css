@@ -29,9 +29,17 @@
   --dbc-color-border:            #e5e5e5;
   --dbc-color-border-subtle:     #f0f0f0;
   --dbc-color-success:           #16a34a;
+  --dbc-color-success-bg:        #dcfce7;
+  --dbc-color-success-text:      #15803d;
   --dbc-color-error:             #dc2626;
+  --dbc-color-error-bg:          #fee2e2;
+  --dbc-color-error-text:        #b91c1c;
   --dbc-color-warning:           #d97706;
+  --dbc-color-warning-bg:        #fef9c3;
+  --dbc-color-warning-text:      #a16207;
   --dbc-color-info:              #2563eb;
+  --dbc-color-info-bg:           #dbeafe;
+  --dbc-color-info-text:         #1d4ed8;
 
   /* --- Layer 2: shadcn/ui HSL Variables --- */
   --background:           0 0% 100%;
@@ -148,9 +156,17 @@
   --dbc-color-border:            #333333;
   --dbc-color-border-subtle:     #222222;
   --dbc-color-success:           #22c55e;
+  --dbc-color-success-bg:        rgba(22,163,74,0.15);
+  --dbc-color-success-text:      #4ade80;
   --dbc-color-error:             #ef4444;
+  --dbc-color-error-bg:          rgba(220,38,38,0.15);
+  --dbc-color-error-text:        #f87171;
   --dbc-color-warning:           #f59e0b;
+  --dbc-color-warning-bg:        rgba(217,119,6,0.15);
+  --dbc-color-warning-text:      #fbbf24;
   --dbc-color-info:              #3b82f6;
+  --dbc-color-info-bg:           rgba(37,99,235,0.15);
+  --dbc-color-info-text:         #60a5fa;
 
   /* --- Layer 2: shadcn/ui HSL Variables (dark) --- */
   --background:           0 0% 4%;

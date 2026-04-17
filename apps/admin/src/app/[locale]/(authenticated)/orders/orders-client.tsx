@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { Badge } from "@dbc/ui";
 import { refundOrder } from "@/actions/orders";
 import { CsvExportButton } from "@/components/csv-export-button";
 
@@ -218,17 +219,17 @@ export function OrdersClient({
                       </p>
                     </td>
                     <td className="px-4 py-3">
-                      <span
-                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                      <Badge
+                        variant={
                           o.status === "paid" || o.status === "comped"
-                            ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                            ? "success"
                             : o.status === "pending"
-                              ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
-                              : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                        }`}
+                              ? "warning"
+                              : "error"
+                        }
                       >
                         {statusLabel}
-                      </span>
+                      </Badge>
                     </td>
                     <td className="px-4 py-3 text-right font-medium">
                       {o.totalCents === 0

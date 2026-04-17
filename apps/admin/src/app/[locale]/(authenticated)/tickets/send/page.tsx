@@ -2,6 +2,8 @@ import {
   getSendTicketsEvents,
   getSendTicketsTiers,
 } from "@/actions/send-tickets";
+import { PageHeader } from "@/components/page-header";
+import { EmptyState } from "@/components/empty-state";
 import { SendTicketsClient } from "./send-tickets-client";
 
 export default async function SendTicketsPage({
@@ -23,18 +25,19 @@ export default async function SendTicketsPage({
   return (
     <div>
       <div className="mx-auto max-w-3xl">
-        <h1 className="font-heading text-2xl font-bold">
-          {locale === "de" ? "Tickets senden" : locale === "fr" ? "Envoyer des billets" : "Send Tickets"}
-        </h1>
+        <PageHeader
+          title={locale === "de" ? "Tickets senden" : locale === "fr" ? "Envoyer des billets" : "Send Tickets"}
+        />
 
         {events.length === 0 ? (
-          <div className="mt-8 rounded-lg border border-dashed border-border p-8 text-center text-muted-foreground">
-            {locale === "de"
+          <EmptyState
+            message={locale === "de"
               ? "Keine bevorstehenden Veranstaltungen."
               : locale === "fr"
                 ? "Aucun \u00E9v\u00E9nement \u00E0 venir."
                 : "No upcoming events."}
-          </div>
+            className="mt-8"
+          />
         ) : (
           <SendTicketsClient
             locale={locale}

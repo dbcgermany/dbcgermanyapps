@@ -1,4 +1,6 @@
 import { getAssignedEvents, getScanStats } from "@/actions/scan";
+import { PageHeader } from "@/components/page-header";
+import { EmptyState } from "@/components/empty-state";
 import { ScanClient } from "./scan-client";
 
 export default async function ScanPage({
@@ -23,18 +25,19 @@ export default async function ScanPage({
   return (
     <div className="min-h-full bg-background">
       <div className="mx-auto max-w-2xl">
-        <h1 className="font-heading text-2xl font-bold">
-          {locale === "de" ? "Tickets scannen" : locale === "fr" ? "Scanner les billets" : "Scan Tickets"}
-        </h1>
+        <PageHeader
+          title={locale === "de" ? "Tickets scannen" : locale === "fr" ? "Scanner les billets" : "Scan Tickets"}
+        />
 
         {events.length === 0 ? (
-          <div className="mt-8 rounded-lg border border-dashed border-border p-8 text-center text-muted-foreground">
-            {locale === "de"
+          <EmptyState
+            message={locale === "de"
               ? "Sie sind keiner Veranstaltung zugewiesen."
               : locale === "fr"
                 ? "Vous n\u2019\u00EAtes affect\u00E9 \u00E0 aucun \u00E9v\u00E9nement."
                 : "You are not assigned to any events."}
-          </div>
+            className="mt-8"
+          />
         ) : (
           <ScanClient
             locale={locale}

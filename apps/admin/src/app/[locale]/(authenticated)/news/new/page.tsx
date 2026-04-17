@@ -2,6 +2,7 @@
 
 import { use, useActionState } from "react";
 import { createNewsPost } from "@/actions/news";
+import { PageHeader } from "@/components/page-header";
 import { CoverImageUpload } from "@/components/cover-image-upload";
 
 export default function NewNewsPostPage({
@@ -21,7 +22,7 @@ export default function NewNewsPostPage({
 
   return (
     <div>
-      <h1 className="font-heading text-2xl font-bold">New news post</h1>
+      <PageHeader title="New news post" />
 
       <form action={formAction} className="mt-8 max-w-3xl space-y-6">
         {state?.error && (

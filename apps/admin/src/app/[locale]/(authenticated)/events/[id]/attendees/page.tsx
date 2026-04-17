@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getEventAttendees } from "@/actions/attendees";
 import { AttendeesList } from "./attendees-list";
+import { PageHeader } from "@/components/page-header";
 
 export default async function AttendeesPage({
   params,
@@ -21,14 +22,11 @@ export default async function AttendeesPage({
         >
           &larr; Back to event
         </Link>
-        <div className="mt-2 flex items-end justify-between">
-          <h1 className="font-heading text-2xl font-bold">
-            {locale === "de" ? "Teilnehmer" : locale === "fr" ? "Participants" : "Attendees"}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {checkedIn} / {attendees.length} {locale === "de" ? "eingecheckt" : locale === "fr" ? "enregistr\u00E9s" : "checked in"}
-          </p>
-        </div>
+        <PageHeader
+          title={locale === "de" ? "Teilnehmer" : locale === "fr" ? "Participants" : "Attendees"}
+          description={`${checkedIn} / ${attendees.length} ${locale === "de" ? "eingecheckt" : locale === "fr" ? "enregistr\u00E9s" : "checked in"}`}
+          className="mt-2"
+        />
       </div>
 
       <AttendeesList

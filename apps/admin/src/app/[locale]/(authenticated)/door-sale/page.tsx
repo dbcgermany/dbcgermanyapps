@@ -1,4 +1,6 @@
 import { getDoorSaleEvents, getEventTiers } from "@/actions/door-sale";
+import { PageHeader } from "@/components/page-header";
+import { EmptyState } from "@/components/empty-state";
 import { DoorSaleClient } from "./door-sale-client";
 
 export default async function DoorSalePage({
@@ -19,18 +21,19 @@ export default async function DoorSalePage({
   return (
     <div>
       <div className="mx-auto max-w-2xl">
-        <h1 className="font-heading text-2xl font-bold">
-          {locale === "de" ? "Abendkasse" : locale === "fr" ? "Vente sur place" : "Door Sale"}
-        </h1>
+        <PageHeader
+          title={locale === "de" ? "Abendkasse" : locale === "fr" ? "Vente sur place" : "Door Sale"}
+        />
 
         {events.length === 0 ? (
-          <div className="mt-8 rounded-lg border border-dashed border-border p-8 text-center text-muted-foreground">
-            {locale === "de"
+          <EmptyState
+            message={locale === "de"
               ? "Keine bevorstehenden Veranstaltungen in den n\u00E4chsten 30 Tagen."
               : locale === "fr"
                 ? "Aucun \u00E9v\u00E9nement \u00E0 venir dans les 30 prochains jours."
                 : "No upcoming events in the next 30 days."}
-          </div>
+            className="mt-8"
+          />
         ) : (
           <DoorSaleClient
             locale={locale}

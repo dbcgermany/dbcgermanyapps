@@ -13,11 +13,13 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { ArrowDownRight, ArrowUpRight, Minus } from "lucide-react";
+import { Card } from "@dbc/ui";
 import {
   DateRangeSelect,
   type DateRange,
 } from "@/components/date-range-select";
+import { StatCard } from "@/components/stat-card";
+import { EmptyState } from "@/components/empty-state";
 import type { DashboardKpis } from "@/actions/dashboard";
 
 type T = {
@@ -97,28 +99,28 @@ export function DashboardClient({
 
       {/* Headline KPI Grid */}
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <KpiCard
+        <StatCard
           label={t.totalRevenue}
           value={fmtEur(kpis.totalRevenueCents)}
           delta={pctChange(kpis.current.revenueCents, kpis.prior.revenueCents)}
           deltaLabel={t.vsPrior}
         />
-        <KpiCard
+        <StatCard
           label={t.ticketsSold}
           value={kpis.ticketsSold.toLocaleString(locale)}
           delta={pctChange(kpis.current.ticketsSold, kpis.prior.ticketsSold)}
           deltaLabel={t.vsPrior}
         />
-        <KpiCard
+        <StatCard
           label={t.activeEvents}
           value={kpis.activeEventCount.toLocaleString(locale)}
         />
-        <KpiCard label={t.checkInRate} value={`${kpis.checkInRate}%`} />
+        <StatCard label={t.checkInRate} value={`${kpis.checkInRate}%`} />
       </div>
 
       {/* Phase A KPIs */}
       <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <KpiCard
+        <StatCard
           label={t.aov}
           sub={t.aovSub}
           value={fmtEur(kpis.current.aovCents)}
@@ -126,7 +128,7 @@ export function DashboardClient({
           deltaLabel={t.vsPrior}
           dense
         />
-        <KpiCard
+        <StatCard
           label={t.arpa}
           sub={t.arpaSub}
           value={fmtEur(kpis.current.arpaCents)}
@@ -134,7 +136,7 @@ export function DashboardClient({
           deltaLabel={t.vsPrior}
           dense
         />
-        <KpiCard
+        <StatCard
           label={t.netRevenue}
           sub={t.netRevenueSub}
           value={fmtEur(kpis.current.netRevenueCents)}
@@ -145,7 +147,7 @@ export function DashboardClient({
           deltaLabel={t.vsPrior}
           dense
         />
-        <KpiCard
+        <StatCard
           label={t.refundRate}
           sub={t.refundRateSub}
           value={`${kpis.refundRatePct.toFixed(1)}%`}
@@ -157,7 +159,7 @@ export function DashboardClient({
           deltaLabel={t.vsPrior}
           dense
         />
-        <KpiCard
+        <StatCard
           label={t.velocity}
           sub={t.velocitySub}
           value={kpis.velocity7dAvg.toFixed(1)}
@@ -167,7 +169,7 @@ export function DashboardClient({
 
       {/* Charts */}
       <div className="mt-8 grid gap-4 lg:grid-cols-2">
-        <div className="rounded-lg border border-border p-6">
+        <Card padding="md" className="rounded-lg">
           <h2 className="font-heading text-lg font-semibold">{t.revenue}</h2>
           {revenueData.every((d) => d.eur === 0) ? (
             <p className="mt-8 text-center text-sm text-muted-foreground">
@@ -220,9 +222,9 @@ export function DashboardClient({
               </ResponsiveContainer>
             </div>
           )}
-        </div>
+        </Card>
 
-        <div className="rounded-lg border border-border p-6">
+        <Card padding="md" className="rounded-lg">
           <h2 className="font-heading text-lg font-semibold">{t.checkIns}</h2>
           {checkInData.every((d) => d.count === 0) ? (
             <p className="mt-8 text-center text-sm text-muted-foreground">
@@ -266,12 +268,12 @@ export function DashboardClient({
               </ResponsiveContainer>
             </div>
           )}
-        </div>
+        </Card>
       </div>
 
       {/* Sell-through per active event */}
       {kpis.sellThrough.length > 0 && (
-        <div className="mt-8 rounded-lg border border-border p-6">
+        <Card padding="md" className="mt-8 rounded-lg">
           <h2 className="font-heading text-lg font-semibold">
             {t.sellThrough}
           </h2>
@@ -301,7 +303,7 @@ export function DashboardClient({
               </li>
             ))}
           </ul>
-        </div>
+        </Card>
       )}
 
       {/* Top events */}
@@ -317,9 +319,7 @@ export function DashboardClient({
         </div>
 
         {kpis.topEvents.length === 0 ? (
-          <p className="mt-6 rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-            {t.noEvents}
-          </p>
+          <EmptyState message={t.noEvents} className="mt-6" />
         ) : (
           <div className="mt-4 overflow-hidden rounded-lg border border-border">
             <table className="w-full text-sm">
@@ -370,83 +370,3 @@ function pctChange(current: number, prior: number): number {
   return ((current - prior) / prior) * 100;
 }
 
-function KpiCard({
-  label,
-  sub,
-  value,
-  delta,
-  deltaLabel,
-  dense,
-}: {
-  label: string;
-  sub?: string;
-  value: string;
-  delta?: number;
-  deltaLabel?: string;
-  dense?: boolean;
-}) {
-  const direction =
-    delta === undefined
-      ? null
-      : Math.abs(delta) < 0.5
-        ? "flat"
-        : delta > 0
-          ? "up"
-          : "down";
-
-  return (
-    <div className="rounded-lg border border-border p-4">
-      <div className="flex items-baseline justify-between">
-        <p className="text-xs uppercase tracking-wider text-muted-foreground">
-          {label}
-        </p>
-      </div>
-      <p
-        className={`mt-1 font-heading font-bold ${dense ? "text-xl" : "text-2xl"}`}
-      >
-        {value}
-      </p>
-      {sub && (
-        <p className="mt-0.5 text-[11px] text-muted-foreground">{sub}</p>
-      )}
-      {direction && deltaLabel && (
-        <div className="mt-2 flex items-center gap-1 text-xs">
-          {direction === "up" && (
-            <ArrowUpRight
-              className="h-3.5 w-3.5 text-green-600 dark:text-green-400"
-              strokeWidth={1.75}
-            />
-          )}
-          {direction === "down" && (
-            <ArrowDownRight
-              className="h-3.5 w-3.5 text-red-600 dark:text-red-400"
-              strokeWidth={1.75}
-            />
-          )}
-          {direction === "flat" && (
-            <Minus
-              className="h-3.5 w-3.5 text-muted-foreground"
-              strokeWidth={1.75}
-            />
-          )}
-          <span
-            className={
-              direction === "up"
-                ? "text-green-600 dark:text-green-400"
-                : direction === "down"
-                  ? "text-red-600 dark:text-red-400"
-                  : "text-muted-foreground"
-            }
-          >
-            {delta !== undefined && Math.abs(delta) < 0.5
-              ? "~"
-              : delta !== undefined
-                ? `${delta > 0 ? "+" : ""}${delta.toFixed(0)}%`
-                : ""}
-          </span>
-          <span className="text-muted-foreground">{deltaLabel}</span>
-        </div>
-      )}
-    </div>
-  );
-}

@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { getTeamMembers } from "@/actions/team";
+import { PageHeader } from "@/components/page-header";
+import { EmptyState } from "@/components/empty-state";
 import { TeamSortableList } from "./team-sortable-list";
 
 export default async function TeamListPage({
@@ -12,29 +14,25 @@ export default async function TeamListPage({
 
   return (
     <div>
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="font-heading text-2xl font-bold">Team profiles</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Public team page content. Drag rows to reorder; the order here is
-            the order shown on dbc-germany.com/team. Set visibility per member:{" "}
-            <code>public</code> shows on the public team page,{" "}
-            <code>internal</code> is admin-only, <code>hidden</code> archives
-            the row.
-          </p>
-        </div>
-        <Link
-          href={`/${locale}/team/new`}
-          className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
-        >
-          New team member
-        </Link>
-      </div>
+      <PageHeader
+        title="Team profiles"
+        description="Public team page content. Drag rows to reorder; the order here is the order shown on dbc-germany.com/team. Set visibility per member: public shows on the public team page, internal is admin-only, hidden archives the row."
+        cta={
+          <Link
+            href={`/${locale}/team/new`}
+            className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+          >
+            New team member
+          </Link>
+        }
+      />
 
       {members.length === 0 ? (
-        <p className="mt-12 rounded-xl border border-dashed border-border bg-background p-12 text-center text-muted-foreground">
-          No team members yet.
-        </p>
+        <EmptyState
+          message="No team members yet."
+          cta={{ label: "New team member", href: `/${locale}/team/new` }}
+          className="mt-12"
+        />
       ) : (
         <div className="mt-8">
           <TeamSortableList initial={members} locale={locale} />
