@@ -3,8 +3,40 @@ import { notFound } from "next/navigation";
 import QRCode from "qrcode";
 import { getEvent } from "@/actions/events";
 import { getEventTiers } from "@/actions/door-sale";
+import { getPosterConfig } from "@/actions/poster";
 import { createServerClient } from "@dbc/supabase/server";
 import { PosterPrintControls } from "./print-controls";
+import { PosterConfigEditor } from "./poster-config-editor";
+
+const DEFAULTS = {
+  en: {
+    eyebrow: "Tickets at the door",
+    headline: "Scan to buy your ticket",
+    priceFrom: "From",
+    free: "Free entry",
+    instructions:
+      "Open your phone camera, point it at the QR code, and tap the notification to open the checkout.",
+    back: "\u2190 Back to event",
+  },
+  de: {
+    eyebrow: "Tickets vor Ort",
+    headline: "Scannen und Ticket kaufen",
+    priceFrom: "Ab",
+    free: "Eintritt frei",
+    instructions:
+      "\u00D6ffnen Sie die Kamera auf Ihrem Handy, richten Sie sie auf den QR-Code und tippen Sie auf die Mitteilung.",
+    back: "\u2190 Zur\u00FCck zur Veranstaltung",
+  },
+  fr: {
+    eyebrow: "Billets sur place",
+    headline: "Scannez pour acheter",
+    priceFrom: "\u00C0 partir de",
+    free: "Entr\u00E9e libre",
+    instructions:
+      "Ouvrez l\u2019appareil photo de votre t\u00E9l\u00E9phone, pointez-le vers le QR code, puis appuyez sur la notification.",
+    back: "\u2190 Retour \u00E0 l\u2019\u00E9v\u00E9nement",
+  },
+};
 
 export default async function EventPosterPage({
   params,
@@ -15,6 +47,10 @@ export default async function EventPosterPage({
 }) {
   const { locale, id } = await params;
   const { print } = await searchParams;
+  const key = (locale === "de" || locale === "fr" ? locale : "en") as
+    | "en"
+    | "de"
+    | "fr";
 
   let event;
   try {
@@ -23,7 +59,20 @@ export default async function EventPosterPage({
     notFound();
   }
 
-  const tiers = await getEventTiers(id);
+  const [tiers, config, companyRes] = await Promise.all([
+    getEventTiers(id),
+    getPosterConfig(id),
+    (async () => {
+      const supabase = await createServerClient();
+      return supabase
+        .from("company_info")
+        .select("brand_name, primary_color, logo_light_url")
+        .eq("id", 1)
+        .maybeSingle();
+    })(),
+  ]);
+
+  const companyInfo = companyRes.data;
   const cheapestCents = tiers
     .map((t) => t.price_cents)
     .filter((c) => c > 0)
@@ -33,24 +82,27 @@ export default async function EventPosterPage({
     );
   const freeTierExists = tiers.some((t) => t.price_cents === 0);
 
-  const supabase = await createServerClient();
-  const { data: companyInfo } = await supabase
-    .from("company_info")
-    .select("brand_name, primary_color, logo_light_url")
-    .eq("id", 1)
-    .maybeSingle();
-
   const ticketsBaseUrl =
     process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://tickets.dbc-germany.com";
   const checkoutUrl = `${ticketsBaseUrl}/${locale}/checkout/${event.slug}?src=door_poster`;
 
-  // Generate QR as data URL on the server so the page renders without JS.
   const qrDataUrl = await QRCode.toDataURL(checkoutUrl, {
     width: 720,
     margin: 1,
     errorCorrectionLevel: "M",
     color: { dark: "#111111", light: "#ffffff" },
   });
+
+  const d = DEFAULTS[key];
+
+  // Merge: DB config overrides defaults per locale
+  const eyebrow =
+    (config[`eyebrow_${key}` as keyof typeof config] as string) || d.eyebrow;
+  const headline =
+    (config[`headline_${key}` as keyof typeof config] as string) || d.headline;
+  const instructions =
+    (config[`instructions_${key}` as keyof typeof config] as string) ||
+    d.instructions;
 
   const title =
     (event[`title_${locale}` as keyof typeof event] as string) ||
@@ -65,59 +117,34 @@ export default async function EventPosterPage({
   const brandName = companyInfo?.brand_name ?? "DBC Germany";
   const primary = companyInfo?.primary_color ?? "#c8102e";
 
-  const COPY = {
-    en: {
-      eyebrow: "Tickets at the door",
-      scan: "Scan to buy your ticket",
-      priceFrom: "From",
-      free: "Free entry",
-      instructions:
-        "Open your phone camera, point it at the QR code, and tap the notification to open the checkout.",
-      back: "← Back to event",
-    },
-    de: {
-      eyebrow: "Tickets vor Ort",
-      scan: "Scannen und Ticket kaufen",
-      priceFrom: "Ab",
-      free: "Eintritt frei",
-      instructions:
-        "\u00D6ffnen Sie die Kamera auf Ihrem Handy, richten Sie sie auf den QR-Code und tippen Sie auf die Mitteilung.",
-      back: "\u2190 Zur\u00fcck zur Veranstaltung",
-    },
-    fr: {
-      eyebrow: "Billets sur place",
-      scan: "Scannez pour acheter",
-      priceFrom: "\u00C0 partir de",
-      free: "Entr\u00e9e libre",
-      instructions:
-        "Ouvrez l'appareil photo de votre t\u00e9l\u00e9phone, pointez-le vers le QR code, puis appuyez sur la notification.",
-      back: "\u2190 Retour \u00e0 l'\u00e9v\u00e9nement",
-    },
-  };
-  const key = (locale === "de" || locale === "fr" ? locale : "en") as
-    | "en"
-    | "de"
-    | "fr";
-  const t = COPY[key];
-
   const priceLine = freeTierExists
-    ? t.free
+    ? d.free
     : cheapestCents !== null
-      ? `${t.priceFrom} \u20AC${(cheapestCents / 100).toFixed(0)}`
+      ? `${d.priceFrom} \u20AC${(cheapestCents / 100).toFixed(0)}`
       : null;
 
   return (
     <>
-      <div className="no-print p-6 print:hidden">
+      {/* Admin toolbar — hidden on print */}
+      <div className="no-print space-y-6 p-6 print:hidden">
         <Link
           href={`/${locale}/events/${id}`}
           className="text-sm text-muted-foreground hover:text-foreground"
         >
-          {t.back}
+          {d.back}
         </Link>
+
+        <PosterConfigEditor
+          eventId={id}
+          locale={locale}
+          initial={config}
+          defaults={DEFAULTS}
+        />
+
         <PosterPrintControls autoPrint={print === "1"} />
       </div>
 
+      {/* A4 poster — print-ready */}
       <main className="poster mx-auto flex min-h-[297mm] max-w-[210mm] flex-col bg-white p-[14mm] text-black print:m-0 print:max-w-none print:p-[10mm]">
         <header
           className="flex items-center gap-3 border-b-4 pb-5"
@@ -145,7 +172,7 @@ export default async function EventPosterPage({
             className="text-xs font-semibold uppercase tracking-[0.25em]"
             style={{ color: primary }}
           >
-            {t.eyebrow}
+            {eyebrow}
           </p>
           <h1 className="mt-4 font-heading text-5xl font-black leading-tight">
             {title}
@@ -153,7 +180,7 @@ export default async function EventPosterPage({
           <p className="mt-3 text-xl text-neutral-600">{dateStr}</p>
           <p className="mt-1 text-lg text-neutral-600">
             {event.venue_name}
-            {event.city ? ` · ${event.city}` : ""}
+            {event.city ? ` \u00B7 ${event.city}` : ""}
           </p>
           {priceLine && (
             <p
@@ -166,15 +193,15 @@ export default async function EventPosterPage({
         </section>
 
         <section className="mt-auto flex flex-col items-center gap-4 py-8">
-          <p className="text-2xl font-bold">{t.scan}</p>
+          <p className="text-2xl font-bold">{headline}</p>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={qrDataUrl}
-            alt="QR code — scan to open checkout"
+            alt="QR code \u2014 scan to open checkout"
             className="h-[72mm] w-[72mm]"
           />
           <p className="max-w-[160mm] text-center text-base text-neutral-600">
-            {t.instructions}
+            {instructions}
           </p>
           <p className="text-xs text-neutral-400">{checkoutUrl}</p>
         </section>
