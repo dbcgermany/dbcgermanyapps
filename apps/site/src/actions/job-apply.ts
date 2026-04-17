@@ -1,53 +1,9 @@
 "use server";
 
-import { createEmailClient } from "@dbc/email";
+import { sendJobApplicationConfirm } from "@dbc/email";
 import { createServerClient, notifyAdmins } from "@dbc/supabase/server";
 
 type Locale = "en" | "de" | "fr";
-
-const CONFIRMATION_SUBJECT: Record<Locale, string> = {
-  en: "Thank you for your application",
-  de: "Vielen Dank f\u00FCr Ihre Bewerbung",
-  fr: "Merci pour votre candidature",
-};
-
-function confirmationBody(name: string, jobTitle: string, locale: Locale): string {
-  switch (locale) {
-    case "de":
-      return [
-        `Hallo ${name},`,
-        "",
-        `vielen Dank f\u00FCr Ihre Bewerbung auf die Stelle "${jobTitle}".`,
-        "Wir haben Ihre Unterlagen erhalten und werden sie sorgf\u00E4ltig pr\u00FCfen.",
-        "Wir melden uns in K\u00FCrze bei Ihnen.",
-        "",
-        "Mit freundlichen Gr\u00FC\u00DFen,",
-        "DBC Germany",
-      ].join("\n");
-    case "fr":
-      return [
-        `Bonjour ${name},`,
-        "",
-        `Merci pour votre candidature au poste de "${jobTitle}".`,
-        "Nous avons bien re\u00E7u votre dossier et l\u2019examinerons attentivement.",
-        "Nous reviendrons vers vous rapidement.",
-        "",
-        "Cordialement,",
-        "DBC Germany",
-      ].join("\n");
-    default:
-      return [
-        `Hi ${name},`,
-        "",
-        `Thank you for applying to "${jobTitle}".`,
-        "We\u2019ve received your application and will review it shortly.",
-        "We\u2019ll be in touch soon.",
-        "",
-        "Best regards,",
-        "DBC Germany",
-      ].join("\n");
-  }
-}
 
 export async function submitJobApplication(
   _prev: { success?: boolean; error?: string } | null,
@@ -108,18 +64,14 @@ export async function submitJobApplication(
     jobOffer?.title_en ??
     "the open position";
 
-  // --- Send confirmation email to applicant ---
+  // --- Send branded confirmation email to applicant ---
   try {
     if (process.env.RESEND_API_KEY) {
-      const resend = createEmailClient();
-      const from =
-        process.env.RESEND_FROM_ADDRESS ??
-        "DBC Germany <info@dbc-germany.com>";
-      await resend.emails.send({
-        from,
+      await sendJobApplicationConfirm({
         to: applicantEmail,
-        subject: CONFIRMATION_SUBJECT[locale],
-        text: confirmationBody(applicantName, jobTitle, locale),
+        applicantName,
+        jobTitle,
+        locale,
       });
     }
   } catch (err) {

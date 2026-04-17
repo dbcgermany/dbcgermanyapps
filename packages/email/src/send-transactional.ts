@@ -6,6 +6,10 @@ import { WaitlistNotificationEmail } from "./templates/waitlist-notification";
 import { OrderReceiptEmail } from "./templates/order-receipt";
 import { AftercareSequenceEmail } from "./templates/aftercare-sequence";
 import { AdminAlertEmail } from "./templates/admin-alert";
+import { JobApplicationConfirmEmail } from "./templates/job-application-confirm";
+import { RefundConfirmationEmail } from "./templates/refund-confirmation";
+import { ContactFormConfirmEmail } from "./templates/contact-form-confirm";
+import { PreEventReminderEmail } from "./templates/pre-event-reminder";
 
 type Locale = "en" | "de" | "fr";
 
@@ -230,6 +234,176 @@ export async function sendAdminAlert(input: SendAdminAlertInput) {
     from: transactionalFrom(),
     to: input.to,
     subject: input.subject,
+    html,
+  });
+  if (res.error) throw new Error(`Resend: ${res.error.message}`);
+  return { id: res.data?.id ?? "" };
+}
+
+// ---------------------------------------------------------------------------
+// Job Application Confirmation
+// ---------------------------------------------------------------------------
+
+export interface SendJobApplicationConfirmInput {
+  to: string;
+  applicantName: string;
+  jobTitle: string;
+  locale: Locale;
+}
+
+const JOB_APP_SUBJECT = {
+  en: "Thank you for your application",
+  de: "Vielen Dank f\u00FCr Ihre Bewerbung",
+  fr: "Merci pour votre candidature",
+};
+
+export async function sendJobApplicationConfirm(
+  input: SendJobApplicationConfirmInput
+) {
+  const html = await render(
+    React.createElement(JobApplicationConfirmEmail, {
+      applicantName: input.applicantName,
+      jobTitle: input.jobTitle,
+      locale: input.locale,
+    })
+  );
+  const resend = createEmailClient();
+  const res = await resend.emails.send({
+    from: transactionalFrom(),
+    to: input.to,
+    subject: JOB_APP_SUBJECT[input.locale],
+    html,
+  });
+  if (res.error) throw new Error(`Resend: ${res.error.message}`);
+  return { id: res.data?.id ?? "" };
+}
+
+// ---------------------------------------------------------------------------
+// Refund Confirmation
+// ---------------------------------------------------------------------------
+
+export interface SendRefundConfirmationInput {
+  to: string;
+  recipientName: string;
+  eventTitle: string;
+  orderShortId: string;
+  refundAmountFormatted: string;
+  locale: Locale;
+}
+
+const REFUND_SUBJECT = {
+  en: "Your refund has been processed",
+  de: "Ihre R\u00FCckerstattung wurde bearbeitet",
+  fr: "Votre remboursement a \u00E9t\u00E9 trait\u00E9",
+};
+
+export async function sendRefundConfirmation(
+  input: SendRefundConfirmationInput
+) {
+  const html = await render(
+    React.createElement(RefundConfirmationEmail, {
+      recipientName: input.recipientName,
+      eventTitle: input.eventTitle,
+      orderShortId: input.orderShortId,
+      refundAmountFormatted: input.refundAmountFormatted,
+      locale: input.locale,
+    })
+  );
+  const resend = createEmailClient();
+  const res = await resend.emails.send({
+    from: ticketsFrom(),
+    to: input.to,
+    subject: REFUND_SUBJECT[input.locale],
+    html,
+  });
+  if (res.error) throw new Error(`Resend: ${res.error.message}`);
+  return { id: res.data?.id ?? "" };
+}
+
+// ---------------------------------------------------------------------------
+// Contact Form Confirmation
+// ---------------------------------------------------------------------------
+
+export interface SendContactFormConfirmInput {
+  to: string;
+  name: string;
+  locale: Locale;
+}
+
+const CONTACT_SUBJECT = {
+  en: "We received your message",
+  de: "Wir haben Ihre Nachricht erhalten",
+  fr: "Nous avons re\u00E7u votre message",
+};
+
+export async function sendContactFormConfirm(
+  input: SendContactFormConfirmInput
+) {
+  const html = await render(
+    React.createElement(ContactFormConfirmEmail, {
+      name: input.name,
+      locale: input.locale,
+    })
+  );
+  const resend = createEmailClient();
+  const res = await resend.emails.send({
+    from: transactionalFrom(),
+    to: input.to,
+    subject: CONTACT_SUBJECT[input.locale],
+    html,
+  });
+  if (res.error) throw new Error(`Resend: ${res.error.message}`);
+  return { id: res.data?.id ?? "" };
+}
+
+// ---------------------------------------------------------------------------
+// Pre-Event Reminder
+// ---------------------------------------------------------------------------
+
+export interface SendPreEventReminderInput {
+  to: string;
+  attendeeName: string;
+  eventTitle: string;
+  eventDate: string;
+  eventTime: string;
+  venueName: string;
+  venueAddress: string;
+  ticketShortId: string;
+  orderUrl: string;
+  locale: Locale;
+}
+
+const REMINDER_SUBJECT = {
+  en: "Reminder: {event} is coming up!",
+  de: "Erinnerung: {event} steht bevor!",
+  fr: "Rappel\u00A0: {event} approche\u00A0!",
+};
+
+export async function sendPreEventReminder(
+  input: SendPreEventReminderInput
+) {
+  const html = await render(
+    React.createElement(PreEventReminderEmail, {
+      attendeeName: input.attendeeName,
+      eventTitle: input.eventTitle,
+      eventDate: input.eventDate,
+      eventTime: input.eventTime,
+      venueName: input.venueName,
+      venueAddress: input.venueAddress,
+      ticketShortId: input.ticketShortId,
+      orderUrl: input.orderUrl,
+      locale: input.locale,
+    })
+  );
+  const subject = REMINDER_SUBJECT[input.locale].replace(
+    "{event}",
+    input.eventTitle
+  );
+  const resend = createEmailClient();
+  const res = await resend.emails.send({
+    from: transactionalFrom(),
+    to: input.to,
+    subject,
     html,
   });
   if (res.error) throw new Error(`Resend: ${res.error.message}`);

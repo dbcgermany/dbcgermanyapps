@@ -1,6 +1,7 @@
 "use server";
 
 import { createServerClient, requireRole, notifyAdmins } from "@dbc/supabase/server";
+import { sendRefundConfirmation } from "@dbc/email";
 import { revalidatePath } from "next/cache";
 import Stripe from "stripe";
 
@@ -239,6 +240,31 @@ export async function refundOrder(orderId: string, locale: string) {
     body: `\u20AC${(order.total_cents / 100).toFixed(2)} refunded for order #${orderId.slice(0, 8).toUpperCase()}`,
     data: { order_id: orderId, amount_cents: order.total_cents },
   });
+
+  // Send branded refund confirmation email to buyer (non-blocking)
+  try {
+    const { data: fullOrder } = await supabase
+      .from("orders")
+      .select("recipient_name, recipient_email, locale, event:events(title_en)")
+      .eq("id", orderId)
+      .single();
+    if (fullOrder?.recipient_email) {
+      const orderLocale = (fullOrder.locale === "de" || fullOrder.locale === "fr"
+        ? fullOrder.locale : "en") as "en" | "de" | "fr";
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const eventTitle = (fullOrder.event as any)?.title_en ?? "Event";
+      await sendRefundConfirmation({
+        to: fullOrder.recipient_email,
+        recipientName: fullOrder.recipient_name || "Customer",
+        eventTitle,
+        orderShortId: orderId.slice(0, 8).toUpperCase(),
+        refundAmountFormatted: `\u20AC${(order.total_cents / 100).toFixed(2)}`,
+        locale: orderLocale,
+      });
+    }
+  } catch (emailErr) {
+    console.error("[refund] confirmation email failed:", emailErr);
+  }
 
   revalidatePath(`/${locale}/orders`);
   return { success: true };

@@ -25,6 +25,10 @@ export {
   sendOrderReceipt,
   sendAftercareSequence,
   sendAdminAlert,
+  sendJobApplicationConfirm,
+  sendRefundConfirmation,
+  sendContactFormConfirm,
+  sendPreEventReminder,
 } from "./send-transactional";
 export type {
   SendTransferConfirmationInput,
@@ -32,6 +36,10 @@ export type {
   SendOrderReceiptInput,
   SendAftercareSequenceInput,
   SendAdminAlertInput,
+  SendJobApplicationConfirmInput,
+  SendRefundConfirmationInput,
+  SendContactFormConfirmInput,
+  SendPreEventReminderInput,
 } from "./send-transactional";
 export {
   sendNewsletterEmail,
@@ -46,3 +54,11 @@ export type {
 export { NewsletterEmail } from "./templates/newsletter";
 export { NewsletterConfirmEmail } from "./templates/newsletter-confirm";
 export { StaffMessageEmail } from "./templates/staff-message";
+export { JobApplicationConfirmEmail } from "./templates/job-application-confirm";
+export type { JobApplicationConfirmEmailProps } from "./templates/job-application-confirm";
+export { RefundConfirmationEmail } from "./templates/refund-confirmation";
+export type { RefundConfirmationEmailProps } from "./templates/refund-confirmation";
+export { ContactFormConfirmEmail } from "./templates/contact-form-confirm";
+export type { ContactFormConfirmEmailProps } from "./templates/contact-form-confirm";
+export { PreEventReminderEmail } from "./templates/pre-event-reminder";
+export type { PreEventReminderEmailProps } from "./templates/pre-event-reminder";

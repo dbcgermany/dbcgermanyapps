@@ -1,6 +1,6 @@
 "use server";
 
-import { createEmailClient } from "@dbc/email";
+import { createEmailClient, sendContactFormConfirm } from "@dbc/email";
 import { createServerClient } from "@dbc/supabase/server";
 
 const CONTACT_DEST =
@@ -92,6 +92,16 @@ export async function sendContactMessage(
     if (error) {
       console.error("Resend error on contact form:", error);
       return { error: "Message failed to send. Try again shortly." };
+    }
+
+    // Send branded confirmation to the submitter (non-blocking)
+    try {
+      const locale = (input.locale === "de" || input.locale === "fr"
+        ? input.locale
+        : "en") as "en" | "de" | "fr";
+      await sendContactFormConfirm({ to: email, name, locale });
+    } catch (confirmErr) {
+      console.error("Contact form confirmation email failed:", confirmErr);
     }
   } catch (err) {
     console.error("Contact form send failed:", err);
