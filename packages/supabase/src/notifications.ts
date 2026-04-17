@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 export type NotificationType =
   | "new_order"
+  | "new_application"
   | "tier_sold_out"
   | "refund_issued"
   | "check_in_milestone"

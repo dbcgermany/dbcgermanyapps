@@ -31,6 +31,8 @@ export function JobApplicationForm({
       email: "Email",
       phone: "Phone (optional)",
       coverLetter: "Cover letter",
+      resume: "Resume link (optional)",
+      resumePlaceholder: "Google Drive, Dropbox, etc.",
       linkedin: "LinkedIn URL (optional)",
       portfolio: "Portfolio URL (optional)",
       submit: "Send application",
@@ -43,6 +45,8 @@ export function JobApplicationForm({
       email: "E-Mail",
       phone: "Telefon (optional)",
       coverLetter: "Anschreiben",
+      resume: "Lebenslauf-Link (optional)",
+      resumePlaceholder: "Google Drive, Dropbox, etc.",
       linkedin: "LinkedIn URL (optional)",
       portfolio: "Portfolio URL (optional)",
       submit: "Bewerbung absenden",
@@ -55,6 +59,8 @@ export function JobApplicationForm({
       email: "E-mail",
       phone: "T\u00e9l\u00e9phone (optionnel)",
       coverLetter: "Lettre de motivation",
+      resume: "Lien CV (optionnel)",
+      resumePlaceholder: "Google Drive, Dropbox, etc.",
       linkedin: "URL LinkedIn (optionnel)",
       portfolio: "URL Portfolio (optionnel)",
       submit: "Envoyer la candidature",
@@ -86,6 +92,13 @@ export function JobApplicationForm({
         </FormField>
         <FormField label={t.phone}>
           <Input name="applicant_phone" type="tel" />
+        </FormField>
+        <FormField label={t.resume}>
+          <Input
+            name="resume_url"
+            type="url"
+            placeholder={t.resumePlaceholder}
+          />
         </FormField>
         <FormField label={t.linkedin}>
           <Input name="linkedin_url" type="url" placeholder="https://" />

@@ -152,6 +152,7 @@ export function BulkInviteClient({
                 <tr>
                   <th className="px-3 py-2 text-left">Email</th>
                   <th className="px-3 py-2 text-left">Name</th>
+                  <th className="px-3 py-2 text-left">Gender</th>
                   <th className="px-3 py-2 text-left">Country</th>
                   <th className="px-3 py-2 text-left">Tags</th>
                   <th className="px-3 py-2 text-left">Tier</th>
@@ -162,8 +163,9 @@ export function BulkInviteClient({
                   <tr key={i} className="border-t border-border">
                     <td className="px-3 py-1.5">{r.email}</td>
                     <td className="px-3 py-1.5">
-                      {[r.firstName, r.lastName].filter(Boolean).join(" ")}
+                      {[r.title, r.firstName, r.lastName].filter(Boolean).join(" ")}
                     </td>
+                    <td className="px-3 py-1.5">{r.gender ?? "—"}</td>
                     <td className="px-3 py-1.5">{r.country ?? "—"}</td>
                     <td className="px-3 py-1.5">
                       {r.categoryTags.join(", ") || "—"}

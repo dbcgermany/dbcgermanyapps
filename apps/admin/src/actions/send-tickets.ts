@@ -21,6 +21,8 @@ export interface BulkRecipient {
   firstName: string;
   lastName: string;
   email: string;
+  gender?: string;
+  locale?: string;
 }
 
 function joinAttendeeName(
@@ -287,8 +289,9 @@ export async function sendBulkTicketsAction(
       recipient.lastName?.trim() ?? "",
       email,
       "invited",
-      locale,
-      user.userId
+      recipient.locale?.trim() || locale,
+      user.userId,
+      recipient.gender?.trim() || undefined
     );
 
     if (result.success) {

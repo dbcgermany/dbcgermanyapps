@@ -13,6 +13,8 @@ export interface BulkInvitationRow {
   tierSlug: string | null;
   locale: string | null;
   note: string | null;
+  gender: string | null;
+  title: string | null;
 }
 
 export interface BulkParseResult {
@@ -87,6 +89,8 @@ export async function parseInvitationsCsv(
   const tierSlugIdx = col("tier_slug");
   const localeIdx = col("locale");
   const noteIdx = col("note");
+  const genderIdx = col("gender");
+  const titleIdx = col("title");
 
   const rows: BulkInvitationRow[] = [];
   const errors: Array<{ line: number; message: string }> = [];
@@ -126,6 +130,9 @@ export async function parseInvitationsCsv(
     const locale = (localeIdx >= 0 ? parts[localeIdx] : "").trim().toLowerCase();
     const localeOk = locale === "en" || locale === "de" || locale === "fr";
 
+    const genderRaw = (genderIdx >= 0 ? parts[genderIdx] : "").trim().toLowerCase();
+    const genderOk = genderRaw === "female" || genderRaw === "male" || genderRaw === "diverse";
+
     rows.push({
       email,
       firstName: (firstNameIdx >= 0 ? parts[firstNameIdx] : "").trim(),
@@ -136,6 +143,8 @@ export async function parseInvitationsCsv(
       tierSlug: (tierSlugIdx >= 0 ? parts[tierSlugIdx] : "").trim() || null,
       locale: localeOk ? locale : null,
       note: (noteIdx >= 0 ? parts[noteIdx] : "").trim() || null,
+      gender: genderOk ? genderRaw : null,
+      title: (titleIdx >= 0 ? parts[titleIdx] : "").trim() || null,
     });
   }
 
@@ -202,6 +211,8 @@ export async function bulkCreateInvitations(
       note: row.note ?? undefined,
       locale: row.locale ?? input.defaultLocale,
       sendEmail: input.sendEmails,
+      gender: row.gender ?? undefined,
+      title: row.title ?? undefined,
     });
 
     if ("error" in result) {

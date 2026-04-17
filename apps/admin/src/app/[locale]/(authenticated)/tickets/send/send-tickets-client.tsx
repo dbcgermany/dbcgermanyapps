@@ -66,7 +66,7 @@ function splitCsvLine(line: string): string[] {
 
 /**
  * Parse CSV text. Supports header row — columns (case-insensitive):
- *   title, first_name, last_name, email
+ *   title, first_name, last_name, email, gender, locale
  * Falls back to positional if no header present:
  *   title, first_name, last_name, email
  */
@@ -84,6 +84,8 @@ function parseCsv(text: string): BulkRecipient[] {
   let firstIdx = 1;
   let lastIdx = 2;
   let emailIdx = 3;
+  let genderIdx = -1;
+  let localeIdx = -1;
   let dataStart = 0;
 
   if (looksLikeHeader) {
@@ -94,6 +96,8 @@ function parseCsv(text: string): BulkRecipient[] {
     lastIdx = idx("last_name");
     if (lastIdx === -1) lastIdx = idx("lastname");
     emailIdx = idx("email");
+    genderIdx = idx("gender");
+    localeIdx = idx("locale");
     dataStart = 1;
   }
 
@@ -103,12 +107,19 @@ function parseCsv(text: string): BulkRecipient[] {
     const email = emailIdx >= 0 ? parts[emailIdx] : "";
     const firstName = firstIdx >= 0 ? parts[firstIdx] : "";
     if (!email || !firstName) continue;
-    out.push({
+    const row: BulkRecipient = {
       title: (titleIdx >= 0 ? parts[titleIdx] : "") ?? "",
       firstName,
       lastName: (lastIdx >= 0 ? parts[lastIdx] : "") ?? "",
       email,
-    });
+    };
+    if (genderIdx >= 0 && parts[genderIdx]?.trim()) {
+      row.gender = parts[genderIdx].trim();
+    }
+    if (localeIdx >= 0 && parts[localeIdx]?.trim()) {
+      row.locale = parts[localeIdx].trim().toLowerCase();
+    }
+    out.push(row);
   }
   return out;
 }
@@ -132,12 +143,14 @@ export function SendTicketsClient({
 
   // Single mode state
   const [title, setTitle] = useState("");
+  const [gender, setGender] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [attendeeEmail, setAttendeeEmail] = useState("");
   const [acquisitionType, setAcquisitionType] = useState<
     "invited" | "assigned"
   >("invited");
+  const [singleLocale, setSingleLocale] = useState(locale);
   const [singleResult, setSingleResult] = useState<{
     error?: string;
     success?: boolean;
@@ -166,11 +179,13 @@ export function SendTicketsClient({
         lastName,
         attendeeEmail,
         acquisitionType,
-        locale,
+        locale: singleLocale,
+        gender: gender || undefined,
       });
       setSingleResult(res);
       if (res.success) {
         setTitle("");
+        setGender("");
         setFirstName("");
         setLastName("");
         setAttendeeEmail("");
@@ -219,6 +234,12 @@ export function SendTicketsClient({
       tier: "Ticket tier",
       title: "Title (optional)",
       titleHint: "Dr., Prof., Mr., Ms., Madame, …",
+      gender: "Gender (optional)",
+      genderFemale: "Female",
+      genderMale: "Male",
+      genderDiverse: "Diverse",
+      genderNone: "— not specified —",
+      locale: "Email language",
       firstName: "First name",
       lastName: "Last name",
       email: "Email",
@@ -230,7 +251,7 @@ export function SendTicketsClient({
       sent: "Ticket sent successfully.",
       csvLabel: "Paste CSV or upload file",
       csvFormat:
-        "Columns: title, first_name, last_name, email (header optional; comma-separated)",
+        "Columns: title, first_name, last_name, email, gender, locale (header optional; comma-separated)",
       csvExample: 'Dr.,Jay,Kalala,jay@dbc-germany.com',
       upload: "Upload CSV",
       sendBulk: "Send all",
@@ -244,6 +265,12 @@ export function SendTicketsClient({
       tier: "Ticketart",
       title: "Titel (optional)",
       titleHint: "Dr., Prof., Herr, Frau, Madame, …",
+      gender: "Geschlecht (optional)",
+      genderFemale: "Weiblich",
+      genderMale: "M\u00e4nnlich",
+      genderDiverse: "Divers",
+      genderNone: "— nicht angegeben —",
+      locale: "E-Mail-Sprache",
       firstName: "Vorname",
       lastName: "Nachname",
       email: "E-Mail",
@@ -255,7 +282,7 @@ export function SendTicketsClient({
       sent: "Ticket erfolgreich gesendet.",
       csvLabel: "CSV einf\u00fcgen oder Datei hochladen",
       csvFormat:
-        "Spalten: title, first_name, last_name, email (Kopfzeile optional; kommagetrennt)",
+        "Spalten: title, first_name, last_name, email, gender, locale (Kopfzeile optional; kommagetrennt)",
       csvExample: 'Dr.,Jay,Kalala,jay@dbc-germany.com',
       upload: "CSV hochladen",
       sendBulk: "Alle senden",
@@ -269,6 +296,12 @@ export function SendTicketsClient({
       tier: "Type de billet",
       title: "Titre (optionnel)",
       titleHint: "Dr., Prof., M., Mme., Madame, …",
+      gender: "Genre (optionnel)",
+      genderFemale: "F\u00e9minin",
+      genderMale: "Masculin",
+      genderDiverse: "Divers",
+      genderNone: "— non pr\u00e9cis\u00e9 —",
+      locale: "Langue de l\u2019e-mail",
       firstName: "Pr\u00e9nom",
       lastName: "Nom",
       email: "E-mail",
@@ -280,7 +313,7 @@ export function SendTicketsClient({
       sent: "Billet envoy\u00e9 avec succ\u00e8s.",
       csvLabel: "Coller le CSV ou t\u00e9l\u00e9verser un fichier",
       csvFormat:
-        "Colonnes: title, first_name, last_name, email (en-t\u00eate optionnel; s\u00e9par\u00e9 par virgule)",
+        "Colonnes: title, first_name, last_name, email, gender, locale (en-t\u00eate optionnel; s\u00e9par\u00e9 par virgule)",
       csvExample: 'Dr.,Jay,Kalala,jay@dbc-germany.com',
       upload: "T\u00e9l\u00e9verser CSV",
       sendBulk: "Tout envoyer",
@@ -289,10 +322,13 @@ export function SendTicketsClient({
     },
   }[locale] ?? {
     single: "Single", bulk: "Bulk", event: "Event", tier: "Tier",
-    title: "Title", titleHint: "Dr., Prof., …", firstName: "First name", lastName: "Last name", email: "Email",
+    title: "Title", titleHint: "Dr., Prof., …",
+    gender: "Gender", genderFemale: "Female", genderMale: "Male", genderDiverse: "Diverse", genderNone: "—",
+    locale: "Email language",
+    firstName: "First name", lastName: "Last name", email: "Email",
     acquisition: "Type", invited: "Invited", assigned: "Assigned",
     send: "Send", sending: "…", sent: "Sent",
-    csvLabel: "CSV", csvFormat: "title,first_name,last_name,email", csvExample: "",
+    csvLabel: "CSV", csvFormat: "title,first_name,last_name,email,gender,locale", csvExample: "",
     upload: "Upload", sendBulk: "Send", bulkSuccess: "{sent} sent, {failed} failed",
     preview: "Preview",
   };
@@ -383,6 +419,25 @@ export function SendTicketsClient({
             </div>
             <div>
               <label className="block text-sm font-medium mb-1.5">
+                {t.gender}
+              </label>
+              <select
+                value={gender}
+                onChange={(e) => setGender(e.target.value)}
+                className={inputClass}
+              >
+                <option value="">{t.genderNone}</option>
+                <option value="female">{t.genderFemale}</option>
+                <option value="male">{t.genderMale}</option>
+                <option value="diverse">{t.genderDiverse}</option>
+              </select>
+            </div>
+            <div />
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-[1fr_1fr]">
+            <div>
+              <label className="block text-sm font-medium mb-1.5">
                 {t.firstName}
               </label>
               <input
@@ -451,6 +506,21 @@ export function SendTicketsClient({
                 </label>
               ))}
             </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1.5">
+              {t.locale}
+            </label>
+            <select
+              value={singleLocale}
+              onChange={(e) => setSingleLocale(e.target.value)}
+              className={`${inputClass} max-w-50`}
+            >
+              <option value="en">EN</option>
+              <option value="de">DE</option>
+              <option value="fr">FR</option>
+            </select>
           </div>
 
           <button
