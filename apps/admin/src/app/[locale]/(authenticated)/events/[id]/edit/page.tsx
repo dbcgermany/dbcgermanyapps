@@ -10,7 +10,7 @@ export default async function EditEventPage({
   const event = await getEvent(id);
 
   return (
-    <div className="p-8">
+    <div>
       <h1 className="font-heading text-2xl font-bold">Edit Event</h1>
       <p className="mt-1 text-sm text-muted-foreground">{event.title_en}</p>
 

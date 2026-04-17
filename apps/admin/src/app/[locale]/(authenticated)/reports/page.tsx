@@ -50,7 +50,7 @@ export default async function ReportsPage({
   ]);
 
   return (
-    <div className="p-8">
+    <div>
       <h1 className="font-heading text-2xl font-bold">
         {locale === "de"
           ? "Berichte"

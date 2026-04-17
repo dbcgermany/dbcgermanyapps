@@ -34,7 +34,7 @@ export default async function ContactDetailPage({
   }
 
   return (
-    <div className="p-8">
+    <div>
       <Link
         href={`/${locale}/contacts`}
         className="text-sm text-muted-foreground hover:text-foreground"

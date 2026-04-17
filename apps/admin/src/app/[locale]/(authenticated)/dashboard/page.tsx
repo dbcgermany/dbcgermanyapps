@@ -103,7 +103,7 @@ export default async function DashboardPage({
   const t = T[locale as keyof typeof T] ?? T.en;
 
   return (
-    <div className="p-8">
+    <div>
       <h1 className="font-heading text-2xl font-bold">
         {t.welcome}, {user.email.split("@")[0]}
       </h1>

@@ -10,7 +10,7 @@ export default async function NewsIndexPage({
   const posts = await getNewsPosts();
 
   return (
-    <div className="p-8">
+    <div>
       <div className="flex items-center justify-between">
         <h1 className="font-heading text-2xl font-bold">News</h1>
         <Link

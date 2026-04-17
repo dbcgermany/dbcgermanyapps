@@ -14,7 +14,7 @@ export default function CompanyInfoError({
   }, [error]);
 
   return (
-    <div className="p-8">
+    <div>
       <div className="rounded-lg border border-red-500/30 bg-red-50 p-6 dark:bg-red-950/20">
         <h1 className="font-heading text-lg font-semibold text-red-900 dark:text-red-200">
           Company Info failed to load

@@ -12,7 +12,7 @@ export default async function CouponsPage({
   const coupons = await getCoupons(eventId);
 
   return (
-    <div className="p-8">
+    <div>
       <div>
         <Link
           href={`/${locale}/events/${eventId}`}

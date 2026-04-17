@@ -10,7 +10,7 @@ export default async function EventsPage({
   const events = await getEvents();
 
   return (
-    <div className="p-8">
+    <div>
       <div className="flex items-center justify-between">
         <h1 className="font-heading text-2xl font-bold">Events</h1>
         <Link

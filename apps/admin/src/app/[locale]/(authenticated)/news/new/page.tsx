@@ -20,7 +20,7 @@ export default function NewNewsPostPage({
   );
 
   return (
-    <div className="p-8">
+    <div>
       <h1 className="font-heading text-2xl font-bold">New news post</h1>
 
       <form action={formAction} className="mt-8 max-w-3xl space-y-6">

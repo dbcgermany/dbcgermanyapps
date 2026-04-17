@@ -12,7 +12,7 @@ export default async function MediaPage({
   const media = await getEventMedia(eventId);
 
   return (
-    <div className="p-8">
+    <div>
       <div>
         <Link
           href={`/${locale}/events/${eventId}`}

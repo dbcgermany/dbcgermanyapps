@@ -17,7 +17,7 @@ export default async function OrdersPage({
   ]);
 
   return (
-    <div className="p-8">
+    <div>
       <h1 className="font-heading text-2xl font-bold">
         {locale === "de" ? "Bestellungen" : locale === "fr" ? "Commandes" : "Orders"}
       </h1>

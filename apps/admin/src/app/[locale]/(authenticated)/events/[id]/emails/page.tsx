@@ -12,7 +12,7 @@ export default async function EmailsPage({
   const sequences = await getEmailSequences(eventId);
 
   return (
-    <div className="p-8">
+    <div>
       <div>
         <Link
           href={`/${locale}/events/${eventId}`}

@@ -21,7 +21,7 @@ export default async function SettingsPage({
   ]);
 
   return (
-    <div className="p-8 space-y-10">
+    <div className="space-y-10">
       <h1 className="font-heading text-2xl font-bold">
         {locale === "de"
           ? "Einstellungen"

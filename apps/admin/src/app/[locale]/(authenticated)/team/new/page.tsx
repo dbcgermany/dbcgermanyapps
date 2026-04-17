@@ -8,7 +8,7 @@ export default async function NewTeamMemberPage({
   const { locale } = await params;
 
   return (
-    <div className="p-8">
+    <div>
       <h1 className="font-heading text-2xl font-bold">New team member</h1>
       <TeamMemberForm locale={locale} mode="create" />
     </div>

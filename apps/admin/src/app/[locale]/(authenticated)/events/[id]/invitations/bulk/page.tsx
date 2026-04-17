@@ -11,7 +11,7 @@ export default async function BulkInvitationsPage({
   const tiers = await getEventTiers(id);
 
   return (
-    <div className="p-8">
+    <div>
       <Link
         href={`/${locale}/events/${id}/invitations`}
         className="text-sm text-muted-foreground hover:text-foreground"

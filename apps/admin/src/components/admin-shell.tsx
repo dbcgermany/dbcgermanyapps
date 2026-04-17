@@ -59,7 +59,9 @@ export async function AdminShell({
             role={userRole}
           />
         </header>
-        <main className="flex-1 overflow-y-auto">{children}</main>
+        <main className="flex-1 overflow-y-auto bg-muted/30">
+          <div className="mx-auto max-w-7xl p-6 md:p-8">{children}</div>
+        </main>
       </div>
     </div>
   );

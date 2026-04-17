@@ -12,7 +12,7 @@ export default async function TiersPage({
   const tiers = await getTiers(eventId);
 
   return (
-    <div className="p-8">
+    <div>
       <div className="flex items-center justify-between">
         <div>
           <Link

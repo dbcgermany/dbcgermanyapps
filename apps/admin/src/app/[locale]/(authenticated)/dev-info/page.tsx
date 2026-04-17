@@ -26,7 +26,7 @@ export default async function DevInfoPage({
   const legalName = t("about.legalName");
 
   return (
-    <div className="p-8">
+    <div>
       <div className="max-w-3xl">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
           {t("eyebrow")}

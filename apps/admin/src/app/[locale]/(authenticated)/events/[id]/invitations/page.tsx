@@ -15,7 +15,7 @@ export default async function EventInvitationsPage({
   ]);
 
   return (
-    <div className="p-8">
+    <div>
       <Link
         href={`/${locale}/events/${id}`}
         className="text-sm text-muted-foreground hover:text-foreground"

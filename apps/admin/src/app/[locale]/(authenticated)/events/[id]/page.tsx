@@ -21,7 +21,7 @@ export default async function EventDetailPage({
   const descKey = `description_${locale}` as keyof typeof event;
 
   return (
-    <div className="p-8">
+    <div>
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>

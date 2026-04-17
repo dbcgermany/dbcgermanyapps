@@ -13,7 +13,7 @@ export default async function AttendeesPage({
   const checkedIn = attendees.filter((a) => a.checked_in_at).length;
 
   return (
-    <div className="p-8">
+    <div>
       <div>
         <Link
           href={`/${locale}/events/${eventId}`}

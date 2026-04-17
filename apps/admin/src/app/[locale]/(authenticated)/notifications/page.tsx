@@ -32,7 +32,7 @@ export default async function NotificationsPage({
   };
 
   return (
-    <div className="p-8">
+    <div>
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-heading text-2xl font-bold">{t.title}</h1>

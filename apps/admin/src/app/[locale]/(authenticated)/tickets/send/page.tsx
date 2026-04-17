@@ -21,7 +21,7 @@ export default async function SendTicketsPage({
     : [];
 
   return (
-    <div className="p-8">
+    <div>
       <div className="mx-auto max-w-3xl">
         <h1 className="font-heading text-2xl font-bold">
           {locale === "de" ? "Tickets senden" : locale === "fr" ? "Envoyer des billets" : "Send Tickets"}

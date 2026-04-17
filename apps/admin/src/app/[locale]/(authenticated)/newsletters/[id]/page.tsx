@@ -19,7 +19,7 @@ export default async function NewsletterEditPage({
   if (!nl) notFound();
 
   return (
-    <div className="p-8">
+    <div>
       <Link
         href={`/${locale}/newsletters`}
         className="text-sm text-muted-foreground hover:text-foreground"
