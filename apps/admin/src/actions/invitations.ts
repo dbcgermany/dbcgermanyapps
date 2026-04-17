@@ -16,6 +16,9 @@ export interface InvitationInput {
   sendEmail?: boolean;
   note?: string;
   locale?: string;
+  gender?: string;
+  title?: string;
+  customBody?: string;
 }
 
 export async function createInvitation(input: InvitationInput) {
@@ -32,6 +35,9 @@ export async function createInvitation(input: InvitationInput) {
   const extraTags = (input.extraCategoryTags ?? [])
     .map((t) => t.trim())
     .filter(Boolean);
+  const gender = input.gender?.trim() || null;
+  const title = input.title?.trim() || null;
+  const customBody = input.customBody?.trim() || null;
   const sendEmail = input.sendEmail !== false;
 
   if (!email || !email.includes("@")) return { error: "A valid email is required." };
@@ -67,10 +73,19 @@ export async function createInvitation(input: InvitationInput) {
     p_first_name: firstName || null,
     p_last_name: lastName || null,
     p_country: country,
+    p_gender: gender,
     p_occupation: occupation,
     p_auto_category_slug: "invited_guests",
     p_extra_category_slugs: extraTags,
   });
+
+  // Update contact title if provided (title column exists but RPC doesn't accept it)
+  if (title && contactId) {
+    await supabase
+      .from("contacts")
+      .update({ title })
+      .eq("id", contactId as string);
+  }
 
   // Create comped order
   const { data: order, error: orderError } = await supabase
@@ -178,6 +193,10 @@ export async function createInvitation(input: InvitationInput) {
       primaryColor: companyInfo?.primary_color ?? undefined,
       logoUrl: companyInfo?.logo_light_url ?? undefined,
       isInvitation: true,
+      gender: (gender as "female" | "male" | "diverse" | null) ?? undefined,
+      title: title ?? undefined,
+      lastName: lastName || undefined,
+      customBody: customBody ?? undefined,
     });
 
     await supabase

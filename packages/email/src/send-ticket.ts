@@ -3,6 +3,11 @@ import React from "react";
 import { createEmailClient, fromAddressFor } from "./client";
 import { generateTicketPdf } from "./pdf/generate-ticket";
 import { TicketDeliveryEmail } from "./templates/ticket-delivery";
+import {
+  InvitationEmail,
+  DEFAULT_INVITATION_BODY,
+} from "./templates/invitation-email";
+import { formalSalutation, formalClosing } from "./salutation";
 
 export interface SendTicketEmailInput {
   // Recipient
@@ -32,12 +37,23 @@ export interface SendTicketEmailInput {
   primaryColor?: string;
   logoUrl?: string;
   isInvitation?: boolean;
+  // Formal invitation fields (only used when isInvitation === true)
+  gender?: "female" | "male" | "diverse" | null;
+  title?: string | null;
+  lastName?: string | null;
+  customBody?: string | null;
 }
 
 const SUBJECT_TRANSLATIONS = {
   en: "Your ticket for {event}",
-  de: "Ihr Ticket f\u00FCr {event}",
+  de: "Ihr Ticket für {event}",
   fr: "Votre billet pour {event}",
+};
+
+const INVITATION_SUBJECT_TRANSLATIONS = {
+  en: "Your invitation to {event}",
+  de: "Ihre Einladung zu {event}",
+  fr: "Votre invitation à {event}",
 };
 
 /**
@@ -85,26 +101,76 @@ export async function sendTicketEmail(
     minute: "2-digit",
   })}`;
 
-  const emailHtml = await render(
-    React.createElement(TicketDeliveryEmail, {
-      attendeeName: input.attendeeName,
-      eventTitle: input.eventTitle,
-      eventDate,
-      eventTime,
-      venueName: input.venueName,
-      venueAddress: input.venueAddress,
-      tierName: input.tierName,
-      ticketShortId: input.ticketToken.slice(0, 8).toUpperCase(),
-      orderUrl: input.orderUrl,
-      locale: input.locale,
-    })
-  );
+  const ticketShortId = input.ticketToken.slice(0, 8).toUpperCase();
 
-  // 3. Build subject line
-  const subject = SUBJECT_TRANSLATIONS[input.locale].replace(
-    "{event}",
-    input.eventTitle
-  );
+  let emailHtml: string;
+  let subject: string;
+
+  if (input.isInvitation) {
+    // Formal invitation email
+    const salutation = formalSalutation(
+      input.locale,
+      input.gender,
+      input.title,
+      input.lastName,
+      input.attendeeName
+    );
+    const closing = formalClosing(input.locale);
+
+    // Build the body text: use custom body or default, then interpolate vars
+    const rawBody =
+      input.customBody?.trim() ||
+      DEFAULT_INVITATION_BODY[input.locale];
+    const bodyText = rawBody
+      .replace(/\{event\}/g, input.eventTitle)
+      .replace(/\{date\}/g, eventDate)
+      .replace(/\{venue\}/g, input.venueName);
+
+    emailHtml = await render(
+      React.createElement(InvitationEmail, {
+        salutation,
+        closing,
+        bodyText,
+        eventTitle: input.eventTitle,
+        eventDate,
+        eventTime,
+        venueName: input.venueName,
+        venueAddress: input.venueAddress,
+        tierName: input.tierName,
+        ticketShortId,
+        orderUrl: input.orderUrl,
+        locale: input.locale,
+        senderName: "DBC Germany Team",
+        senderTitle: "Event Management",
+      })
+    );
+
+    subject = INVITATION_SUBJECT_TRANSLATIONS[input.locale].replace(
+      "{event}",
+      input.eventTitle
+    );
+  } else {
+    // Standard ticket delivery email (informal)
+    emailHtml = await render(
+      React.createElement(TicketDeliveryEmail, {
+        attendeeName: input.attendeeName,
+        eventTitle: input.eventTitle,
+        eventDate,
+        eventTime,
+        venueName: input.venueName,
+        venueAddress: input.venueAddress,
+        tierName: input.tierName,
+        ticketShortId,
+        orderUrl: input.orderUrl,
+        locale: input.locale,
+      })
+    );
+
+    subject = SUBJECT_TRANSLATIONS[input.locale].replace(
+      "{event}",
+      input.eventTitle
+    );
+  }
 
   // 4. Send via Resend
   const resend = createEmailClient();

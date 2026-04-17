@@ -13,6 +13,7 @@ export interface SingleSendInput {
   attendeeEmail: string;
   acquisitionType: "invited" | "assigned";
   locale: string;
+  gender?: string;
 }
 
 export interface BulkRecipient {
@@ -41,7 +42,8 @@ async function sendSingleTicket(
   attendeeEmail: string,
   acquisitionType: "invited" | "assigned",
   locale: string,
-  actorId: string
+  actorId: string,
+  gender?: string
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createServerClient();
 
@@ -92,6 +94,7 @@ async function sendSingleTicket(
 
   // Upsert contact so the person is linked to orders + tickets. Categorise
   // invited guests / assignments correctly.
+  const cleanGender = gender?.trim() || null;
   const { data: contactId } = await supabase.rpc(
     "upsert_contact_from_checkout",
     {
@@ -99,10 +102,19 @@ async function sendSingleTicket(
       p_first_name: cleanFirst || null,
       p_last_name: cleanLast || null,
       p_country: null,
+      p_gender: cleanGender,
       p_auto_category_slug:
         acquisitionType === "invited" ? "invited_guests" : null,
     }
   );
+
+  // Update contact title if provided (title column exists but RPC doesn't accept it)
+  if (cleanTitle && contactId) {
+    await supabase
+      .from("contacts")
+      .update({ title: cleanTitle })
+      .eq("id", contactId as string);
+  }
 
   const { data: order, error: orderError } = await supabase
     .from("orders")
@@ -190,6 +202,9 @@ async function sendSingleTicket(
       primaryColor: companyInfo?.primary_color ?? undefined,
       logoUrl: companyInfo?.logo_light_url ?? undefined,
       isInvitation: acquisitionType === "invited",
+      gender: (cleanGender as "female" | "male" | "diverse" | null) ?? undefined,
+      title: cleanTitle || undefined,
+      lastName: cleanLast || undefined,
     });
 
     await supabase
@@ -233,7 +248,8 @@ export async function sendSingleTicketAction(input: SingleSendInput) {
     input.attendeeEmail,
     input.acquisitionType,
     input.locale,
-    user.userId
+    user.userId,
+    input.gender
   );
   revalidatePath(`/${input.locale}/tickets/send`);
   return result;

@@ -6,6 +6,11 @@ export type { GenerateTicketInput } from "./pdf/generate-ticket";
 export { TicketPdf } from "./pdf/ticket-pdf";
 export { TicketDeliveryEmail } from "./templates/ticket-delivery";
 export { TransferConfirmationEmail } from "./templates/transfer-confirmation";
+export { formalSalutation, formalClosing } from "./salutation";
+export {
+  InvitationEmail,
+  DEFAULT_INVITATION_BODY,
+} from "./templates/invitation-email";
 export { WaitlistNotificationEmail } from "./templates/waitlist-notification";
 export { OrderReceiptEmail } from "./templates/order-receipt";
 export { AftercareSequenceEmail } from "./templates/aftercare-sequence";

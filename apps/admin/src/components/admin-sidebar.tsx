@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import {
   Bell,
+  Briefcase,
   Building2,
   Calendar,
   ChevronLeft,
@@ -50,6 +51,7 @@ const NAV_ITEMS: NavItem[] = [
 
   { label: "News", href: "/news", icon: Newspaper, minRole: "manager", dividerAbove: true },
   { label: "Applications", href: "/applications", icon: FileText, minRole: "manager" },
+  { label: "Job Offers", href: "/job-offers", icon: Briefcase, minRole: "manager" },
 
   { label: "Contacts", href: "/contacts", icon: Contact, minRole: "manager", dividerAbove: true },
   { label: "Team", href: "/team", icon: UserSquare, minRole: "manager" },

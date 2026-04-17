@@ -1,5 +1,18 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import {
+  Calendar,
+  Gift,
+  Image as ImageIcon,
+  Mail,
+  QrCode,
+  Scissors,
+  Tag,
+  Ticket,
+  TicketCheck,
+  Upload,
+  Users,
+} from "lucide-react";
 import { Badge, Card } from "@dbc/ui";
 import { getEvent, togglePublish, duplicateEvent } from "@/actions/events";
 import { PageHeader } from "@/components/page-header";
@@ -159,43 +172,38 @@ export default async function EventDetailPage({
         </div>
       </div>
 
-      {/* Management Tabs */}
-      <div className="mt-12 border-t border-border pt-8">
-        <h2 className="font-heading text-lg font-semibold">Manage</h2>
-        <div className="mt-4 grid gap-4 sm:grid-cols-3">
-          <Card padding="sm" className="rounded-lg hover:bg-muted/50 transition-colors">
-            <Link href={`/${locale}/events/${id}/tiers`}>
-              <p className="font-medium">Ticket Tiers</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Create and manage ticket pricing
-              </p>
-            </Link>
-          </Card>
-          <Card padding="sm" className="rounded-lg hover:bg-muted/50 transition-colors">
-            <Link href={`/${locale}/events/${id}/coupons`}>
-              <p className="font-medium">Coupon Codes</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Create discount codes
-              </p>
-            </Link>
-          </Card>
-          <Card padding="sm" className="rounded-lg hover:bg-muted/50 transition-colors">
-            <Link href={`/${locale}/events/${id}/schedule`}>
-              <p className="font-medium">Schedule & Speakers</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Manage event agenda
-              </p>
-            </Link>
-          </Card>
-          <Card padding="sm" className="rounded-lg hover:bg-muted/50 transition-colors">
-            <Link href={`/${locale}/events/${id}/poster`}>
-              <p className="font-medium">Door-sale poster</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Printable QR poster for the venue entrance
-              </p>
-            </Link>
-          </Card>
-        </div>
+      {/* Management Hub — all sub-pages grouped */}
+      <div className="mt-12 space-y-10 border-t border-border pt-8">
+        {/* Setup */}
+        <section>
+          <h2 className="font-heading text-base font-semibold text-muted-foreground">Setup</h2>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <HubLink href={`/${locale}/events/${id}/tiers`} icon={Tag} title="Ticket Tiers" desc="Create and manage ticket pricing" />
+            <HubLink href={`/${locale}/events/${id}/coupons`} icon={Scissors} title="Coupon Codes" desc="Create discount codes for this event" />
+            <HubLink href={`/${locale}/events/${id}/schedule`} icon={Calendar} title="Schedule & Speakers" desc="Manage the event agenda and speakers" />
+            <HubLink href={`/${locale}/events/${id}/ticket-preview`} icon={TicketCheck} title="Ticket Preview" desc="Preview the PDF ticket design" />
+          </div>
+        </section>
+
+        {/* Marketing */}
+        <section>
+          <h2 className="font-heading text-base font-semibold text-muted-foreground">Marketing</h2>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <HubLink href={`/${locale}/events/${id}/emails`} icon={Mail} title="Email Sequences" desc="Automated post-event email campaigns" />
+            <HubLink href={`/${locale}/events/${id}/invitations`} icon={Gift} title="Invitations" desc="Send formal invitations with comped tickets" />
+            <HubLink href={`/${locale}/events/${id}/invitations/bulk`} icon={Upload} title="Bulk Invitations" desc="Import a CSV of invitees" />
+          </div>
+        </section>
+
+        {/* Live & post-event */}
+        <section>
+          <h2 className="font-heading text-base font-semibold text-muted-foreground">Live & post-event</h2>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <HubLink href={`/${locale}/events/${id}/attendees`} icon={Users} title="Attendees" desc="View registrations and check-in status" />
+            <HubLink href={`/${locale}/events/${id}/media`} icon={ImageIcon} title="Media" desc="Upload photos and videos after the event" />
+            <HubLink href={`/${locale}/events/${id}/poster`} icon={QrCode} title="Door-sale Poster" desc="Printable QR poster for venue entrance" />
+          </div>
+        </section>
       </div>
 
       {/* Danger zone */}
@@ -213,5 +221,31 @@ export default async function EventDetailPage({
         />
       </div>
     </div>
+  );
+}
+
+function HubLink({
+  href,
+  icon: Icon,
+  title,
+  desc,
+}: {
+  href: string;
+  icon: typeof Tag;
+  title: string;
+  desc: string;
+}) {
+  return (
+    <Link href={href}>
+      <Card padding="sm" className="group rounded-lg transition-colors hover:border-primary/30 hover:bg-muted/50">
+        <div className="flex items-start gap-3">
+          <Icon className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground group-hover:text-primary" strokeWidth={1.75} />
+          <div>
+            <p className="font-medium group-hover:text-primary">{title}</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">{desc}</p>
+          </div>
+        </div>
+      </Card>
+    </Link>
   );
 }
