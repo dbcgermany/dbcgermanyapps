@@ -33,6 +33,7 @@ interface OrderData {
   created_at: string;
   email_sent_at: string | null;
   stripe_payment_intent_id: string | null;
+  seller: { display_name: string | null } | null;
 }
 
 interface ContactData {
@@ -273,6 +274,12 @@ export function OrderDetailClient({
             <dt className="text-muted-foreground">{t.method}</dt>
             <dd className="font-medium">{paymentLabel}</dd>
           </div>
+          {order.seller?.display_name && (
+            <div className="flex justify-between">
+              <dt className="text-muted-foreground">Sold by</dt>
+              <dd className="font-medium">{order.seller.display_name}</dd>
+            </div>
+          )}
           {order.subtotal_cents != null && order.subtotal_cents !== order.total_cents && (
             <div className="flex justify-between">
               <dt className="text-muted-foreground">{t.subtotal}</dt>

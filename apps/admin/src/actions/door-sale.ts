@@ -75,6 +75,7 @@ export async function createDoorSale(formData: FormData) {
       buyer_id: null,
       contact_id: contactId,
       event_id: eventId,
+      sold_by: user.userId,
       subtotal_cents: isComp ? 0 : tier.price_cents,
       discount_cents: 0,
       total_cents: totalCents,

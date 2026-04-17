@@ -26,7 +26,7 @@ export async function getOrders(filter?: {
   let query = supabase
     .from("orders")
     .select(
-      "id, event_id, total_cents, discount_cents, status, acquisition_type, payment_method, recipient_name, recipient_email, locale, created_at, email_sent_at, stripe_payment_intent_id"
+      "id, event_id, total_cents, discount_cents, status, acquisition_type, payment_method, recipient_name, recipient_email, locale, created_at, email_sent_at, stripe_payment_intent_id, sold_by, seller:profiles!orders_sold_by_fkey(display_name)"
     )
     .order("created_at", { ascending: false })
     .limit(200);
@@ -77,7 +77,8 @@ export async function getOrder(orderId: string) {
       `id, event_id, contact_id, coupon_id, subtotal_cents, discount_cents,
        total_cents, currency, status, acquisition_type, payment_method,
        recipient_name, recipient_email, locale, created_at, email_sent_at,
-       stripe_payment_intent_id`
+       stripe_payment_intent_id, sold_by,
+       seller:profiles!orders_sold_by_fkey(display_name)`
     )
     .eq("id", orderId)
     .single();
@@ -121,8 +122,16 @@ export async function getOrder(orderId: string) {
     tier: Array.isArray(t.tier) ? t.tier[0] ?? null : t.tier ?? null,
   }));
 
+  // Normalize seller from Supabase join
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const rawSeller = (order as any).seller;
+  const normalizedOrder = {
+    ...order,
+    seller: Array.isArray(rawSeller) ? rawSeller[0] ?? null : rawSeller ?? null,
+  };
+
   return {
-    order,
+    order: normalizedOrder,
     tickets,
     event: eventRes.data,
     contact: contactRes.data,

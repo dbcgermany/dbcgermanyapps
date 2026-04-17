@@ -19,6 +19,7 @@ interface Order {
   createdAt: string;
   emailSentAt: string | null;
   stripePaymentIntentId: string | null;
+  sellerName: string | null;
 }
 
 const STATUS_OPTIONS = [
@@ -211,6 +212,7 @@ export function OrdersClient({
                       <p className="text-xs text-muted-foreground">
                         {acqLabel}
                         {o.paymentMethod && ` \u00B7 ${o.paymentMethod}`}
+                        {o.sellerName && ` \u00B7 ${o.sellerName}`}
                       </p>
                     </td>
                     <td className="px-4 py-3">

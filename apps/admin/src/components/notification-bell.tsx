@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { Bell } from "lucide-react";
 import { toast } from "sonner";
 import { createBrowserClient } from "@dbc/supabase";
 
@@ -128,7 +129,7 @@ export function NotificationBell({
         className="relative flex h-9 w-9 items-center justify-center rounded-md hover:bg-muted"
         aria-label={t.title}
       >
-        <span className="text-base">&#9993;</span>
+        <Bell className="h-5 w-5" strokeWidth={1.75} />
         {unreadCount > 0 && (
           <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
             {unreadCount > 99 ? "99+" : unreadCount}

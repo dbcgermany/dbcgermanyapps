@@ -2,6 +2,7 @@ import { render } from "@react-email/components";
 import React from "react";
 import { createEmailClient, fromAddressFor } from "./client";
 import { generateTicketPdf } from "./pdf/generate-ticket";
+import { generateInvitationLetterPdf } from "./pdf/generate-invitation-letter";
 import { TicketDeliveryEmail } from "./templates/ticket-delivery";
 import {
   InvitationEmail,
@@ -36,6 +37,7 @@ export interface SendTicketEmailInput {
   supportEmail?: string;
   primaryColor?: string;
   logoUrl?: string;
+  companyAddress?: string;
   isInvitation?: boolean;
   // Formal invitation fields (only used when isInvitation === true)
   gender?: "female" | "male" | "diverse" | null;
@@ -106,6 +108,8 @@ export async function sendTicketEmail(
   let emailHtml: string;
   let subject: string;
 
+  let letterBuffer: Buffer | null = null;
+
   if (input.isInvitation) {
     // Formal invitation email
     const salutation = formalSalutation(
@@ -126,25 +130,50 @@ export async function sendTicketEmail(
       .replace(/\{date\}/g, eventDate)
       .replace(/\{venue\}/g, input.venueName);
 
-    emailHtml = await render(
-      React.createElement(InvitationEmail, {
+    // Generate formal invitation letter PDF (in parallel with HTML render)
+    const [html, invLetterPdf] = await Promise.all([
+      render(
+        React.createElement(InvitationEmail, {
+          salutation,
+          closing,
+          bodyText,
+          eventTitle: input.eventTitle,
+          eventDate,
+          eventTime,
+          venueName: input.venueName,
+          venueAddress: input.venueAddress,
+          tierName: input.tierName,
+          ticketShortId,
+          orderUrl: input.orderUrl,
+          locale: input.locale,
+          senderName: "DBC Germany Team",
+          senderTitle: "Event Management",
+          logoUrl: input.logoUrl,
+        })
+      ),
+      generateInvitationLetterPdf({
         salutation,
         closing,
         bodyText,
         eventTitle: input.eventTitle,
-        eventDate,
-        eventTime,
+        startsAt: input.startsAt,
+        endsAt: input.endsAt,
         venueName: input.venueName,
         venueAddress: input.venueAddress,
         tierName: input.tierName,
         ticketShortId,
-        orderUrl: input.orderUrl,
         locale: input.locale,
-        senderName: "DBC Germany Team",
-        senderTitle: "Event Management",
+        brandName: input.brandName,
+        legalName: input.legalName,
+        companyAddress: input.companyAddress,
+        supportEmail: input.supportEmail,
+        primaryColor: input.primaryColor,
         logoUrl: input.logoUrl,
-      })
-    );
+      }),
+    ]);
+
+    emailHtml = html;
+    letterBuffer = invLetterPdf;
 
     subject = INVITATION_SUBJECT_TRANSLATIONS[input.locale].replace(
       "{event}",
@@ -184,8 +213,11 @@ export async function sendTicketEmail(
     subject,
     html: emailHtml,
     attachments: [
+      ...(letterBuffer
+        ? [{ filename: `invitation-${ticketShortId}.pdf`, content: letterBuffer }]
+        : []),
       {
-        filename: `ticket-${input.ticketToken.slice(0, 8)}.pdf`,
+        filename: `ticket-${ticketShortId}.pdf`,
         content: pdfBuffer,
       },
     ],

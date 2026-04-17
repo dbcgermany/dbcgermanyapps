@@ -40,6 +40,8 @@ export default async function OrdersPage({
           createdAt: o.created_at,
           emailSentAt: o.email_sent_at,
           stripePaymentIntentId: o.stripe_payment_intent_id,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          sellerName: (o as any).seller?.display_name ?? null,
         }))}
         events={events.map((e) => ({
           id: e.id,

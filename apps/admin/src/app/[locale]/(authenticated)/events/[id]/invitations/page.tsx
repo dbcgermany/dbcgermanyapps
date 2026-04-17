@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Check } from "lucide-react";
 import { listInvitationsForEvent } from "@/actions/invitations";
 import { getEventTiers } from "@/actions/door-sale";
 import { InviteForm } from "./invite-form";
@@ -88,7 +89,7 @@ export default async function EventInvitationsPage({
                     </div>
                     <div className="text-right">
                       {ticket?.checked_in_at ? (
-                        <Badge variant="success">✓ Attended</Badge>
+                        <Badge variant="success"><Check className="mr-1 inline h-3 w-3" strokeWidth={2} /> Attended</Badge>
                       ) : inv.email_sent_at ? (
                         <Badge variant="default">Sent</Badge>
                       ) : (

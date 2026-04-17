@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { getEventBySlug, getPublicTiers, getEventSchedule } from "@/lib/queries";
 import { getCompanyInfo } from "@/lib/company-info";
 import { WaitlistButton } from "./waitlist-button";
+import { ShareButtons } from "./share-buttons";
+import { Countdown } from "./countdown";
 
 export const revalidate = 30;
 
@@ -134,6 +136,8 @@ export default async function EventDetailPage({
       remaining: "left",
       available: "Available",
       getTickets: "Get tickets",
+      organizer: "Organizer",
+      viewOnMap: "View on map",
     },
     de: {
       back: "Alle Veranstaltungen",
@@ -150,6 +154,8 @@ export default async function EventDetailPage({
       remaining: "verbleibend",
       available: "Verfügbar",
       getTickets: "Tickets kaufen",
+      organizer: "Veranstalter",
+      viewOnMap: "Auf Karte anzeigen",
     },
     fr: {
       back: "Tous les événements",
@@ -166,6 +172,8 @@ export default async function EventDetailPage({
       remaining: "restants",
       available: "Disponible",
       getTickets: "Réserver ma place",
+      organizer: "Organisateur",
+      viewOnMap: "Voir sur la carte",
     },
   }[locale] ?? {
     back: "All events", when: "Date & time", venue: "Venue",
@@ -173,6 +181,7 @@ export default async function EventDetailPage({
     noTickets: "No tickets", free: "Free", soldOut: "Sold out",
     salesStart: "Sales open", salesEnded: "Sales closed",
     remaining: "left", available: "Available", getTickets: "Get tickets",
+    organizer: "Organizer", viewOnMap: "View on map",
   };
 
   function formatPrice(cents: number, currency: string) {
@@ -241,15 +250,64 @@ export default async function EventDetailPage({
                 minute: "2-digit",
               })}`}
             />
-            <InfoBlock
-              label={t.venue}
-              primary={event.venue_name ?? ""}
-              secondary={[event.venue_address, event.city]
-                .filter(Boolean)
-                .join(" · ")}
+            <div>
+              <InfoBlock
+                label={t.venue}
+                primary={event.venue_name ?? ""}
+                secondary={[event.venue_address, event.city]
+                  .filter(Boolean)
+                  .join(" · ")}
+              />
+              {event.venue_name && (
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([event.venue_name, event.venue_address, event.city].filter(Boolean).join(", "))}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80"
+                >
+                  {t.viewOnMap} &rarr;
+                </a>
+              )}
+            </div>
+          </div>
+
+          {/* Organizer */}
+          <div className="mt-6 flex items-center gap-3 border-t border-border pt-5">
+            {company?.logo_light_url && (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                src={company.logo_light_url}
+                alt=""
+                className="h-8 w-8 rounded object-contain"
+                referrerPolicy="no-referrer"
+              />
+            )}
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                {t.organizer}
+              </p>
+              <p className="text-sm font-medium">
+                {company?.brand_name ?? "DBC Germany"}
+              </p>
+            </div>
+          </div>
+
+          {/* Share */}
+          <div className="mt-5 border-t border-border pt-5">
+            <ShareButtons
+              url={`https://tickets.dbc-germany.com/${locale}/events/${slug}`}
+              title={loc("title")}
+              locale={locale}
             />
           </div>
         </div>
+
+        {/* Countdown */}
+        {startsAt > now && (
+          <div className="mt-4">
+            <Countdown startsAt={event.starts_at} locale={locale} />
+          </div>
+        )}
       </div>
 
       {/* CONTENT */}
