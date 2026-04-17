@@ -53,7 +53,7 @@ export default async function JobOffersPage({
           {jobs.map((job) => (
             <DataTable.Row key={job.id}>
               <DataTable.Cell>
-                <p className="font-medium">{job.title_en}</p>
+                <Link href={`/${locale}/job-offers/${job.id}`} className="font-medium hover:text-primary">{job.title_en}</Link>
                 {job.department && (
                   <p className="mt-0.5 text-xs text-muted-foreground">
                     {job.department}

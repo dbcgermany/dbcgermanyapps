@@ -42,7 +42,7 @@ export default async function NewsIndexPage({
             >
               <div>
                 <div className="flex items-center gap-2">
-                  <p className="font-medium">{p.title_en}</p>
+                  <Link href={`/${locale}/news/${p.id}`} className="font-medium hover:text-primary">{p.title_en}</Link>
                   <Badge variant={p.is_published ? "success" : "warning"}>
                     {p.is_published ? "Published" : "Draft"}
                   </Badge>

@@ -72,7 +72,12 @@ export function TeamSortableList({
             )}
             <div>
               <div className="flex items-center gap-2">
-                <p className="font-medium">{member.name}</p>
+                <Link
+                  href={`/${locale}/team/${member.id}`}
+                  className="font-medium hover:text-primary"
+                >
+                  {member.name}
+                </Link>
                 <Badge variant={visibilityVariant(member.visibility)}>
                   {member.visibility}
                 </Badge>
