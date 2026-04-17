@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getIncubationApplications } from "@/actions/applications";
 import { getJobApplications } from "@/actions/job-applications";
 import { CsvExportButton } from "@/components/csv-export-button";
@@ -95,10 +96,15 @@ export default async function ApplicationsPage({
                   {apps.map((a) => (
                     <tr key={a.id} className="align-top">
                       <td className="px-4 py-4">
-                        <p className="font-medium">{a.founder_name}</p>
+                        <Link
+                          href={`/${locale}/applications/${a.id}?type=incubation`}
+                          className="font-medium hover:text-primary"
+                        >
+                          {a.founder_name}
+                        </Link>
                         <a
                           href={`mailto:${a.founder_email}`}
-                          className="text-xs text-primary hover:text-primary/80"
+                          className="block text-xs text-primary hover:text-primary/80"
                         >
                           {a.founder_email}
                         </a>
@@ -179,10 +185,15 @@ export default async function ApplicationsPage({
                     return (
                       <tr key={a.id} className="align-top">
                         <td className="px-4 py-4">
-                          <p className="font-medium">{a.applicant_name}</p>
+                          <Link
+                            href={`/${locale}/applications/${a.id}?type=job`}
+                            className="font-medium hover:text-primary"
+                          >
+                            {a.applicant_name}
+                          </Link>
                           <a
                             href={`mailto:${a.applicant_email}`}
-                            className="text-xs text-primary hover:text-primary/80"
+                            className="block text-xs text-primary hover:text-primary/80"
                           >
                             {a.applicant_email}
                           </a>

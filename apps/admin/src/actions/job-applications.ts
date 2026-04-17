@@ -16,6 +16,22 @@ export async function getJobApplications() {
   return data;
 }
 
+export async function getJobApplication(id: string) {
+  await requireRole("manager");
+  const supabase = await createServerClient();
+
+  const { data, error } = await supabase
+    .from("job_applications")
+    .select(
+      "id, job_offer_id, applicant_name, applicant_email, applicant_phone, cover_letter, linkedin_url, portfolio_url, locale, status, reviewer_id, reviewer_notes, created_at, updated_at, job_offers(title_en, title_de, title_fr), reviewer:profiles!job_applications_reviewer_id_fkey(display_name)"
+    )
+    .eq("id", id)
+    .single();
+
+  if (error || !data) throw new Error("Application not found");
+  return data;
+}
+
 export async function updateJobApplicationStatus(
   id: string,
   status: "new" | "reviewing" | "shortlisted" | "rejected" | "accepted",

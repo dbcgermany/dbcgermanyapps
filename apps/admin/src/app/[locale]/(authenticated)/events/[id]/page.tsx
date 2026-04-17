@@ -8,7 +8,6 @@ import {
   QrCode,
   Scissors,
   Tag,
-  Ticket,
   TicketCheck,
   Upload,
   Users,

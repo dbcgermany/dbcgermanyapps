@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { Fragment, useState, useTransition } from "react";
+import Link from "next/link";
 import type { UserRole } from "@dbc/types";
 import { Card } from "@dbc/ui";
 import {
@@ -283,13 +284,17 @@ export function StaffClient({
                 const isExpanded = expandedStaffId === s.id;
 
                 return (
-                  <>
+                  <Fragment key={s.id}>
                     <tr
-                      key={s.id}
                       className="border-b border-border last:border-0"
                     >
                       <td className="px-4 py-3">
-                        <p className="font-medium">{s.displayName || s.email}</p>
+                        <Link
+                          href={`/${locale}/staff/${s.id}`}
+                          className="font-medium hover:text-primary"
+                        >
+                          {s.displayName || s.email}
+                        </Link>
                         {s.displayName && (
                           <p className="text-xs text-muted-foreground">
                             {s.email}
@@ -380,7 +385,7 @@ export function StaffClient({
                         </td>
                       </tr>
                     )}
-                  </>
+                  </Fragment>
                 );
               })}
             </tbody>

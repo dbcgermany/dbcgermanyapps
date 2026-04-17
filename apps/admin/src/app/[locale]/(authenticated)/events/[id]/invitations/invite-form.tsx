@@ -212,24 +212,27 @@ export function InviteForm({
       </label>
 
       {/* Collapsible custom body section */}
-      <div className="rounded-md border border-border">
+      <div className="rounded-lg border border-border">
         <button
           type="button"
           onClick={() => setShowCustomBody(!showCustomBody)}
-          className="flex w-full items-center justify-between px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
+          className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground"
         >
           <span>Customize invitation text</span>
           <span className="text-xs">{showCustomBody ? "\u25B2" : "\u25BC"}</span>
         </button>
         {showCustomBody && (
-          <div className="border-t border-border px-3 pb-3 pt-2">
+          <div className="border-t border-border px-4 pb-4 pt-3">
+            <label className="mb-1.5 block text-sm font-medium">
+              Email body text
+            </label>
             <textarea
               value={customBody}
               onChange={(e) => setCustomBody(e.target.value)}
-              className={`${input} min-h-30 resize-y`}
-              rows={6}
+              className={`${input} min-h-48 resize-y`}
+              rows={10}
             />
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="mt-2 text-xs text-muted-foreground">
               Available placeholders: {"{event}"}, {"{date}"}, {"{venue}"}
             </p>
           </div>

@@ -61,6 +61,49 @@ export async function getStaff() {
   }));
 }
 
+export async function getStaffMember(staffId: string) {
+  await requireRole("admin");
+  const supabase = await createServerClient();
+  const service = getServiceClient();
+
+  const { data: profile, error } = await supabase
+    .from("profiles")
+    .select("id, role, display_name, locale, created_at")
+    .eq("id", staffId)
+    .single();
+
+  if (error || !profile) throw new Error("Staff member not found");
+
+  const { data: authData } = await service.auth.admin.getUserById(staffId);
+  const email = authData.user?.email ?? "";
+
+  const [assignmentsRes, auditRes, teamMemberRes] = await Promise.all([
+    supabase
+      .from("staff_event_assignments")
+      .select("event_id, events:events(id, title_en, title_de, title_fr, starts_at)")
+      .eq("staff_id", staffId),
+    supabase
+      .from("audit_log")
+      .select("id, action, entity_type, entity_id, details, created_at")
+      .eq("user_id", staffId)
+      .order("created_at", { ascending: false })
+      .limit(20),
+    supabase
+      .from("team_members")
+      .select("id, name, role_en, visibility")
+      .eq("profile_id", staffId)
+      .maybeSingle(),
+  ]);
+
+  return {
+    profile: { ...profile, email },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    assignments: (assignmentsRes.data ?? []).map((a: any) => a.events).filter(Boolean),
+    auditLog: auditRes.data ?? [],
+    linkedTeamMember: teamMemberRes.data,
+  };
+}
+
 export async function inviteStaff(formData: FormData) {
   const actor = await requireRole("admin");
   const service = getServiceClient();

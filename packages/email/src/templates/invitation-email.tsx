@@ -105,7 +105,7 @@ export function InvitationEmail(props: InvitationEmailProps) {
                 <tr>
                   {props.logoUrl && (
                     <td style={{ paddingRight: 12, verticalAlign: "middle" }}>
-                      <Img src={props.logoUrl} alt="" width={36} height={36} style={{ borderRadius: 4 }} />
+                      <Img src={props.logoUrl} alt="" width="auto" height={40} style={{ maxWidth: 120, maxHeight: 40, objectFit: "contain", borderRadius: 4 }} />
                     </td>
                   )}
                   <td style={{ verticalAlign: "middle" }}>

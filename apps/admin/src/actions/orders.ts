@@ -65,6 +65,72 @@ export async function getOrdersEvents() {
 }
 
 /**
+ * Fetch a single order with all related data for the detail page.
+ */
+export async function getOrder(orderId: string) {
+  await requireRole("manager");
+  const supabase = await createServerClient();
+
+  const { data: order, error } = await supabase
+    .from("orders")
+    .select(
+      `id, event_id, contact_id, coupon_id, subtotal_cents, discount_cents,
+       total_cents, currency, status, acquisition_type, payment_method,
+       recipient_name, recipient_email, locale, created_at, email_sent_at,
+       stripe_payment_intent_id`
+    )
+    .eq("id", orderId)
+    .single();
+
+  if (error || !order) throw new Error("Order not found");
+
+  const [ticketsRes, eventRes, contactRes, couponRes] = await Promise.all([
+    supabase
+      .from("tickets")
+      .select(
+        `id, ticket_token, attendee_name, attendee_email, checked_in_at,
+         tier:ticket_tiers(id, name_en, name_de, name_fr, price_cents)`
+      )
+      .eq("order_id", orderId)
+      .order("created_at", { ascending: true }),
+    supabase
+      .from("events")
+      .select("id, title_en, title_de, title_fr, starts_at, ends_at, venue_name")
+      .eq("id", order.event_id)
+      .single(),
+    order.contact_id
+      ? supabase
+          .from("contacts")
+          .select("id, email, first_name, last_name")
+          .eq("id", order.contact_id)
+          .single()
+      : Promise.resolve({ data: null }),
+    order.coupon_id
+      ? supabase
+          .from("coupons")
+          .select("id, code, discount_type, discount_value")
+          .eq("id", order.coupon_id)
+          .single()
+      : Promise.resolve({ data: null }),
+  ]);
+
+  // Normalize tier from Supabase join (may come as array or object depending on FK)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const tickets = (ticketsRes.data ?? []).map((t: any) => ({
+    ...t,
+    tier: Array.isArray(t.tier) ? t.tier[0] ?? null : t.tier ?? null,
+  }));
+
+  return {
+    order,
+    tickets,
+    event: eventRes.data,
+    contact: contactRes.data,
+    coupon: couponRes.data,
+  };
+}
+
+/**
  * Issues a refund via Stripe and marks the order + tickets as refunded.
  * Restores ticket inventory for each refunded tier.
  */

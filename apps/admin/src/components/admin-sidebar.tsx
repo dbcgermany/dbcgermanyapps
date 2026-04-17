@@ -46,7 +46,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Events", href: "/events", icon: Calendar, minRole: "manager", dividerAbove: true },
   { label: "Send Tickets", href: "/tickets/send", icon: Ticket, minRole: "manager" },
   { label: "Orders", href: "/orders", icon: ShoppingCart, minRole: "manager" },
-  { label: "Door Sale", href: "/door-sale", icon: DoorOpen, minRole: "team_member" },
+  { label: "Manual Sales", href: "/door-sale", icon: DoorOpen, minRole: "team_member" },
   { label: "Scan", href: "/scan", icon: ScanLine, minRole: "team_member" },
 
   { label: "News", href: "/news", icon: Newspaper, minRole: "manager", dividerAbove: true },

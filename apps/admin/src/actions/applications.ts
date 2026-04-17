@@ -21,6 +21,20 @@ export async function getIncubationApplications(filter?: {
   return data;
 }
 
+export async function getIncubationApplication(id: string) {
+  await requireRole("manager");
+  const supabase = await createServerClient();
+
+  const { data, error } = await supabase
+    .from("incubation_applications")
+    .select(`${APP_COLUMNS}, reviewer:profiles!incubation_applications_reviewer_id_fkey(display_name)`)
+    .eq("id", id)
+    .single();
+
+  if (error || !data) throw new Error("Application not found");
+  return data;
+}
+
 export async function updateApplicationStatus(
   id: string,
   status: "new" | "reviewing" | "shortlisted" | "rejected" | "accepted",

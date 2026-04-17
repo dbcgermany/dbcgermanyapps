@@ -42,7 +42,7 @@ export default async function EventInvitationsPage({
         <code className="rounded bg-muted px-1 py-0.5 text-xs">acquisition_type = invited</code>.
       </p>
 
-      <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_1.3fr]">
+      <div className="mt-8 space-y-10">
         <section>
           <h2 className="font-heading text-lg font-bold">New invitation</h2>
           <InviteForm

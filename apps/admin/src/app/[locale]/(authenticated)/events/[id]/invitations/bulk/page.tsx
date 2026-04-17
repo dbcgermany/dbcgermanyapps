@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getEventTiers } from "@/actions/door-sale";
 import { BulkInviteClient } from "./bulk-invite-client";
+import { DownloadSampleCsv } from "./download-sample-csv";
 import { PageHeader } from "@/components/page-header";
 
 export default async function BulkInvitationsPage({
@@ -36,13 +37,7 @@ export default async function BulkInvitationsPage({
         <code className="rounded bg-muted px-1 py-0.5 text-xs">note</code>.
       </p>
       <p className="mt-2 text-sm">
-        <a
-          href="/samples/invitations-sample.csv"
-          download
-          className="text-primary underline hover:opacity-80"
-        >
-          Download sample CSV
-        </a>
+        <DownloadSampleCsv />
       </p>
 
       <BulkInviteClient

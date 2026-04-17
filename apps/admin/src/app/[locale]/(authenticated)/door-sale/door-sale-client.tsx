@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { PhoneInput } from "@dbc/ui";
 import { createDoorSale, voidDoorSale } from "@/actions/door-sale";
 
 interface Tier {
@@ -13,11 +14,13 @@ interface Tier {
 
 export function DoorSaleClient({
   locale,
+  mode,
   events,
   initialEventId,
   initialTiers,
 }: {
   locale: string;
+  mode: "door" | "advance";
   events: { id: string; title: string }[];
   initialEventId: string;
   initialTiers: Tier[];
@@ -27,7 +30,8 @@ export function DoorSaleClient({
   const [tierId, setTierId] = useState(initialTiers[0]?.id ?? "");
   const [attendeeName, setAttendeeName] = useState("");
   const [attendeeEmail, setAttendeeEmail] = useState("");
-  // payment_method is forced to "cash" on the server; no UI state needed
+  const [phone, setPhone] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<"cash" | "bank_transfer" | "comp">("cash");
   const [result, setResult] = useState<{
     error?: string;
     success?: boolean;
@@ -41,8 +45,8 @@ export function DoorSaleClient({
 
   function handleEventChange(newEventId: string) {
     setEventId(newEventId);
-    // Navigate to reload tiers for the new event
-    router.push(`?event=${newEventId}`);
+    // Navigate to reload tiers for the new event, preserve mode
+    router.push(`?mode=${mode}&event=${newEventId}`);
   }
 
   function handleSubmit(formData: FormData) {
@@ -81,45 +85,57 @@ export function DoorSaleClient({
       selectTier: "Ticket tier",
       name: "Attendee name",
       email: "Attendee email (optional)",
+      phoneLbl: "Phone (optional)",
       payment: "Payment method",
       cash: "Cash",
-      card: "Card (terminal)",
+      bankTransfer: "Bank transfer",
+      comp: "Complimentary",
       create: "Create ticket",
       success: "Ticket created. Ready for entry.",
       creating: "Creating...",
       soldOut: "Sold out",
       remaining: "{n} remaining",
+      cashOnlyNote: "Card buyers should scan the online-purchase poster.",
     },
     de: {
       selectEvent: "Veranstaltung",
       selectTier: "Ticketart",
       name: "Name des Teilnehmers",
       email: "E-Mail des Teilnehmers (optional)",
+      phoneLbl: "Telefon (optional)",
       payment: "Zahlungsmethode",
       cash: "Bar",
-      card: "Karte (Terminal)",
+      bankTransfer: "\u00DCberweisung",
+      comp: "Kostenlos",
       create: "Ticket erstellen",
       success: "Ticket erstellt. Bereit f\u00FCr den Einlass.",
       creating: "Wird erstellt...",
       soldOut: "Ausverkauft",
       remaining: "Noch {n}",
+      cashOnlyNote: "Kartenzahler sollten den Online-Kaufposter scannen.",
     },
     fr: {
       selectEvent: "\u00C9v\u00E9nement",
       selectTier: "Type de billet",
       name: "Nom du participant",
       email: "E-mail du participant (optionnel)",
-      payment: "M\u00E9thode de paiement",
+      phoneLbl: "T\u00E9l\u00E9phone (optionnel)",
+      payment: "Mode de paiement",
       cash: "Esp\u00E8ces",
-      card: "Carte (terminal)",
+      bankTransfer: "Virement",
+      comp: "Gratuit",
       create: "Cr\u00E9er le billet",
       success: "Billet cr\u00E9\u00E9. Pr\u00EAt pour l\u2019entr\u00E9e.",
       creating: "Cr\u00E9ation...",
       soldOut: "\u00C9puis\u00E9",
       remaining: "{n} restants",
+      cashOnlyNote: "Les acheteurs par carte doivent scanner l\u2019affiche d\u2019achat en ligne.",
     },
   }[locale] ?? {
-    selectEvent: "Event", selectTier: "Tier", name: "Name", email: "Email", payment: "Payment", cash: "Cash", card: "Card", create: "Create", success: "Done", creating: "...", soldOut: "Sold out", remaining: "{n} left",
+    selectEvent: "Event", selectTier: "Tier", name: "Name", email: "Email", phoneLbl: "Phone",
+    payment: "Payment", cash: "Cash", bankTransfer: "Transfer", comp: "Comp",
+    create: "Create", success: "Done", creating: "...", soldOut: "Sold out",
+    remaining: "{n} left", cashOnlyNote: "Card buyers scan the poster.",
   };
 
   return (
@@ -242,12 +258,49 @@ export function DoorSaleClient({
         />
       </div>
 
-      {/* Payment method — cash only at the door. Card buyers scan the
-          "buy online" poster to pay via Stripe on their phone. */}
-      <div className="rounded-md border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
-        Payment: <strong className="text-foreground">{t.cash}</strong> ·
-        Card buyers should scan the online-purchase poster.
-      </div>
+      {/* Phone (advance mode) */}
+      {mode === "advance" && (
+        <div>
+          <label className="block text-sm font-medium mb-1.5">{t.phoneLbl}</label>
+          <PhoneInput
+            name="phone"
+            value={phone}
+            onChange={setPhone}
+            size="sm"
+            className="py-2 text-sm"
+          />
+        </div>
+      )}
+
+      {/* Payment method */}
+      {mode === "advance" ? (
+        <div>
+          <label className="block text-sm font-medium mb-1.5">{t.payment}</label>
+          <input type="hidden" name="payment_method" value={paymentMethod} />
+          <div className="flex gap-2">
+            {(["cash", "bank_transfer", "comp"] as const).map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setPaymentMethod(m)}
+                className={`rounded-md border px-4 py-2 text-sm font-medium transition-colors ${
+                  paymentMethod === m
+                    ? "border-primary bg-primary/5 text-primary"
+                    : "border-border text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {m === "cash" ? t.cash : m === "bank_transfer" ? t.bankTransfer : t.comp}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="rounded-md border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+          <input type="hidden" name="payment_method" value="cash" />
+          {t.payment}: <strong className="text-foreground">{t.cash}</strong> &middot;
+          {" "}{t.cashOnlyNote}
+        </div>
+      )}
 
       <button
         type="submit"

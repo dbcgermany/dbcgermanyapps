@@ -1,8 +1,16 @@
 "use server";
 
 import { createServerClient, requireRole } from "@dbc/supabase/server";
+import { createClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+
+function getServiceClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 export type TeamMemberVisibility = "public" | "internal" | "hidden";
 
@@ -21,12 +29,13 @@ export interface TeamMember {
   linkedin_url: string | null;
   sort_order: number;
   visibility: TeamMemberVisibility;
+  profile_id: string | null;
   created_at: string;
   updated_at: string;
 }
 
 const COLUMNS =
-  "id, slug, name, role_en, role_de, role_fr, bio_en, bio_de, bio_fr, photo_url, email, linkedin_url, sort_order, visibility, created_at, updated_at" as const;
+  "id, slug, name, role_en, role_de, role_fr, bio_en, bio_de, bio_fr, photo_url, email, linkedin_url, sort_order, visibility, profile_id, created_at, updated_at" as const;
 
 function slugify(text: string): string {
   return text
@@ -59,6 +68,52 @@ export async function getTeamMember(id: string): Promise<TeamMember> {
   return data as TeamMember;
 }
 
+/**
+ * Returns staff accounts for the "Linked staff account" dropdown on the team form.
+ * Excludes profiles that are already linked to another team member.
+ */
+export async function getStaffAccountsForLinking(excludeTeamMemberId?: string) {
+  await requireRole("manager");
+  const supabase = await createServerClient();
+  const service = getServiceClient();
+
+  const STAFF_ROLES = ["team_member", "manager", "admin", "super_admin"];
+  const { data: profiles } = await supabase
+    .from("profiles")
+    .select("id, role, display_name")
+    .in("role", STAFF_ROLES);
+
+  // Fetch already-linked profile IDs (so we can exclude them)
+  const { data: linked } = await supabase
+    .from("team_members")
+    .select("profile_id")
+    .not("profile_id", "is", null);
+
+  const linkedIds = new Set(
+    (linked ?? [])
+      .map((l) => l.profile_id)
+      .filter((id): id is string =>
+        id !== null && id !== excludeTeamMemberId
+      )
+  );
+
+  // Fetch emails via service client
+  const staffWithEmail = await Promise.all(
+    (profiles ?? []).map(async (p) => {
+      const { data } = await service.auth.admin.getUserById(p.id);
+      return {
+        id: p.id,
+        email: data.user?.email ?? "",
+        displayName: p.display_name,
+        role: p.role,
+        alreadyLinked: linkedIds.has(p.id),
+      };
+    })
+  );
+
+  return staffWithEmail.filter((s) => !s.alreadyLinked);
+}
+
 export async function createTeamMember(formData: FormData) {
   const user = await requireRole("manager");
   const supabase = await createServerClient();
@@ -69,6 +124,7 @@ export async function createTeamMember(formData: FormData) {
   const slugBase = slugify(name) || "member";
   const slug = `${slugBase}-${Date.now().toString(36)}`;
 
+  const rawProfileId = ((formData.get("profile_id") as string) || "").trim();
   const record = {
     slug,
     name,
@@ -86,6 +142,7 @@ export async function createTeamMember(formData: FormData) {
     sort_order: parseInt((formData.get("sort_order") as string) || "100", 10),
     visibility: ((formData.get("visibility") as string) ||
       "internal") as TeamMemberVisibility,
+    profile_id: rawProfileId || null,
     updated_by: user.userId,
   };
 
@@ -116,6 +173,7 @@ export async function updateTeamMember(id: string, formData: FormData) {
   const name = ((formData.get("name") as string) || "").trim();
   if (!name) return { error: "Name is required." };
 
+  const rawProfileId = ((formData.get("profile_id") as string) || "").trim();
   const record = {
     name,
     role_en: ((formData.get("role_en") as string) || "").trim(),
@@ -132,6 +190,7 @@ export async function updateTeamMember(id: string, formData: FormData) {
     sort_order: parseInt((formData.get("sort_order") as string) || "100", 10),
     visibility: ((formData.get("visibility") as string) ||
       "internal") as TeamMemberVisibility,
+    profile_id: rawProfileId || null,
     updated_by: user.userId,
   };
 

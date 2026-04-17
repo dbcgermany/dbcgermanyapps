@@ -2,10 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getEvent } from "@/actions/events";
 import { getEventTiers } from "@/actions/door-sale";
+import { renderEmailPreview } from "@/actions/email-preview";
 import { requireRole } from "@dbc/supabase/server";
 import { createServerClient } from "@dbc/supabase/server";
 import { PageHeader } from "@/components/page-header";
 import { Card } from "@dbc/ui";
+import { EmailPreviewClient } from "./preview-client";
 
 /**
  * Ticket design preview page.
@@ -31,7 +33,11 @@ export default async function TicketPreviewPage({
   }
 
   const supabase = await createServerClient();
-  const [tiersRes, companyRes] = await Promise.all([
+  const safeLocale = (locale === "de" || locale === "fr" ? locale : "en") as
+    | "en"
+    | "de"
+    | "fr";
+  const [tiersRes, companyRes, emailPreview] = await Promise.all([
     getEventTiers(id),
     supabase
       .from("company_info")
@@ -40,6 +46,7 @@ export default async function TicketPreviewPage({
       )
       .eq("id", 1)
       .maybeSingle(),
+    renderEmailPreview(id, safeLocale),
   ]);
 
   const tiers = tiersRes;
@@ -249,6 +256,20 @@ export default async function TicketPreviewPage({
           This is a visual preview. Click &ldquo;Download sample PDF&rdquo;
           above to see the actual generated PDF file.
         </p>
+      </div>
+
+      {/* Email template previews */}
+      <div className="mt-12">
+        <h2 className="font-heading text-xl font-bold">Email templates</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Preview how ticket delivery and invitation emails render. Switch between locales and templates.
+        </p>
+        <EmailPreviewClient
+          eventId={id}
+          initialLocale={l}
+          initialTicketHtml={emailPreview.ticketHtml}
+          initialInvitationHtml={emailPreview.invitationHtml}
+        />
       </div>
     </div>
   );

@@ -17,9 +17,9 @@ export async function createDoorSale(formData: FormData) {
   const attendeeEmail = hasRealEmail
     ? rawEmail.trim().toLowerCase()
     : `door-sale-${Date.now()}@no-email.local`;
-  // Card-at-door is not integrated — all door sales are cash. Route card
-  // buyers to the online checkout via the poster.
-  const paymentMethod = "cash";
+  const rawPayment = (formData.get("payment_method") as string) || "cash";
+  const paymentMethod = rawPayment === "comp" ? null : rawPayment;
+  const isComp = rawPayment === "comp";
   const locale = formData.get("locale") as string;
 
   if (!attendeeName) {
@@ -64,18 +64,22 @@ export async function createDoorSale(formData: FormData) {
     contactId = (contactIdData as string | null) ?? null;
   }
 
-  // Create order (status: paid, marked as door_sale)
+  // Create order
+  const totalCents = isComp ? 0 : tier.price_cents;
+  const orderStatus = isComp ? "comped" : "paid";
+  const acquisitionType = isComp ? "assigned" : "door_sale";
+
   const { data: order, error: orderError } = await supabase
     .from("orders")
     .insert({
       buyer_id: null,
       contact_id: contactId,
       event_id: eventId,
-      subtotal_cents: tier.price_cents,
+      subtotal_cents: isComp ? 0 : tier.price_cents,
       discount_cents: 0,
-      total_cents: tier.price_cents,
-      status: "paid",
-      acquisition_type: "door_sale",
+      total_cents: totalCents,
+      status: orderStatus,
+      acquisition_type: acquisitionType,
       payment_method: paymentMethod,
       recipient_email: attendeeEmail,
       recipient_name: attendeeName,
@@ -128,8 +132,8 @@ export async function createDoorSale(formData: FormData) {
     details: {
       attendee: attendeeName,
       tier: tier.name_en,
-      amount_cents: tier.price_cents,
-      payment_method: paymentMethod,
+      amount_cents: totalCents,
+      payment_method: rawPayment,
     },
   });
 
@@ -206,22 +210,26 @@ export async function voidDoorSale(orderId: string, locale: string) {
   return { success: true };
 }
 
-export async function getDoorSaleEvents() {
+export async function getDoorSaleEvents(mode: "door" | "advance" = "door") {
   await requireRole("team_member");
   const supabase = await createServerClient();
 
-  // Door sale opens 30 days before the event and stays open until the event
-  // ends. The public checkout flow is the day-of buyers' path; staff use this
-  // screen to ring cash/card sales at the venue.
-  const { data } = await supabase
+  let query = supabase
     .from("events")
     .select(
       "id, title_en, title_de, title_fr, starts_at, ends_at, venue_name"
     )
-    .gte("ends_at", new Date().toISOString())
-    .lte("starts_at", new Date(Date.now() + 30 * 86400000).toISOString())
-    .order("starts_at", { ascending: true });
+    .gte("ends_at", new Date().toISOString());
 
+  if (mode === "door") {
+    // Door sale opens 30 days before the event and stays open until the event
+    // ends. The public checkout flow is the day-of buyers' path; staff use this
+    // screen to ring cash/card sales at the venue.
+    query = query.lte("starts_at", new Date(Date.now() + 30 * 86400000).toISOString());
+  }
+  // "advance" mode: any upcoming event (no starts_at restriction)
+
+  const { data } = await query.order("starts_at", { ascending: true });
   return data ?? [];
 }
 

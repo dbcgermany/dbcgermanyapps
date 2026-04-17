@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { ConfirmDialog } from "@dbc/ui";
+import { ConfirmDialog, PhoneInput, CountrySelect } from "@dbc/ui";
 import {
   updateContactProfile,
   toggleContactCategory,
@@ -42,12 +42,14 @@ export function ContactProfileTabs({
   allCategories,
   orders,
   tickets,
+  locale,
 }: {
   contact: Contact;
   linkedCategories: ContactCategory[];
   allCategories: ContactCategory[];
   orders: OrderRow[];
   tickets: TicketRow[];
+  locale: string;
 }) {
   const [tab, setTab] = useState<Tab>("profile");
 
@@ -78,7 +80,7 @@ export function ContactProfileTabs({
       </div>
 
       <div className="mt-6">
-        {tab === "profile" && <ProfileForm contact={contact} />}
+        {tab === "profile" && <ProfileForm contact={contact} locale={locale} />}
         {tab === "categories" && (
           <CategoriesPicker
             contactId={contact.id}
@@ -93,8 +95,9 @@ export function ContactProfileTabs({
   );
 }
 
-function ProfileForm({ contact }: { contact: Contact }) {
+function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) {
   const [isPending, startTransition] = useTransition();
+  const [phone, setPhone] = useState(contact.phone ?? "");
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -129,16 +132,17 @@ function ProfileForm({ contact }: { contact: Contact }) {
           />
         </label>
       </div>
-      <label className="block">
-        <span className="mb-1 block text-sm font-medium">Country (ISO code)</span>
-        <input
+      <div className="block">
+        <span className="mb-1 block text-sm font-medium">Country</span>
+        <CountrySelect
           name="country"
-          maxLength={2}
           defaultValue={contact.country ?? ""}
-          placeholder="DE"
-          className={input}
+          locale={locale}
+          placeholder="—"
+          size="sm"
+          className="h-auto! py-2 text-sm"
         />
-      </label>
+      </div>
       <div className="grid grid-cols-2 gap-3">
         <label className="block">
           <span className="mb-1 block text-sm font-medium">Birthday</span>
@@ -172,14 +176,16 @@ function ProfileForm({ contact }: { contact: Contact }) {
           className={input}
         />
       </label>
-      <label className="block">
+      <div className="block">
         <span className="mb-1 block text-sm font-medium">Phone</span>
-        <input
+        <PhoneInput
           name="phone"
-          defaultValue={contact.phone ?? ""}
-          className={input}
+          value={phone}
+          onChange={setPhone}
+          size="sm"
+          className="h-auto! py-2 text-sm"
         />
-      </label>
+      </div>
       <label className="block">
         <span className="mb-1 block text-sm font-medium">Admin notes</span>
         <textarea

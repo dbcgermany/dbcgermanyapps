@@ -15,14 +15,23 @@ type Mode = "create" | "edit";
 
 type FormState = { error?: string; success?: boolean } | null;
 
+interface StaffAccount {
+  id: string;
+  email: string;
+  displayName: string | null;
+  role: string;
+}
+
 export function TeamMemberForm({
   locale,
   mode,
   initial,
+  staffAccounts = [],
 }: {
   locale: string;
   mode: Mode;
   initial?: TeamMember;
+  staffAccounts?: StaffAccount[];
 }) {
   const router = useRouter();
 
@@ -108,6 +117,34 @@ export function TeamMemberForm({
             <option value="internal">Internal (admin-only)</option>
             <option value="hidden">Hidden (archived)</option>
           </select>
+        </div>
+        <div>
+          <label htmlFor="profile_id" className="mb-1 block text-sm font-medium">
+            Linked staff account
+          </label>
+          <select
+            id="profile_id"
+            name="profile_id"
+            defaultValue={initial?.profile_id ?? ""}
+            className={inputClass}
+          >
+            <option value="">None (external / no login)</option>
+            {staffAccounts.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.displayName || s.email} ({s.role.replace("_", " ")})
+              </option>
+            ))}
+            {/* Keep current link visible even if it's not in the available list */}
+            {initial?.profile_id &&
+              !staffAccounts.some((s) => s.id === initial.profile_id) && (
+                <option value={initial.profile_id}>
+                  Current linked account
+                </option>
+              )}
+          </select>
+          <span className="mt-1 block text-xs text-muted-foreground">
+            Link to a staff member who has admin dashboard access.
+          </span>
         </div>
         <div className="sm:col-span-2">
           <AssetUpload

@@ -1,3 +1,4 @@
+export { render } from "@react-email/components";
 export { createEmailClient } from "./client";
 export { sendTicketEmail } from "./send-ticket";
 export type { SendTicketEmailInput } from "./send-ticket";

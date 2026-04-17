@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Badge } from "@dbc/ui";
 import { refundOrder } from "@/actions/orders";
@@ -213,7 +214,12 @@ export function OrdersClient({
                       </p>
                     </td>
                     <td className="px-4 py-3">
-                      <p className="font-medium">{o.recipientName}</p>
+                      <Link
+                        href={`/${locale}/orders/${o.id}`}
+                        className="font-medium hover:text-primary"
+                      >
+                        {o.recipientName}
+                      </Link>
                       <p className="text-xs text-muted-foreground">
                         {o.recipientEmail}
                       </p>
