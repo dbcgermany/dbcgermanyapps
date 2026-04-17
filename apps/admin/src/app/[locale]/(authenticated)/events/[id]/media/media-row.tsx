@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { Camera, Film, Link2, type LucideIcon } from "lucide-react";
 import { updateEventMedia, deleteEventMedia } from "@/actions/media";
 
 type Media = {
@@ -11,10 +12,10 @@ type Media = {
   sort_order: number;
 };
 
-const TYPE_ICONS: Record<string, string> = {
-  photo: "\u{1F4F7}",
-  video: "\u{1F3AC}",
-  link: "\u{1F517}",
+const TYPE_ICONS: Record<string, LucideIcon> = {
+  photo: Camera,
+  video: Film,
+  link: Link2,
 };
 
 export function MediaRow({
@@ -95,7 +96,7 @@ export function MediaRow({
 
   return (
     <div className="flex items-start gap-3 rounded-lg border border-border p-4">
-      <span className="text-xl">{TYPE_ICONS[item.type]}</span>
+      {(() => { const Icon = TYPE_ICONS[item.type] ?? Camera; return <Icon className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" strokeWidth={1.75} />; })()}
       <div className="flex-1 min-w-0">
         <p className="font-medium truncate">{item.title || item.type}</p>
         <a
