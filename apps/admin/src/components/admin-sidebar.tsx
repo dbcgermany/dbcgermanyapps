@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import {
-  Bell,
   Briefcase,
   Building2,
   Calendar,
@@ -56,8 +55,6 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Contacts", href: "/contacts", icon: Contact, minRole: "manager", dividerAbove: true },
   { label: "Team", href: "/team", icon: UserSquare, minRole: "manager" },
   { label: "Staff", href: "/staff", icon: Users, minRole: "admin" },
-
-  { label: "Notifications", href: "/notifications", icon: Bell, minRole: "team_member", dividerAbove: true },
 
   { label: "Company Info", href: "/company-info", icon: Building2, minRole: "manager", dividerAbove: true },
   { label: "Settings", href: "/settings", icon: Settings, minRole: "admin" },
