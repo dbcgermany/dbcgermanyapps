@@ -36,17 +36,24 @@ export default async function OrderDetailPage({
         ? "warning"
         : "error";
 
+  const PT = {
+    en: { back: "← Orders", order: "Order" },
+    de: { back: "← Bestellungen", order: "Bestellung" },
+    fr: { back: "← Commandes", order: "Commande" },
+  } as const;
+  const pt = PT[l];
+
   return (
     <div>
       <Link
         href={`/${locale}/orders`}
         className="text-sm text-muted-foreground hover:text-foreground"
       >
-        &larr; Orders
+        {pt.back}
       </Link>
 
       <PageHeader
-        title={`Order #${shortId}`}
+        title={`${pt.order} #${shortId}`}
         description={`${eventTitle} — ${new Date(data.order.created_at).toLocaleDateString(locale, { year: "numeric", month: "long", day: "numeric" })}`}
         cta={<Badge variant={statusVariant}>{data.order.status}</Badge>}
       />

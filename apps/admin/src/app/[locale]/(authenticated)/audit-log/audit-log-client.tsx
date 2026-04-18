@@ -193,14 +193,14 @@ export function AuditLogClient({
             }))}
             filename={`audit-log-${new Date().toISOString().slice(0, 10)}.csv`}
             headers={[
-              { key: "timestamp", label: "Timestamp" },
-              { key: "user_email", label: "User email" },
-              { key: "user_display", label: "User" },
-              { key: "action", label: "Action" },
-              { key: "entity_type", label: "Entity" },
-              { key: "entity_id", label: "Entity ID" },
-              { key: "ip", label: "IP" },
-              { key: "details", label: "Details (JSON)" },
+              { key: "timestamp", label: t.timestamp },
+              { key: "user_email", label: t.user },
+              { key: "user_display", label: locale === "de" ? "Nutzer" : locale === "fr" ? "Utilisateur" : "User" },
+              { key: "action", label: t.action },
+              { key: "entity_type", label: t.entity },
+              { key: "entity_id", label: t.entityId },
+              { key: "ip", label: t.ip },
+              { key: "details", label: `${t.details} (JSON)` },
             ]}
           />
         </div>
