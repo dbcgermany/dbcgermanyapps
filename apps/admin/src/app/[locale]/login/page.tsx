@@ -44,14 +44,30 @@ export default function LoginPage({
   }, [locale, bootstrapping]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="w-full max-w-sm space-y-8">
-        {/* Logo placeholder */}
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden px-4">
+      {/* Hero background — same image as the marketing home page */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="https://diambilaybusinesscenter.org/images/2025_03_29_13_47_IMG_3075-copy.jpg"
+        alt=""
+        aria-hidden
+        className="absolute inset-0 h-full w-full object-cover"
+        referrerPolicy="no-referrer"
+      />
+      {/* Darken overlay for legibility */}
+      <div
+        aria-hidden
+        className="absolute inset-0 bg-black/55"
+      />
+
+      {/* Glass card */}
+      <div className="relative z-10 w-full max-w-sm space-y-6 rounded-2xl border border-white/15 bg-white/10 p-8 shadow-2xl backdrop-blur-xl">
+        {/* Logo / brand */}
         <div className="text-center">
-          <h1 className="font-heading text-2xl font-bold tracking-tight">
+          <h1 className="font-heading text-2xl font-bold tracking-tight text-white">
             DBC Germany
           </h1>
-          <p className="mt-2 text-sm text-muted-foreground">Admin Dashboard</p>
+          <p className="mt-1 text-sm text-white/70">Admin Dashboard</p>
         </div>
 
         {bootstrapping ? (
@@ -62,17 +78,17 @@ export default function LoginPage({
           </Suspense>
         )}
 
-        <p className="text-center text-xs text-muted-foreground">
+        <p className="text-center text-xs text-white/60">
           Trouble signing in? Contact{" "}
           <a
             href="mailto:dbc-germany@realjaynka.com"
-            className="text-primary hover:text-primary/80"
+            className="text-white underline decoration-white/40 underline-offset-2 hover:decoration-white"
           >
             dbc-germany@realjaynka.com
           </a>
         </p>
       </div>
-    </div>
+    </main>
   );
 }
 
@@ -111,10 +127,16 @@ function LoginForm({ locale }: { locale: string }) {
     }
   }
 
+  const inputCls =
+    "w-full rounded-md border border-white/20 bg-white/10 px-3 py-2 text-sm text-white shadow-sm placeholder:text-white/50 backdrop-blur focus:border-white/40 focus:outline-none focus:ring-2 focus:ring-white/30";
+
   return (
     <form action={formAction} className="space-y-4">
       <div>
-        <label htmlFor="email" className="block text-sm font-medium mb-1.5">
+        <label
+          htmlFor="email"
+          className="mb-1.5 block text-sm font-medium text-white"
+        >
           Email
         </label>
         <input
@@ -125,20 +147,20 @@ function LoginForm({ locale }: { locale: string }) {
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          className={inputCls}
           placeholder="you@dbc-germany.com"
         />
       </div>
 
       <div>
-        <div className="flex items-center justify-between mb-1.5">
-          <label htmlFor="password" className="block text-sm font-medium">
+        <div className="mb-1.5 flex items-center justify-between">
+          <label htmlFor="password" className="block text-sm font-medium text-white">
             Password
           </label>
           <button
             type="button"
             onClick={handleForgot}
-            className="text-xs text-primary hover:text-primary/80"
+            className="text-xs text-white/80 hover:text-white"
           >
             Forgot?
           </button>
@@ -149,23 +171,29 @@ function LoginForm({ locale }: { locale: string }) {
           type="password"
           autoComplete="current-password"
           required
-          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+          className={inputCls}
         />
       </div>
 
       {state?.error && (
-        <p className="text-sm text-red-600" role="alert">
+        <p
+          className="rounded-md bg-red-500/20 p-2 text-sm text-red-100 backdrop-blur"
+          role="alert"
+        >
           {state.error}
         </p>
       )}
 
       {forgotStage === "sent" && (
-        <p className="rounded-md bg-green-50 p-3 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-400">
+        <p className="rounded-md bg-emerald-500/20 p-3 text-sm text-emerald-100 backdrop-blur">
           Password reset email sent. Check your inbox.
         </p>
       )}
       {forgotStage === "error" && forgotError && (
-        <p className="text-sm text-red-600" role="alert">
+        <p
+          className="rounded-md bg-red-500/20 p-2 text-sm text-red-100 backdrop-blur"
+          role="alert"
+        >
           {forgotError}
         </p>
       )}
@@ -173,7 +201,7 @@ function LoginForm({ locale }: { locale: string }) {
       <button
         type="submit"
         disabled={isPending}
-        className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full rounded-md bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/30 transition-all hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/40 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {isPending
           ? "Signing in..."
@@ -188,9 +216,9 @@ function LoginForm({ locale }: { locale: string }) {
 function LoginFormFallback() {
   return (
     <div className="space-y-4">
-      <div className="h-16 animate-pulse rounded-md bg-muted" />
-      <div className="h-16 animate-pulse rounded-md bg-muted" />
-      <div className="h-10 animate-pulse rounded-md bg-muted" />
+      <div className="h-16 animate-pulse rounded-md bg-white/10" />
+      <div className="h-16 animate-pulse rounded-md bg-white/10" />
+      <div className="h-10 animate-pulse rounded-md bg-white/10" />
     </div>
   );
 }
