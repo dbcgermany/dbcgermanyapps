@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 
-const TABS = [
-  { key: "incubation", label: "Incubation" },
-  { key: "jobs", label: "Job applications" },
-] as const;
+const LABELS = {
+  en: { incubation: "Incubation", jobs: "Job applications" },
+  de: { incubation: "Inkubation", jobs: "Stellenbewerbungen" },
+  fr: { incubation: "Incubation", jobs: "Candidatures d’emploi" },
+} as const;
 
 export function ApplicationTabs({
   locale,
@@ -14,9 +15,14 @@ export function ApplicationTabs({
   locale: string;
   activeTab: string;
 }) {
+  const labels = LABELS[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof LABELS];
+  const tabs = [
+    { key: "incubation", label: labels.incubation },
+    { key: "jobs", label: labels.jobs },
+  ];
   return (
     <div className="mt-6 flex gap-1 rounded-lg border border-border bg-muted/30 p-1 w-fit">
-      {TABS.map((tab) => (
+      {tabs.map((tab) => (
         <Link
           key={tab.key}
           href={`/${locale}/applications${tab.key === "incubation" ? "" : "?tab=" + tab.key}`}
