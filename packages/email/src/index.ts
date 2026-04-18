@@ -67,3 +67,7 @@ export type { PaymentReminderEmailProps } from "./templates/payment-reminder";
 export { InvoicePdf } from "./pdf/invoice-pdf";
 export { generateInvoicePdf } from "./pdf/generate-invoice";
 export type { GenerateInvoiceInput } from "./pdf/generate-invoice";
+export { RunsheetPdf } from "./pdf/runsheet-pdf";
+export type { RunsheetPdfItem, RunsheetPdfProps } from "./pdf/runsheet-pdf";
+export { generateRunsheetPdf } from "./pdf/generate-runsheet";
+export type { GenerateRunsheetInput } from "./pdf/generate-runsheet";

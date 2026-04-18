@@ -61,6 +61,24 @@ export async function getStaff() {
   }));
 }
 
+/**
+ * Lightweight helper used by event sub-pages (run sheet, checklist) to populate
+ * assignee dropdowns. Unlike getStaff(), does NOT hit auth admin API and allows
+ * manager-level access.
+ */
+export async function getAssignableStaff() {
+  await requireRole("manager");
+  const supabase = await createServerClient();
+
+  const { data } = await supabase
+    .from("profiles")
+    .select("id, display_name, role")
+    .in("role", STAFF_ROLES)
+    .order("display_name", { ascending: true });
+
+  return data ?? [];
+}
+
 export async function getStaffMember(staffId: string) {
   await requireRole("admin");
   const supabase = await createServerClient();

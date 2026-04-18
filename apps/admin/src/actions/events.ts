@@ -136,6 +136,40 @@ export async function createEvent(formData: FormData) {
     console.error("[createEvent] checklist auto-populate failed:", err);
   }
 
+  // Auto-populate run sheet from template
+  try {
+    const { data: rsTemplates } = await supabase
+      .from("event_runsheet_templates")
+      .select("title, description, responsible_role, default_offset_minutes, default_duration_minutes, location_note, sort_order")
+      .eq("is_active", true)
+      .order("sort_order");
+
+    if (rsTemplates && rsTemplates.length > 0) {
+      const baseMs = new Date(eventData.starts_at).getTime();
+      const runsheetItems = rsTemplates.map((t) => {
+        const starts = new Date(baseMs + t.default_offset_minutes * 60_000);
+        const ends = t.default_duration_minutes
+          ? new Date(starts.getTime() + t.default_duration_minutes * 60_000)
+          : null;
+        return {
+          event_id: data.id,
+          title: t.title,
+          description: t.description,
+          responsible_person: t.responsible_role,
+          location_note: t.location_note,
+          starts_at: starts.toISOString(),
+          ends_at: ends?.toISOString() ?? null,
+          default_duration_minutes: t.default_duration_minutes,
+          sort_order: t.sort_order,
+          status: "pending",
+        };
+      });
+      await supabase.from("event_runsheet_items").insert(runsheetItems);
+    }
+  } catch (err) {
+    console.error("[createEvent] runsheet auto-populate failed:", err);
+  }
+
   // Audit log
   await supabase.from("audit_log").insert({
     user_id: user.userId,
