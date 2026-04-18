@@ -39,6 +39,7 @@ export async function getStaff() {
       return {
         ...p,
         email: data.user?.email ?? "",
+        lastSignInAt: data.user?.last_sign_in_at ?? null,
       };
     })
   );
@@ -145,38 +146,159 @@ export async function inviteStaff(formData: FormData) {
     return { error: "You do not have permission to create admins" };
   }
 
-  // Invite via Supabase Auth. `must_change_password: true` forces them through
-  // /set-password on first login (enforced by middleware in proxy.ts).
-  const ticketsUrl =
+  // Generate an invite link without triggering Supabase's default SMTP email,
+  // so we can send our own branded Resend template instead. `must_change_password`
+  // is enforced by middleware in proxy.ts until the user sets a password.
+  const adminUrl =
     process.env.NEXT_PUBLIC_ADMIN_URL ?? "https://admin.dbc-germany.com";
+  const inviteLocale = (locale === "de" || locale === "fr" ? locale : "en") as
+    | "en"
+    | "de"
+    | "fr";
+  const resolvedName = displayName || email.split("@")[0];
 
-  const { data: inviteData, error: inviteError } =
-    await service.auth.admin.inviteUserByEmail(email, {
-      data: {
-        display_name: displayName || email.split("@")[0],
-        locale,
-        must_change_password: true,
+  const { data: linkData, error: linkError } =
+    await service.auth.admin.generateLink({
+      type: "invite",
+      email,
+      options: {
+        data: {
+          display_name: resolvedName,
+          locale,
+          must_change_password: true,
+        },
+        redirectTo: `${adminUrl}/${inviteLocale}/set-password`,
       },
-      redirectTo: `${ticketsUrl}/${locale}/set-password`,
     });
 
-  if (inviteError || !inviteData?.user) {
-    return { error: inviteError?.message ?? "Failed to invite user" };
+  if (linkError || !linkData?.user || !linkData.properties?.action_link) {
+    return { error: linkError?.message ?? "Failed to generate invite link" };
   }
 
-  // The auth trigger auto-creates the profile with role=buyer.
-  // Upgrade it to the intended role.
+  // The auth trigger auto-creates the profile with role=buyer. Upgrade it.
   await service
     .from("profiles")
-    .update({ role, display_name: displayName || email.split("@")[0] })
-    .eq("id", inviteData.user.id);
+    .update({ role, display_name: resolvedName })
+    .eq("id", linkData.user.id);
+
+  try {
+    const { sendStaffInvite } = await import("@dbc/email");
+    await sendStaffInvite({
+      to: email,
+      recipientName: resolvedName,
+      role,
+      actionLink: linkData.properties.action_link,
+      locale: inviteLocale,
+    });
+  } catch (err) {
+    console.error("[inviteStaff] branded email failed:", err);
+    return { error: "Invite created but email delivery failed. Use Resend invite to retry." };
+  }
 
   await service.from("audit_log").insert({
     user_id: actor.userId,
     action: "invite_staff",
     entity_type: "profiles",
-    entity_id: inviteData.user.id,
+    entity_id: linkData.user.id,
     details: { email, role },
+  });
+
+  revalidatePath(`/${locale}/staff`);
+  return { success: true };
+}
+
+export async function resendStaffInvite(staffId: string, locale: string) {
+  const actor = await requireRole("admin");
+  const service = getServiceClient();
+
+  const { data: authData, error: authErr } =
+    await service.auth.admin.getUserById(staffId);
+  if (authErr || !authData.user) return { error: "User not found" };
+  if (authData.user.last_sign_in_at) {
+    return {
+      error:
+        "This user has already signed in. Use password reset instead of resend invite.",
+    };
+  }
+
+  const { data: profile } = await service
+    .from("profiles")
+    .select("role, display_name, locale")
+    .eq("id", staffId)
+    .single();
+  if (!profile) return { error: "Profile not found" };
+
+  const adminUrl =
+    process.env.NEXT_PUBLIC_ADMIN_URL ?? "https://admin.dbc-germany.com";
+  const inviteLocale = (profile.locale === "de" || profile.locale === "fr"
+    ? profile.locale
+    : "en") as "en" | "de" | "fr";
+  const email = authData.user.email ?? "";
+
+  const { data: linkData, error: linkError } =
+    await service.auth.admin.generateLink({
+      type: "invite",
+      email,
+      options: {
+        redirectTo: `${adminUrl}/${inviteLocale}/set-password`,
+      },
+    });
+  if (linkError || !linkData.properties?.action_link) {
+    return { error: linkError?.message ?? "Failed to generate link" };
+  }
+
+  try {
+    const { sendStaffInvite } = await import("@dbc/email");
+    await sendStaffInvite({
+      to: email,
+      recipientName: profile.display_name ?? email.split("@")[0],
+      role: profile.role ?? "team_member",
+      actionLink: linkData.properties.action_link,
+      locale: inviteLocale,
+    });
+  } catch (err) {
+    console.error("[resendStaffInvite] email failed:", err);
+    return { error: "Failed to send invite email" };
+  }
+
+  await service.from("audit_log").insert({
+    user_id: actor.userId,
+    action: "resend_staff_invite",
+    entity_type: "profiles",
+    entity_id: staffId,
+    details: { email },
+  });
+
+  revalidatePath(`/${locale}/staff`);
+  return { success: true };
+}
+
+export async function revokeStaffInvite(staffId: string, locale: string) {
+  const actor = await requireRole("admin");
+  const service = getServiceClient();
+
+  const { data: authData, error: authErr } =
+    await service.auth.admin.getUserById(staffId);
+  if (authErr || !authData.user) return { error: "User not found" };
+  if (authData.user.last_sign_in_at) {
+    return {
+      error:
+        "This user has already accepted the invite. Use Remove staff instead.",
+    };
+  }
+
+  // Prevent self-revoke (safety net; they shouldn't show up as invited)
+  if (staffId === actor.userId) return { error: "You cannot revoke yourself" };
+
+  const { error } = await service.auth.admin.deleteUser(staffId);
+  if (error) return { error: error.message };
+
+  await service.from("audit_log").insert({
+    user_id: actor.userId,
+    action: "revoke_staff_invite",
+    entity_type: "profiles",
+    entity_id: staffId,
+    details: { email: authData.user.email },
   });
 
   revalidatePath(`/${locale}/staff`);

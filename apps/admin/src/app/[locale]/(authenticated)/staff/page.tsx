@@ -34,6 +34,7 @@ export default async function StaffPage({
           displayName: s.display_name ?? "",
           role: s.role,
           assignedEventIds: s.assignedEventIds,
+          lastSignInAt: s.lastSignInAt,
         }))}
         events={events.map((e) => ({
           id: e.id,

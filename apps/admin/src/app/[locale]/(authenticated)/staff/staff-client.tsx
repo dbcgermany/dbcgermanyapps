@@ -10,6 +10,8 @@ import {
   assignStaffToEvent,
   unassignStaffFromEvent,
   removeStaff,
+  resendStaffInvite,
+  revokeStaffInvite,
 } from "@/actions/staff";
 import { EmptyState } from "@/components/empty-state";
 
@@ -19,6 +21,7 @@ interface StaffMember {
   displayName: string;
   role: UserRole;
   assignedEventIds: string[];
+  lastSignInAt: string | null;
 }
 
 interface EventOption {
@@ -89,6 +92,23 @@ export function StaffClient({
     }
     startTransition(async () => {
       await removeStaff(staffId, locale);
+    });
+  }
+
+  function handleResendInvite(staffId: string) {
+    startTransition(async () => {
+      const res = await resendStaffInvite(staffId, locale);
+      if (res.error) alert(res.error);
+    });
+  }
+
+  function handleRevokeInvite(staffId: string) {
+    if (!confirm("Revoke this pending invite? The user record will be deleted.")) {
+      return;
+    }
+    startTransition(async () => {
+      const res = await revokeStaffInvite(staffId, locale);
+      if (res.error) alert(res.error);
     });
   }
 
@@ -329,12 +349,32 @@ export function StaffClient({
                         >
                           {t.assignEvents}
                         </button>
-                        <button
-                          onClick={() => handleRemove(s.id)}
-                          className="text-xs text-red-500 hover:text-red-700"
-                        >
-                          {t.remove}
-                        </button>
+                        {!s.lastSignInAt ? (
+                          <>
+                            <button
+                              onClick={() => handleResendInvite(s.id)}
+                              disabled={isPending}
+                              className="text-xs text-amber-600 hover:text-amber-700"
+                            >
+                              Resend invite
+                            </button>
+                            <button
+                              onClick={() => handleRevokeInvite(s.id)}
+                              disabled={isPending}
+                              className="text-xs text-red-500 hover:text-red-700"
+                            >
+                              Revoke
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            onClick={() => handleRemove(s.id)}
+                            disabled={isPending}
+                            className="text-xs text-red-500 hover:text-red-700"
+                          >
+                            {t.remove}
+                          </button>
+                        )}
                       </td>
                     </tr>
                     {isExpanded && (

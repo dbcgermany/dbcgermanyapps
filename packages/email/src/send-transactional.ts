@@ -11,6 +11,7 @@ import { RefundConfirmationEmail } from "./templates/refund-confirmation";
 import { ContactFormConfirmEmail } from "./templates/contact-form-confirm";
 import { PreEventReminderEmail } from "./templates/pre-event-reminder";
 import { PasswordResetEmail } from "./templates/password-reset";
+import { StaffInviteEmail } from "./templates/staff-invite";
 
 type Locale = "en" | "de" | "fr";
 
@@ -441,6 +442,44 @@ export async function sendPasswordReset(input: SendPasswordResetInput) {
     from: transactionalFrom(),
     to: input.to,
     subject: PASSWORD_RESET_SUBJECT[input.locale],
+    html,
+  });
+  if (res.error) throw new Error(`Resend: ${res.error.message}`);
+  return { id: res.data?.id ?? "" };
+}
+
+// ---------------------------------------------------------------------------
+// Staff Invitation (branded; replaces Supabase default SMTP invite email)
+// ---------------------------------------------------------------------------
+
+export interface SendStaffInviteInput {
+  to: string;
+  recipientName: string;
+  role: string;
+  actionLink: string;
+  locale: Locale;
+}
+
+const STAFF_INVITE_SUBJECT = {
+  en: "Welcome to DBC Germany \u2014 set your password",
+  de: "Willkommen bei DBC Germany \u2014 Passwort festlegen",
+  fr: "Bienvenue chez DBC Germany \u2014 d\u00E9finissez votre mot de passe",
+};
+
+export async function sendStaffInvite(input: SendStaffInviteInput) {
+  const html = await render(
+    React.createElement(StaffInviteEmail, {
+      recipientName: input.recipientName,
+      role: input.role,
+      actionLink: input.actionLink,
+      locale: input.locale,
+    })
+  );
+  const resend = createEmailClient();
+  const res = await resend.emails.send({
+    from: transactionalFrom(),
+    to: input.to,
+    subject: STAFF_INVITE_SUBJECT[input.locale],
     html,
   });
   if (res.error) throw new Error(`Resend: ${res.error.message}`);
