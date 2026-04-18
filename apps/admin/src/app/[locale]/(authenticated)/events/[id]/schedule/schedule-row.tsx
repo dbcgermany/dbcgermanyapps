@@ -6,6 +6,30 @@ import {
   deleteScheduleItem,
 } from "@/actions/schedule";
 
+const SR_T = {
+  en: {
+    titleEn: "Title (EN)", titleDe: "Title (DE)", titleFr: "Title (FR)",
+    speakerName: "Speaker name", speakerTitle: "Speaker title", sort: "Sort",
+    descEn: "Description (EN)", descDe: "Description (DE)", descFr: "Description (FR)",
+    saving: "Saving…", save: "Save", cancel: "Cancel",
+    edit: "Edit", delete: "Delete", deleteConfirm: 'Delete "{title}"?',
+  },
+  de: {
+    titleEn: "Titel (EN)", titleDe: "Titel (DE)", titleFr: "Titel (FR)",
+    speakerName: "Name Sprecher:in", speakerTitle: "Titel Sprecher:in", sort: "Sort.",
+    descEn: "Beschreibung (EN)", descDe: "Beschreibung (DE)", descFr: "Beschreibung (FR)",
+    saving: "Wird gespeichert…", save: "Speichern", cancel: "Abbrechen",
+    edit: "Bearbeiten", delete: "Löschen", deleteConfirm: "„{title}“ löschen?",
+  },
+  fr: {
+    titleEn: "Titre (EN)", titleDe: "Titre (DE)", titleFr: "Titre (FR)",
+    speakerName: "Nom de l’intervenant", speakerTitle: "Titre de l’intervenant", sort: "Ordre",
+    descEn: "Description (EN)", descDe: "Description (DE)", descFr: "Description (FR)",
+    saving: "Enregistrement…", save: "Enregistrer", cancel: "Annuler",
+    edit: "Modifier", delete: "Supprimer", deleteConfirm: "Supprimer « {title} » ?",
+  },
+} as const;
+
 type Item = {
   id: string;
   title_en: string;
@@ -35,6 +59,7 @@ export function ScheduleRow({
   locale: string;
 }) {
   const [mode, setMode] = useState<"view" | "edit">("view");
+  const t = SR_T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof SR_T];
 
   const [state, formAction, isPending] = useActionState(
     async (
@@ -66,19 +91,19 @@ export function ScheduleRow({
             name="title_en"
             defaultValue={item.title_en}
             required
-            placeholder="Title (EN)"
+            placeholder={t.titleEn}
             className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
           />
           <input
             name="title_de"
             defaultValue={item.title_de ?? ""}
-            placeholder="Title (DE)"
+            placeholder={t.titleDe}
             className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
           />
           <input
             name="title_fr"
             defaultValue={item.title_fr ?? ""}
-            placeholder="Title (FR)"
+            placeholder={t.titleFr}
             className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
           />
         </div>
@@ -102,20 +127,20 @@ export function ScheduleRow({
           <input
             name="speaker_name"
             defaultValue={item.speaker_name ?? ""}
-            placeholder="Speaker name"
+            placeholder={t.speakerName}
             className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
           />
           <input
             name="speaker_title"
             defaultValue={item.speaker_title ?? ""}
-            placeholder="Speaker title"
+            placeholder={t.speakerTitle}
             className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
           />
           <input
             name="sort_order"
             type="number"
             defaultValue={item.sort_order}
-            placeholder="Sort"
+            placeholder={t.sort}
             className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
           />
         </div>
@@ -123,21 +148,21 @@ export function ScheduleRow({
           <textarea
             name="description_en"
             defaultValue={item.description_en ?? ""}
-            placeholder="Description (EN)"
+            placeholder={t.descEn}
             rows={2}
             className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
           />
           <textarea
             name="description_de"
             defaultValue={item.description_de ?? ""}
-            placeholder="Description (DE)"
+            placeholder={t.descDe}
             rows={2}
             className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
           />
           <textarea
             name="description_fr"
             defaultValue={item.description_fr ?? ""}
-            placeholder="Description (FR)"
+            placeholder={t.descFr}
             rows={2}
             className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
           />
@@ -148,14 +173,14 @@ export function ScheduleRow({
             disabled={isPending}
             className="rounded-md bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
           >
-            {isPending ? "Saving..." : "Save"}
+            {isPending ? t.saving : t.save}
           </button>
           <button
             type="button"
             onClick={() => setMode("view")}
             className="rounded-md border border-input px-4 py-1.5 text-xs font-medium hover:bg-accent"
           >
-            Cancel
+            {t.cancel}
           </button>
         </div>
       </form>
@@ -195,11 +220,11 @@ export function ScheduleRow({
           onClick={() => setMode("edit")}
           className="text-xs text-primary hover:text-primary/80"
         >
-          Edit
+          {t.edit}
         </button>
         <form
           action={async () => {
-            if (!confirm(`Delete "${item.title_en}"?`)) return;
+            if (!confirm(t.deleteConfirm.replace("{title}", item.title_en))) return;
             await deleteScheduleItem(item.id, eventId, locale);
           }}
         >
@@ -207,7 +232,7 @@ export function ScheduleRow({
             type="submit"
             className="text-xs text-red-500 hover:text-red-700"
           >
-            Delete
+            {t.delete}
           </button>
         </form>
       </div>

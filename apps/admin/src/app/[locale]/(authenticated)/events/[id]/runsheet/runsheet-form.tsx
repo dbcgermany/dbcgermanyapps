@@ -4,6 +4,12 @@ import { useActionState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createRunsheetItem } from "@/actions/runsheet";
 
+const RF_T = {
+  en: { title: "Task title", unassigned: "Unassigned", location: "Location", notes: "Notes / description", adding: "Adding…", addItem: "Add item" },
+  de: { title: "Titel der Aufgabe", unassigned: "Nicht zugewiesen", location: "Ort", notes: "Notizen / Beschreibung", adding: "Wird hinzugefügt…", addItem: "Eintrag hinzufügen" },
+  fr: { title: "Intitulé", unassigned: "Non assigné", location: "Lieu", notes: "Notes / description", adding: "Ajout…", addItem: "Ajouter" },
+} as const;
+
 export function RunsheetForm({
   eventId,
   locale,
@@ -15,6 +21,7 @@ export function RunsheetForm({
 }) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
+  const t = RF_T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof RF_T];
 
   const [state, formAction, isPending] = useActionState(
     async (
@@ -48,7 +55,7 @@ export function RunsheetForm({
       )}
       <input
         name="title"
-        placeholder="Task title"
+        placeholder={t.title}
         required
         className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
       />
@@ -71,7 +78,7 @@ export function RunsheetForm({
           defaultValue=""
           className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
         >
-          <option value="">Unassigned</option>
+          <option value="">{t.unassigned}</option>
           {staff.map((s) => (
             <option key={s.id} value={s.id}>
               {s.name}
@@ -80,13 +87,13 @@ export function RunsheetForm({
         </select>
         <input
           name="location_note"
-          placeholder="Location"
+          placeholder={t.location}
           className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
         />
       </div>
       <textarea
         name="description"
-        placeholder="Notes / description"
+        placeholder={t.notes}
         rows={2}
         className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
       />
@@ -95,7 +102,7 @@ export function RunsheetForm({
         disabled={isPending}
         className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
       >
-        {isPending ? "Adding..." : "Add item"}
+        {isPending ? t.adding : t.addItem}
       </button>
     </form>
   );

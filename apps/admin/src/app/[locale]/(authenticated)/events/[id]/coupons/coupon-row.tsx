@@ -27,7 +27,7 @@ const CR_T = {
     inactive: "Inaktiv",
     off: "Rabatt", used: "genutzt", tier: "Kategorie", tiers: "Kategorien", only: "nur",
     edit: "Bearbeiten", deactivate: "Deaktivieren", activate: "Aktivieren",
-    delete: "Löschen", deleteConfirm: 'Code „{code}" löschen?',
+    delete: "Löschen", deleteConfirm: "Code „{code}“ löschen?",
   },
   fr: {
     percent: "Pourcentage (%)", fixed: "Fixe (€)",

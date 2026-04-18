@@ -20,7 +20,7 @@ const TR_T = {
     saving: "Wird gespeichert…", save: "Speichern", cancel: "Abbrechen",
     hidden: "Ausgeblendet", sold: "verkauft",
     edit: "Bearbeiten", hide: "Ausblenden", publish: "Veröffentlichen", delete: "Löschen",
-    deleteConfirm: 'Kategorie „{name}" löschen?',
+    deleteConfirm: "Kategorie „{name}“ löschen?",
   },
   fr: {
     nameEn: "Nom (EN)", nameDe: "Nom (DE)", nameFr: "Nom (FR)",

@@ -24,6 +24,27 @@ const STATUS_VARIANT: Record<
   done: "success",
 };
 
+const RR_T = {
+  en: {
+    title: "Title", unassigned: "Unassigned", location: "Location", notes: "Notes / description",
+    saving: "Saving…", save: "Save", cancel: "Cancel",
+    advance: "Advance", edit: "Edit", delete: "Delete", deleteConfirm: 'Delete "{title}"?',
+    statuses: { pending: "Pending", in_progress: "In progress", done: "Done" } as Record<string, string>,
+  },
+  de: {
+    title: "Titel", unassigned: "Nicht zugewiesen", location: "Ort", notes: "Notizen / Beschreibung",
+    saving: "Wird gespeichert…", save: "Speichern", cancel: "Abbrechen",
+    advance: "Weiter", edit: "Bearbeiten", delete: "Löschen", deleteConfirm: "„{title}“ löschen?",
+    statuses: { pending: "Offen", in_progress: "Läuft", done: "Erledigt" } as Record<string, string>,
+  },
+  fr: {
+    title: "Titre", unassigned: "Non assigné", location: "Lieu", notes: "Notes / description",
+    saving: "Enregistrement…", save: "Enregistrer", cancel: "Annuler",
+    advance: "Avancer", edit: "Modifier", delete: "Supprimer", deleteConfirm: "Supprimer « {title} » ?",
+    statuses: { pending: "En attente", in_progress: "En cours", done: "Terminé" } as Record<string, string>,
+  },
+} as const;
+
 function toLocal(iso: string | null) {
   return iso ? iso.slice(0, 16) : "";
 }
@@ -42,6 +63,7 @@ export function RunsheetRow({
   const router = useRouter();
   const [mode, setMode] = useState<"view" | "edit">("view");
   const [isPending, startTransition] = useTransition();
+  const t = RR_T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof RR_T];
 
   const [state, formAction, isSaving] = useActionState(
     async (
@@ -73,7 +95,7 @@ export function RunsheetRow({
   }
 
   function handleDelete() {
-    if (!confirm(`Delete "${item.title}"?`)) return;
+    if (!confirm(t.deleteConfirm.replace("{title}", item.title))) return;
     startTransition(async () => {
       await deleteRunsheetItem(item.id, eventId, locale);
       router.refresh();
@@ -98,7 +120,7 @@ export function RunsheetRow({
           name="title"
           defaultValue={item.title}
           required
-          placeholder="Title"
+          placeholder={t.title}
           className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
         />
         <div className="grid gap-2 sm:grid-cols-2">
@@ -122,7 +144,7 @@ export function RunsheetRow({
             defaultValue={item.assigned_to ?? ""}
             className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
           >
-            <option value="">Unassigned</option>
+            <option value="">{t.unassigned}</option>
             {staff.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.name}
@@ -132,14 +154,14 @@ export function RunsheetRow({
           <input
             name="location_note"
             defaultValue={item.location_note ?? ""}
-            placeholder="Location"
+            placeholder={t.location}
             className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
           />
         </div>
         <textarea
           name="description"
           defaultValue={item.description ?? ""}
-          placeholder="Notes / description"
+          placeholder={t.notes}
           rows={2}
           className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
         />
@@ -149,14 +171,14 @@ export function RunsheetRow({
             disabled={isSaving}
             className="rounded-md bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
           >
-            {isSaving ? "Saving..." : "Save"}
+            {isSaving ? t.saving : t.save}
           </button>
           <button
             type="button"
             onClick={() => setMode("view")}
             className="rounded-md border border-input px-4 py-1.5 text-xs font-medium hover:bg-accent"
           >
-            Cancel
+            {t.cancel}
           </button>
         </div>
       </form>
@@ -169,7 +191,7 @@ export function RunsheetRow({
         <div className="flex items-center gap-3">
           <p className="font-medium">{item.title}</p>
           <Badge variant={STATUS_VARIANT[item.status] ?? "default"}>
-            {item.status.replace("_", " ")}
+            {t.statuses[item.status] ?? item.status.replace("_", " ")}
           </Badge>
         </div>
         <p className="mt-0.5 text-sm text-muted-foreground">
@@ -209,14 +231,14 @@ export function RunsheetRow({
           disabled={isPending}
           className="text-xs text-primary hover:text-primary/80 disabled:opacity-50"
         >
-          Advance
+          {t.advance}
         </button>
         <button
           type="button"
           onClick={() => setMode("edit")}
           className="text-xs text-primary hover:text-primary/80"
         >
-          Edit
+          {t.edit}
         </button>
         <button
           type="button"
@@ -224,7 +246,7 @@ export function RunsheetRow({
           disabled={isPending}
           className="text-xs text-red-500 hover:text-red-700 disabled:opacity-50"
         >
-          Delete
+          {t.delete}
         </button>
       </div>
     </div>
