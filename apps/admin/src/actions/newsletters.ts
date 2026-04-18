@@ -312,3 +312,59 @@ export async function sendNewsletter(id: string) {
   revalidatePath("/[locale]/newsletters", "layout");
   return { success: true, sent, failed };
 }
+
+// ---------------------------------------------------------------------------
+// Delivery analytics
+// ---------------------------------------------------------------------------
+
+export interface NewsletterStats {
+  totalSent: number;
+  delivered: number;
+  opened: number;
+  clicked: number;
+  unsubscribed: number;
+  bounced: number;
+  openRate: number;
+  clickRate: number;
+}
+
+export async function getNewsletterStats(
+  newsletterId: string
+): Promise<NewsletterStats> {
+  await requireRole("manager");
+  const supabase = await createServerClient();
+
+  const { data: sends } = await supabase
+    .from("newsletter_sends")
+    .select("status, opened_at, clicked_at, unsubscribed_at")
+    .eq("newsletter_id", newsletterId);
+
+  const totalSent = sends?.length ?? 0;
+  let delivered = 0;
+  let opened = 0;
+  let clicked = 0;
+  let unsubscribed = 0;
+  let bounced = 0;
+
+  for (const s of sends ?? []) {
+    if (s.status === "failed" || s.status === "bounced") {
+      bounced++;
+    } else {
+      delivered++;
+    }
+    if (s.opened_at) opened++;
+    if (s.clicked_at) clicked++;
+    if (s.unsubscribed_at) unsubscribed++;
+  }
+
+  return {
+    totalSent,
+    delivered,
+    opened,
+    clicked,
+    unsubscribed,
+    bounced,
+    openRate: delivered > 0 ? Math.round((opened / delivered) * 100) : 0,
+    clickRate: delivered > 0 ? Math.round((clicked / delivered) * 100) : 0,
+  };
+}

@@ -20,6 +20,7 @@ import {
 import { Badge, Card } from "@dbc/ui";
 import { getEvent, togglePublish, duplicateEvent } from "@/actions/events";
 import { getEventChecklist } from "@/actions/checklist";
+import { getLiveEventStats } from "@/actions/live-event";
 import { PageHeader } from "@/components/page-header";
 import { DeleteEventButton } from "./delete-button";
 
@@ -37,10 +38,25 @@ export default async function EventDetailPage({
     notFound();
   }
 
-  const checklist = await getEventChecklist(id);
+  const [checklist, liveStats] = await Promise.all([
+    getEventChecklist(id),
+    getLiveEventStats(id),
+  ]);
   const clPct = checklist.progress.total > 0
     ? Math.round((checklist.progress.done / checklist.progress.total) * 100)
     : 0;
+
+  // Sales target progress
+  const ticketTarget = event.sales_target_tickets;
+  const revenueTarget = event.sales_target_revenue_cents;
+  const ticketsSoldForTarget = liveStats.totalTickets;
+  const revenueForTarget = liveStats.revenueCents;
+  const ticketProgressPct = ticketTarget && ticketTarget > 0
+    ? Math.min(100, Math.round((ticketsSoldForTarget / ticketTarget) * 100))
+    : null;
+  const revenueProgressPct = revenueTarget && revenueTarget > 0
+    ? Math.min(100, Math.round((revenueForTarget / revenueTarget) * 100))
+    : null;
 
   const titleKey = `title_${locale}` as keyof typeof event;
   const descKey = `description_${locale}` as keyof typeof event;
@@ -155,6 +171,48 @@ export default async function EventDetailPage({
               Max {event.max_tickets_per_order} tickets per order
             </p>
           </section>
+
+          {(ticketProgressPct != null || revenueProgressPct != null) && (
+            <section>
+              <h2 className="text-sm font-medium text-muted-foreground">
+                Sales target
+              </h2>
+              <div className="mt-2 space-y-3">
+                {ticketProgressPct != null && (
+                  <div>
+                    <div className="flex justify-between text-sm">
+                      <span>
+                        {ticketsSoldForTarget}/{ticketTarget} tickets
+                      </span>
+                      <span className="font-medium">{ticketProgressPct}%</span>
+                    </div>
+                    <div className="mt-1 h-2 rounded-full bg-muted">
+                      <div
+                        className="h-2 rounded-full bg-primary transition-all"
+                        style={{ width: `${ticketProgressPct}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+                {revenueProgressPct != null && (
+                  <div>
+                    <div className="flex justify-between text-sm">
+                      <span>
+                        {`\u20AC${(revenueForTarget / 100).toLocaleString()} / \u20AC${(revenueTarget! / 100).toLocaleString()}`}
+                      </span>
+                      <span className="font-medium">{revenueProgressPct}%</span>
+                    </div>
+                    <div className="mt-1 h-2 rounded-full bg-muted">
+                      <div
+                        className="h-2 rounded-full bg-green-500 transition-all"
+                        style={{ width: `${revenueProgressPct}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
 
           <section>
             <h2 className="text-sm font-medium text-muted-foreground">

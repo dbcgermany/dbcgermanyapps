@@ -3,6 +3,8 @@ import {
   getAttendeesReport,
   getRevenueByEventReport,
   getReportsEvents,
+  getCouponPerformanceReport,
+  getEventFinancialSummary,
 } from "@/actions/reports";
 import { PageHeader } from "@/components/page-header";
 import { ReportsClient } from "./reports-client";
@@ -31,7 +33,7 @@ export default async function ReportsPage({
   const fromDate = sp.from ? `${sp.from}T00:00:00.000Z` : undefined;
   const toDate = sp.to ? `${sp.to}T23:59:59.999Z` : undefined;
 
-  const [orders, attendees, revenueByEvent, events] = await Promise.all([
+  const [orders, attendees, revenueByEvent, events, coupons] = await Promise.all([
     getOrdersReport({
       locale,
       eventId: sp.event,
@@ -48,7 +50,13 @@ export default async function ReportsPage({
     }),
     getRevenueByEventReport({ locale, fromDate, toDate }),
     getReportsEvents(),
+    getCouponPerformanceReport(sp.event),
   ]);
+
+  // Financial summary only when a specific event is selected
+  const financial = sp.event
+    ? await getEventFinancialSummary(sp.event)
+    : null;
 
   return (
     <div>
@@ -65,6 +73,8 @@ export default async function ReportsPage({
         orders={orders}
         attendees={attendees}
         revenueByEvent={revenueByEvent}
+        coupons={coupons}
+        financial={financial}
         events={events.map((e) => ({
           id: e.id,
           title:

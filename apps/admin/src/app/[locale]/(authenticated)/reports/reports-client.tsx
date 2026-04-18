@@ -6,6 +6,8 @@ import type {
   OrdersReportRow,
   AttendeesReportRow,
   RevenueByEventRow,
+  CouponPerformanceRow,
+  EventFinancialSummary,
 } from "@/actions/reports";
 
 const STATUS_OPTIONS = [
@@ -73,6 +75,8 @@ export function ReportsClient({
   orders,
   attendees,
   revenueByEvent,
+  coupons,
+  financial,
   events,
   currentEventFilter,
   currentStatusFilter,
@@ -84,6 +88,8 @@ export function ReportsClient({
   orders: OrdersReportRow[];
   attendees: AttendeesReportRow[];
   revenueByEvent: RevenueByEventRow[];
+  coupons: CouponPerformanceRow[];
+  financial: EventFinancialSummary | null;
   events: { id: string; title: string }[];
   currentEventFilter: string;
   currentStatusFilter: string;
@@ -132,6 +138,16 @@ export function ReportsClient({
       ordersSection: "Orders",
       attendeesSection: "Attendees",
       revenueSection: "Revenue by event",
+      couponsSection: "Coupon performance",
+      financialSection: "Event P&L (select an event to view)",
+      couponCode: "Code",
+      uses: "Uses",
+      discountGiven: "Discount given",
+      revenueDriven: "Revenue driven",
+      finRevenue: "Revenue",
+      finExpenses: "Expenses",
+      finProfit: "Net profit",
+      finTax: "Tax estimate (19%)",
       exportCsv: "Export CSV",
       showing: "Showing",
       of: "of",
@@ -174,6 +190,16 @@ export function ReportsClient({
       ordersSection: "Bestellungen",
       attendeesSection: "Teilnehmer",
       revenueSection: "Einnahmen pro Veranstaltung",
+      couponsSection: "Gutschein-Performance",
+      financialSection: "Veranstaltungs-GuV (Veranstaltung ausw\u00E4hlen)",
+      couponCode: "Code",
+      uses: "Verwendungen",
+      discountGiven: "Rabatt gew\u00E4hrt",
+      revenueDriven: "Erzielte Einnahmen",
+      finRevenue: "Einnahmen",
+      finExpenses: "Ausgaben",
+      finProfit: "Nettogewinn",
+      finTax: "Steuer (19%)",
       exportCsv: "CSV exportieren",
       showing: "Zeige",
       of: "von",
@@ -216,6 +242,16 @@ export function ReportsClient({
       ordersSection: "Commandes",
       attendeesSection: "Participants",
       revenueSection: "Revenus par \u00E9v\u00E9nement",
+      couponsSection: "Performance des coupons",
+      financialSection: "R\u00E9sultat de l\u2019\u00E9v\u00E9nement (s\u00E9lectionner)",
+      couponCode: "Code",
+      uses: "Utilisations",
+      discountGiven: "R\u00E9duction accord\u00E9e",
+      revenueDriven: "Revenus g\u00E9n\u00E9r\u00E9s",
+      finRevenue: "Revenus",
+      finExpenses: "D\u00E9penses",
+      finProfit: "B\u00E9n\u00E9fice net",
+      finTax: "TVA (19%)",
       exportCsv: "Exporter CSV",
       showing: "Affichage",
       of: "sur",
@@ -250,6 +286,12 @@ export function ReportsClient({
     from: "From", to: "To", checkedInAny: "Any", checkedInYes: "Checked in",
     checkedInNo: "Not checked in", clear: "Clear", ordersSection: "Orders",
     attendeesSection: "Attendees", revenueSection: "Revenue by event",
+    couponsSection: "Coupon performance",
+    financialSection: "Event P&L",
+    couponCode: "Code", uses: "Uses",
+    discountGiven: "Discount given", revenueDriven: "Revenue driven",
+    finRevenue: "Revenue", finExpenses: "Expenses",
+    finProfit: "Net profit", finTax: "Tax (19%)",
     exportCsv: "Export CSV", showing: "Showing", of: "of", rows: "rows",
     noRows: "No rows", event: "Event", status: "Status", customer: "Customer",
     total: "Total", date: "Date", attendee: "Attendee", tier: "Tier",
@@ -619,6 +661,108 @@ export function ReportsClient({
           </table>
         )}
       </ReportSection>
+
+      {/* Coupon performance section */}
+      <ReportSection
+        title={t.couponsSection}
+        rowCount={coupons.length}
+        previewLimit={PREVIEW_LIMIT}
+        onExport={() => {
+          downloadCsv(
+            `coupons-${new Date().toISOString().slice(0, 10)}.csv`,
+            ["Code", "Uses", "Discount given (cents)", "Revenue driven (cents)"],
+            coupons.map((c) => [
+              c.code,
+              c.uses,
+              c.totalDiscountCents,
+              c.totalRevenueCents,
+            ])
+          );
+        }}
+        labels={{
+          export: t.exportCsv,
+          showing: t.showing,
+          of: t.of,
+          rows: t.rows,
+          noRows: t.noRows,
+        }}
+      >
+        {coupons.length > 0 && (
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-border bg-muted/50">
+                <th className="px-4 py-3 text-left font-medium">{t.couponCode}</th>
+                <th className="px-4 py-3 text-right font-medium">{t.uses}</th>
+                <th className="px-4 py-3 text-right font-medium">
+                  {t.discountGiven}
+                </th>
+                <th className="px-4 py-3 text-right font-medium">
+                  {t.revenueDriven}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {coupons.slice(0, PREVIEW_LIMIT).map((c) => (
+                <tr key={c.code} className="border-b border-border last:border-0">
+                  <td className="px-4 py-3 font-mono font-medium">{c.code}</td>
+                  <td className="px-4 py-3 text-right">{c.uses}</td>
+                  <td className="px-4 py-3 text-right text-green-600">
+                    -{formatMoney(c.totalDiscountCents, "EUR", locale)}
+                  </td>
+                  <td className="px-4 py-3 text-right font-medium">
+                    {formatMoney(c.totalRevenueCents, "EUR", locale)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </ReportSection>
+
+      {/* Event financial summary (P&L) */}
+      {financial && (
+        <section>
+          <h2 className="font-heading text-lg font-semibold">
+            {t.financialSection}: {financial.eventTitle}
+          </h2>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-lg border border-border p-5">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                {t.finRevenue}
+              </p>
+              <p className="mt-2 font-heading text-2xl font-bold">
+                {formatMoney(financial.revenueCents, "EUR", locale)}
+              </p>
+            </div>
+            <div className="rounded-lg border border-border p-5">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                {t.finExpenses}
+              </p>
+              <p className="mt-2 font-heading text-2xl font-bold text-red-600">
+                -{formatMoney(financial.expensesCents, "EUR", locale)}
+              </p>
+            </div>
+            <div className="rounded-lg border border-border p-5">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                {t.finProfit}
+              </p>
+              <p
+                className={`mt-2 font-heading text-2xl font-bold ${financial.profitCents >= 0 ? "text-green-600" : "text-red-600"}`}
+              >
+                {formatMoney(financial.profitCents, "EUR", locale)}
+              </p>
+            </div>
+            <div className="rounded-lg border border-border p-5">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                {t.finTax}
+              </p>
+              <p className="mt-2 font-heading text-2xl font-bold text-muted-foreground">
+                {formatMoney(financial.taxEstimateCents, "EUR", locale)}
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
     </div>
   );
 }

@@ -3,6 +3,14 @@
     {
       "path": "/api/cron/daily-admin-digest",
       "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/payment-reminders",
+      "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/pre-event-reminders",
+      "schedule": "0 8 * * *"
     }
   ]
 }
