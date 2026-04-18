@@ -295,6 +295,18 @@ function PreferencesTab({ profile }: { profile: AccountProfile }) {
             /* Safari private mode */
           }
         }
+        // If the locale changed, navigate to the matching URL segment so
+        // server components (and next-intl) re-render in the new language.
+        // Full reload — not router.push — so the NextIntlClientProvider
+        // receives fresh messages from the server layout.
+        if (typeof window !== "undefined") {
+          const segments = window.location.pathname.split("/");
+          const current = segments[1];
+          if (current && current !== locale) {
+            segments[1] = locale;
+            window.location.assign(segments.join("/") + window.location.search);
+          }
+        }
       }
     });
   }

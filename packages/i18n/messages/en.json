@@ -182,17 +182,30 @@
   },
   "admin": {
     "nav": {
-      "dashboard": "Dashboard",
-      "events": "Events",
-      "orders": "Orders",
-      "tickets": "Tickets",
-      "scan": "Scan",
-      "doorSale": "Door Sale",
-      "staff": "Staff",
-      "reports": "Reports",
-      "notifications": "Notifications",
+      "allContacts": "All contacts",
       "auditLog": "Audit Log",
-      "settings": "Settings"
+      "applications": "Applications",
+      "companyInfo": "Company Info",
+      "contacts": "Contacts",
+      "dashboard": "Dashboard",
+      "devInfo": "Dev Info",
+      "doorSale": "Manual Sales",
+      "events": "Events",
+      "founders": "Founders",
+      "investors": "Investors",
+      "jobOffers": "Job Offers",
+      "news": "News",
+      "newsletters": "Newsletters",
+      "notifications": "Notifications",
+      "orders": "Orders",
+      "partners": "Sponsors & Partners",
+      "press": "Press",
+      "reports": "Reports",
+      "scan": "Scan",
+      "settings": "Settings",
+      "staff": "Staff (internal)",
+      "team": "Team (public)",
+      "tickets": "Tickets"
     },
     "dashboard": {
       "title": "Dashboard",
@@ -307,6 +320,45 @@
         "deploymentNote": "Three apps deployed: admin.dbc-germany.com, tickets.dbc-germany.com, dbc-germany.com. Shared packages under packages/."
       },
       "footer": "Built and maintained by"
+    },
+    "userMenu": {
+      "myAccount": "My account",
+      "preferences": "Preferences",
+      "security": "Security",
+      "theme": "Theme",
+      "light": "Light",
+      "dark": "Dark",
+      "signOut": "Sign out",
+      "signOutEverywhere": "Sign out on all devices",
+      "openMenu": "Open user menu"
+    },
+    "shell": {
+      "welcome": "Welcome back",
+      "mobileMenu": "Open menu",
+      "mobileMenuClose": "Close menu",
+      "expandSidebar": "Expand sidebar",
+      "collapseSidebar": "Collapse sidebar",
+      "createdBy": "Created by"
+    },
+    "common": {
+      "save": "Save",
+      "saving": "Saving…",
+      "cancel": "Cancel",
+      "edit": "Edit",
+      "delete": "Delete",
+      "add": "Add",
+      "back": "Back",
+      "loading": "Loading…",
+      "noResults": "No results",
+      "required": "Required",
+      "optional": "optional",
+      "search": "Search",
+      "filter": "Filter",
+      "exportCsv": "Export CSV",
+      "actions": "Actions",
+      "status": "Status",
+      "created": "Created",
+      "updated": "Updated"
     }
   },
   "gdpr": {

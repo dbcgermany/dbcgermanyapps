@@ -182,17 +182,30 @@
   },
   "admin": {
     "nav": {
-      "dashboard": "Dashboard",
-      "events": "Events",
-      "orders": "Orders",
-      "tickets": "Tickets",
-      "scan": "Scan",
-      "doorSale": "Door Sale",
-      "staff": "Staff",
-      "reports": "Reports",
+      "allContacts": "Tous les contacts",
+      "auditLog": "Journal d’audit",
+      "applications": "Candidatures",
+      "companyInfo": "Informations société",
+      "contacts": "Contacts",
+      "dashboard": "Tableau de bord",
+      "devInfo": "Infos dev",
+      "doorSale": "Ventes manuelles",
+      "events": "Événements",
+      "founders": "Fondateurs",
+      "investors": "Investisseurs",
+      "jobOffers": "Offres d’emploi",
+      "news": "Actualités",
+      "newsletters": "Newsletters",
       "notifications": "Notifications",
-      "auditLog": "Audit Log",
-      "settings": "Settings"
+      "orders": "Commandes",
+      "partners": "Sponsors & partenaires",
+      "press": "Presse",
+      "reports": "Rapports",
+      "scan": "Scan",
+      "settings": "Paramètres",
+      "staff": "Équipe (interne)",
+      "team": "Équipe (publique)",
+      "tickets": "Billets"
     },
     "dashboard": {
       "title": "Dashboard",
@@ -307,6 +320,45 @@
         "deploymentNote": "Trois apps en production : admin.dbc-germany.com, tickets.dbc-germany.com, dbc-germany.com. Packages partagés sous packages/."
       },
       "footer": "Conçu et maintenu par"
+    },
+    "userMenu": {
+      "myAccount": "Mon compte",
+      "preferences": "Préférences",
+      "security": "Sécurité",
+      "theme": "Thème",
+      "light": "Clair",
+      "dark": "Sombre",
+      "signOut": "Se déconnecter",
+      "signOutEverywhere": "Déconnecter tous les appareils",
+      "openMenu": "Ouvrir le menu utilisateur"
+    },
+    "shell": {
+      "welcome": "Bon retour",
+      "mobileMenu": "Ouvrir le menu",
+      "mobileMenuClose": "Fermer le menu",
+      "expandSidebar": "Déployer la barre latérale",
+      "collapseSidebar": "Réduire la barre latérale",
+      "createdBy": "Créé par"
+    },
+    "common": {
+      "save": "Enregistrer",
+      "saving": "Enregistrement…",
+      "cancel": "Annuler",
+      "edit": "Modifier",
+      "delete": "Supprimer",
+      "add": "Ajouter",
+      "back": "Retour",
+      "loading": "Chargement…",
+      "noResults": "Aucun résultat",
+      "required": "Obligatoire",
+      "optional": "optionnel",
+      "search": "Rechercher",
+      "filter": "Filtrer",
+      "exportCsv": "Exporter CSV",
+      "actions": "Actions",
+      "status": "Statut",
+      "created": "Créé le",
+      "updated": "Mis à jour"
     }
   },
   "gdpr": {

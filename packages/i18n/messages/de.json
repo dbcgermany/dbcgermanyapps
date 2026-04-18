@@ -182,17 +182,30 @@
   },
   "admin": {
     "nav": {
-      "dashboard": "Dashboard",
-      "events": "Events",
-      "orders": "Orders",
-      "tickets": "Tickets",
-      "scan": "Scan",
-      "doorSale": "Door Sale",
-      "staff": "Staff",
-      "reports": "Reports",
-      "notifications": "Notifications",
-      "auditLog": "Audit Log",
-      "settings": "Settings"
+      "allContacts": "Alle Kontakte",
+      "auditLog": "Audit-Log",
+      "applications": "Bewerbungen",
+      "companyInfo": "Unternehmensdaten",
+      "contacts": "Kontakte",
+      "dashboard": "Übersicht",
+      "devInfo": "Dev-Info",
+      "doorSale": "Direktverkauf",
+      "events": "Veranstaltungen",
+      "founders": "Gründer:innen",
+      "investors": "Investor:innen",
+      "jobOffers": "Stellenangebote",
+      "news": "Aktuelles",
+      "newsletters": "Newsletter",
+      "notifications": "Benachrichtigungen",
+      "orders": "Bestellungen",
+      "partners": "Sponsoren & Partner",
+      "press": "Presse",
+      "reports": "Berichte",
+      "scan": "Einlass",
+      "settings": "Einstellungen",
+      "staff": "Team (intern)",
+      "team": "Team (öffentlich)",
+      "tickets": "Tickets"
     },
     "dashboard": {
       "title": "Dashboard",
@@ -307,6 +320,45 @@
         "deploymentNote": "Drei Apps in Produktion: admin.dbc-germany.com, tickets.dbc-germany.com, dbc-germany.com. Gemeinsame Pakete unter packages/."
       },
       "footer": "Gebaut und gepflegt von"
+    },
+    "userMenu": {
+      "myAccount": "Mein Konto",
+      "preferences": "Einstellungen",
+      "security": "Sicherheit",
+      "theme": "Design",
+      "light": "Hell",
+      "dark": "Dunkel",
+      "signOut": "Abmelden",
+      "signOutEverywhere": "Auf allen Geräten abmelden",
+      "openMenu": "Benutzermenü öffnen"
+    },
+    "shell": {
+      "welcome": "Willkommen zurück",
+      "mobileMenu": "Menü öffnen",
+      "mobileMenuClose": "Menü schließen",
+      "expandSidebar": "Seitenleiste ausklappen",
+      "collapseSidebar": "Seitenleiste einklappen",
+      "createdBy": "Erstellt von"
+    },
+    "common": {
+      "save": "Speichern",
+      "saving": "Wird gespeichert…",
+      "cancel": "Abbrechen",
+      "edit": "Bearbeiten",
+      "delete": "Löschen",
+      "add": "Hinzufügen",
+      "back": "Zurück",
+      "loading": "Wird geladen…",
+      "noResults": "Keine Ergebnisse",
+      "required": "Pflichtfeld",
+      "optional": "optional",
+      "search": "Suche",
+      "filter": "Filter",
+      "exportCsv": "CSV exportieren",
+      "actions": "Aktionen",
+      "status": "Status",
+      "created": "Erstellt",
+      "updated": "Aktualisiert"
     }
   },
   "gdpr": {
