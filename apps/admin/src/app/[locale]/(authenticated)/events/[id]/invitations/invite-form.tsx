@@ -195,7 +195,7 @@ export function InviteForm({
         >
           <option value="en">English</option>
           <option value="de">Deutsch</option>
-          <option value="fr">Fran\u00E7ais</option>
+          <option value="fr">Français</option>
         </select>
       </label>
 

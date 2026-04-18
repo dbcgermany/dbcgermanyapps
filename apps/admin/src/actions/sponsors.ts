@@ -27,6 +27,15 @@ export async function createSponsor(eventId: string, formData: FormData) {
   const locale = formData.get("locale") as string;
   const companyName = (formData.get("company_name") as string).trim();
 
+  const { data: maxRow } = await supabase
+    .from("event_sponsors")
+    .select("sort_order")
+    .eq("event_id", eventId)
+    .order("sort_order", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  const nextSort = ((maxRow?.sort_order as number | undefined) ?? 0) + 10;
+
   const sponsorData = {
     event_id: eventId,
     company_name: companyName,
@@ -45,6 +54,7 @@ export async function createSponsor(eventId: string, formData: FormData) {
     website_url: (formData.get("website_url") as string) || null,
     deliverables: (formData.get("deliverables") as string) || null,
     notes: (formData.get("notes") as string) || null,
+    sort_order: nextSort,
     created_by: user.userId,
   };
 

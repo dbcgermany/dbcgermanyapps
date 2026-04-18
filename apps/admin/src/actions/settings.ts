@@ -205,6 +205,10 @@ export async function deleteBuyerPII(
     },
   });
 
+  revalidatePath("/[locale]/orders", "page");
+  revalidatePath("/[locale]/contacts", "page");
+  revalidatePath("/[locale]/audit-log", "page");
+
   return { success: true };
 }
 

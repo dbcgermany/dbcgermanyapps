@@ -55,7 +55,7 @@ export function TierForm({
             id="name_de"
             name="name_de"
             type="text"
-            placeholder="e.g., Fr\u00fchbucher"
+            placeholder="e.g., Frühbucher"
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
@@ -67,7 +67,7 @@ export function TierForm({
             id="name_fr"
             name="name_fr"
             type="text"
-            placeholder="e.g., Pr\u00e9vente"
+            placeholder="e.g., Prévente"
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>

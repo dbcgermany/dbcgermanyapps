@@ -328,7 +328,7 @@ export async function getEventFinancialSummary(
   eventId: string,
   taxRatePct: number = 19
 ): Promise<EventFinancialSummary> {
-  await requireRole("admin");
+  await requireRole("manager");
   const supabase = await createServerClient();
 
   const [eventRes, revenueRes, expensesRes] = await Promise.all([
