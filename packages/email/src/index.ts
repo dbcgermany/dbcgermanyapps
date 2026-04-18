@@ -29,6 +29,7 @@ export {
   sendRefundConfirmation,
   sendContactFormConfirm,
   sendPreEventReminder,
+  sendPasswordReset,
 } from "./send-transactional";
 export type {
   SendTransferConfirmationInput,
@@ -40,6 +41,7 @@ export type {
   SendRefundConfirmationInput,
   SendContactFormConfirmInput,
   SendPreEventReminderInput,
+  SendPasswordResetInput,
 } from "./send-transactional";
 export {
   sendNewsletterEmail,
@@ -64,6 +66,8 @@ export { PreEventReminderEmail } from "./templates/pre-event-reminder";
 export type { PreEventReminderEmailProps } from "./templates/pre-event-reminder";
 export { PaymentReminderEmail } from "./templates/payment-reminder";
 export type { PaymentReminderEmailProps } from "./templates/payment-reminder";
+export { PasswordResetEmail } from "./templates/password-reset";
+export type { PasswordResetEmailProps } from "./templates/password-reset";
 export { InvoicePdf } from "./pdf/invoice-pdf";
 export { generateInvoicePdf } from "./pdf/generate-invoice";
 export type { GenerateInvoiceInput } from "./pdf/generate-invoice";

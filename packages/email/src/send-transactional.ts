@@ -10,6 +10,7 @@ import { JobApplicationConfirmEmail } from "./templates/job-application-confirm"
 import { RefundConfirmationEmail } from "./templates/refund-confirmation";
 import { ContactFormConfirmEmail } from "./templates/contact-form-confirm";
 import { PreEventReminderEmail } from "./templates/pre-event-reminder";
+import { PasswordResetEmail } from "./templates/password-reset";
 
 type Locale = "en" | "de" | "fr";
 
@@ -404,6 +405,42 @@ export async function sendPreEventReminder(
     from: transactionalFrom(),
     to: input.to,
     subject,
+    html,
+  });
+  if (res.error) throw new Error(`Resend: ${res.error.message}`);
+  return { id: res.data?.id ?? "" };
+}
+
+// ---------------------------------------------------------------------------
+// Password Reset (uses Resend, not Supabase SMTP)
+// ---------------------------------------------------------------------------
+
+export interface SendPasswordResetInput {
+  to: string;
+  recipientName?: string;
+  actionLink: string;
+  locale: Locale;
+}
+
+const PASSWORD_RESET_SUBJECT = {
+  en: "Reset your password \u2014 DBC Germany",
+  de: "Passwort zur\u00FCcksetzen \u2014 DBC Germany",
+  fr: "R\u00E9initialiser votre mot de passe \u2014 DBC Germany",
+};
+
+export async function sendPasswordReset(input: SendPasswordResetInput) {
+  const html = await render(
+    React.createElement(PasswordResetEmail, {
+      recipientName: input.recipientName,
+      actionLink: input.actionLink,
+      locale: input.locale,
+    })
+  );
+  const resend = createEmailClient();
+  const res = await resend.emails.send({
+    from: transactionalFrom(),
+    to: input.to,
+    subject: PASSWORD_RESET_SUBJECT[input.locale],
     html,
   });
   if (res.error) throw new Error(`Resend: ${res.error.message}`);

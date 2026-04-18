@@ -181,12 +181,50 @@ export async function requestPasswordReset() {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
-  const { error } = await service.auth.admin.generateLink({
+  const adminUrl =
+    process.env.NEXT_PUBLIC_ADMIN_URL ?? "https://admin.dbc-germany.com";
+
+  // Generate a recovery link (does NOT send email — we send it via Resend ourselves)
+  const { data, error } = await service.auth.admin.generateLink({
     type: "recovery",
     email: user.email,
+    options: {
+      redirectTo: `${adminUrl}/en/set-password`,
+    },
   });
 
   if (error) return { error: error.message };
+
+  const actionLink = data?.properties?.action_link;
+  if (!actionLink) {
+    return { error: "Failed to generate recovery link." };
+  }
+
+  // Fetch user's display name + locale for personalised email
+  const { data: profile } = await service
+    .from("profiles")
+    .select("display_name, locale")
+    .eq("id", user.userId)
+    .maybeSingle();
+
+  const locale = (profile?.locale === "de" || profile?.locale === "fr"
+    ? profile.locale
+    : "en") as "en" | "de" | "fr";
+  const firstName = profile?.display_name?.trim().split(/\s+/)[0] || undefined;
+
+  try {
+    const { sendPasswordReset } = await import("@dbc/email");
+    await sendPasswordReset({
+      to: user.email,
+      recipientName: firstName,
+      actionLink,
+      locale,
+    });
+  } catch (err) {
+    console.error("[requestPasswordReset] email send failed:", err);
+    return { error: "Failed to send reset email. Please try again." };
+  }
+
   return { success: true };
 }
 

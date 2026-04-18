@@ -2,7 +2,7 @@
 
 import { Suspense, use, useActionState, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { loginWithPassword } from "@/actions/auth";
+import { loginWithPassword, requestPasswordResetForEmail } from "@/actions/auth";
 import { createBrowserClient } from "@dbc/supabase";
 
 export default function LoginPage({
@@ -102,12 +102,9 @@ function LoginForm({ locale }: { locale: string }) {
     }
     setForgotStage("sending");
     setForgotError(null);
-    const supabase = createBrowserClient();
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/${locale}/set-password`,
-    });
-    if (error) {
-      setForgotError(error.message);
+    const res = await requestPasswordResetForEmail(email, locale);
+    if (res.error) {
+      setForgotError(res.error);
       setForgotStage("error");
     } else {
       setForgotStage("sent");
