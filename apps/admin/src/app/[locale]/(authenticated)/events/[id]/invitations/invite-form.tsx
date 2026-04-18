@@ -10,6 +10,84 @@ const DEFAULT_INVITATION_BODY: Record<string, string> = {
   fr: "Nous avons le plaisir de vous inviter à {event} le {date} à {venue}.\n\nVotre billet est joint à cet e-mail au format PDF. Veuillez présenter le code QR à l'entrée.\n\nNous nous réjouissons de vous accueillir.",
 };
 
+const T = {
+  en: {
+    pickTier: "Pick a tier.",
+    sent: "Invitation sent to {email}.",
+    delivery: "Delivery",
+    justTicket: "Just the ticket",
+    justTicketDesc: "Informal email, ticket PDF only.",
+    ticketWithLetter: "Ticket + formal invitation letter",
+    ticketWithLetterDesc: "Formal email with salutation, both PDFs attached.",
+    recipientType: "Recipient type",
+    invitedGuest: "Invited guest",
+    preAssigned: "Pre-assigned ticket",
+    tier: "Tier", left: "left",
+    gender: "Gender", select: "-- Select --",
+    female: "Female", male: "Male", diverse: "Diverse",
+    titleOpt: "Title (optional)", none: "None",
+    mr: "Mr.", mrs: "Mrs.", ms: "Ms.", dr: "Dr.", prof: "Prof.", custom: "Custom…",
+    customTitle: "Custom title", customTitlePh: "e.g. HRH, Amb., etc.",
+    firstName: "First name", lastName: "Last name", email: "Email",
+    inviteLang: "Invitation language",
+    internalNote: "Internal note (optional)",
+    notePh: "Why this person is invited — for the audit log",
+    customize: "Customize invitation text", bodyLabel: "Email body text",
+    placeholdersHint: "Available placeholders: {event}, {date}, {venue}",
+    sending: "Sending…", sendInvitation: "Send invitation",
+  },
+  de: {
+    pickTier: "Kategorie auswählen.",
+    sent: "Einladung gesendet an {email}.",
+    delivery: "Versand",
+    justTicket: "Nur das Ticket",
+    justTicketDesc: "Informelle E-Mail, nur Ticket-PDF.",
+    ticketWithLetter: "Ticket + formeller Einladungsbrief",
+    ticketWithLetterDesc: "Formelle E-Mail mit Anrede, beide PDFs angehängt.",
+    recipientType: "Empfängertyp",
+    invitedGuest: "Eingeladener Gast",
+    preAssigned: "Vorab zugewiesenes Ticket",
+    tier: "Kategorie", left: "übrig",
+    gender: "Geschlecht", select: "-- Auswählen --",
+    female: "Weiblich", male: "Männlich", diverse: "Divers",
+    titleOpt: "Titel (optional)", none: "Keiner",
+    mr: "Herr", mrs: "Frau", ms: "Frau", dr: "Dr.", prof: "Prof.", custom: "Individuell…",
+    customTitle: "Individueller Titel", customTitlePh: "z. B. HRH, Botschafter usw.",
+    firstName: "Vorname", lastName: "Nachname", email: "E-Mail",
+    inviteLang: "Sprache der Einladung",
+    internalNote: "Interne Notiz (optional)",
+    notePh: "Warum diese Person eingeladen wird — fürs Audit-Log",
+    customize: "Einladungstext anpassen", bodyLabel: "E-Mail-Text",
+    placeholdersHint: "Verfügbare Platzhalter: {event}, {date}, {venue}",
+    sending: "Wird gesendet…", sendInvitation: "Einladung senden",
+  },
+  fr: {
+    pickTier: "Sélectionnez une catégorie.",
+    sent: "Invitation envoyée à {email}.",
+    delivery: "Envoi",
+    justTicket: "Uniquement le billet",
+    justTicketDesc: "E-mail informel, uniquement le PDF du billet.",
+    ticketWithLetter: "Billet + lettre d’invitation formelle",
+    ticketWithLetterDesc: "E-mail formel avec salutation, les deux PDF joints.",
+    recipientType: "Type de destinataire",
+    invitedGuest: "Invité",
+    preAssigned: "Billet pré-attribué",
+    tier: "Catégorie", left: "restants",
+    gender: "Genre", select: "-- Sélectionner --",
+    female: "Femme", male: "Homme", diverse: "Divers",
+    titleOpt: "Titre (optionnel)", none: "Aucun",
+    mr: "M.", mrs: "Mme", ms: "Mme", dr: "Dr.", prof: "Pr.", custom: "Personnalisé…",
+    customTitle: "Titre personnalisé", customTitlePh: "ex. HRH, Amb., etc.",
+    firstName: "Prénom", lastName: "Nom", email: "E-mail",
+    inviteLang: "Langue de l’invitation",
+    internalNote: "Note interne (optionnelle)",
+    notePh: "Pourquoi cette personne est invitée — pour le journal d’audit",
+    customize: "Personnaliser le texte", bodyLabel: "Corps de l’e-mail",
+    placeholdersHint: "Variables disponibles : {event}, {date}, {venue}",
+    sending: "Envoi…", sendInvitation: "Envoyer l’invitation",
+  },
+} as const;
+
 export function InviteForm({
   eventId,
   locale,
@@ -41,6 +119,7 @@ export function InviteForm({
     DEFAULT_INVITATION_BODY[inviteLocale] ?? DEFAULT_INVITATION_BODY.en
   );
   const [isPending, startTransition] = useTransition();
+  const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
 
   // Update default body text when locale changes (only if user hasn't customised)
   useEffect(() => {
@@ -54,7 +133,7 @@ export function InviteForm({
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!tierId) {
-      toast.error("Pick a tier.");
+      toast.error(t.pickTier);
       return;
     }
     const effectiveTitle = title === "custom" ? customTitle : title;
@@ -79,7 +158,7 @@ export function InviteForm({
       if ("error" in result) {
         toast.error(result.error);
       } else {
-        toast.success(`Invitation sent to ${email}.`);
+        toast.success(t.sent.replace("{email}", email));
         setFirstName("");
         setLastName("");
         setEmail("");
@@ -103,7 +182,7 @@ export function InviteForm({
       {/* Delivery mode — the core toggle */}
       <fieldset className="rounded-lg border border-border p-3">
         <legend className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Delivery
+          {t.delivery}
         </legend>
         <div className="grid gap-2 sm:grid-cols-2">
           <label className="flex cursor-pointer items-start gap-2 rounded-md border border-border p-2 text-sm hover:border-primary/50 has-checked:border-primary has-checked:bg-primary/5">
@@ -115,9 +194,9 @@ export function InviteForm({
               className="mt-0.5 accent-primary"
             />
             <span>
-              <span className="block font-medium">Just the ticket</span>
+              <span className="block font-medium">{t.justTicket}</span>
               <span className="block text-xs text-muted-foreground">
-                Informal email, ticket PDF only.
+                {t.justTicketDesc}
               </span>
             </span>
           </label>
@@ -131,10 +210,10 @@ export function InviteForm({
             />
             <span>
               <span className="block font-medium">
-                Ticket + formal invitation letter
+                {t.ticketWithLetter}
               </span>
               <span className="block text-xs text-muted-foreground">
-                Formal email with salutation, both PDFs attached.
+                {t.ticketWithLetterDesc}
               </span>
             </span>
           </label>
@@ -144,7 +223,7 @@ export function InviteForm({
       {/* Acquisition type */}
       <fieldset className="rounded-lg border border-border p-3">
         <legend className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Recipient type
+          {t.recipientType}
         </legend>
         <div className="flex gap-4 text-sm">
           <label className="flex cursor-pointer items-center gap-2">
@@ -155,7 +234,7 @@ export function InviteForm({
               onChange={() => setAcquisitionType("invited")}
               className="accent-primary"
             />
-            Invited guest
+            {t.invitedGuest}
           </label>
           <label className="flex cursor-pointer items-center gap-2">
             <input
@@ -165,22 +244,22 @@ export function InviteForm({
               onChange={() => setAcquisitionType("assigned")}
               className="accent-primary"
             />
-            Pre-assigned ticket
+            {t.preAssigned}
           </label>
         </div>
       </fieldset>
 
       <label className="block">
-        <span className="mb-1 block text-sm font-medium">Tier</span>
+        <span className="mb-1 block text-sm font-medium">{t.tier}</span>
         <select
           value={tierId}
           onChange={(e) => setTierId(e.target.value)}
           className={input}
         >
-          {tiers.map((t) => (
-            <option key={t.id} value={t.id}>
-              {t.name}
-              {t.remaining !== null ? ` (${t.remaining} left)` : ""}
+          {tiers.map((tier) => (
+            <option key={tier.id} value={tier.id}>
+              {tier.name}
+              {tier.remaining !== null ? ` (${tier.remaining} ${t.left})` : ""}
             </option>
           ))}
         </select>
@@ -189,34 +268,34 @@ export function InviteForm({
       {/* Gender + Title row */}
       <div className="grid grid-cols-2 gap-3">
         <label className="block">
-          <span className="mb-1 block text-sm font-medium">Gender</span>
+          <span className="mb-1 block text-sm font-medium">{t.gender}</span>
           <select
             value={gender}
             onChange={(e) => setGender(e.target.value)}
             className={input}
           >
-            <option value="">-- Select --</option>
-            <option value="female">Female</option>
-            <option value="male">Male</option>
-            <option value="diverse">Diverse</option>
+            <option value="">{t.select}</option>
+            <option value="female">{t.female}</option>
+            <option value="male">{t.male}</option>
+            <option value="diverse">{t.diverse}</option>
           </select>
         </label>
         <label className="block">
           <span className="mb-1 block text-sm font-medium">
-            Title (optional)
+            {t.titleOpt}
           </span>
           <select
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             className={input}
           >
-            <option value="">None</option>
-            <option value="mr">Mr.</option>
-            <option value="mrs">Mrs.</option>
-            <option value="ms">Ms.</option>
-            <option value="dr">Dr.</option>
-            <option value="prof">Prof.</option>
-            <option value="custom">Custom...</option>
+            <option value="">{t.none}</option>
+            <option value="mr">{t.mr}</option>
+            <option value="mrs">{t.mrs}</option>
+            <option value="ms">{t.ms}</option>
+            <option value="dr">{t.dr}</option>
+            <option value="prof">{t.prof}</option>
+            <option value="custom">{t.custom}</option>
           </select>
         </label>
       </div>
@@ -224,19 +303,19 @@ export function InviteForm({
       {/* Custom title input */}
       {title === "custom" && (
         <label className="block">
-          <span className="mb-1 block text-sm font-medium">Custom title</span>
+          <span className="mb-1 block text-sm font-medium">{t.customTitle}</span>
           <input
             value={customTitle}
             onChange={(e) => setCustomTitle(e.target.value)}
             className={input}
-            placeholder="e.g. HRH, Amb., etc."
+            placeholder={t.customTitlePh}
           />
         </label>
       )}
 
       <div className="grid grid-cols-2 gap-3">
         <label className="block">
-          <span className="mb-1 block text-sm font-medium">First name</span>
+          <span className="mb-1 block text-sm font-medium">{t.firstName}</span>
           <input
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
@@ -245,7 +324,7 @@ export function InviteForm({
           />
         </label>
         <label className="block">
-          <span className="mb-1 block text-sm font-medium">Last name</span>
+          <span className="mb-1 block text-sm font-medium">{t.lastName}</span>
           <input
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
@@ -254,7 +333,7 @@ export function InviteForm({
         </label>
       </div>
       <label className="block">
-        <span className="mb-1 block text-sm font-medium">Email</span>
+        <span className="mb-1 block text-sm font-medium">{t.email}</span>
         <input
           type="email"
           value={email}
@@ -267,7 +346,7 @@ export function InviteForm({
       {/* Locale selector */}
       <label className="block">
         <span className="mb-1 block text-sm font-medium">
-          Invitation language
+          {t.inviteLang}
         </span>
         <select
           value={inviteLocale}
@@ -282,13 +361,13 @@ export function InviteForm({
 
       <label className="block">
         <span className="mb-1 block text-sm font-medium">
-          Internal note (optional)
+          {t.internalNote}
         </span>
         <input
           value={note}
           onChange={(e) => setNote(e.target.value)}
           className={input}
-          placeholder="Why this person is invited — for the audit log"
+          placeholder={t.notePh}
         />
       </label>
 
@@ -300,7 +379,7 @@ export function InviteForm({
             onClick={() => setShowCustomBody(!showCustomBody)}
             className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground"
           >
-            <span>Customize invitation text</span>
+            <span>{t.customize}</span>
             <span className="text-xs">
               {showCustomBody ? "\u25B2" : "\u25BC"}
             </span>
@@ -308,7 +387,7 @@ export function InviteForm({
           {showCustomBody && (
             <div className="border-t border-border px-4 pb-4 pt-3">
               <label className="mb-1.5 block text-sm font-medium">
-                Email body text
+                {t.bodyLabel}
               </label>
               <textarea
                 value={customBody}
@@ -317,7 +396,7 @@ export function InviteForm({
                 rows={10}
               />
               <p className="mt-2 text-xs text-muted-foreground">
-                Available placeholders: {"{event}"}, {"{date}"}, {"{venue}"}
+                {t.placeholdersHint}
               </p>
             </div>
           )}
@@ -329,7 +408,7 @@ export function InviteForm({
         disabled={isPending || !tierId}
         className="w-full rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60"
       >
-        {isPending ? "Sending\u2026" : "Send invitation"}
+        {isPending ? t.sending : t.sendInvitation}
       </button>
     </form>
   );
