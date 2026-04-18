@@ -8,12 +8,46 @@ import {
 import { PageHeader } from "@/components/page-header";
 import { TeamMemberForm } from "../member-form";
 
+const T = {
+  en: {
+    back: "← Team",
+    linked: "Linked to staff account",
+    notLinked: "No staff account linked",
+    viewStaff: "View staff profile →",
+    delete: "Delete",
+    visibility: {
+      public: "Public", internal: "Internal", hidden: "Hidden",
+    } as Record<string, string>,
+  },
+  de: {
+    back: "← Team",
+    linked: "Mit Mitarbeiterkonto verknüpft",
+    notLinked: "Kein Mitarbeiterkonto verknüpft",
+    viewStaff: "Mitarbeiterprofil ansehen →",
+    delete: "Löschen",
+    visibility: {
+      public: "Öffentlich", internal: "Intern", hidden: "Ausgeblendet",
+    } as Record<string, string>,
+  },
+  fr: {
+    back: "← Équipe",
+    linked: "Lié à un compte équipe",
+    notLinked: "Aucun compte équipe lié",
+    viewStaff: "Voir le profil équipe →",
+    delete: "Supprimer",
+    visibility: {
+      public: "Public", internal: "Interne", hidden: "Masqué",
+    } as Record<string, string>,
+  },
+} as const;
+
 export default async function EditTeamMemberPage({
   params,
 }: {
   params: Promise<{ locale: string; id: string }>;
 }) {
   const { locale, id } = await params;
+  const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
   const [member, staffAccounts] = await Promise.all([
     getTeamMember(id),
     getStaffAccountsForLinking(id),
@@ -25,12 +59,12 @@ export default async function EditTeamMemberPage({
         href={`/${locale}/team`}
         className="text-sm text-muted-foreground hover:text-foreground"
       >
-        &larr; Team
+        {t.back}
       </Link>
 
       <PageHeader
         title={member.name}
-        description={member.profile_id ? "Linked to staff account" : "No staff account linked"}
+        description={member.profile_id ? t.linked : t.notLinked}
         cta={
           <div className="flex items-center gap-3">
             {member.profile_id && (
@@ -38,11 +72,11 @@ export default async function EditTeamMemberPage({
                 href={`/${locale}/staff/${member.profile_id}`}
                 className="rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
               >
-                View staff profile &rarr;
+                {t.viewStaff}
               </Link>
             )}
             <Badge variant={member.visibility === "public" ? "success" : member.visibility === "internal" ? "warning" : "default"}>
-              {member.visibility}
+              {t.visibility[member.visibility] ?? member.visibility}
             </Badge>
             <form
               action={async () => {
@@ -54,7 +88,7 @@ export default async function EditTeamMemberPage({
                 type="submit"
                 className="rounded-md border border-red-300 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
               >
-                Delete
+                {t.delete}
               </button>
             </form>
           </div>
