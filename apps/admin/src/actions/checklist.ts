@@ -125,8 +125,10 @@ export async function createChecklistItem(
     description:
       ((formData.get("description") as string) || "").trim() || null,
     due_date: (formData.get("due_date") as string) || null,
-    estimated_cost_cents: formData.get("estimated_cost_cents")
-      ? parseInt(formData.get("estimated_cost_cents") as string, 10)
+    estimated_cost_cents: formData.get("estimated_cost_eur")
+      ? Math.round(
+          parseFloat(formData.get("estimated_cost_eur") as string) * 100
+        )
       : null,
     assigned_to: (formData.get("assigned_to") as string) || null,
     notes: ((formData.get("notes") as string) || "").trim() || null,
@@ -168,13 +170,13 @@ export async function updateChecklistItem(id: string, formData: FormData) {
       patch[f] = val === "" ? null : val;
     }
   }
-  if (formData.get("estimated_cost_cents") !== null) {
-    const v = (formData.get("estimated_cost_cents") as string) || "";
-    patch.estimated_cost_cents = v ? parseInt(v, 10) : null;
+  if (formData.get("estimated_cost_eur") !== null) {
+    const v = (formData.get("estimated_cost_eur") as string) || "";
+    patch.estimated_cost_cents = v ? Math.round(parseFloat(v) * 100) : null;
   }
-  if (formData.get("actual_cost_cents") !== null) {
-    const v = (formData.get("actual_cost_cents") as string) || "";
-    patch.actual_cost_cents = v ? parseInt(v, 10) : null;
+  if (formData.get("actual_cost_eur") !== null) {
+    const v = (formData.get("actual_cost_eur") as string) || "";
+    patch.actual_cost_cents = v ? Math.round(parseFloat(v) * 100) : null;
   }
 
   const { error } = await supabase

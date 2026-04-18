@@ -217,8 +217,10 @@ export async function updateEvent(id: string, formData: FormData) {
     sales_target_tickets: formData.get("sales_target_tickets")
       ? parseInt(formData.get("sales_target_tickets") as string, 10)
       : null,
-    sales_target_revenue_cents: formData.get("sales_target_revenue_cents")
-      ? parseInt(formData.get("sales_target_revenue_cents") as string, 10)
+    sales_target_revenue_cents: formData.get("sales_target_revenue_eur")
+      ? Math.round(
+          parseFloat(formData.get("sales_target_revenue_eur") as string) * 100
+        )
       : null,
   };
 

@@ -309,9 +309,11 @@ export function ChecklistClient({
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             />
             <input
-              name="estimated_cost_cents"
+              name="estimated_cost_eur"
               type="number"
-              placeholder="Est. cost (cents)"
+              step="0.01"
+              min="0"
+              placeholder="Est. cost (\u20AC)"
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             />
             <select

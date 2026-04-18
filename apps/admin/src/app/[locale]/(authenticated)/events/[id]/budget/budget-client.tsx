@@ -32,7 +32,7 @@ const T = {
   en: {
     description: "Description",
     category: "Category",
-    amount: "Amount (cents)",
+    amount: "Amount (\u20AC)",
     vendor: "Vendor",
     vendorContact: "Vendor contact",
     paidAt: "Paid on",
@@ -44,7 +44,7 @@ const T = {
   de: {
     description: "Beschreibung",
     category: "Kategorie",
-    amount: "Betrag (Cent)",
+    amount: "Betrag (\u20AC)",
     vendor: "Lieferant",
     vendorContact: "Kontakt",
     paidAt: "Bezahlt am",
@@ -56,7 +56,7 @@ const T = {
   fr: {
     description: "Description",
     category: "Cat\u00E9gorie",
-    amount: "Montant (cents)",
+    amount: "Montant (\u20AC)",
     vendor: "Fournisseur",
     vendorContact: "Contact",
     paidAt: "Pay\u00E9 le",
@@ -185,8 +185,10 @@ export function BudgetClient({
         </div>
         <div className="grid gap-3 sm:grid-cols-3">
           <input
-            name="amount_cents"
+            name="amount"
             type="number"
+            step="0.01"
+            min="0"
             placeholder={t.amount}
             required
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
