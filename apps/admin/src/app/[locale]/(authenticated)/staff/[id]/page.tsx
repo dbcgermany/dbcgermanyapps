@@ -37,13 +37,20 @@ export default async function StaffDetailPage({
 
   const displayName = data.profile.display_name || data.profile.email;
 
+  const PT = {
+    en: { back: "← Staff", teamProfile: "Team profile →" },
+    de: { back: "← Team (intern)", teamProfile: "Öffentliches Profil →" },
+    fr: { back: "← Équipe (interne)", teamProfile: "Profil public →" },
+  } as const;
+  const pt = PT[l];
+
   return (
     <div>
       <Link
         href={`/${locale}/staff`}
         className="text-sm text-muted-foreground hover:text-foreground"
       >
-        &larr; Staff
+        {pt.back}
       </Link>
 
       <PageHeader
@@ -56,7 +63,7 @@ export default async function StaffDetailPage({
                 href={`/${locale}/team/${data.linkedTeamMember.id}`}
                 className="rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
               >
-                Team profile &rarr;
+                {pt.teamProfile}
               </Link>
             )}
             <Badge variant={ROLE_VARIANT[data.profile.role] ?? "default"}>

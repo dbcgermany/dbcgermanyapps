@@ -5,12 +5,37 @@ import { createNewsPost } from "@/actions/news";
 import { PageHeader } from "@/components/page-header";
 import { CoverImageUpload } from "@/components/cover-image-upload";
 
+const T = {
+  en: {
+    title: "New news post",
+    titleEn: "Title (EN)", titleDe: "Title (DE)", titleFr: "Title (FR)",
+    excerptEn: "Excerpt (EN)", excerptDe: "Excerpt (DE)", excerptFr: "Excerpt (FR)",
+    bodyEn: "Body (EN)", bodyDe: "Body (DE)", bodyFr: "Body (FR)",
+    author: "Author (optional)", saving: "Saving…", saveDraft: "Save draft",
+  },
+  de: {
+    title: "Neuer Beitrag",
+    titleEn: "Titel (EN)", titleDe: "Titel (DE)", titleFr: "Titel (FR)",
+    excerptEn: "Kurzfassung (EN)", excerptDe: "Kurzfassung (DE)", excerptFr: "Kurzfassung (FR)",
+    bodyEn: "Inhalt (EN)", bodyDe: "Inhalt (DE)", bodyFr: "Inhalt (FR)",
+    author: "Autor:in (optional)", saving: "Wird gespeichert…", saveDraft: "Entwurf speichern",
+  },
+  fr: {
+    title: "Nouveau billet",
+    titleEn: "Titre (EN)", titleDe: "Titre (DE)", titleFr: "Titre (FR)",
+    excerptEn: "Extrait (EN)", excerptDe: "Extrait (DE)", excerptFr: "Extrait (FR)",
+    bodyEn: "Contenu (EN)", bodyDe: "Contenu (DE)", bodyFr: "Contenu (FR)",
+    author: "Auteur (optionnel)", saving: "Enregistrement…", saveDraft: "Enregistrer le brouillon",
+  },
+} as const;
+
 export default function NewNewsPostPage({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = use(params);
+  const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
 
   const [state, formAction, isPending] = useActionState(
     async (_prev: { error: string } | null, formData: FormData) => {
@@ -22,7 +47,7 @@ export default function NewNewsPostPage({
 
   return (
     <div>
-      <PageHeader title="New news post" />
+      <PageHeader title={t.title} />
 
       <form action={formAction} className="mt-8 max-w-3xl space-y-6">
         {state?.error && (
@@ -31,24 +56,19 @@ export default function NewNewsPostPage({
           </div>
         )}
 
-        <Field name="title_en" label="Title (EN)" required />
-        <Field name="title_de" label="Title (DE)" />
-        <Field name="title_fr" label="Title (FR)" />
+        <Field name="title_en" label={t.titleEn} required />
+        <Field name="title_de" label={t.titleDe} />
+        <Field name="title_fr" label={t.titleFr} />
 
-        <Field
-          name="excerpt_en"
-          label="Excerpt (EN)"
-          textarea
-          rows={2}
-        />
-        <Field name="excerpt_de" label="Excerpt (DE)" textarea rows={2} />
-        <Field name="excerpt_fr" label="Excerpt (FR)" textarea rows={2} />
+        <Field name="excerpt_en" label={t.excerptEn} textarea rows={2} />
+        <Field name="excerpt_de" label={t.excerptDe} textarea rows={2} />
+        <Field name="excerpt_fr" label={t.excerptFr} textarea rows={2} />
 
-        <Field name="body_en" label="Body (EN)" textarea rows={10} required />
-        <Field name="body_de" label="Body (DE)" textarea rows={10} />
-        <Field name="body_fr" label="Body (FR)" textarea rows={10} />
+        <Field name="body_en" label={t.bodyEn} textarea rows={10} required />
+        <Field name="body_de" label={t.bodyDe} textarea rows={10} />
+        <Field name="body_fr" label={t.bodyFr} textarea rows={10} />
 
-        <Field name="author_name" label="Author (optional)" />
+        <Field name="author_name" label={t.author} />
 
         <CoverImageUpload />
 
@@ -57,7 +77,7 @@ export default function NewNewsPostPage({
           disabled={isPending}
           className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
         >
-          {isPending ? "Saving…" : "Save draft"}
+          {isPending ? t.saving : t.saveDraft}
         </button>
       </form>
     </div>

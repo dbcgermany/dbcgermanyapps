@@ -5,6 +5,30 @@ import { useRouter } from "next/navigation";
 import { updateNewsPost } from "@/actions/news";
 import { CoverImageUpload } from "@/components/cover-image-upload";
 
+const T = {
+  en: {
+    saved: "Saved.",
+    slug: "Slug", titleEn: "Title (EN)", titleDe: "Title (DE)", titleFr: "Title (FR)",
+    excerptEn: "Excerpt (EN)", excerptDe: "Excerpt (DE)", excerptFr: "Excerpt (FR)",
+    bodyEn: "Body (EN)", bodyDe: "Body (DE)", bodyFr: "Body (FR)",
+    author: "Author", saving: "Saving…", save: "Save",
+  },
+  de: {
+    saved: "Gespeichert.",
+    slug: "Slug", titleEn: "Titel (EN)", titleDe: "Titel (DE)", titleFr: "Titel (FR)",
+    excerptEn: "Kurzfassung (EN)", excerptDe: "Kurzfassung (DE)", excerptFr: "Kurzfassung (FR)",
+    bodyEn: "Inhalt (EN)", bodyDe: "Inhalt (DE)", bodyFr: "Inhalt (FR)",
+    author: "Autor:in", saving: "Wird gespeichert…", save: "Speichern",
+  },
+  fr: {
+    saved: "Enregistré.",
+    slug: "Slug", titleEn: "Titre (EN)", titleDe: "Titre (DE)", titleFr: "Titre (FR)",
+    excerptEn: "Extrait (EN)", excerptDe: "Extrait (DE)", excerptFr: "Extrait (FR)",
+    bodyEn: "Contenu (EN)", bodyDe: "Contenu (DE)", bodyFr: "Contenu (FR)",
+    author: "Auteur", saving: "Enregistrement…", save: "Enregistrer",
+  },
+} as const;
+
 type Post = {
   id: string;
   slug: string;
@@ -23,6 +47,7 @@ type Post = {
 
 export function EditNewsForm({ locale, post }: { locale: string; post: Post }) {
   const router = useRouter();
+  const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
 
   const [state, formAction, isPending] = useActionState(
     async (
@@ -50,68 +75,27 @@ export function EditNewsForm({ locale, post }: { locale: string; post: Post }) {
       )}
       {state?.success && (
         <div className="rounded-md bg-green-50 p-4 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-400">
-          Saved.
+          {t.saved}
         </div>
       )}
 
       <p className="text-xs text-muted-foreground">
-        Slug: <code>{post.slug}</code>
+        {t.slug}: <code>{post.slug}</code>
       </p>
 
-      <F name="title_en" label="Title (EN)" defaultValue={post.title_en} required />
-      <F name="title_de" label="Title (DE)" defaultValue={post.title_de} />
-      <F name="title_fr" label="Title (FR)" defaultValue={post.title_fr} />
+      <F name="title_en" label={t.titleEn} defaultValue={post.title_en} required />
+      <F name="title_de" label={t.titleDe} defaultValue={post.title_de} />
+      <F name="title_fr" label={t.titleFr} defaultValue={post.title_fr} />
 
-      <F
-        name="excerpt_en"
-        label="Excerpt (EN)"
-        defaultValue={post.excerpt_en ?? ""}
-        textarea
-        rows={2}
-      />
-      <F
-        name="excerpt_de"
-        label="Excerpt (DE)"
-        defaultValue={post.excerpt_de ?? ""}
-        textarea
-        rows={2}
-      />
-      <F
-        name="excerpt_fr"
-        label="Excerpt (FR)"
-        defaultValue={post.excerpt_fr ?? ""}
-        textarea
-        rows={2}
-      />
+      <F name="excerpt_en" label={t.excerptEn} defaultValue={post.excerpt_en ?? ""} textarea rows={2} />
+      <F name="excerpt_de" label={t.excerptDe} defaultValue={post.excerpt_de ?? ""} textarea rows={2} />
+      <F name="excerpt_fr" label={t.excerptFr} defaultValue={post.excerpt_fr ?? ""} textarea rows={2} />
 
-      <F
-        name="body_en"
-        label="Body (EN)"
-        defaultValue={post.body_en}
-        textarea
-        rows={12}
-        required
-      />
-      <F
-        name="body_de"
-        label="Body (DE)"
-        defaultValue={post.body_de}
-        textarea
-        rows={12}
-      />
-      <F
-        name="body_fr"
-        label="Body (FR)"
-        defaultValue={post.body_fr}
-        textarea
-        rows={12}
-      />
+      <F name="body_en" label={t.bodyEn} defaultValue={post.body_en} textarea rows={12} required />
+      <F name="body_de" label={t.bodyDe} defaultValue={post.body_de} textarea rows={12} />
+      <F name="body_fr" label={t.bodyFr} defaultValue={post.body_fr} textarea rows={12} />
 
-      <F
-        name="author_name"
-        label="Author"
-        defaultValue={post.author_name ?? ""}
-      />
+      <F name="author_name" label={t.author} defaultValue={post.author_name ?? ""} />
 
       <CoverImageUpload initialUrl={post.cover_image_url} />
 
@@ -120,7 +104,7 @@ export function EditNewsForm({ locale, post }: { locale: string; post: Post }) {
         disabled={isPending}
         className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
       >
-        {isPending ? "Saving…" : "Save"}
+        {isPending ? t.saving : t.save}
       </button>
     </form>
   );
