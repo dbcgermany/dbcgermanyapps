@@ -16,6 +16,7 @@ import {
   LayoutDashboard,
   LineChart,
   Menu,
+  Mail,
   Newspaper,
   ScanLine,
   ScrollText,
@@ -49,6 +50,7 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Scan", href: "/scan", icon: ScanLine, minRole: "team_member" },
 
   { label: "News", href: "/news", icon: Newspaper, minRole: "manager", dividerAbove: true },
+  { label: "Newsletters", href: "/newsletters", icon: Mail, minRole: "manager" },
   { label: "Applications", href: "/applications", icon: FileText, minRole: "manager" },
   { label: "Job Offers", href: "/job-offers", icon: Briefcase, minRole: "manager" },
 
