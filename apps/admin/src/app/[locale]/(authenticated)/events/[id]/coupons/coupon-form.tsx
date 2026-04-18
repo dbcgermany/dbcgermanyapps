@@ -6,9 +6,11 @@ import { createCoupon } from "@/actions/coupons";
 export function CouponForm({
   eventId,
   locale,
+  tiers,
 }: {
   eventId: string;
   locale: string;
+  tiers: { id: string; name: string }[];
 }) {
   const [state, formAction, isPending] = useActionState(
     async (_prev: { error?: string; success?: boolean } | null, formData: FormData) => {
@@ -113,6 +115,33 @@ export function CouponForm({
           />
         </div>
       </div>
+
+      {tiers.length > 0 && (
+        <div>
+          <label className="mb-1.5 block text-xs text-muted-foreground">
+            Applies to tiers
+            <span className="ml-1 text-muted-foreground/70">
+              (leave empty = all tiers)
+            </span>
+          </label>
+          <div className="grid gap-2 rounded-md border border-input bg-background p-3 sm:grid-cols-2">
+            {tiers.map((t) => (
+              <label
+                key={t.id}
+                className="flex cursor-pointer items-center gap-2 text-sm"
+              >
+                <input
+                  type="checkbox"
+                  name="applicable_tier_ids"
+                  value={t.id}
+                  className="accent-primary"
+                />
+                {t.name}
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
 
       <button
         type="submit"

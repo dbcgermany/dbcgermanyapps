@@ -42,6 +42,8 @@ export async function createCoupon(formData: FormData) {
     );
   }
 
+  const applicableTierIds = formData.getAll("applicable_tier_ids") as string[];
+
   const couponData = {
     event_id: eventId,
     code,
@@ -52,6 +54,8 @@ export async function createCoupon(formData: FormData) {
       : null,
     valid_from: (formData.get("valid_from") as string) || null,
     valid_until: (formData.get("valid_until") as string) || null,
+    applicable_tier_ids:
+      applicableTierIds.length > 0 ? applicableTierIds : null,
     is_active: true,
   };
 
@@ -101,6 +105,8 @@ export async function updateCoupon(couponId: string, formData: FormData) {
     );
   }
 
+  const applicableTierIds = formData.getAll("applicable_tier_ids") as string[];
+
   const couponData = {
     code,
     discount_type: discountType,
@@ -110,6 +116,8 @@ export async function updateCoupon(couponId: string, formData: FormData) {
       : null,
     valid_from: (formData.get("valid_from") as string) || null,
     valid_until: (formData.get("valid_until") as string) || null,
+    applicable_tier_ids:
+      applicableTierIds.length > 0 ? applicableTierIds : null,
   };
 
   const { error } = await supabase

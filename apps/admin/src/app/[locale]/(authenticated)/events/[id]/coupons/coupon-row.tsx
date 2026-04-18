@@ -17,6 +17,7 @@ type Coupon = {
   times_used: number;
   valid_from: string | null;
   valid_until: string | null;
+  applicable_tier_ids: string[] | null;
   is_active: boolean;
 };
 
@@ -28,10 +29,12 @@ export function CouponRow({
   coupon,
   eventId,
   locale,
+  tiers,
 }: {
   coupon: Coupon;
   eventId: string;
   locale: string;
+  tiers: { id: string; name: string }[];
 }) {
   const [mode, setMode] = useState<"view" | "edit">("view");
 
@@ -113,6 +116,32 @@ export function CouponRow({
             className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
           />
         </div>
+        {tiers.length > 0 && (
+          <div>
+            <p className="mb-1.5 text-xs text-muted-foreground">
+              Applies to tiers (empty = all)
+            </p>
+            <div className="grid gap-1.5 rounded-md border border-input bg-background p-2 sm:grid-cols-2">
+              {tiers.map((t) => (
+                <label
+                  key={t.id}
+                  className="flex cursor-pointer items-center gap-2 text-xs"
+                >
+                  <input
+                    type="checkbox"
+                    name="applicable_tier_ids"
+                    value={t.id}
+                    defaultChecked={
+                      coupon.applicable_tier_ids?.includes(t.id) ?? false
+                    }
+                    className="accent-primary"
+                  />
+                  {t.name}
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
         <div className="flex gap-2">
           <button
             type="submit"
@@ -153,6 +182,14 @@ export function CouponRow({
           {" \u00B7 "}
           {coupon.times_used}
           {coupon.max_uses ? ` / ${coupon.max_uses}` : ""} used
+          {coupon.applicable_tier_ids &&
+            coupon.applicable_tier_ids.length > 0 && (
+              <>
+                {" \u00B7 "}
+                {coupon.applicable_tier_ids.length} tier
+                {coupon.applicable_tier_ids.length === 1 ? "" : "s"} only
+              </>
+            )}
         </p>
       </div>
       <div className="flex items-center gap-3">

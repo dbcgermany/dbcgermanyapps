@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getCoupons } from "@/actions/coupons";
+import { createServerClient } from "@dbc/supabase/server";
 import { CouponForm } from "./coupon-form";
 import { CouponRow } from "./coupon-row";
 import { Card } from "@dbc/ui";
@@ -12,6 +13,18 @@ export default async function CouponsPage({
 }) {
   const { locale, id: eventId } = await params;
   const coupons = await getCoupons(eventId);
+  const supabase = await createServerClient();
+  const { data: tiersData } = await supabase
+    .from("ticket_tiers")
+    .select("id, name_en, name_de, name_fr, is_active, sort_order")
+    .eq("event_id", eventId)
+    .order("sort_order");
+  type TierKey = "name_en" | "name_de" | "name_fr";
+  const nameKey = (`name_${locale}` as TierKey);
+  const tiers = (tiersData ?? []).map((t) => ({
+    id: t.id as string,
+    name: ((t[nameKey] as string | null) ?? (t.name_en as string)),
+  }));
 
   return (
     <div>
@@ -34,6 +47,7 @@ export default async function CouponsPage({
               coupon={coupon}
               eventId={eventId}
               locale={locale}
+              tiers={tiers}
             />
           ))}
         </div>
@@ -42,7 +56,7 @@ export default async function CouponsPage({
       {/* Add new coupon */}
       <Card padding="md" className="mt-8">
         <h2 className="font-heading text-lg font-semibold">Add Coupon</h2>
-        <CouponForm eventId={eventId} locale={locale} />
+        <CouponForm eventId={eventId} locale={locale} tiers={tiers} />
       </Card>
     </div>
   );

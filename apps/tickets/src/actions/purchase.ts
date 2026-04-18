@@ -214,11 +214,33 @@ export async function createCheckoutSession(input: CheckoutInput) {
       return { error: "This coupon has reached its maximum uses." };
     }
 
-    // Compute discount
+    // If the coupon restricts to specific tiers, only count those line items
+    // toward the discount base. Unrestricted coupons apply to the full subtotal.
+    let eligibleCents = subtotalCents;
+    if (
+      Array.isArray(coupon.applicable_tier_ids) &&
+      coupon.applicable_tier_ids.length > 0
+    ) {
+      const allowed = new Set(coupon.applicable_tier_ids as string[]);
+      eligibleCents = 0;
+      for (const attendee of input.attendees) {
+        if (allowed.has(attendee.tierId)) {
+          eligibleCents += tierMap.get(attendee.tierId)!.price_cents;
+        }
+      }
+      if (eligibleCents === 0) {
+        return {
+          error:
+            "This coupon doesn't apply to any of the tiers in your cart.",
+        };
+      }
+    }
+
+    // Compute discount against the eligible portion
     if (coupon.discount_type === "percentage") {
-      discountCents = Math.round(subtotalCents * (coupon.discount_value / 100));
+      discountCents = Math.round(eligibleCents * (coupon.discount_value / 100));
     } else {
-      discountCents = Math.min(coupon.discount_value, subtotalCents);
+      discountCents = Math.min(coupon.discount_value, eligibleCents);
     }
 
     couponId = coupon.id;
