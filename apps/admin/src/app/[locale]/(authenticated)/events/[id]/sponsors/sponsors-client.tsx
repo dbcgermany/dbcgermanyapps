@@ -60,6 +60,114 @@ const TIER_VARIANT: Record<string, "default" | "accent" | "success" | "warning" 
   media: "default",
 };
 
+const SP_T = {
+  en: {
+    empty: "No sponsors yet. Add your first one below.",
+    deliverables: "Deliverables",
+    delete: "Delete",
+    deleteConfirm: "Delete this sponsor?",
+    addSponsor: "Add sponsor",
+    companyName: "Company name *",
+    contactName: "Contact name",
+    contactEmail: "Contact email",
+    phone: "Phone",
+    dealValue: "Deal value (e.g. 5000.00)",
+    websiteUrl: "Website URL",
+    deliverablesPh:
+      "Deliverables (logo placement, mentions, stage time, etc.)",
+    notesPh: "Internal notes",
+    adding: "Adding…",
+    add: "Add",
+    cancel: "Cancel",
+    tiers: {
+      title: "Title",
+      platinum: "Platinum",
+      gold: "Gold",
+      silver: "Silver",
+      bronze: "Bronze",
+      partner: "Partner",
+      media: "Media",
+    } as Record<string, string>,
+    statuses: {
+      lead: "Lead",
+      proposal: "Proposal",
+      confirmed: "Confirmed",
+      active: "Active",
+      completed: "Completed",
+    } as Record<string, string>,
+  },
+  de: {
+    empty: "Noch keine Sponsoren. Fügen Sie unten Ihren ersten hinzu.",
+    deliverables: "Leistungen",
+    delete: "Löschen",
+    deleteConfirm: "Diesen Sponsor löschen?",
+    addSponsor: "Sponsor hinzufügen",
+    companyName: "Firmenname *",
+    contactName: "Ansprechpartner:in",
+    contactEmail: "Kontakt-E-Mail",
+    phone: "Telefon",
+    dealValue: "Vertragswert (z. B. 5000.00)",
+    websiteUrl: "Website-URL",
+    deliverablesPh:
+      "Leistungen (Logo-Platzierung, Erwähnungen, Bühnenzeit usw.)",
+    notesPh: "Interne Notizen",
+    adding: "Wird hinzugefügt…",
+    add: "Hinzufügen",
+    cancel: "Abbrechen",
+    tiers: {
+      title: "Hauptsponsor",
+      platinum: "Platin",
+      gold: "Gold",
+      silver: "Silber",
+      bronze: "Bronze",
+      partner: "Partner",
+      media: "Medien",
+    } as Record<string, string>,
+    statuses: {
+      lead: "Interessent",
+      proposal: "Angebot",
+      confirmed: "Bestätigt",
+      active: "Aktiv",
+      completed: "Abgeschlossen",
+    } as Record<string, string>,
+  },
+  fr: {
+    empty: "Aucun sponsor pour le moment. Ajoutez-en un ci-dessous.",
+    deliverables: "Livrables",
+    delete: "Supprimer",
+    deleteConfirm: "Supprimer ce sponsor ?",
+    addSponsor: "Ajouter un sponsor",
+    companyName: "Nom de la société *",
+    contactName: "Contact",
+    contactEmail: "E-mail de contact",
+    phone: "Téléphone",
+    dealValue: "Valeur du contrat (ex. 5000.00)",
+    websiteUrl: "URL du site",
+    deliverablesPh:
+      "Livrables (placement logo, mentions, temps de scène, etc.)",
+    notesPh: "Notes internes",
+    adding: "Ajout…",
+    add: "Ajouter",
+    cancel: "Annuler",
+    tiers: {
+      title: "Sponsor principal",
+      platinum: "Platine",
+      gold: "Or",
+      silver: "Argent",
+      bronze: "Bronze",
+      partner: "Partenaire",
+      media: "Médias",
+    } as Record<string, string>,
+    statuses: {
+      lead: "Prospect",
+      proposal: "Proposition",
+      confirmed: "Confirmé",
+      active: "Actif",
+      completed: "Terminé",
+    } as Record<string, string>,
+  },
+} as const;
+
 export function SponsorsClient({
   eventId,
   locale,
@@ -72,6 +180,7 @@ export function SponsorsClient({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [showAddForm, setShowAddForm] = useState(false);
+  const t = SP_T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof SP_T];
 
   function fmtMoney(cents: number | null, currency: string) {
     if (cents == null) return "—";
@@ -94,7 +203,7 @@ export function SponsorsClient({
   }
 
   function handleDelete(id: string) {
-    if (!confirm("Delete this sponsor?")) return;
+    if (!confirm(t.deleteConfirm)) return;
     startTransition(async () => {
       await deleteSponsor(id, eventId, locale);
       router.refresh();
@@ -106,7 +215,7 @@ export function SponsorsClient({
       {/* Sponsors list */}
       {sponsors.length === 0 ? (
         <p className="rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-          No sponsors yet. Add your first one below.
+          {t.empty}
         </p>
       ) : (
         <div className="space-y-3">
@@ -119,10 +228,10 @@ export function SponsorsClient({
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="font-medium">{s.company_name}</p>
                   <Badge variant={TIER_VARIANT[s.tier] ?? "default"}>
-                    {s.tier}
+                    {t.tiers[s.tier] ?? s.tier}
                   </Badge>
                   <Badge variant={STATUS_VARIANT[s.status] ?? "default"}>
-                    {s.status}
+                    {t.statuses[s.status] ?? s.status}
                   </Badge>
                 </div>
                 <div className="mt-1 flex flex-wrap gap-3 text-xs text-muted-foreground">
@@ -152,7 +261,7 @@ export function SponsorsClient({
                 </div>
                 {s.deliverables && (
                   <p className="mt-1 text-xs text-muted-foreground">
-                    <span className="font-medium">Deliverables:</span>{" "}
+                    <span className="font-medium">{t.deliverables}:</span>{" "}
                     {s.deliverables}
                   </p>
                 )}
@@ -167,7 +276,7 @@ export function SponsorsClient({
                 disabled={isPending}
                 className="text-xs text-red-500 hover:text-red-700 disabled:opacity-50"
               >
-                Delete
+                {t.delete}
               </button>
             </div>
           ))}
@@ -181,7 +290,7 @@ export function SponsorsClient({
           onClick={() => setShowAddForm(true)}
           className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
         >
-          Add sponsor
+          {t.addSponsor}
         </button>
       ) : (
         <form
@@ -191,7 +300,7 @@ export function SponsorsClient({
           <div className="grid gap-3 sm:grid-cols-2">
             <input
               name="company_name"
-              placeholder="Company name *"
+              placeholder={t.companyName}
               required
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             />
@@ -201,9 +310,9 @@ export function SponsorsClient({
                 defaultValue="partner"
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               >
-                {TIERS.map((t) => (
-                  <option key={t} value={t}>
-                    {t.charAt(0).toUpperCase() + t.slice(1)}
+                {TIERS.map((tier) => (
+                  <option key={tier} value={tier}>
+                    {t.tiers[tier] ?? tier}
                   </option>
                 ))}
               </select>
@@ -212,9 +321,9 @@ export function SponsorsClient({
                 defaultValue="lead"
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               >
-                {STATUSES.map((s) => (
-                  <option key={s} value={s}>
-                    {s.charAt(0).toUpperCase() + s.slice(1)}
+                {STATUSES.map((status) => (
+                  <option key={status} value={status}>
+                    {t.statuses[status] ?? status}
                   </option>
                 ))}
               </select>
@@ -223,18 +332,18 @@ export function SponsorsClient({
           <div className="grid gap-3 sm:grid-cols-3">
             <input
               name="contact_name"
-              placeholder="Contact name"
+              placeholder={t.contactName}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             />
             <input
               name="contact_email"
               type="email"
-              placeholder="Contact email"
+              placeholder={t.contactEmail}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             />
             <input
               name="contact_phone"
-              placeholder="Phone"
+              placeholder={t.phone}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             />
           </div>
@@ -243,25 +352,25 @@ export function SponsorsClient({
               name="deal_value_cents"
               type="number"
               step="0.01"
-              placeholder="Deal value (e.g. 5000.00)"
+              placeholder={t.dealValue}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             />
             <input
               name="website_url"
               type="url"
-              placeholder="Website URL"
+              placeholder={t.websiteUrl}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             />
           </div>
           <textarea
             name="deliverables"
-            placeholder="Deliverables (logo placement, mentions, stage time, etc.)"
+            placeholder={t.deliverablesPh}
             rows={2}
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
           />
           <textarea
             name="notes"
-            placeholder="Internal notes"
+            placeholder={t.notesPh}
             rows={2}
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
           />

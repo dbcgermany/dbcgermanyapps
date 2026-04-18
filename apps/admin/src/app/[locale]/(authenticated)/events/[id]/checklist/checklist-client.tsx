@@ -52,6 +52,102 @@ interface Props {
   eventStartsAt: string;
 }
 
+const CL_T = {
+  en: {
+    budget: "Budget",
+    actual: "Actual",
+    all: "All",
+    overdue: "Overdue",
+    todo: "To do",
+    done: "Done",
+    addItem: "Add item",
+    populateFromTemplate: "Populate from template",
+    populateConfirm:
+      "Populate checklist from default template? This adds all template items.",
+    deleteConfirm: "Delete this checklist item?",
+    taskTitle: "Task title",
+    unassigned: "Unassigned",
+    adding: "Adding…",
+    add: "Add",
+    cancel: "Cancel",
+    statusTitle: "Status",
+    clickToCycle: "click to cycle",
+    categories: {
+      all: "All",
+      venue: "Venue",
+      marketing: "Marketing",
+      production: "Production",
+      finance: "Finance",
+      logistics: "Logistics",
+      staffing: "Staffing",
+      content: "Content",
+      other: "Other",
+    } as Record<string, string>,
+  },
+  de: {
+    budget: "Budget",
+    actual: "Tatsächlich",
+    all: "Alle",
+    overdue: "Überfällig",
+    todo: "Zu erledigen",
+    done: "Erledigt",
+    addItem: "Eintrag hinzufügen",
+    populateFromTemplate: "Aus Vorlage befüllen",
+    populateConfirm:
+      "Checkliste aus Standardvorlage befüllen? Es werden alle Vorlagen-Einträge hinzugefügt.",
+    deleteConfirm: "Diesen Eintrag löschen?",
+    taskTitle: "Titel der Aufgabe",
+    unassigned: "Nicht zugewiesen",
+    adding: "Wird hinzugefügt…",
+    add: "Hinzufügen",
+    cancel: "Abbrechen",
+    statusTitle: "Status",
+    clickToCycle: "klicken zum Wechseln",
+    categories: {
+      all: "Alle",
+      venue: "Location",
+      marketing: "Marketing",
+      production: "Produktion",
+      finance: "Finanzen",
+      logistics: "Logistik",
+      staffing: "Personal",
+      content: "Inhalt",
+      other: "Sonstiges",
+    } as Record<string, string>,
+  },
+  fr: {
+    budget: "Budget",
+    actual: "Réel",
+    all: "Tous",
+    overdue: "En retard",
+    todo: "À faire",
+    done: "Fait",
+    addItem: "Ajouter un élément",
+    populateFromTemplate: "Remplir depuis le modèle",
+    populateConfirm:
+      "Remplir la checklist depuis le modèle par défaut ? Tous les éléments seront ajoutés.",
+    deleteConfirm: "Supprimer cet élément ?",
+    taskTitle: "Intitulé",
+    unassigned: "Non assigné",
+    adding: "Ajout…",
+    add: "Ajouter",
+    cancel: "Annuler",
+    statusTitle: "Statut",
+    clickToCycle: "cliquer pour passer à l’état suivant",
+    categories: {
+      all: "Tous",
+      venue: "Lieu",
+      marketing: "Marketing",
+      production: "Production",
+      finance: "Finance",
+      logistics: "Logistique",
+      staffing: "Personnel",
+      content: "Contenu",
+      other: "Autre",
+    } as Record<string, string>,
+  },
+} as const;
+
 export function ChecklistClient({
   eventId,
   items,
@@ -64,6 +160,7 @@ export function ChecklistClient({
   const [isPending, startTransition] = useTransition();
   const [activeCategory, setActiveCategory] = useState("all");
   const [showAddForm, setShowAddForm] = useState(false);
+  const t = CL_T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof CL_T];
 
   const today = new Date().toISOString().slice(0, 10);
 
@@ -100,7 +197,7 @@ export function ChecklistClient({
   }
 
   function handleDelete(id: string) {
-    if (!confirm("Delete this checklist item?")) return;
+    if (!confirm(t.deleteConfirm)) return;
     startTransition(async () => {
       await deleteChecklistItem(id, eventId, locale);
       router.refresh();
@@ -119,12 +216,7 @@ export function ChecklistClient({
   }
 
   function handlePopulate() {
-    if (
-      !confirm(
-        "Populate checklist from default template? This adds all template items."
-      )
-    )
-      return;
+    if (!confirm(t.populateConfirm)) return;
     startTransition(async () => {
       await populateChecklistFromTemplate(eventId, eventStartsAt, locale);
       router.refresh();
@@ -141,10 +233,10 @@ export function ChecklistClient({
       <div className="rounded-lg border border-border p-5">
         <div className="flex items-center justify-between text-sm">
           <span className="font-medium">
-            {progress.done}/{progress.total} done
+            {progress.done}/{progress.total} {t.done.toLowerCase()}
             {progress.overdue > 0 && (
               <span className="ml-2 text-red-500">
-                {progress.overdue} overdue
+                {progress.overdue} {t.overdue.toLowerCase()}
               </span>
             )}
           </span>
@@ -159,10 +251,10 @@ export function ChecklistClient({
         {(progress.estimatedCostCents > 0 || progress.actualCostCents > 0) && (
           <div className="mt-3 flex gap-4 text-xs text-muted-foreground">
             <span>
-              Budget: {fmtCost(progress.estimatedCostCents)}
+              {t.budget}: {fmtCost(progress.estimatedCostCents)}
             </span>
             <span>
-              Actual: {fmtCost(progress.actualCostCents)}
+              {t.actual}: {fmtCost(progress.actualCostCents)}
             </span>
           </div>
         )}
@@ -172,10 +264,11 @@ export function ChecklistClient({
       <div className="flex flex-wrap gap-1">
         {CATEGORIES.map((cat) => {
           const catProgress = progress.categories[cat];
+          const catLabel = t.categories[cat] ?? cat;
           const label =
             cat === "all"
-              ? `All (${progress.total})`
-              : `${cat.charAt(0).toUpperCase() + cat.slice(1)}${catProgress ? ` (${catProgress.done}/${catProgress.total})` : ""}`;
+              ? `${catLabel} (${progress.total})`
+              : `${catLabel}${catProgress ? ` (${catProgress.done}/${catProgress.total})` : ""}`;
           return (
             <button
               key={cat}
@@ -197,7 +290,7 @@ export function ChecklistClient({
       {overdue.length > 0 && (
         <section>
           <h3 className="text-xs font-semibold uppercase tracking-wider text-red-500">
-            Overdue ({overdue.length})
+            {t.overdue} ({overdue.length})
           </h3>
           <div className="mt-2 space-y-1">
             {overdue.map((item) => (
@@ -218,7 +311,7 @@ export function ChecklistClient({
       {upcoming.length > 0 && (
         <section>
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            To do ({upcoming.length})
+            {t.todo} ({upcoming.length})
           </h3>
           <div className="mt-2 space-y-1">
             {upcoming.map((item) => (
@@ -239,7 +332,7 @@ export function ChecklistClient({
       {completed.length > 0 && (
         <section>
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Done ({completed.length})
+            {t.done} ({completed.length})
           </h3>
           <div className="mt-2 space-y-1">
             {completed.map((item) => (
@@ -263,7 +356,7 @@ export function ChecklistClient({
           onClick={() => setShowAddForm((o) => !o)}
           className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
         >
-          Add item
+          {t.addItem}
         </button>
         {items.length === 0 && (
           <button
@@ -272,7 +365,7 @@ export function ChecklistClient({
             disabled={isPending}
             className="rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-muted disabled:opacity-50"
           >
-            Populate from template
+            {t.populateFromTemplate}
           </button>
         )}
       </div>
@@ -286,7 +379,7 @@ export function ChecklistClient({
           <div className="grid gap-3 sm:grid-cols-2">
             <input
               name="title"
-              placeholder="Task title"
+              placeholder={t.taskTitle}
               required
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             />
@@ -297,7 +390,7 @@ export function ChecklistClient({
             >
               {CATEGORIES.filter((c) => c !== "all").map((c) => (
                 <option key={c} value={c}>
-                  {c.charAt(0).toUpperCase() + c.slice(1)}
+                  {t.categories[c] ?? c}
                 </option>
               ))}
             </select>
@@ -320,7 +413,7 @@ export function ChecklistClient({
               name="assigned_to"
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             >
-              <option value="">Unassigned</option>
+              <option value="">{t.unassigned}</option>
               {staff.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.name}
@@ -334,14 +427,14 @@ export function ChecklistClient({
               disabled={isPending}
               className="rounded-md bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >
-              {isPending ? "Adding..." : "Add"}
+              {isPending ? t.adding : t.add}
             </button>
             <button
               type="button"
               onClick={() => setShowAddForm(false)}
               className="rounded-md border border-input px-4 py-1.5 text-xs font-medium hover:bg-muted"
             >
-              Cancel
+              {t.cancel}
             </button>
           </div>
         </form>

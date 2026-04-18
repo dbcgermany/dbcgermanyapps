@@ -6,12 +6,19 @@ import { getStaff } from "@/actions/staff";
 import { PageHeader } from "@/components/page-header";
 import { ChecklistClient } from "./checklist-client";
 
+const PAGE_T = {
+  en: { back: "← Event", title: "Checklist", done: "done", overdue: "overdue" },
+  de: { back: "← Veranstaltung", title: "Checkliste", done: "erledigt", overdue: "überfällig" },
+  fr: { back: "← Événement", title: "Checklist", done: "terminé", overdue: "en retard" },
+} as const;
+
 export default async function ChecklistPage({
   params,
 }: {
   params: Promise<{ locale: string; id: string }>;
 }) {
   const { locale, id } = await params;
+  const pt = PAGE_T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof PAGE_T];
 
   let event;
   try {
@@ -37,12 +44,12 @@ export default async function ChecklistPage({
         href={`/${locale}/events/${id}`}
         className="text-sm text-muted-foreground hover:text-foreground"
       >
-        &larr; Event
+        {pt.back}
       </Link>
 
       <PageHeader
-        title="Checklist"
-        description={`${progress.done}/${progress.total} done (${pct}%)${progress.overdue > 0 ? ` \u00B7 ${progress.overdue} overdue` : ""}`}
+        title={pt.title}
+        description={`${progress.done}/${progress.total} ${pt.done} (${pct}%)${progress.overdue > 0 ? ` \u00B7 ${progress.overdue} ${pt.overdue}` : ""}`}
       />
 
       <ChecklistClient
