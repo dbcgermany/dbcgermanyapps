@@ -43,8 +43,9 @@ export async function AdminShell({
     <div className="flex h-screen overflow-hidden">
       <AdminSidebar locale={locale} userRole={userRole} userEmail={userEmail} />
       <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Top bar — leave left padding on mobile so the burger (top-3 left-3) doesn't collide */}
-        <header className="flex h-14 items-center justify-end gap-3 border-b border-border bg-surface pl-16 pr-4 md:pl-4">
+        {/* Top bar — sticky on mobile so it stays pinned alongside the fixed hamburger.
+            Leave left padding on mobile so the burger (top-3 left-3) doesn't collide. */}
+        <header className="sticky top-0 z-30 flex h-14 items-center justify-end gap-3 border-b border-border bg-surface/95 pl-16 pr-4 backdrop-blur md:pl-4">
           <NotificationBell
             userId={userId}
             locale={locale}
