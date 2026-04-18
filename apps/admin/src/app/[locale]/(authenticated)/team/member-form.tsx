@@ -22,6 +22,57 @@ interface StaffAccount {
   role: string;
 }
 
+const T = {
+  en: {
+    photoUploaded: "Photo uploaded.", saved: "Saved.",
+    name: "Name", email: "Email", linkedin: "LinkedIn URL", sortOrder: "Sort order",
+    visibility: "Visibility",
+    visPublic: "Public (shown on dbc-germany.com/team)",
+    visInternal: "Internal (admin-only)",
+    visHidden: "Hidden (archived)",
+    linkedStaff: "Linked staff account",
+    linkedNone: "None (external / no login)",
+    linkedCurrent: "Current linked account",
+    linkedHint: "Link to a staff member who has admin dashboard access.",
+    photo: "Photo", photoHint: "JPG / PNG / WebP up to 5 MB. Square crops look best.",
+    orPasteUrl: "Or paste a CDN URL",
+    roleTri: "Role (trilingual)", bioTri: "Bio (trilingual)",
+    saving: "Saving…", create: "Create", save: "Save",
+  },
+  de: {
+    photoUploaded: "Foto hochgeladen.", saved: "Gespeichert.",
+    name: "Name", email: "E-Mail", linkedin: "LinkedIn-URL", sortOrder: "Sortierung",
+    visibility: "Sichtbarkeit",
+    visPublic: "Öffentlich (sichtbar auf dbc-germany.com/team)",
+    visInternal: "Intern (nur Admin)",
+    visHidden: "Ausgeblendet (archiviert)",
+    linkedStaff: "Verknüpftes Mitarbeiterkonto",
+    linkedNone: "Keines (extern / kein Login)",
+    linkedCurrent: "Aktuell verknüpftes Konto",
+    linkedHint: "Mit einem Teammitglied mit Admin-Zugang verknüpfen.",
+    photo: "Foto", photoHint: "JPG / PNG / WebP bis 5 MB. Quadratische Ausschnitte wirken am besten.",
+    orPasteUrl: "Oder CDN-URL einfügen",
+    roleTri: "Rolle (dreisprachig)", bioTri: "Bio (dreisprachig)",
+    saving: "Wird gespeichert…", create: "Erstellen", save: "Speichern",
+  },
+  fr: {
+    photoUploaded: "Photo téléversée.", saved: "Enregistré.",
+    name: "Nom", email: "E-mail", linkedin: "URL LinkedIn", sortOrder: "Ordre",
+    visibility: "Visibilité",
+    visPublic: "Public (visible sur dbc-germany.com/team)",
+    visInternal: "Interne (admin uniquement)",
+    visHidden: "Masqué (archivé)",
+    linkedStaff: "Compte équipe lié",
+    linkedNone: "Aucun (externe / sans connexion)",
+    linkedCurrent: "Compte actuellement lié",
+    linkedHint: "Lier à un membre de l’équipe disposant d’un accès admin.",
+    photo: "Photo", photoHint: "JPG / PNG / WebP jusqu’à 5 Mo. Les cadrages carrés rendent mieux.",
+    orPasteUrl: "Ou coller une URL CDN",
+    roleTri: "Rôle (trilingue)", bioTri: "Biographie (trilingue)",
+    saving: "Enregistrement…", create: "Créer", save: "Enregistrer",
+  },
+} as const;
+
 export function TeamMemberForm({
   locale,
   mode,
@@ -34,6 +85,7 @@ export function TeamMemberForm({
   staffAccounts?: StaffAccount[];
 }) {
   const router = useRouter();
+  const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
 
   const [photoUrl, setPhotoUrl] = useState(initial?.photo_url ?? "");
 
@@ -55,7 +107,7 @@ export function TeamMemberForm({
     }
     if ("url" in result && result.url) {
       setPhotoUrl(result.url);
-      toast.success("Photo uploaded.");
+      toast.success(t.photoUploaded);
       return result.url;
     }
     throw new Error("Upload returned no URL.");
@@ -79,33 +131,18 @@ export function TeamMemberForm({
       )}
       {state?.success && mode === "edit" && (
         <div className="rounded-md bg-green-50 p-4 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-400">
-          Saved.
+          {t.saved}
         </div>
       )}
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Name" name="name" defaultValue={initial?.name ?? ""} required />
-        <Field
-          label="Email"
-          name="email"
-          type="email"
-          defaultValue={initial?.email ?? ""}
-        />
-        <Field
-          label="LinkedIn URL"
-          name="linkedin_url"
-          type="url"
-          defaultValue={initial?.linkedin_url ?? ""}
-        />
-        <Field
-          label="Sort order"
-          name="sort_order"
-          type="number"
-          defaultValue={initial?.sort_order?.toString() ?? "100"}
-        />
+        <Field label={t.name} name="name" defaultValue={initial?.name ?? ""} required />
+        <Field label={t.email} name="email" type="email" defaultValue={initial?.email ?? ""} />
+        <Field label={t.linkedin} name="linkedin_url" type="url" defaultValue={initial?.linkedin_url ?? ""} />
+        <Field label={t.sortOrder} name="sort_order" type="number" defaultValue={initial?.sort_order?.toString() ?? "100"} />
         <div>
           <label htmlFor="visibility" className="mb-1 block text-sm font-medium">
-            Visibility
+            {t.visibility}
           </label>
           <select
             id="visibility"
@@ -113,14 +150,14 @@ export function TeamMemberForm({
             defaultValue={initial?.visibility ?? "internal"}
             className={inputClass}
           >
-            <option value="public">Public (shown on dbc-germany.com/team)</option>
-            <option value="internal">Internal (admin-only)</option>
-            <option value="hidden">Hidden (archived)</option>
+            <option value="public">{t.visPublic}</option>
+            <option value="internal">{t.visInternal}</option>
+            <option value="hidden">{t.visHidden}</option>
           </select>
         </div>
         <div>
           <label htmlFor="profile_id" className="mb-1 block text-sm font-medium">
-            Linked staff account
+            {t.linkedStaff}
           </label>
           <select
             id="profile_id"
@@ -128,28 +165,27 @@ export function TeamMemberForm({
             defaultValue={initial?.profile_id ?? ""}
             className={inputClass}
           >
-            <option value="">None (external / no login)</option>
+            <option value="">{t.linkedNone}</option>
             {staffAccounts.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.displayName || s.email} ({s.role.replace("_", " ")})
               </option>
             ))}
-            {/* Keep current link visible even if it's not in the available list */}
             {initial?.profile_id &&
               !staffAccounts.some((s) => s.id === initial.profile_id) && (
                 <option value={initial.profile_id}>
-                  Current linked account
+                  {t.linkedCurrent}
                 </option>
               )}
           </select>
           <span className="mt-1 block text-xs text-muted-foreground">
-            Link to a staff member who has admin dashboard access.
+            {t.linkedHint}
           </span>
         </div>
         <div className="sm:col-span-2">
           <AssetUpload
-            label="Photo"
-            description="JPG / PNG / WebP up to 5 MB. Square crops look best."
+            label={t.photo}
+            description={t.photoHint}
             value={photoUrl || null}
             onUpload={handlePhotoUpload}
             onChange={setPhotoUrl}
@@ -157,7 +193,7 @@ export function TeamMemberForm({
           />
           <label className="mt-3 block">
             <span className="mb-1 block text-xs font-medium text-muted-foreground">
-              Or paste a CDN URL
+              {t.orPasteUrl}
             </span>
             <input
               type="url"
@@ -173,15 +209,10 @@ export function TeamMemberForm({
 
       <div>
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Role (trilingual)
+          {t.roleTri}
         </p>
         <div className="mt-2 grid gap-3 sm:grid-cols-3">
-          <Field
-            label="EN"
-            name="role_en"
-            defaultValue={initial?.role_en ?? ""}
-            required
-          />
+          <Field label="EN" name="role_en" defaultValue={initial?.role_en ?? ""} required />
           <Field label="DE" name="role_de" defaultValue={initial?.role_de ?? ""} />
           <Field label="FR" name="role_fr" defaultValue={initial?.role_fr ?? ""} />
         </div>
@@ -189,30 +220,12 @@ export function TeamMemberForm({
 
       <div>
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Bio (trilingual)
+          {t.bioTri}
         </p>
         <div className="mt-2 grid gap-3 sm:grid-cols-3">
-          <Field
-            label="EN"
-            name="bio_en"
-            defaultValue={initial?.bio_en ?? ""}
-            textarea
-            rows={6}
-          />
-          <Field
-            label="DE"
-            name="bio_de"
-            defaultValue={initial?.bio_de ?? ""}
-            textarea
-            rows={6}
-          />
-          <Field
-            label="FR"
-            name="bio_fr"
-            defaultValue={initial?.bio_fr ?? ""}
-            textarea
-            rows={6}
-          />
+          <Field label="EN" name="bio_en" defaultValue={initial?.bio_en ?? ""} textarea rows={6} />
+          <Field label="DE" name="bio_de" defaultValue={initial?.bio_de ?? ""} textarea rows={6} />
+          <Field label="FR" name="bio_fr" defaultValue={initial?.bio_fr ?? ""} textarea rows={6} />
         </div>
       </div>
 
@@ -221,7 +234,7 @@ export function TeamMemberForm({
         disabled={isPending}
         className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
       >
-        {isPending ? "Saving…" : mode === "create" ? "Create" : "Save"}
+        {isPending ? t.saving : mode === "create" ? t.create : t.save}
       </button>
     </form>
   );
