@@ -5,12 +5,35 @@ import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
 import { DataTable } from "@/components/data-table";
 
-const TYPE_LABELS: Record<string, string> = {
-  full_time: "Full-time",
-  part_time: "Part-time",
-  freelance: "Freelance",
-  internship: "Internship",
-};
+const T = {
+  en: {
+    title: "Job Offers", newJob: "New job offer", create: "Create job offer",
+    empty: "No job offers yet.",
+    colTitle: "Title", location: "Location", type: "Type",
+    status: "Status", actions: "Actions",
+    published: "Published", draft: "Draft",
+    edit: "Edit", publish: "Publish", unpublish: "Unpublish",
+    types: { full_time: "Full-time", part_time: "Part-time", freelance: "Freelance", internship: "Internship" } as Record<string, string>,
+  },
+  de: {
+    title: "Stellenangebote", newJob: "Neue Stelle", create: "Stelle erstellen",
+    empty: "Noch keine Stellenangebote.",
+    colTitle: "Titel", location: "Ort", type: "Typ",
+    status: "Status", actions: "Aktionen",
+    published: "Veröffentlicht", draft: "Entwurf",
+    edit: "Bearbeiten", publish: "Veröffentlichen", unpublish: "Zurückziehen",
+    types: { full_time: "Vollzeit", part_time: "Teilzeit", freelance: "Freelance", internship: "Praktikum" } as Record<string, string>,
+  },
+  fr: {
+    title: "Offres d’emploi", newJob: "Nouvelle offre", create: "Créer une offre",
+    empty: "Aucune offre pour le moment.",
+    colTitle: "Titre", location: "Lieu", type: "Type",
+    status: "Statut", actions: "Actions",
+    published: "Publié", draft: "Brouillon",
+    edit: "Modifier", publish: "Publier", unpublish: "Dépublier",
+    types: { full_time: "Temps plein", part_time: "Temps partiel", freelance: "Freelance", internship: "Stage" } as Record<string, string>,
+  },
+} as const;
 
 export default async function JobOffersPage({
   params,
@@ -18,18 +41,19 @@ export default async function JobOffersPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
   const jobs = await getJobOffers();
 
   return (
     <div>
       <PageHeader
-        title="Job Offers"
+        title={t.title}
         cta={
           <Link
             href={`/${locale}/job-offers/new`}
             className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
           >
-            New job offer
+            {t.newJob}
           </Link>
         }
       />
@@ -37,16 +61,16 @@ export default async function JobOffersPage({
       <div className="mt-8">
         <DataTable
           columns={[
-            "Title",
-            "Location",
-            "Type",
-            "Status",
-            { label: "Actions", align: "right" },
+            t.colTitle,
+            t.location,
+            t.type,
+            t.status,
+            { label: t.actions, align: "right" },
           ]}
           empty={
             <EmptyState
-              message="No job offers yet."
-              cta={{ label: "Create job offer", href: `/${locale}/job-offers/new` }}
+              message={t.empty}
+              cta={{ label: t.create, href: `/${locale}/job-offers/new` }}
             />
           }
         >
@@ -62,11 +86,11 @@ export default async function JobOffersPage({
               </DataTable.Cell>
               <DataTable.Cell>{job.location ?? "—"}</DataTable.Cell>
               <DataTable.Cell>
-                {TYPE_LABELS[job.employment_type ?? ""] ?? job.employment_type ?? "—"}
+                {t.types[job.employment_type ?? ""] ?? job.employment_type ?? "—"}
               </DataTable.Cell>
               <DataTable.Cell>
                 <Badge variant={job.is_published ? "success" : "warning"}>
-                  {job.is_published ? "Published" : "Draft"}
+                  {job.is_published ? t.published : t.draft}
                 </Badge>
               </DataTable.Cell>
               <DataTable.Cell align="right">
@@ -75,7 +99,7 @@ export default async function JobOffersPage({
                     href={`/${locale}/job-offers/${job.id}`}
                     className="text-xs text-primary hover:text-primary/80"
                   >
-                    Edit
+                    {t.edit}
                   </Link>
                   <form
                     action={async () => {
@@ -87,7 +111,7 @@ export default async function JobOffersPage({
                       type="submit"
                       className="text-xs text-muted-foreground hover:text-foreground"
                     >
-                      {job.is_published ? "Unpublish" : "Publish"}
+                      {job.is_published ? t.unpublish : t.publish}
                     </button>
                   </form>
                 </div>
