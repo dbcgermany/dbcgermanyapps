@@ -87,9 +87,7 @@ export function StaffClient({
   }
 
   function handleRemove(staffId: string) {
-    if (!confirm("Remove this person from staff? They will be demoted to buyer role and unassigned from all events.")) {
-      return;
-    }
+    if (!confirm(t.removeConfirm)) return;
     startTransition(async () => {
       await removeStaff(staffId, locale);
     });
@@ -103,9 +101,7 @@ export function StaffClient({
   }
 
   function handleRevokeInvite(staffId: string) {
-    if (!confirm("Revoke this pending invite? The user record will be deleted.")) {
-      return;
-    }
+    if (!confirm(t.revokeConfirm)) return;
     startTransition(async () => {
       const res = await revokeStaffInvite(staffId, locale);
       if (res.error) alert(res.error);
@@ -119,8 +115,8 @@ export function StaffClient({
       inviteName: "Display name (optional)",
       inviteRole: "Role",
       sendInvite: "Send invite",
-      sending: "Sending...",
-      inviteSuccess: "Invite sent. They\u2019ll receive a magic link to sign in.",
+      sending: "Sending…",
+      inviteSuccess: "Invite sent. They’ll receive a branded email with a sign-in link.",
       cancel: "Cancel",
       email: "Email",
       role: "Role",
@@ -128,8 +124,15 @@ export function StaffClient({
       actions: "Actions",
       assignEvents: "Assign events",
       remove: "Remove",
+      resendInvite: "Resend invite",
+      revoke: "Revoke",
+      revokeConfirm: "Revoke this pending invite? The user record will be deleted.",
+      removeConfirm:
+        "Remove this person from staff? They will be demoted to buyer role and unassigned from all events.",
       noStaff: "No staff members yet. Invite someone to get started.",
       noEvents: "No events to assign.",
+      member: "member",
+      members: "members",
       teamMember: "Team member",
       manager: "Manager",
       admin: "Admin",
@@ -141,8 +144,8 @@ export function StaffClient({
       inviteName: "Anzeigename (optional)",
       inviteRole: "Rolle",
       sendInvite: "Einladung senden",
-      sending: "Wird gesendet...",
-      inviteSuccess: "Einladung gesendet. Sie erhalten einen Magic Link zur Anmeldung.",
+      sending: "Wird gesendet…",
+      inviteSuccess: "Einladung gesendet. Die Person erhält eine gebrandete E-Mail mit Anmeldelink.",
       cancel: "Abbrechen",
       email: "E-Mail",
       role: "Rolle",
@@ -150,8 +153,16 @@ export function StaffClient({
       actions: "Aktionen",
       assignEvents: "Veranstaltungen zuweisen",
       remove: "Entfernen",
+      resendInvite: "Einladung erneut senden",
+      revoke: "Widerrufen",
+      revokeConfirm:
+        "Diese offene Einladung widerrufen? Der Benutzereintrag wird gelöscht.",
+      removeConfirm:
+        "Diese Person aus dem Team entfernen? Sie wird auf die Rolle „Käufer“ herabgestuft und allen Veranstaltungen entzogen.",
       noStaff: "Noch keine Mitarbeiter.",
       noEvents: "Keine Veranstaltungen zum Zuweisen.",
+      member: "Mitglied",
+      members: "Mitglieder",
       teamMember: "Teammitglied",
       manager: "Manager",
       admin: "Admin",
@@ -160,28 +171,39 @@ export function StaffClient({
     fr: {
       invite: "Inviter un membre",
       inviteEmail: "Adresse e-mail",
-      inviteName: "Nom d\u2019affichage (optionnel)",
-      inviteRole: "R\u00F4le",
-      sendInvite: "Envoyer l\u2019invitation",
-      sending: "Envoi...",
-      inviteSuccess: "Invitation envoy\u00E9e. Ils recevront un lien magique pour se connecter.",
+      inviteName: "Nom d’affichage (optionnel)",
+      inviteRole: "Rôle",
+      sendInvite: "Envoyer l’invitation",
+      sending: "Envoi…",
+      inviteSuccess:
+        "Invitation envoyée. La personne recevra un e-mail personnalisé avec un lien de connexion.",
       cancel: "Annuler",
       email: "E-mail",
-      role: "R\u00F4le",
-      events: "\u00C9v\u00E9nements attribu\u00E9s",
+      role: "Rôle",
+      events: "Événements attribués",
       actions: "Actions",
-      assignEvents: "Attribuer des \u00E9v\u00E9nements",
+      assignEvents: "Attribuer des événements",
       remove: "Retirer",
+      resendInvite: "Renvoyer l’invitation",
+      revoke: "Révoquer",
+      revokeConfirm:
+        "Révoquer cette invitation en attente ? Le compte utilisateur sera supprimé.",
+      removeConfirm:
+        "Retirer cette personne de l’équipe ? Son rôle repassera à « acheteur » et elle sera désassignée de tous les événements.",
       noStaff: "Aucun membre pour le moment.",
-      noEvents: "Aucun \u00E9v\u00E9nement \u00E0 attribuer.",
+      noEvents: "Aucun événement à attribuer.",
+      member: "membre",
+      members: "membres",
       teamMember: "Membre",
       manager: "Manager",
       admin: "Admin",
       super_admin: "Super admin",
     },
   }[locale] ?? {
-    invite: "Invite staff", inviteEmail: "Email", inviteName: "Name", inviteRole: "Role", sendInvite: "Send", sending: "...", inviteSuccess: "Sent", cancel: "Cancel",
-    email: "Email", role: "Role", events: "Events", actions: "Actions", assignEvents: "Assign", remove: "Remove", noStaff: "No staff", noEvents: "No events",
+    invite: "Invite staff", inviteEmail: "Email", inviteName: "Name", inviteRole: "Role", sendInvite: "Send", sending: "…", inviteSuccess: "Sent", cancel: "Cancel",
+    email: "Email", role: "Role", events: "Events", actions: "Actions", assignEvents: "Assign", remove: "Remove",
+    resendInvite: "Resend invite", revoke: "Revoke", revokeConfirm: "Revoke?", removeConfirm: "Remove?",
+    noStaff: "No staff", noEvents: "No events", member: "member", members: "members",
     teamMember: "Team", manager: "Manager", admin: "Admin", super_admin: "Super admin",
   };
 
@@ -197,7 +219,7 @@ export function StaffClient({
     <div className="mt-6">
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          {staff.length} {staff.length === 1 ? "member" : "members"}
+          {staff.length} {staff.length === 1 ? t.member : t.members}
         </p>
         <button
           onClick={() => setInviteOpen((o) => !o)}
@@ -356,14 +378,14 @@ export function StaffClient({
                               disabled={isPending}
                               className="text-xs text-amber-600 hover:text-amber-700"
                             >
-                              Resend invite
+                              {t.resendInvite}
                             </button>
                             <button
                               onClick={() => handleRevokeInvite(s.id)}
                               disabled={isPending}
                               className="text-xs text-red-500 hover:text-red-700"
                             >
-                              Revoke
+                              {t.revoke}
                             </button>
                           </>
                         ) : (
