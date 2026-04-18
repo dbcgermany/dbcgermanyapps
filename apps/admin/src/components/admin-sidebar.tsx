@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   Briefcase,
   Building2,
@@ -31,7 +32,7 @@ import type { UserRole } from "@dbc/types";
 import { ROLE_HIERARCHY } from "@dbc/types";
 
 interface NavItem {
-  label: string;
+  labelKey: string;
   href: string;
   icon: LucideIcon;
   minRole: UserRole;
@@ -40,31 +41,31 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard, minRole: "team_member" },
-  { label: "Reports", href: "/reports", icon: LineChart, minRole: "admin" },
+  { labelKey: "dashboard", href: "/dashboard", icon: LayoutDashboard, minRole: "team_member" },
+  { labelKey: "reports", href: "/reports", icon: LineChart, minRole: "admin" },
 
-  { label: "Events", href: "/events", icon: Calendar, minRole: "manager", dividerAbove: true },
-  { label: "Orders", href: "/orders", icon: ShoppingCart, minRole: "manager" },
-  { label: "Manual Sales", href: "/door-sale", icon: DoorOpen, minRole: "team_member" },
-  { label: "Scan", href: "/scan", icon: ScanLine, minRole: "team_member" },
+  { labelKey: "events", href: "/events", icon: Calendar, minRole: "manager", dividerAbove: true },
+  { labelKey: "orders", href: "/orders", icon: ShoppingCart, minRole: "manager" },
+  { labelKey: "doorSale", href: "/door-sale", icon: DoorOpen, minRole: "team_member" },
+  { labelKey: "scan", href: "/scan", icon: ScanLine, minRole: "team_member" },
 
-  { label: "News", href: "/news", icon: Newspaper, minRole: "manager", dividerAbove: true },
-  { label: "Newsletters", href: "/newsletters", icon: Mail, minRole: "manager" },
-  { label: "Applications", href: "/applications", icon: FileText, minRole: "manager" },
-  { label: "Job Offers", href: "/job-offers", icon: Briefcase, minRole: "manager" },
+  { labelKey: "news", href: "/news", icon: Newspaper, minRole: "manager", dividerAbove: true },
+  { labelKey: "newsletters", href: "/newsletters", icon: Mail, minRole: "manager" },
+  { labelKey: "applications", href: "/applications", icon: FileText, minRole: "manager" },
+  { labelKey: "jobOffers", href: "/job-offers", icon: Briefcase, minRole: "manager" },
 
-  { label: "All contacts", href: "/contacts", icon: Contact, minRole: "manager", dividerAbove: true },
-  { label: "Sponsors & Partners", href: "/contacts?category=partners", icon: Contact, minRole: "manager", indent: true },
-  { label: "Founders", href: "/contacts?category=founders", icon: Contact, minRole: "manager", indent: true },
-  { label: "Investors", href: "/contacts?category=investors", icon: Contact, minRole: "manager", indent: true },
-  { label: "Press", href: "/contacts?category=press", icon: Contact, minRole: "manager", indent: true },
-  { label: "Team (public)", href: "/team", icon: UserSquare, minRole: "manager" },
-  { label: "Staff (internal)", href: "/staff", icon: Users, minRole: "admin" },
+  { labelKey: "allContacts", href: "/contacts", icon: Contact, minRole: "manager", dividerAbove: true },
+  { labelKey: "partners", href: "/contacts?category=partners", icon: Contact, minRole: "manager", indent: true },
+  { labelKey: "founders", href: "/contacts?category=founders", icon: Contact, minRole: "manager", indent: true },
+  { labelKey: "investors", href: "/contacts?category=investors", icon: Contact, minRole: "manager", indent: true },
+  { labelKey: "press", href: "/contacts?category=press", icon: Contact, minRole: "manager", indent: true },
+  { labelKey: "team", href: "/team", icon: UserSquare, minRole: "manager" },
+  { labelKey: "staff", href: "/staff", icon: Users, minRole: "admin" },
 
-  { label: "Company Info", href: "/company-info", icon: Building2, minRole: "manager", dividerAbove: true },
-  { label: "Settings", href: "/settings", icon: Settings, minRole: "admin" },
-  { label: "Audit Log", href: "/audit-log", icon: ScrollText, minRole: "super_admin" },
-  { label: "Dev Info", href: "/dev-info", icon: Info, minRole: "super_admin" },
+  { labelKey: "companyInfo", href: "/company-info", icon: Building2, minRole: "manager", dividerAbove: true },
+  { labelKey: "settings", href: "/settings", icon: Settings, minRole: "admin" },
+  { labelKey: "auditLog", href: "/audit-log", icon: ScrollText, minRole: "super_admin" },
+  { labelKey: "devInfo", href: "/dev-info", icon: Info, minRole: "super_admin" },
 ];
 
 const STORAGE_KEY = "admin-sidebar-collapsed";
@@ -80,6 +81,8 @@ export function AdminSidebar({
 }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const tNav = useTranslations("admin.nav");
+  const tShell = useTranslations("admin.shell");
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const userLevel = ROLE_HIERARCHY[userRole];
@@ -121,7 +124,7 @@ export function AdminSidebar({
         type="button"
         onClick={() => setMobileOpen(true)}
         className="fixed left-3 top-3 z-40 inline-flex h-11 w-11 items-center justify-center rounded-md border border-border bg-background shadow-sm md:hidden"
-        aria-label="Open menu"
+        aria-label={tShell("mobileMenu")}
       >
         <Menu className="h-5 w-5" strokeWidth={1.75} />
       </button>
@@ -150,7 +153,7 @@ export function AdminSidebar({
             type="button"
             onClick={toggleCollapse}
             className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground"
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-label={collapsed ? tShell("expandSidebar") : tShell("collapseSidebar")}
           >
             {collapsed ? (
               <ChevronRight className="h-4 w-4" strokeWidth={1.75} />
@@ -196,7 +199,7 @@ export function AdminSidebar({
                   )}
                   <Link
                     href={fullHref}
-                    title={collapsed ? item.label : undefined}
+                    title={collapsed ? tNav(item.labelKey) : undefined}
                     className={`flex items-center rounded-md text-sm transition-colors ${
                       collapsed
                         ? "justify-center px-0 py-2.5"
@@ -212,7 +215,7 @@ export function AdminSidebar({
                     {(!item.indent || collapsed) && (
                       <Icon className="h-5 w-5 shrink-0" strokeWidth={1.75} />
                     )}
-                    {!collapsed && item.label}
+                    {!collapsed && tNav(item.labelKey)}
                   </Link>
                 </li>
               );
@@ -238,14 +241,14 @@ export function AdminSidebar({
             {collapsed ? (
               <Link
                 href={`/${locale}/dev-info`}
-                title="Created by Narikia UG"
+                title={`${tShell("createdBy")} Narikia UG`}
                 className="text-foreground/60 hover:text-primary"
               >
                 N
               </Link>
             ) : (
               <>
-                Created by{" "}
+                {tShell("createdBy")}{" "}
                 <Link
                   href={`/${locale}/dev-info`}
                   className="font-medium text-foreground/80 underline-offset-4 hover:text-primary hover:underline"
@@ -278,7 +281,7 @@ export function AdminSidebar({
                 type="button"
                 onClick={() => setMobileOpen(false)}
                 className="text-foreground hover:text-muted-foreground"
-                aria-label="Close menu"
+                aria-label={tShell("mobileMenuClose")}
               >
                 <X className="h-5 w-5" strokeWidth={1.75} />
               </button>
@@ -333,7 +336,7 @@ export function AdminSidebar({
                             strokeWidth={1.75}
                           />
                         )}
-                        {item.label}
+                        {tNav(item.labelKey)}
                       </Link>
                     </li>
                   );
@@ -347,7 +350,7 @@ export function AdminSidebar({
                 {userRole.replace("_", " ")}
               </p>
               <p className="mt-3 text-xs text-muted-foreground">
-                Created by{" "}
+                {tShell("createdBy")}{" "}
                 <Link
                   href={`/${locale}/dev-info`}
                   className="font-medium text-foreground/80 underline-offset-4 hover:text-primary hover:underline"

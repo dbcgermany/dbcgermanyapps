@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { LogOut, Lock, Settings, User } from "lucide-react";
 import { useTheme } from "@dbc/ui";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { signOutEverywhere } from "@/actions/account";
 import { logout } from "@/actions/auth";
 
@@ -38,6 +39,7 @@ export function UserMenu({
   const [isPending, startTransition] = useTransition();
   const ref = useRef<HTMLDivElement>(null);
   const { theme, setTheme } = useTheme();
+  const t = useTranslations("admin.userMenu");
 
   useEffect(() => {
     if (!open) return;
@@ -96,7 +98,7 @@ export function UserMenu({
         type="button"
         onClick={() => setOpen((o) => !o)}
         className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full border border-border bg-surface text-sm font-semibold text-foreground hover:border-primary/40"
-        aria-label="Open user menu"
+        aria-label={t("openMenu")}
         aria-expanded={open}
       >
         {avatarUrl ? (
@@ -149,7 +151,7 @@ export function UserMenu({
               role="menuitem"
               className="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-muted"
             >
-              <User className="h-4 w-4" strokeWidth={1.75} /> My account
+              <User className="h-4 w-4" strokeWidth={1.75} /> {t("myAccount")}
             </Link>
             <Link
               href={`/${locale}/account?tab=preferences`}
@@ -157,7 +159,7 @@ export function UserMenu({
               role="menuitem"
               className="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-muted"
             >
-              <Settings className="h-4 w-4" strokeWidth={1.75} /> Preferences
+              <Settings className="h-4 w-4" strokeWidth={1.75} /> {t("preferences")}
             </Link>
             <Link
               href={`/${locale}/account?tab=security`}
@@ -165,27 +167,27 @@ export function UserMenu({
               role="menuitem"
               className="flex items-center gap-2 px-4 py-2 text-sm text-foreground hover:bg-muted"
             >
-              <Lock className="h-4 w-4" strokeWidth={1.75} /> Security
+              <Lock className="h-4 w-4" strokeWidth={1.75} /> {t("security")}
             </Link>
           </div>
 
           <div className="border-t border-border px-4 py-2">
             <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Theme
+              {t("theme")}
             </p>
             <div className="mt-1.5 flex gap-1">
-              {(["light", "dark"] as const).map((t) => (
+              {(["light", "dark"] as const).map((mode) => (
                 <button
-                  key={t}
+                  key={mode}
                   type="button"
-                  onClick={() => setTheme(t)}
-                  className={`flex-1 rounded-md border px-2 py-1 text-xs font-medium capitalize ${
-                    theme === t
+                  onClick={() => setTheme(mode)}
+                  className={`flex-1 rounded-md border px-2 py-1 text-xs font-medium ${
+                    theme === mode
                       ? "border-primary bg-primary/10 text-primary"
                       : "border-border text-muted-foreground hover:bg-muted"
                   }`}
                 >
-                  {t}
+                  {t(mode)}
                 </button>
               ))}
             </div>
@@ -199,7 +201,7 @@ export function UserMenu({
               role="menuitem"
               className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-muted-foreground hover:bg-muted disabled:opacity-50"
             >
-              <LogOut className="h-4 w-4" strokeWidth={1.75} /> Sign out on all devices
+              <LogOut className="h-4 w-4" strokeWidth={1.75} /> {t("signOutEverywhere")}
             </button>
             <button
               type="button"
@@ -208,7 +210,7 @@ export function UserMenu({
               role="menuitem"
               className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 disabled:opacity-50"
             >
-              <LogOut className="h-4 w-4" strokeWidth={1.75} /> Sign out
+              <LogOut className="h-4 w-4" strokeWidth={1.75} /> {t("signOut")}
             </button>
           </div>
         </div>
