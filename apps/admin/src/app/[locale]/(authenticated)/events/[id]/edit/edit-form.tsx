@@ -5,6 +5,45 @@ import { useRouter } from "next/navigation";
 import { updateEvent } from "@/actions/events";
 import { CoverImageUpload } from "@/components/cover-image-upload";
 
+const T = {
+  en: {
+    eventType: "Event type", conference: "Conference", masterclass: "Masterclass",
+    title: "Title", description: "Description", trilingual: "(trilingual)",
+    english: "English", deutsch: "Deutsch", francais: "Français",
+    venueName: "Venue name", city: "City", venueAddress: "Venue address",
+    startDate: "Start date & time", endDate: "End date & time",
+    capacity: "Capacity", maxPerOrder: "Max tickets per order",
+    salesTargetTickets: "Sales target (tickets)",
+    salesTargetRevenue: "Sales target revenue (€)",
+    feedbackUrl: "Feedback survey URL",
+    saving: "Saving…", saveChanges: "Save changes", cancel: "Cancel",
+  },
+  de: {
+    eventType: "Veranstaltungstyp", conference: "Konferenz", masterclass: "Masterclass",
+    title: "Titel", description: "Beschreibung", trilingual: "(dreisprachig)",
+    english: "English", deutsch: "Deutsch", francais: "Français",
+    venueName: "Veranstaltungsort", city: "Stadt", venueAddress: "Adresse",
+    startDate: "Beginn (Datum & Uhrzeit)", endDate: "Ende (Datum & Uhrzeit)",
+    capacity: "Kapazität", maxPerOrder: "Max. Tickets pro Bestellung",
+    salesTargetTickets: "Verkaufsziel (Tickets)",
+    salesTargetRevenue: "Umsatzziel (€)",
+    feedbackUrl: "Feedback-Umfrage-URL",
+    saving: "Wird gespeichert…", saveChanges: "Änderungen speichern", cancel: "Abbrechen",
+  },
+  fr: {
+    eventType: "Type d’événement", conference: "Conférence", masterclass: "Masterclass",
+    title: "Titre", description: "Description", trilingual: "(trilingue)",
+    english: "English", deutsch: "Deutsch", francais: "Français",
+    venueName: "Nom du lieu", city: "Ville", venueAddress: "Adresse",
+    startDate: "Début (date & heure)", endDate: "Fin (date & heure)",
+    capacity: "Capacité", maxPerOrder: "Max. billets par commande",
+    salesTargetTickets: "Objectif de vente (billets)",
+    salesTargetRevenue: "Objectif de revenus (€)",
+    feedbackUrl: "URL sondage post-événement",
+    saving: "Enregistrement…", saveChanges: "Enregistrer les changements", cancel: "Annuler",
+  },
+} as const;
+
 type EventRow = {
   id: string;
   title_en: string;
@@ -42,6 +81,7 @@ export function EditEventForm({
   event: EventRow;
 }) {
   const router = useRouter();
+  const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
 
   const [state, formAction, isPending] = useActionState(
     async (
@@ -72,7 +112,7 @@ export function EditEventForm({
 
       {/* Event Type */}
       <fieldset>
-        <legend className="text-sm font-medium mb-2">Event type</legend>
+        <legend className="text-sm font-medium mb-2">{t.eventType}</legend>
         <div className="flex gap-4">
           <label className="flex items-center gap-2 text-sm">
             <input
@@ -82,7 +122,7 @@ export function EditEventForm({
               defaultChecked={event.event_type === "conference"}
               className="accent-primary"
             />
-            Conference
+            {t.conference}
           </label>
           <label className="flex items-center gap-2 text-sm">
             <input
@@ -92,7 +132,7 @@ export function EditEventForm({
               defaultChecked={event.event_type === "masterclass"}
               className="accent-primary"
             />
-            Masterclass
+            {t.masterclass}
           </label>
         </div>
       </fieldset>
@@ -100,13 +140,13 @@ export function EditEventForm({
       {/* Titles (trilingual) */}
       <div className="space-y-4">
         <h2 className="text-sm font-medium">
-          Title <span className="text-muted-foreground">(trilingual)</span>
+          {t.title} <span className="text-muted-foreground">{t.trilingual}</span>
         </h2>
         {(
           [
-            { name: "title_en", label: "English", value: event.title_en, required: true },
-            { name: "title_de", label: "Deutsch", value: event.title_de ?? "" },
-            { name: "title_fr", label: "Fran\u00e7ais", value: event.title_fr ?? "" },
+            { name: "title_en", label: t.english, value: event.title_en, required: true },
+            { name: "title_de", label: t.deutsch, value: event.title_de ?? "" },
+            { name: "title_fr", label: t.francais, value: event.title_fr ?? "" },
           ] as const
         ).map((field) => (
           <div key={field.name}>
@@ -128,13 +168,13 @@ export function EditEventForm({
       {/* Descriptions (trilingual) */}
       <div className="space-y-4">
         <h2 className="text-sm font-medium">
-          Description <span className="text-muted-foreground">(trilingual)</span>
+          {t.description} <span className="text-muted-foreground">{t.trilingual}</span>
         </h2>
         {(
           [
-            { name: "description_en", label: "English", value: event.description_en ?? "" },
-            { name: "description_de", label: "Deutsch", value: event.description_de ?? "" },
-            { name: "description_fr", label: "Fran\u00e7ais", value: event.description_fr ?? "" },
+            { name: "description_en", label: t.english, value: event.description_en ?? "" },
+            { name: "description_de", label: t.deutsch, value: event.description_de ?? "" },
+            { name: "description_fr", label: t.francais, value: event.description_fr ?? "" },
           ] as const
         ).map((field) => (
           <div key={field.name}>
@@ -156,7 +196,7 @@ export function EditEventForm({
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label htmlFor="venue_name" className="block text-sm font-medium mb-1">
-            Venue name
+            {t.venueName}
           </label>
           <input
             id="venue_name"
@@ -168,7 +208,7 @@ export function EditEventForm({
         </div>
         <div>
           <label htmlFor="city" className="block text-sm font-medium mb-1">
-            City
+            {t.city}
           </label>
           <input
             id="city"
@@ -182,7 +222,7 @@ export function EditEventForm({
 
       <div>
         <label htmlFor="venue_address" className="block text-sm font-medium mb-1">
-          Venue address
+          {t.venueAddress}
         </label>
         <input
           id="venue_address"
@@ -197,7 +237,7 @@ export function EditEventForm({
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label htmlFor="starts_at" className="block text-sm font-medium mb-1">
-            Start date & time
+            {t.startDate}
           </label>
           <input
             id="starts_at"
@@ -210,7 +250,7 @@ export function EditEventForm({
         </div>
         <div>
           <label htmlFor="ends_at" className="block text-sm font-medium mb-1">
-            End date & time
+            {t.endDate}
           </label>
           <input
             id="ends_at"
@@ -227,7 +267,7 @@ export function EditEventForm({
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label htmlFor="capacity" className="block text-sm font-medium mb-1">
-            Capacity
+            {t.capacity}
           </label>
           <input
             id="capacity"
@@ -241,7 +281,7 @@ export function EditEventForm({
         </div>
         <div>
           <label htmlFor="max_tickets_per_order" className="block text-sm font-medium mb-1">
-            Max tickets per order
+            {t.maxPerOrder}
           </label>
           <input
             id="max_tickets_per_order"
@@ -258,7 +298,7 @@ export function EditEventForm({
       <div className="grid gap-4 sm:grid-cols-3">
         <div>
           <label htmlFor="sales_target_tickets" className="block text-sm font-medium mb-1">
-            Sales target (tickets)
+            {t.salesTargetTickets}
           </label>
           <input
             id="sales_target_tickets"
@@ -272,7 +312,7 @@ export function EditEventForm({
         </div>
         <div>
           <label htmlFor="sales_target_revenue_eur" className="block text-sm font-medium mb-1">
-            Sales target revenue (\u20AC)
+            {t.salesTargetRevenue}
           </label>
           <input
             id="sales_target_revenue_eur"
@@ -291,7 +331,7 @@ export function EditEventForm({
         </div>
         <div>
           <label htmlFor="feedback_survey_url" className="block text-sm font-medium mb-1">
-            Feedback survey URL
+            {t.feedbackUrl}
           </label>
           <input
             id="feedback_survey_url"
@@ -318,13 +358,13 @@ export function EditEventForm({
           disabled={isPending}
           className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 disabled:opacity-50"
         >
-          {isPending ? "Saving..." : "Save changes"}
+          {isPending ? t.saving : t.saveChanges}
         </button>
         <a
           href={`/${locale}/events/${event.id}`}
           className="rounded-md border border-input px-6 py-2 text-sm font-medium hover:bg-accent"
         >
-          Cancel
+          {t.cancel}
         </a>
       </div>
     </form>
