@@ -1,4 +1,4 @@
-import { requireRole } from "@dbc/supabase/server";
+import { createServerClient, requireRole } from "@dbc/supabase/server";
 import { getDashboardKpis } from "@/actions/dashboard";
 import { DashboardClient } from "./dashboard-client";
 
@@ -12,7 +12,21 @@ export default async function DashboardPage({
   const { locale } = await params;
   const { from, to } = await searchParams;
   const user = await requireRole("team_member");
-  const kpis = await getDashboardKpis(locale, { from, to });
+  const supabase = await createServerClient();
+  const [kpis, profileRes] = await Promise.all([
+    getDashboardKpis(locale, { from, to }),
+    supabase
+      .from("profiles")
+      .select("display_name")
+      .eq("id", user.userId)
+      .maybeSingle(),
+  ]);
+
+  // Prefer profile display_name first word, fall back to email local part
+  const displayName = profileRes.data?.display_name?.trim() || null;
+  const firstName = displayName
+    ? displayName.split(/\s+/)[0]
+    : user.email.split("@")[0];
 
   const T = {
     en: {
@@ -105,7 +119,7 @@ export default async function DashboardPage({
   return (
     <div>
       <h1 className="font-heading text-2xl font-bold">
-        {t.welcome}, {user.email.split("@")[0]}
+        {t.welcome}, {firstName}
       </h1>
       <DashboardClient locale={locale} kpis={kpis} t={t} />
     </div>

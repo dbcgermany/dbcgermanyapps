@@ -148,12 +148,16 @@ export async function uploadAccountAvatar(file: File) {
   const user = await requireRole("team_member");
   const supabase = await createServerClient();
 
-  const ext = (file.name.split(".").pop() || "png").toLowerCase();
-  const path = `${user.userId}/avatar-${Date.now()}.${ext}`;
+  const { toWebp } = await import("@/lib/webp");
+  const { buffer, contentType, extension } = await toWebp(file, {
+    maxDim: 512,
+  });
+
+  const path = `${user.userId}/avatar-${Date.now()}.${extension}`;
 
   const { error: uploadError } = await supabase.storage
     .from("avatars")
-    .upload(path, file, { upsert: false, contentType: file.type });
+    .upload(path, buffer, { upsert: false, contentType });
   if (uploadError) return { error: uploadError.message };
 
   const {

@@ -13,12 +13,14 @@ export async function uploadEventMediaFile(eventId: string, file: File) {
   await requireRole("manager");
   const supabase = await createServerClient();
 
-  const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
-  const path = `${eventId}/media/${Date.now()}.${ext}`;
+  const { toWebp } = await import("@/lib/webp");
+  const { buffer, contentType, extension } = await toWebp(file);
+
+  const path = `${eventId}/media/${Date.now()}.${extension}`;
 
   const { error: uploadError } = await supabase.storage
     .from("event-covers")
-    .upload(path, file, { upsert: false, contentType: file.type });
+    .upload(path, buffer, { upsert: false, contentType });
   if (uploadError) return { error: uploadError.message };
 
   const {

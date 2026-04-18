@@ -444,14 +444,15 @@ export async function uploadEventCover(formData: FormData) {
     return { error: "Only image files are allowed" };
   }
 
-  const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
-  const path = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${ext}`;
+  const { toWebp } = await import("@/lib/webp");
+  const { buffer, contentType, extension } = await toWebp(file);
+  const path = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${extension}`;
 
   const service = getServiceClient();
   const { error: uploadError } = await service.storage
     .from(COVER_BUCKET)
-    .upload(path, file, {
-      contentType: file.type,
+    .upload(path, buffer, {
+      contentType,
       upsert: false,
     });
 

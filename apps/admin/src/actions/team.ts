@@ -249,13 +249,16 @@ export async function uploadTeamMemberPhoto(
   const user = await requireRole("manager");
   const supabase = await createServerClient();
 
-  const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+  const { toWebp } = await import("@/lib/webp");
+  const { buffer, contentType, extension } = await toWebp(file, {
+    maxDim: 1200,
+  });
   const folder = memberId ?? `draft/${user.userId}`;
-  const path = `${folder}/photo-${Date.now()}.${ext}`;
+  const path = `${folder}/photo-${Date.now()}.${extension}`;
 
   const { error: uploadError } = await supabase.storage
     .from("team-photos")
-    .upload(path, file, { upsert: false, contentType: file.type });
+    .upload(path, buffer, { upsert: false, contentType });
   if (uploadError) return { error: uploadError.message };
 
   const {

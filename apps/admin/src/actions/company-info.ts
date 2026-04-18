@@ -313,12 +313,13 @@ export async function uploadBrandAsset(
   const user = await requireRole("admin");
   const supabase = await createServerClient();
 
-  const ext = (file.name.split(".").pop() || "png").toLowerCase();
-  const path = `${field}-${Date.now()}.${ext}`;
+  const { toWebp } = await import("@/lib/webp");
+  const { buffer, contentType, extension } = await toWebp(file);
+  const path = `${field}-${Date.now()}.${extension}`;
 
   const { error: uploadError } = await supabase.storage
     .from("brand-assets")
-    .upload(path, file, { upsert: false, contentType: file.type });
+    .upload(path, buffer, { upsert: false, contentType });
   if (uploadError) return { error: uploadError.message };
 
   const {
