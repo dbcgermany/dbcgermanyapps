@@ -359,6 +359,53 @@
       "status": "Statut",
       "created": "Créé le",
       "updated": "Mis à jour"
+    },
+    "eventsList": {
+      "title": "Événements",
+      "createEvent": "Créer un événement",
+      "emptyMessage": "Aucun événement pour le moment. Créez votre premier événement pour commencer.",
+      "event": "Événement",
+      "type": "Type",
+      "date": "Date",
+      "city": "Ville",
+      "capacity": "Capacité",
+      "status": "Statut",
+      "actions": "Actions",
+      "published": "Publié",
+      "draft": "Brouillon",
+      "publish": "Publier",
+      "unpublish": "Dépublier"
+    },
+    "orders": {
+      "title": "Commandes",
+      "filterAll": "Tous les événements",
+      "search": "Rechercher par e-mail ou ID",
+      "buyer": "Acheteur",
+      "event": "Événement",
+      "total": "Total",
+      "status": "Statut",
+      "acquisition": "Acquis via",
+      "created": "Créée",
+      "exportCsv": "Exporter CSV",
+      "noOrders": "Aucune commande ne correspond aux filtres."
+    },
+    "contacts": {
+      "title": "Contacts",
+      "createContact": "Ajouter un contact",
+      "search": "Rechercher nom ou e-mail",
+      "categoryFilter": "Catégorie",
+      "allCategories": "Toutes les catégories",
+      "marketingOnly": "Abonnés newsletter uniquement",
+      "name": "Nom",
+      "email": "E-mail",
+      "country": "Pays",
+      "categories": "Catégories",
+      "marketing": "Newsletter",
+      "orders": "Commandes",
+      "tickets": "Billets",
+      "subscribed": "Abonné",
+      "unsubscribed": "Désabonné",
+      "empty": "Aucun contact ne correspond aux filtres."
     }
   },
   "gdpr": {

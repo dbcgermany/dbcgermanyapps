@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Badge } from "@dbc/ui";
+import { getTranslations } from "next-intl/server";
 import { getEvents, togglePublish } from "@/actions/events";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
@@ -10,26 +11,27 @@ export default async function EventsPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "admin.eventsList" });
   const events = await getEvents();
 
   return (
     <div>
       <PageHeader
-        title="Events"
+        title={t("title")}
         cta={
           <Link
             href={`/${locale}/events/new`}
             className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
           >
-            Create Event
+            {t("createEvent")}
           </Link>
         }
       />
 
       {events.length === 0 ? (
         <EmptyState
-          message="No events yet. Create your first event to get started."
-          cta={{ label: "Create Event", href: `/${locale}/events/new` }}
+          message={t("emptyMessage")}
+          cta={{ label: t("createEvent"), href: `/${locale}/events/new` }}
           className="mt-12"
         />
       ) : (
@@ -37,13 +39,13 @@ export default async function EventsPage({
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/50">
-                <th className="px-4 py-3 text-left font-medium">Event</th>
-                <th className="px-4 py-3 text-left font-medium">Type</th>
-                <th className="px-4 py-3 text-left font-medium">Date</th>
-                <th className="px-4 py-3 text-left font-medium">City</th>
-                <th className="px-4 py-3 text-left font-medium">Capacity</th>
-                <th className="px-4 py-3 text-left font-medium">Status</th>
-                <th className="px-4 py-3 text-right font-medium">Actions</th>
+                <th className="px-4 py-3 text-left font-medium">{t("event")}</th>
+                <th className="px-4 py-3 text-left font-medium">{t("type")}</th>
+                <th className="px-4 py-3 text-left font-medium">{t("date")}</th>
+                <th className="px-4 py-3 text-left font-medium">{t("city")}</th>
+                <th className="px-4 py-3 text-left font-medium">{t("capacity")}</th>
+                <th className="px-4 py-3 text-left font-medium">{t("status")}</th>
+                <th className="px-4 py-3 text-right font-medium">{t("actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -82,7 +84,7 @@ export default async function EventsPage({
                   </td>
                   <td className="px-4 py-3">
                     <Badge variant={event.is_published ? "success" : "warning"}>
-                      {event.is_published ? "Published" : "Draft"}
+                      {event.is_published ? t("published") : t("draft")}
                     </Badge>
                   </td>
                   <td className="px-4 py-3 text-right">
@@ -96,7 +98,7 @@ export default async function EventsPage({
                         type="submit"
                         className="text-xs text-muted-foreground hover:text-foreground"
                       >
-                        {event.is_published ? "Unpublish" : "Publish"}
+                        {event.is_published ? t("unpublish") : t("publish")}
                       </button>
                     </form>
                   </td>

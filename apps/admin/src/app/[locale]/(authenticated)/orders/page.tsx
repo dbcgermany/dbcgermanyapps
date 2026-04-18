@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { getOrders, getOrdersEvents } from "@/actions/orders";
 import { PageHeader } from "@/components/page-header";
 import { OrdersClient } from "./orders-client";
@@ -10,6 +11,7 @@ export default async function OrdersPage({
   searchParams: Promise<{ event?: string; status?: string }>;
 }) {
   const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "admin.orders" });
   const sp = await searchParams;
 
   const [orders, events] = await Promise.all([
@@ -19,9 +21,7 @@ export default async function OrdersPage({
 
   return (
     <div>
-      <PageHeader
-        title={locale === "de" ? "Bestellungen" : locale === "fr" ? "Commandes" : "Orders"}
-      />
+      <PageHeader title={t("title")} />
 
       <OrdersClient
         locale={locale}

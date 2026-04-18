@@ -1,12 +1,18 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { listContacts } from "@/actions/contacts";
 import { PageHeader } from "@/components/page-header";
 
 export default async function ContactsListPage({
+  params,
   searchParams,
 }: {
+  params: Promise<{ locale: string }>;
   searchParams: Promise<{ q?: string; category?: string; marketing?: string }>;
 }) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "admin.contacts" });
+  const tCommon = await getTranslations({ locale, namespace: "admin.common" });
   const sp = await searchParams;
   const contacts = await listContacts({
     search: sp.q,
@@ -17,8 +23,8 @@ export default async function ContactsListPage({
   return (
     <div>
       <PageHeader
-        title="Contacts"
-        description="Every person who ever bought a ticket, was invited, or subscribed to the newsletter. Click a row for their full history."
+        title={t("title")}
+        description=""
       />
 
       <form className="mt-6 flex flex-wrap gap-2" method="get">
@@ -26,7 +32,7 @@ export default async function ContactsListPage({
           type="search"
           name="q"
           defaultValue={sp.q ?? ""}
-          placeholder="Search name or email…"
+          placeholder={t("search")}
           className="w-64 rounded-md border border-border bg-background px-3 py-2 text-sm"
         />
         <label className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm">
@@ -36,20 +42,20 @@ export default async function ContactsListPage({
             value="1"
             defaultChecked={sp.marketing === "1"}
           />
-          Newsletter-active only
+          {t("marketingOnly")}
         </label>
         <button
           type="submit"
           className="rounded-md border border-border px-4 py-2 text-sm hover:bg-muted"
         >
-          Filter
+          {tCommon("filter")}
         </button>
         {(sp.q || sp.marketing) && (
           <Link
             href="?"
             className="rounded-md px-4 py-2 text-sm text-muted-foreground hover:bg-muted"
           >
-            Reset
+            {tCommon("cancel")}
           </Link>
         )}
       </form>
@@ -58,13 +64,13 @@ export default async function ContactsListPage({
         <table className="min-w-full text-sm">
           <thead className="bg-muted/30 text-xs uppercase tracking-wider text-muted-foreground">
             <tr>
-              <th className="px-4 py-3 text-left">Name</th>
-              <th className="px-4 py-3 text-left">Email</th>
-              <th className="px-4 py-3 text-left">Country</th>
-              <th className="px-4 py-3 text-left">Categories</th>
-              <th className="px-4 py-3 text-left">Marketing</th>
-              <th className="px-4 py-3 text-right">Orders</th>
-              <th className="px-4 py-3 text-right">Tickets</th>
+              <th className="px-4 py-3 text-left">{t("name")}</th>
+              <th className="px-4 py-3 text-left">{t("email")}</th>
+              <th className="px-4 py-3 text-left">{t("country")}</th>
+              <th className="px-4 py-3 text-left">{t("categories")}</th>
+              <th className="px-4 py-3 text-left">{t("marketing")}</th>
+              <th className="px-4 py-3 text-right">{t("orders")}</th>
+              <th className="px-4 py-3 text-right">{t("tickets")}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
@@ -74,7 +80,7 @@ export default async function ContactsListPage({
                   colSpan={7}
                   className="px-4 py-10 text-center text-muted-foreground"
                 >
-                  No contacts yet.
+                  {t("empty")}
                 </td>
               </tr>
             ) : (
@@ -110,11 +116,11 @@ export default async function ContactsListPage({
                   <td className="px-4 py-3">
                     {c.unsubscribed_at ? (
                       <span className="text-xs text-muted-foreground">
-                        Unsubscribed
+                        {t("unsubscribed")}
                       </span>
                     ) : c.marketing_consent ? (
                       <span className="text-xs font-medium text-green-600">
-                        Subscribed
+                        {t("subscribed")}
                       </span>
                     ) : (
                       <span className="text-xs text-muted-foreground">—</span>

@@ -359,6 +359,53 @@
       "status": "Status",
       "created": "Created",
       "updated": "Updated"
+    },
+    "eventsList": {
+      "title": "Events",
+      "createEvent": "Create Event",
+      "emptyMessage": "No events yet. Create your first event to get started.",
+      "event": "Event",
+      "type": "Type",
+      "date": "Date",
+      "city": "City",
+      "capacity": "Capacity",
+      "status": "Status",
+      "actions": "Actions",
+      "published": "Published",
+      "draft": "Draft",
+      "publish": "Publish",
+      "unpublish": "Unpublish"
+    },
+    "orders": {
+      "title": "Orders",
+      "filterAll": "All events",
+      "search": "Search by email or order ID",
+      "buyer": "Buyer",
+      "event": "Event",
+      "total": "Total",
+      "status": "Status",
+      "acquisition": "Acquired",
+      "created": "Created",
+      "exportCsv": "Export CSV",
+      "noOrders": "No orders match your filters."
+    },
+    "contacts": {
+      "title": "Contacts",
+      "createContact": "Add contact",
+      "search": "Search name or email",
+      "categoryFilter": "Category",
+      "allCategories": "All categories",
+      "marketingOnly": "Newsletter-active only",
+      "name": "Name",
+      "email": "Email",
+      "country": "Country",
+      "categories": "Categories",
+      "marketing": "Newsletter",
+      "orders": "Orders",
+      "tickets": "Tickets",
+      "subscribed": "Subscribed",
+      "unsubscribed": "Unsubscribed",
+      "empty": "No contacts match your filters."
     }
   },
   "gdpr": {
