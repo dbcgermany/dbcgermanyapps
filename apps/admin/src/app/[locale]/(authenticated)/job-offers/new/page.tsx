@@ -4,12 +4,41 @@ import { use, useActionState } from "react";
 import { createJobOffer } from "@/actions/job-offers";
 import { PageHeader } from "@/components/page-header";
 
-const EMPLOYMENT_TYPES = [
-  { value: "full_time", label: "Full-time" },
-  { value: "part_time", label: "Part-time" },
-  { value: "freelance", label: "Freelance" },
-  { value: "internship", label: "Internship" },
-];
+const T = {
+  en: {
+    title: "New job offer",
+    titleEn: "Title (EN)", titleDe: "Title (DE)", titleFr: "Title (FR)",
+    descEn: "Description (EN)", descDe: "Description (DE)", descFr: "Description (FR)",
+    reqEn: "Requirements (EN)", reqDe: "Requirements (DE)", reqFr: "Requirements (FR)",
+    location: "Location",
+    employmentType: "Employment type", selectType: "Select type",
+    fullTime: "Full-time", partTime: "Part-time", freelance: "Freelance", internship: "Internship",
+    department: "Department",
+    saving: "Saving…", saveDraft: "Save draft",
+  },
+  de: {
+    title: "Neue Stelle",
+    titleEn: "Titel (EN)", titleDe: "Titel (DE)", titleFr: "Titel (FR)",
+    descEn: "Beschreibung (EN)", descDe: "Beschreibung (DE)", descFr: "Beschreibung (FR)",
+    reqEn: "Anforderungen (EN)", reqDe: "Anforderungen (DE)", reqFr: "Anforderungen (FR)",
+    location: "Ort",
+    employmentType: "Beschäftigungsart", selectType: "Art auswählen",
+    fullTime: "Vollzeit", partTime: "Teilzeit", freelance: "Freelance", internship: "Praktikum",
+    department: "Abteilung",
+    saving: "Wird gespeichert…", saveDraft: "Entwurf speichern",
+  },
+  fr: {
+    title: "Nouvelle offre",
+    titleEn: "Titre (EN)", titleDe: "Titre (DE)", titleFr: "Titre (FR)",
+    descEn: "Description (EN)", descDe: "Description (DE)", descFr: "Description (FR)",
+    reqEn: "Exigences (EN)", reqDe: "Exigences (DE)", reqFr: "Exigences (FR)",
+    location: "Lieu",
+    employmentType: "Type de contrat", selectType: "Sélectionner un type",
+    fullTime: "Temps plein", partTime: "Temps partiel", freelance: "Freelance", internship: "Stage",
+    department: "Département",
+    saving: "Enregistrement…", saveDraft: "Enregistrer le brouillon",
+  },
+} as const;
 
 export default function NewJobOfferPage({
   params,
@@ -17,6 +46,14 @@ export default function NewJobOfferPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = use(params);
+  const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
+
+  const employmentTypes = [
+    { value: "full_time", label: t.fullTime },
+    { value: "part_time", label: t.partTime },
+    { value: "freelance", label: t.freelance },
+    { value: "internship", label: t.internship },
+  ];
 
   const [state, formAction, isPending] = useActionState(
     async (_prev: { error: string } | null, formData: FormData) => {
@@ -28,7 +65,7 @@ export default function NewJobOfferPage({
 
   return (
     <div>
-      <PageHeader title="New job offer" />
+      <PageHeader title={t.title} />
 
       <form action={formAction} className="mt-8 max-w-3xl space-y-6">
         {state?.error && (
@@ -37,46 +74,46 @@ export default function NewJobOfferPage({
           </div>
         )}
 
-        <Field name="title_en" label="Title (EN)" required />
-        <Field name="title_de" label="Title (DE)" />
-        <Field name="title_fr" label="Title (FR)" />
+        <Field name="title_en" label={t.titleEn} required />
+        <Field name="title_de" label={t.titleDe} />
+        <Field name="title_fr" label={t.titleFr} />
 
-        <Field name="description_en" label="Description (EN)" textarea rows={8} required />
-        <Field name="description_de" label="Description (DE)" textarea rows={8} />
-        <Field name="description_fr" label="Description (FR)" textarea rows={8} />
+        <Field name="description_en" label={t.descEn} textarea rows={8} required />
+        <Field name="description_de" label={t.descDe} textarea rows={8} />
+        <Field name="description_fr" label={t.descFr} textarea rows={8} />
 
-        <Field name="requirements_en" label="Requirements (EN)" textarea rows={6} />
-        <Field name="requirements_de" label="Requirements (DE)" textarea rows={6} />
-        <Field name="requirements_fr" label="Requirements (FR)" textarea rows={6} />
+        <Field name="requirements_en" label={t.reqEn} textarea rows={6} />
+        <Field name="requirements_de" label={t.reqDe} textarea rows={6} />
+        <Field name="requirements_fr" label={t.reqFr} textarea rows={6} />
 
-        <Field name="location" label="Location" />
+        <Field name="location" label={t.location} />
 
         <div>
           <label htmlFor="employment_type" className="mb-1 block text-sm font-medium">
-            Employment type
+            {t.employmentType}
           </label>
           <select
             id="employment_type"
             name="employment_type"
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
           >
-            <option value="">Select type</option>
-            {EMPLOYMENT_TYPES.map((t) => (
-              <option key={t.value} value={t.value}>
-                {t.label}
+            <option value="">{t.selectType}</option>
+            {employmentTypes.map((et) => (
+              <option key={et.value} value={et.value}>
+                {et.label}
               </option>
             ))}
           </select>
         </div>
 
-        <Field name="department" label="Department" />
+        <Field name="department" label={t.department} />
 
         <button
           type="submit"
           disabled={isPending}
           className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
         >
-          {isPending ? "Saving..." : "Save draft"}
+          {isPending ? t.saving : t.saveDraft}
         </button>
       </form>
     </div>
