@@ -23,6 +23,9 @@ type EventRow = {
   capacity: number;
   max_tickets_per_order: number | null;
   cover_image_url: string | null;
+  feedback_survey_url: string | null;
+  sales_target_tickets: number | null;
+  sales_target_revenue_cents: number | null;
   updated_at: string;
 };
 
@@ -246,6 +249,51 @@ export function EditEventForm({
             type="number"
             min="1"
             defaultValue={event.max_tickets_per_order ?? 10}
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          />
+        </div>
+      </div>
+
+      {/* Sales targets & feedback */}
+      <div className="grid gap-4 sm:grid-cols-3">
+        <div>
+          <label htmlFor="sales_target_tickets" className="block text-sm font-medium mb-1">
+            Sales target (tickets)
+          </label>
+          <input
+            id="sales_target_tickets"
+            name="sales_target_tickets"
+            type="number"
+            min="0"
+            defaultValue={event.sales_target_tickets ?? ""}
+            placeholder="e.g. 500"
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          />
+        </div>
+        <div>
+          <label htmlFor="sales_target_revenue_cents" className="block text-sm font-medium mb-1">
+            Sales target revenue (cents)
+          </label>
+          <input
+            id="sales_target_revenue_cents"
+            name="sales_target_revenue_cents"
+            type="number"
+            min="0"
+            defaultValue={event.sales_target_revenue_cents ?? ""}
+            placeholder="e.g. 2500000 = \u20AC25,000"
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          />
+        </div>
+        <div>
+          <label htmlFor="feedback_survey_url" className="block text-sm font-medium mb-1">
+            Feedback survey URL
+          </label>
+          <input
+            id="feedback_survey_url"
+            name="feedback_survey_url"
+            type="url"
+            defaultValue={event.feedback_survey_url ?? ""}
+            placeholder="https://forms.google.com/..."
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>

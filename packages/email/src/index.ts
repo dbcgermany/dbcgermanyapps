@@ -1,5 +1,5 @@
 export { render } from "@react-email/components";
-export { createEmailClient } from "./client";
+export { createEmailClient, fromAddressFor } from "./client";
 export { sendTicketEmail } from "./send-ticket";
 export type { SendTicketEmailInput } from "./send-ticket";
 export { generateTicketPdf } from "./pdf/generate-ticket";
@@ -62,3 +62,8 @@ export { ContactFormConfirmEmail } from "./templates/contact-form-confirm";
 export type { ContactFormConfirmEmailProps } from "./templates/contact-form-confirm";
 export { PreEventReminderEmail } from "./templates/pre-event-reminder";
 export type { PreEventReminderEmailProps } from "./templates/pre-event-reminder";
+export { PaymentReminderEmail } from "./templates/payment-reminder";
+export type { PaymentReminderEmailProps } from "./templates/payment-reminder";
+export { InvoicePdf } from "./pdf/invoice-pdf";
+export { generateInvoicePdf } from "./pdf/generate-invoice";
+export type { GenerateInvoiceInput } from "./pdf/generate-invoice";

@@ -265,6 +265,107 @@ export async function getRevenueByEventReport(opts: {
     .sort((a, b) => b.revenueCents - a.revenueCents);
 }
 
+// ---------------------------------------------------------------------------
+// Coupon performance
+// ---------------------------------------------------------------------------
+
+export interface CouponPerformanceRow {
+  code: string;
+  uses: number;
+  totalDiscountCents: number;
+  totalRevenueCents: number;
+}
+
+export async function getCouponPerformanceReport(eventId?: string) {
+  await requireRole("admin");
+  const supabase = await createServerClient();
+
+  let query = supabase
+    .from("orders")
+    .select("total_cents, discount_cents, coupon:coupons(code)")
+    .not("coupon_id", "is", null)
+    .in("status", ["paid", "comped"]);
+
+  if (eventId) query = query.eq("event_id", eventId);
+
+  const { data } = await query;
+
+  const map = new Map<string, CouponPerformanceRow>();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  for (const o of (data ?? []) as any[]) {
+    const code =
+      Array.isArray(o.coupon) ? o.coupon[0]?.code : o.coupon?.code;
+    if (!code) continue;
+    const existing = map.get(code) ?? {
+      code,
+      uses: 0,
+      totalDiscountCents: 0,
+      totalRevenueCents: 0,
+    };
+    existing.uses++;
+    existing.totalDiscountCents += o.discount_cents ?? 0;
+    existing.totalRevenueCents += o.total_cents ?? 0;
+    map.set(code, existing);
+  }
+
+  return [...map.values()].sort((a, b) => b.uses - a.uses);
+}
+
+// ---------------------------------------------------------------------------
+// Event financial summary (P&L)
+// ---------------------------------------------------------------------------
+
+export interface EventFinancialSummary {
+  eventId: string;
+  eventTitle: string;
+  revenueCents: number;
+  expensesCents: number;
+  profitCents: number;
+  taxEstimateCents: number;
+}
+
+export async function getEventFinancialSummary(
+  eventId: string,
+  taxRatePct: number = 19
+): Promise<EventFinancialSummary> {
+  await requireRole("admin");
+  const supabase = await createServerClient();
+
+  const [eventRes, revenueRes, expensesRes] = await Promise.all([
+    supabase.from("events").select("title_en").eq("id", eventId).single(),
+    supabase
+      .from("orders")
+      .select("total_cents")
+      .eq("event_id", eventId)
+      .in("status", ["paid", "comped"]),
+    supabase
+      .from("event_expenses")
+      .select("amount_cents")
+      .eq("event_id", eventId),
+  ]);
+
+  const revenueCents = (revenueRes.data ?? []).reduce(
+    (s, o) => s + (o.total_cents ?? 0),
+    0
+  );
+  const expensesCents = (expensesRes.data ?? []).reduce(
+    (s, e) => s + (e.amount_cents ?? 0),
+    0
+  );
+  const taxEstimateCents = Math.round(
+    revenueCents - revenueCents / (1 + taxRatePct / 100)
+  );
+
+  return {
+    eventId,
+    eventTitle: eventRes.data?.title_en ?? "Event",
+    revenueCents,
+    expensesCents,
+    profitCents: revenueCents - expensesCents,
+    taxEstimateCents,
+  };
+}
+
 export async function getReportsEvents() {
   await requireRole("admin");
   const supabase = await createServerClient();

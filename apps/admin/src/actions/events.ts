@@ -21,7 +21,7 @@ const EVENT_LIST_COLUMNS =
   "id, slug, title_en, title_de, title_fr, event_type, starts_at, ends_at, capacity, is_published, cover_image_url, city" as const;
 
 const EVENT_DETAIL_COLUMNS =
-  "id, slug, title_en, title_de, title_fr, description_en, description_de, description_fr, event_type, venue_name, venue_address, city, country, timezone, starts_at, ends_at, capacity, max_tickets_per_order, enabled_payment_methods, cover_image_url, is_published, created_at, updated_at" as const;
+  "id, slug, title_en, title_de, title_fr, description_en, description_de, description_fr, event_type, venue_name, venue_address, city, country, timezone, starts_at, ends_at, capacity, max_tickets_per_order, enabled_payment_methods, cover_image_url, is_published, feedback_survey_url, sales_target_tickets, sales_target_revenue_cents, created_at, updated_at" as const;
 
 // ---------------------------------------------------------------------------
 // Queries
@@ -106,6 +106,36 @@ export async function createEvent(formData: FormData) {
 
   if (error) return { error: error.message };
 
+  // Auto-populate checklist from template
+  try {
+    const { data: templates } = await supabase
+      .from("event_checklist_templates")
+      .select("title, category, description, default_offset_days, estimated_cost_cents, sort_order")
+      .eq("is_active", true)
+      .order("sort_order");
+
+    if (templates && templates.length > 0) {
+      const startsAt = new Date(eventData.starts_at);
+      const checklistItems = templates.map((t) => {
+        const dueDate = new Date(startsAt);
+        dueDate.setDate(dueDate.getDate() + t.default_offset_days);
+        return {
+          event_id: data.id,
+          title: t.title,
+          category: t.category,
+          description: t.description,
+          due_date: dueDate.toISOString().slice(0, 10),
+          estimated_cost_cents: t.estimated_cost_cents,
+          sort_order: t.sort_order,
+          status: "pending",
+        };
+      });
+      await supabase.from("event_checklist_items").insert(checklistItems);
+    }
+  } catch (err) {
+    console.error("[createEvent] checklist auto-populate failed:", err);
+  }
+
   // Audit log
   await supabase.from("audit_log").insert({
     user_id: user.userId,
@@ -148,6 +178,14 @@ export async function updateEvent(id: string, formData: FormData) {
     ),
     cover_image_url:
       ((formData.get("cover_image_url") as string) || "").trim() || null,
+    feedback_survey_url:
+      ((formData.get("feedback_survey_url") as string) || "").trim() || null,
+    sales_target_tickets: formData.get("sales_target_tickets")
+      ? parseInt(formData.get("sales_target_tickets") as string, 10)
+      : null,
+    sales_target_revenue_cents: formData.get("sales_target_revenue_cents")
+      ? parseInt(formData.get("sales_target_revenue_cents") as string, 10)
+      : null,
   };
 
   const { error } = await supabase
