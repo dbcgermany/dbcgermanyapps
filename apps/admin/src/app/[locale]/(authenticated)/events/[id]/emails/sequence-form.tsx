@@ -3,6 +3,36 @@
 import { useActionState } from "react";
 import { createEmailSequence } from "@/actions/email-sequences";
 
+const T = {
+  en: {
+    added: "Sequence added.",
+    delayDays: "Send N days after event ends", sortOrder: "Sort order",
+    subject: "Subject", body: "Body", trilingual: "(trilingual)",
+    english: "English", deutsch: "Deutsch", francais: "Français",
+    subjectPh: "Thank you for attending {event}",
+    bodyPh: "Hi {name}, thank you for joining us…",
+    adding: "Adding…", addSequence: "Add Sequence",
+  },
+  de: {
+    added: "Sequenz hinzugefügt.",
+    delayDays: "N Tage nach Veranstaltungsende senden", sortOrder: "Sortierung",
+    subject: "Betreff", body: "Inhalt", trilingual: "(dreisprachig)",
+    english: "English", deutsch: "Deutsch", francais: "Français",
+    subjectPh: "Danke für Ihre Teilnahme an {event}",
+    bodyPh: "Hallo {name}, danke, dass Sie dabei waren…",
+    adding: "Wird hinzugefügt…", addSequence: "Sequenz hinzufügen",
+  },
+  fr: {
+    added: "Séquence ajoutée.",
+    delayDays: "Envoyer N jours après la fin de l’événement", sortOrder: "Ordre",
+    subject: "Objet", body: "Corps", trilingual: "(trilingue)",
+    english: "English", deutsch: "Deutsch", francais: "Français",
+    subjectPh: "Merci d’avoir assisté à {event}",
+    bodyPh: "Bonjour {name}, merci pour votre présence…",
+    adding: "Ajout…", addSequence: "Ajouter la séquence",
+  },
+} as const;
+
 export function SequenceForm({
   eventId,
   locale,
@@ -10,6 +40,7 @@ export function SequenceForm({
   eventId: string;
   locale: string;
 }) {
+  const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
   const [state, formAction, isPending] = useActionState(
     async (_prev: { error?: string; success?: boolean } | null, formData: FormData) => {
       formData.set("event_id", eventId);
@@ -28,14 +59,14 @@ export function SequenceForm({
       )}
       {state?.success && (
         <div className="rounded-md bg-green-50 p-3 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-400">
-          Sequence added.
+          {t.added}
         </div>
       )}
 
       <div className="grid gap-3 sm:grid-cols-4">
         <div>
           <label htmlFor="delay_days" className="block text-xs text-muted-foreground mb-1">
-            Send N days after event ends
+            {t.delayDays}
           </label>
           <input
             id="delay_days"
@@ -49,7 +80,7 @@ export function SequenceForm({
         </div>
         <div>
           <label htmlFor="sort_order" className="block text-xs text-muted-foreground mb-1">
-            Sort order
+            {t.sortOrder}
           </label>
           <input
             id="sort_order"
@@ -64,12 +95,12 @@ export function SequenceForm({
       {/* Subjects */}
       <div className="space-y-2">
         <h3 className="text-sm font-medium">
-          Subject <span className="text-muted-foreground">(trilingual)</span>
+          {t.subject} <span className="text-muted-foreground">{t.trilingual}</span>
         </h3>
         {[
-          { name: "subject_en", label: "English", required: true },
-          { name: "subject_de", label: "Deutsch" },
-          { name: "subject_fr", label: "Fran\u00e7ais" },
+          { name: "subject_en", label: t.english, required: true },
+          { name: "subject_de", label: t.deutsch },
+          { name: "subject_fr", label: t.francais },
         ].map((field) => (
           <div key={field.name}>
             <label htmlFor={field.name} className="block text-xs text-muted-foreground mb-1">
@@ -80,7 +111,7 @@ export function SequenceForm({
               name={field.name}
               type="text"
               required={field.required}
-              placeholder="Thank you for attending {event}"
+              placeholder={t.subjectPh}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
@@ -90,12 +121,12 @@ export function SequenceForm({
       {/* Bodies */}
       <div className="space-y-2">
         <h3 className="text-sm font-medium">
-          Body <span className="text-muted-foreground">(trilingual)</span>
+          {t.body} <span className="text-muted-foreground">{t.trilingual}</span>
         </h3>
         {[
-          { name: "body_en", label: "English", required: true },
-          { name: "body_de", label: "Deutsch" },
-          { name: "body_fr", label: "Fran\u00e7ais" },
+          { name: "body_en", label: t.english, required: true },
+          { name: "body_de", label: t.deutsch },
+          { name: "body_fr", label: t.francais },
         ].map((field) => (
           <div key={field.name}>
             <label htmlFor={field.name} className="block text-xs text-muted-foreground mb-1">
@@ -106,7 +137,7 @@ export function SequenceForm({
               name={field.name}
               rows={4}
               required={field.required}
-              placeholder="Hi {name}, thank you for joining us..."
+              placeholder={t.bodyPh}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
@@ -118,7 +149,7 @@ export function SequenceForm({
         disabled={isPending}
         className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 disabled:opacity-50"
       >
-        {isPending ? "Adding..." : "Add Sequence"}
+        {isPending ? t.adding : t.addSequence}
       </button>
     </form>
   );
