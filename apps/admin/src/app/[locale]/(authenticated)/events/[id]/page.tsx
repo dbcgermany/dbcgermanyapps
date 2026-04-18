@@ -2,18 +2,24 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   Calendar,
+  ClipboardList,
   Gift,
+  Handshake,
   Image as ImageIcon,
+  ListChecks,
   Mail,
   QrCode,
+  Radio,
   Scissors,
   Tag,
   TicketCheck,
   Upload,
   Users,
+  Wallet,
 } from "lucide-react";
 import { Badge, Card } from "@dbc/ui";
 import { getEvent, togglePublish, duplicateEvent } from "@/actions/events";
+import { getEventChecklist } from "@/actions/checklist";
 import { PageHeader } from "@/components/page-header";
 import { DeleteEventButton } from "./delete-button";
 
@@ -30,6 +36,11 @@ export default async function EventDetailPage({
   } catch {
     notFound();
   }
+
+  const checklist = await getEventChecklist(id);
+  const clPct = checklist.progress.total > 0
+    ? Math.round((checklist.progress.done / checklist.progress.total) * 100)
+    : 0;
 
   const titleKey = `title_${locale}` as keyof typeof event;
   const descKey = `description_${locale}` as keyof typeof event;
@@ -194,9 +205,26 @@ export default async function EventDetailPage({
           </div>
         </section>
 
-        {/* Live & post-event */}
+        {/* Operations */}
         <section>
-          <h2 className="font-heading text-base font-semibold text-muted-foreground">Live & post-event</h2>
+          <h2 className="font-heading text-base font-semibold text-muted-foreground">Operations</h2>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <HubLink
+              href={`/${locale}/events/${id}/checklist`}
+              icon={ListChecks}
+              title="Checklist"
+              desc={`${checklist.progress.done}/${checklist.progress.total} done (${clPct}%)${checklist.progress.overdue > 0 ? ` \u00B7 ${checklist.progress.overdue} overdue` : ""}`}
+            />
+            <HubLink href={`/${locale}/events/${id}/runsheet`} icon={ClipboardList} title="Run Sheet" desc="Minute-by-minute event day plan" />
+            <HubLink href={`/${locale}/events/${id}/sponsors`} icon={Handshake} title="Sponsors" desc="Manage sponsorship deals and partners" />
+            <HubLink href={`/${locale}/events/${id}/budget`} icon={Wallet} title="Budget & Expenses" desc="Track costs and calculate profit" />
+            <HubLink href={`/${locale}/events/${id}/live`} icon={Radio} title="Live Dashboard" desc="Real-time check-in and sales during event" />
+          </div>
+        </section>
+
+        {/* Post-event */}
+        <section>
+          <h2 className="font-heading text-base font-semibold text-muted-foreground">Post-event</h2>
           <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <HubLink href={`/${locale}/events/${id}/attendees`} icon={Users} title="Attendees" desc="View registrations and check-in status" />
             <HubLink href={`/${locale}/events/${id}/media`} icon={ImageIcon} title="Media" desc="Upload photos and videos after the event" />
