@@ -21,11 +21,50 @@ import { SecurityTab } from "./security-tab";
 
 type Tab = "profile" | "preferences" | "security";
 
-const TABS: Array<{ id: Tab; label: string }> = [
-  { id: "profile", label: "Profile" },
-  { id: "preferences", label: "Preferences" },
-  { id: "security", label: "Security" },
-];
+const T = {
+  en: {
+    profile: "Profile", preferences: "Preferences", security: "Security",
+    changeAvatar: "Change avatar", uploading: "Uploading…",
+    avatarHint: "JPG, PNG, WebP, up to 2 MB.",
+    firstName: "First name", lastName: "Last name",
+    signInEmail: "Sign-in email", birthday: "Birthday", phone: "Phone",
+    address: "Address", clearAddress: "Clear address",
+    saving: "Saving…", saveProfile: "Save profile", savePrefs: "Save preferences",
+    profileSaved: "Profile saved.", prefsSaved: "Preferences saved.",
+    avatarUpdated: "Avatar updated.",
+    language: "Language", theme: "Theme", light: "Light", dark: "Dark",
+    emailNotifs: "Email notifications",
+    emailNotifsHelp: "Transactional alerts for orders, applications, and system events you’re responsible for.",
+  },
+  de: {
+    profile: "Profil", preferences: "Einstellungen", security: "Sicherheit",
+    changeAvatar: "Profilbild ändern", uploading: "Wird hochgeladen…",
+    avatarHint: "JPG, PNG, WebP, bis 2 MB.",
+    firstName: "Vorname", lastName: "Nachname",
+    signInEmail: "Anmelde-E-Mail", birthday: "Geburtstag", phone: "Telefon",
+    address: "Adresse", clearAddress: "Adresse leeren",
+    saving: "Wird gespeichert…", saveProfile: "Profil speichern", savePrefs: "Einstellungen speichern",
+    profileSaved: "Profil gespeichert.", prefsSaved: "Einstellungen gespeichert.",
+    avatarUpdated: "Profilbild aktualisiert.",
+    language: "Sprache", theme: "Design", light: "Hell", dark: "Dunkel",
+    emailNotifs: "E-Mail-Benachrichtigungen",
+    emailNotifsHelp: "Transaktionshinweise zu Bestellungen, Bewerbungen und Systemereignissen, für die Sie zuständig sind.",
+  },
+  fr: {
+    profile: "Profil", preferences: "Préférences", security: "Sécurité",
+    changeAvatar: "Changer d’avatar", uploading: "Téléversement…",
+    avatarHint: "JPG, PNG, WebP, jusqu’à 2 Mo.",
+    firstName: "Prénom", lastName: "Nom",
+    signInEmail: "E-mail de connexion", birthday: "Date de naissance", phone: "Téléphone",
+    address: "Adresse", clearAddress: "Effacer l’adresse",
+    saving: "Enregistrement…", saveProfile: "Enregistrer le profil", savePrefs: "Enregistrer les préférences",
+    profileSaved: "Profil enregistré.", prefsSaved: "Préférences enregistrées.",
+    avatarUpdated: "Avatar mis à jour.",
+    language: "Langue", theme: "Thème", light: "Clair", dark: "Sombre",
+    emailNotifs: "Notifications e-mail",
+    emailNotifsHelp: "Alertes transactionnelles pour les commandes, candidatures et événements système dont vous êtes responsable.",
+  },
+} as const;
 
 function initialsOf(firstName: string | null, lastName: string | null, email: string) {
   const source =
@@ -59,29 +98,35 @@ export function AccountTabs({
   const router = useRouter();
   const pathname = usePathname();
   const current = (params.get("tab") as Tab) || "profile";
-  const tab = TABS.some((t) => t.id === current) ? current : "profile";
+  const tab = (["profile", "preferences", "security"] as const).includes(current as Tab) ? current : "profile";
+  const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
+  const tabItems: Array<[Tab, string]> = [
+    ["profile", t.profile],
+    ["preferences", t.preferences],
+    ["security", t.security],
+  ];
 
-  function setTab(t: Tab) {
+  function setTab(tabId: Tab) {
     const sp = new URLSearchParams(params);
-    sp.set("tab", t);
+    sp.set("tab", tabId);
     router.replace(`${pathname}?${sp.toString()}`);
   }
 
   return (
     <div className="mt-8">
       <div className="flex gap-1 border-b border-border">
-        {TABS.map((t) => (
+        {tabItems.map(([id, label]) => (
           <button
-            key={t.id}
+            key={id}
             type="button"
-            onClick={() => setTab(t.id)}
+            onClick={() => setTab(id)}
             className={`rounded-t-md border-b-2 px-4 py-2 text-sm font-medium ${
-              tab === t.id
+              tab === id
                 ? "border-primary text-primary"
                 : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
-            {t.label}
+            {label}
           </button>
         ))}
       </div>
@@ -106,6 +151,7 @@ function ProfileTab({
   const [avatarPending, startAvatarTransition] = useTransition();
   const fileRef = useRef<HTMLInputElement>(null);
   const [avatar, setAvatar] = useState(profile.avatar_url);
+  const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
 
   const [firstName, setFirstName] = useState(profile.first_name ?? "");
   const [lastName, setLastName] = useState(profile.last_name ?? "");
@@ -136,7 +182,7 @@ function ProfileTab({
         address_country: address.country || null,
       });
       if ("error" in result && result.error) toast.error(result.error);
-      else toast.success("Profile saved.");
+      else toast.success(t.profileSaved);
     });
   }
 
@@ -152,7 +198,7 @@ function ProfileTab({
       if ("error" in result && result.error) toast.error(result.error);
       else if ("url" in result && result.url) {
         setAvatar(result.url);
-        toast.success("Avatar updated.");
+        toast.success(t.avatarUpdated);
       }
     });
   }
@@ -175,7 +221,7 @@ function ProfileTab({
             disabled={avatarPending}
             className="rounded-md border border-border px-3 py-1.5 text-sm font-medium hover:bg-muted disabled:opacity-50"
           >
-            {avatarPending ? "Uploading…" : "Change avatar"}
+            {avatarPending ? t.uploading : t.changeAvatar}
           </button>
           <input
             ref={fileRef}
@@ -185,7 +231,7 @@ function ProfileTab({
             onChange={handleFile}
           />
           <p className="mt-1 text-xs text-muted-foreground">
-            JPG, PNG, WebP, up to 2 MB.
+            {t.avatarHint}
           </p>
         </div>
       </div>
@@ -193,7 +239,7 @@ function ProfileTab({
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block">
           <span className="mb-1 block text-sm font-medium">
-            First name<span className="ml-0.5 text-red-500">*</span>
+            {t.firstName}<span className="ml-0.5 text-red-500">*</span>
           </span>
           <input
             type="text"
@@ -205,7 +251,7 @@ function ProfileTab({
           />
         </label>
         <label className="block">
-          <span className="mb-1 block text-sm font-medium">Last name</span>
+          <span className="mb-1 block text-sm font-medium">{t.lastName}</span>
           <input
             type="text"
             autoComplete="family-name"
@@ -218,32 +264,32 @@ function ProfileTab({
 
       <div className="rounded-md border border-border bg-muted/30 px-3 py-2">
         <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-          Sign-in email
+          {t.signInEmail}
         </p>
         <p className="mt-1 text-sm">{profile.email}</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block">
-          <span className="mb-1 block text-sm font-medium">Birthday</span>
+          <span className="mb-1 block text-sm font-medium">{t.birthday}</span>
           <DatePicker value={birthday} onChange={setBirthday} />
         </label>
         <label className="block">
-          <span className="mb-1 block text-sm font-medium">Phone</span>
+          <span className="mb-1 block text-sm font-medium">{t.phone}</span>
           <PhoneInput value={phone} onChange={setPhone} />
         </label>
       </div>
 
       <div>
         <div className="mb-2 flex items-center justify-between">
-          <h3 className="text-sm font-semibold">Address</h3>
+          <h3 className="text-sm font-semibold">{t.address}</h3>
           {(address.line1 || address.city || address.country) && (
             <button
               type="button"
               onClick={resetAddress}
               className="text-xs text-muted-foreground hover:text-foreground"
             >
-              Clear address
+              {t.clearAddress}
             </button>
           )}
         </div>
@@ -256,7 +302,7 @@ function ProfileTab({
           disabled={isPending}
           className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
         >
-          {isPending ? "Saving…" : "Save profile"}
+          {isPending ? t.saving : t.saveProfile}
         </button>
       </div>
     </form>
@@ -270,6 +316,7 @@ function PreferencesTab({ profile }: { profile: AccountProfile }) {
     profile.theme === "dark" ? "dark" : "light"
   );
   const [emailNotifs, setEmailNotifs] = useState(profile.email_notifications);
+  const t = T[(profile.locale === "de" || profile.locale === "fr" ? profile.locale : "en") as keyof typeof T];
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -281,7 +328,7 @@ function PreferencesTab({ profile }: { profile: AccountProfile }) {
       });
       if ("error" in result && result.error) toast.error(result.error);
       else {
-        toast.success("Preferences saved.");
+        toast.success(t.prefsSaved);
         // Apply theme immediately without a full reload and persist in both
         // cookie (so the SSR layout picks it up on the next request) and
         // localStorage (so the ThemeProvider stays in sync).
@@ -314,7 +361,7 @@ function PreferencesTab({ profile }: { profile: AccountProfile }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <label className="block">
-        <span className="mb-1 block text-sm font-medium">Language</span>
+        <span className="mb-1 block text-sm font-medium">{t.language}</span>
         <select
           value={locale}
           onChange={(e) => setLocale(e.target.value)}
@@ -327,7 +374,7 @@ function PreferencesTab({ profile }: { profile: AccountProfile }) {
       </label>
 
       <div>
-        <p className="mb-2 block text-sm font-medium">Theme</p>
+        <p className="mb-2 block text-sm font-medium">{t.theme}</p>
         <div className="inline-flex rounded-md border border-border bg-background p-1">
           {(["light", "dark"] as const).map((v) => {
             const active = theme === v;
@@ -336,13 +383,13 @@ function PreferencesTab({ profile }: { profile: AccountProfile }) {
                 type="button"
                 key={v}
                 onClick={() => setTheme(v)}
-                className={`rounded px-4 py-1.5 text-sm font-medium capitalize transition-colors ${
+                className={`rounded px-4 py-1.5 text-sm font-medium transition-colors ${
                   active
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:bg-muted"
                 }`}
               >
-                {v}
+                {v === "light" ? t.light : t.dark}
               </button>
             );
           })}
@@ -352,8 +399,8 @@ function PreferencesTab({ profile }: { profile: AccountProfile }) {
       <Toggle
         checked={emailNotifs}
         onChange={setEmailNotifs}
-        label="Email notifications"
-        description="Transactional alerts for orders, applications, and system events you’re responsible for."
+        label={t.emailNotifs}
+        description={t.emailNotifsHelp}
       />
 
       <div className="flex justify-end">
@@ -362,7 +409,7 @@ function PreferencesTab({ profile }: { profile: AccountProfile }) {
           disabled={isPending}
           className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
         >
-          {isPending ? "Saving…" : "Save preferences"}
+          {isPending ? t.saving : t.savePrefs}
         </button>
       </div>
     </form>
