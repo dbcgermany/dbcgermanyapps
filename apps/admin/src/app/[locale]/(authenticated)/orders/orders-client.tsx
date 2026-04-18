@@ -59,9 +59,7 @@ export function OrdersClient({
   }
 
   function handleRefund(orderId: string) {
-    if (!confirm("Refund this order? This restores ticket inventory and processes a Stripe refund.")) {
-      return;
-    }
+    if (!confirm(t.refundConfirm)) return;
     setError(null);
     setRefundingId(orderId);
     startTransition(async () => {
@@ -76,34 +74,54 @@ export function OrdersClient({
   const t = {
     en: {
       event: "Event", status: "Status", customer: "Customer", total: "Total", date: "Date", actions: "Actions",
-      refund: "Refund", refunding: "Refunding...",
+      refund: "Refund", refunding: "Refunding…",
+      refundConfirm: "Refund this order? This restores ticket inventory and processes a Stripe refund.",
       all: "All events", allStatus: "All statuses",
       pending: "Pending", paid: "Paid", comped: "Complimentary", refunded: "Refunded", cancelled: "Cancelled",
       purchased: "Purchased", invited: "Invited", assigned: "Assigned", door_sale: "Door sale",
       noOrders: "No orders match your filters.",
+      csvOrderId: "Order ID", csvEvent: "Event", csvRecipient: "Recipient",
+      csvEmail: "Email", csvStatus: "Status", csvAcquisition: "Acquisition",
+      csvPayment: "Payment", csvTotal: "Total (€)", csvStripe: "Stripe PI",
+      csvCreated: "Created at", csvEmailSent: "Email sent at",
     },
     de: {
-      event: "Veranstaltung", status: "Status", customer: "Kunde", total: "Gesamt", date: "Datum", actions: "Aktionen",
-      refund: "Erstatten", refunding: "Wird erstattet...",
+      event: "Veranstaltung", status: "Status", customer: "Kund:in", total: "Gesamt", date: "Datum", actions: "Aktionen",
+      refund: "Erstatten", refunding: "Wird erstattet…",
+      refundConfirm: "Diese Bestellung erstatten? Das Ticket-Kontingent wird wiederhergestellt und eine Stripe-Rückerstattung ausgelöst.",
       all: "Alle Veranstaltungen", allStatus: "Alle Status",
       pending: "Ausstehend", paid: "Bezahlt", comped: "Kostenlos", refunded: "Erstattet", cancelled: "Storniert",
       purchased: "Gekauft", invited: "Eingeladen", assigned: "Zugewiesen", door_sale: "Abendkasse",
       noOrders: "Keine Bestellungen gefunden.",
+      csvOrderId: "Bestell-ID", csvEvent: "Veranstaltung", csvRecipient: "Empfänger:in",
+      csvEmail: "E-Mail", csvStatus: "Status", csvAcquisition: "Erhalten durch",
+      csvPayment: "Zahlung", csvTotal: "Gesamt (€)", csvStripe: "Stripe PI",
+      csvCreated: "Erstellt am", csvEmailSent: "E-Mail gesendet am",
     },
     fr: {
-      event: "\u00C9v\u00E9nement", status: "Statut", customer: "Client", total: "Total", date: "Date", actions: "Actions",
-      refund: "Rembourser", refunding: "Remboursement...",
-      all: "Tous les \u00E9v\u00E9nements", allStatus: "Tous les statuts",
-      pending: "En attente", paid: "Pay\u00E9", comped: "Gratuit", refunded: "Rembours\u00E9", cancelled: "Annul\u00E9",
-      purchased: "Achet\u00E9", invited: "Invit\u00E9", assigned: "Attribu\u00E9", door_sale: "Sur place",
+      event: "Événement", status: "Statut", customer: "Client", total: "Total", date: "Date", actions: "Actions",
+      refund: "Rembourser", refunding: "Remboursement…",
+      refundConfirm: "Rembourser cette commande ? Le stock de billets est rétabli et un remboursement Stripe est déclenché.",
+      all: "Tous les événements", allStatus: "Tous les statuts",
+      pending: "En attente", paid: "Payé", comped: "Gratuit", refunded: "Remboursé", cancelled: "Annulé",
+      purchased: "Acheté", invited: "Invité", assigned: "Attribué", door_sale: "Sur place",
       noOrders: "Aucune commande.",
+      csvOrderId: "ID commande", csvEvent: "Événement", csvRecipient: "Destinataire",
+      csvEmail: "E-mail", csvStatus: "Statut", csvAcquisition: "Acquisition",
+      csvPayment: "Paiement", csvTotal: "Total (€)", csvStripe: "Stripe PI",
+      csvCreated: "Créée le", csvEmailSent: "E-mail envoyé le",
     },
   }[locale] ?? {
     event: "Event", status: "Status", customer: "Customer", total: "Total", date: "Date", actions: "Actions",
-    refund: "Refund", refunding: "...", all: "All", allStatus: "All",
+    refund: "Refund", refunding: "…", refundConfirm: "Refund?",
+    all: "All", allStatus: "All",
     pending: "Pending", paid: "Paid", comped: "Comped", refunded: "Refunded", cancelled: "Cancelled",
     purchased: "Purchased", invited: "Invited", assigned: "Assigned", door_sale: "Door sale",
     noOrders: "No orders",
+    csvOrderId: "Order ID", csvEvent: "Event", csvRecipient: "Recipient",
+    csvEmail: "Email", csvStatus: "Status", csvAcquisition: "Acquisition",
+    csvPayment: "Payment", csvTotal: "Total (€)", csvStripe: "Stripe PI",
+    csvCreated: "Created at", csvEmailSent: "Email sent at",
   };
 
   return (
@@ -151,17 +169,17 @@ export function OrdersClient({
             email_sent_at: o.emailSentAt ?? "",
           }))}
           headers={[
-            { key: "id", label: "Order ID" },
-            { key: "event", label: "Event" },
-            { key: "recipient_name", label: "Recipient" },
-            { key: "recipient_email", label: "Email" },
-            { key: "status", label: "Status" },
-            { key: "acquisition_type", label: "Acquisition" },
-            { key: "payment_method", label: "Payment" },
-            { key: "total_eur", label: "Total (€)" },
-            { key: "stripe_payment_intent", label: "Stripe PI" },
-            { key: "created_at", label: "Created at" },
-            { key: "email_sent_at", label: "Email sent at" },
+            { key: "id", label: t.csvOrderId },
+            { key: "event", label: t.csvEvent },
+            { key: "recipient_name", label: t.csvRecipient },
+            { key: "recipient_email", label: t.csvEmail },
+            { key: "status", label: t.csvStatus },
+            { key: "acquisition_type", label: t.csvAcquisition },
+            { key: "payment_method", label: t.csvPayment },
+            { key: "total_eur", label: t.csvTotal },
+            { key: "stripe_payment_intent", label: t.csvStripe },
+            { key: "created_at", label: t.csvCreated },
+            { key: "email_sent_at", label: t.csvEmailSent },
           ]}
         />
       </div>
