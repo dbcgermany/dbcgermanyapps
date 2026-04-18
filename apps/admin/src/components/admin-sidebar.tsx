@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   Briefcase,
   Building2,
@@ -36,6 +36,7 @@ interface NavItem {
   icon: LucideIcon;
   minRole: UserRole;
   dividerAbove?: boolean;
+  indent?: boolean;
 }
 
 const NAV_ITEMS: NavItem[] = [
@@ -52,9 +53,13 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Applications", href: "/applications", icon: FileText, minRole: "manager" },
   { label: "Job Offers", href: "/job-offers", icon: Briefcase, minRole: "manager" },
 
-  { label: "Contacts", href: "/contacts", icon: Contact, minRole: "manager", dividerAbove: true },
-  { label: "Team", href: "/team", icon: UserSquare, minRole: "manager" },
-  { label: "Staff", href: "/staff", icon: Users, minRole: "admin" },
+  { label: "All contacts", href: "/contacts", icon: Contact, minRole: "manager", dividerAbove: true },
+  { label: "Sponsors & Partners", href: "/contacts?category=partners", icon: Contact, minRole: "manager", indent: true },
+  { label: "Founders", href: "/contacts?category=founders", icon: Contact, minRole: "manager", indent: true },
+  { label: "Investors", href: "/contacts?category=investors", icon: Contact, minRole: "manager", indent: true },
+  { label: "Press", href: "/contacts?category=press", icon: Contact, minRole: "manager", indent: true },
+  { label: "Team (public)", href: "/team", icon: UserSquare, minRole: "manager" },
+  { label: "Staff (internal)", href: "/staff", icon: Users, minRole: "admin" },
 
   { label: "Company Info", href: "/company-info", icon: Building2, minRole: "manager", dividerAbove: true },
   { label: "Settings", href: "/settings", icon: Settings, minRole: "admin" },
@@ -74,6 +79,7 @@ export function AdminSidebar({
   userEmail: string;
 }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const userLevel = ROLE_HIERARCHY[userRole];
@@ -158,9 +164,26 @@ export function AdminSidebar({
         <nav className="flex-1 overflow-y-auto px-2 py-4">
           <ul className="space-y-1">
             {visibleItems.map((item, idx) => {
-              const fullHref = `/${locale}${item.href}`;
-              const isActive =
-                pathname === fullHref || pathname.startsWith(fullHref + "/");
+              const [rawPath, rawQuery] = item.href.split("?");
+              const fullHref = `/${locale}${rawPath}${rawQuery ? `?${rawQuery}` : ""}`;
+              const basePath = `/${locale}${rawPath}`;
+              const categoryParam = rawQuery
+                ? new URLSearchParams(rawQuery).get("category")
+                : null;
+              const currentCategory = searchParams.get("category");
+
+              let isActive: boolean;
+              if (categoryParam) {
+                isActive =
+                  pathname === basePath && currentCategory === categoryParam;
+              } else if (basePath === `/${locale}/contacts`) {
+                // "All contacts" is active only when no category filter is set
+                isActive = pathname === basePath && !currentCategory;
+              } else {
+                isActive =
+                  pathname === basePath || pathname.startsWith(basePath + "/");
+              }
+
               const Icon = item.icon;
 
               return (
@@ -174,17 +197,21 @@ export function AdminSidebar({
                   <Link
                     href={fullHref}
                     title={collapsed ? item.label : undefined}
-                    className={`flex items-center rounded-md text-sm font-medium transition-colors ${
+                    className={`flex items-center rounded-md text-sm transition-colors ${
                       collapsed
                         ? "justify-center px-0 py-2.5"
-                        : "gap-3 px-3 py-2"
+                        : item.indent
+                          ? "gap-3 py-1.5 pl-9 pr-3 text-xs"
+                          : "gap-3 px-3 py-2 font-medium"
                     } ${
                       isActive
                         ? "bg-primary/10 text-primary"
                         : "text-muted-foreground hover:bg-muted hover:text-foreground"
                     }`}
                   >
-                    <Icon className="h-5 w-5 shrink-0" strokeWidth={1.75} />
+                    {(!item.indent || collapsed) && (
+                      <Icon className="h-5 w-5 shrink-0" strokeWidth={1.75} />
+                    )}
                     {!collapsed && item.label}
                   </Link>
                 </li>
@@ -260,10 +287,26 @@ export function AdminSidebar({
             <nav className="flex-1 overflow-y-auto px-3 py-4">
               <ul className="space-y-1">
                 {visibleItems.map((item, idx) => {
-                  const fullHref = `/${locale}${item.href}`;
-                  const isActive =
-                    pathname === fullHref ||
-                    pathname.startsWith(fullHref + "/");
+                  const [rawPath, rawQuery] = item.href.split("?");
+                  const fullHref = `/${locale}${rawPath}${rawQuery ? `?${rawQuery}` : ""}`;
+                  const basePath = `/${locale}${rawPath}`;
+                  const categoryParam = rawQuery
+                    ? new URLSearchParams(rawQuery).get("category")
+                    : null;
+                  const currentCategory = searchParams.get("category");
+
+                  let isActive: boolean;
+                  if (categoryParam) {
+                    isActive =
+                      pathname === basePath && currentCategory === categoryParam;
+                  } else if (basePath === `/${locale}/contacts`) {
+                    isActive = pathname === basePath && !currentCategory;
+                  } else {
+                    isActive =
+                      pathname === basePath ||
+                      pathname.startsWith(basePath + "/");
+                  }
+
                   const Icon = item.icon;
 
                   return (
@@ -274,16 +317,22 @@ export function AdminSidebar({
                       <Link
                         href={fullHref}
                         onClick={() => setMobileOpen(false)}
-                        className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                        className={`flex items-center gap-3 rounded-md transition-colors ${
+                          item.indent
+                            ? "py-1.5 pl-9 pr-3 text-xs"
+                            : "px-3 py-2 text-sm font-medium"
+                        } ${
                           isActive
                             ? "bg-primary/10 text-primary"
                             : "text-muted-foreground hover:bg-muted hover:text-foreground"
                         }`}
                       >
-                        <Icon
-                          className="h-5 w-5 shrink-0"
-                          strokeWidth={1.75}
-                        />
+                        {!item.indent && (
+                          <Icon
+                            className="h-5 w-5 shrink-0"
+                            strokeWidth={1.75}
+                          />
+                        )}
                         {item.label}
                       </Link>
                     </li>

@@ -74,6 +74,10 @@ export default async function ContactDetailPage({
         orders={data.orders as any[]}
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         tickets={data.tickets as any[]}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        sponsorships={data.sponsorships as any[]}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        applications={data.applications as any[]}
         locale={locale}
       />
 

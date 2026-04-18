@@ -20,6 +20,37 @@ export async function getEventSponsors(eventId: string) {
   return data ?? [];
 }
 
+async function upsertSponsorContact(
+  supabase: Awaited<ReturnType<typeof createServerClient>>,
+  contactName: string | null,
+  contactEmail: string | null,
+  contactPhone: string | null
+): Promise<string | null> {
+  if (!contactEmail?.trim()) return null;
+  const [firstName, ...rest] = (contactName ?? "").trim().split(/\s+/);
+  const lastName = rest.join(" ") || null;
+  const { data: contactId } = await supabase.rpc(
+    "upsert_contact_from_checkout",
+    {
+      p_email: contactEmail.trim().toLowerCase(),
+      p_first_name: firstName || null,
+      p_last_name: lastName,
+      p_country: null,
+      p_gender: null,
+      p_occupation: null,
+      p_auto_category_slug: "partners",
+      p_extra_category_slugs: [] as string[],
+    }
+  );
+  if (contactId && contactPhone) {
+    await supabase
+      .from("contacts")
+      .update({ phone: contactPhone.trim() })
+      .eq("id", contactId as string);
+  }
+  return (contactId as string) ?? null;
+}
+
 export async function createSponsor(eventId: string, formData: FormData) {
   const user = await requireRole("manager");
   const supabase = await createServerClient();
@@ -36,12 +67,22 @@ export async function createSponsor(eventId: string, formData: FormData) {
     .maybeSingle();
   const nextSort = ((maxRow?.sort_order as number | undefined) ?? 0) + 10;
 
+  const contactName = (formData.get("contact_name") as string) || null;
+  const contactEmail = (formData.get("contact_email") as string) || null;
+  const contactPhone = (formData.get("contact_phone") as string) || null;
+  const contactId = await upsertSponsorContact(
+    supabase,
+    contactName,
+    contactEmail,
+    contactPhone
+  );
+
   const sponsorData = {
     event_id: eventId,
     company_name: companyName,
-    contact_name: (formData.get("contact_name") as string) || null,
-    contact_email: (formData.get("contact_email") as string) || null,
-    contact_phone: (formData.get("contact_phone") as string) || null,
+    contact_name: contactName,
+    contact_email: contactEmail,
+    contact_phone: contactPhone,
     tier: formData.get("tier") as string,
     deal_value_cents: formData.get("deal_value_cents")
       ? Math.round(
@@ -55,6 +96,7 @@ export async function createSponsor(eventId: string, formData: FormData) {
     deliverables: (formData.get("deliverables") as string) || null,
     notes: (formData.get("notes") as string) || null,
     sort_order: nextSort,
+    contact_id: contactId,
     created_by: user.userId,
   };
 
@@ -86,11 +128,21 @@ export async function updateSponsor(id: string, formData: FormData) {
   const locale = formData.get("locale") as string;
   const companyName = (formData.get("company_name") as string).trim();
 
+  const contactName = (formData.get("contact_name") as string) || null;
+  const contactEmail = (formData.get("contact_email") as string) || null;
+  const contactPhone = (formData.get("contact_phone") as string) || null;
+  const contactId = await upsertSponsorContact(
+    supabase,
+    contactName,
+    contactEmail,
+    contactPhone
+  );
+
   const sponsorData = {
     company_name: companyName,
-    contact_name: (formData.get("contact_name") as string) || null,
-    contact_email: (formData.get("contact_email") as string) || null,
-    contact_phone: (formData.get("contact_phone") as string) || null,
+    contact_name: contactName,
+    contact_email: contactEmail,
+    contact_phone: contactPhone,
     tier: formData.get("tier") as string,
     deal_value_cents: formData.get("deal_value_cents")
       ? Math.round(
@@ -103,6 +155,7 @@ export async function updateSponsor(id: string, formData: FormData) {
     website_url: (formData.get("website_url") as string) || null,
     deliverables: (formData.get("deliverables") as string) || null,
     notes: (formData.get("notes") as string) || null,
+    ...(contactId ? { contact_id: contactId } : {}),
   };
 
   const { error } = await supabase

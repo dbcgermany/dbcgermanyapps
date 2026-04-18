@@ -11,7 +11,35 @@ import {
 } from "@/actions/contacts";
 import { resendTicketPdf, manualCheckIn } from "@/actions/tickets";
 
-type Tab = "profile" | "categories" | "orders" | "tickets";
+type Tab =
+  | "profile"
+  | "categories"
+  | "orders"
+  | "tickets"
+  | "sponsorships"
+  | "applications";
+
+interface SponsorshipRow {
+  id: string;
+  company_name: string;
+  tier: string;
+  status: string;
+  deal_value_cents: number | null;
+  currency: string;
+  created_at: string;
+  event?: { id: string; title_en: string; starts_at: string } | null;
+}
+
+interface ApplicationRow {
+  id: string;
+  founder_name: string;
+  company_name: string | null;
+  company_stage: string | null;
+  status: string;
+  created_at: string;
+  pitch: string;
+  funding_needed_cents: number | null;
+}
 
 interface TicketRow {
   id: string;
@@ -42,6 +70,8 @@ export function ContactProfileTabs({
   allCategories,
   orders,
   tickets,
+  sponsorships = [],
+  applications = [],
   locale,
 }: {
   contact: Contact;
@@ -49,21 +79,27 @@ export function ContactProfileTabs({
   allCategories: ContactCategory[];
   orders: OrderRow[];
   tickets: TicketRow[];
+  sponsorships?: SponsorshipRow[];
+  applications?: ApplicationRow[];
   locale: string;
 }) {
   const [tab, setTab] = useState<Tab>("profile");
 
+  const tabs: Array<[Tab, string]> = [
+    ["profile", "Profile"],
+    ["categories", `Categories (${linkedCategories.length})`],
+    ["orders", `Orders (${orders.length})`],
+    ["tickets", `Tickets (${tickets.length})`],
+  ];
+  if (sponsorships.length > 0)
+    tabs.push(["sponsorships", `Sponsorships (${sponsorships.length})`]);
+  if (applications.length > 0)
+    tabs.push(["applications", `Applications (${applications.length})`]);
+
   return (
     <div className="mt-8">
-      <div className="flex gap-1 border-b border-border">
-        {(
-          [
-            ["profile", "Profile"],
-            ["categories", `Categories (${linkedCategories.length})`],
-            ["orders", `Orders (${orders.length})`],
-            ["tickets", `Tickets (${tickets.length})`],
-          ] as Array<[Tab, string]>
-        ).map(([id, label]) => (
+      <div className="flex flex-wrap gap-1 border-b border-border">
+        {tabs.map(([id, label]) => (
           <button
             key={id}
             type="button"
@@ -90,7 +126,111 @@ export function ContactProfileTabs({
         )}
         {tab === "orders" && <OrdersList orders={orders} />}
         {tab === "tickets" && <TicketsList tickets={tickets} />}
+        {tab === "sponsorships" && (
+          <SponsorshipsList sponsorships={sponsorships} locale={locale} />
+        )}
+        {tab === "applications" && (
+          <ApplicationsList applications={applications} locale={locale} />
+        )}
       </div>
+    </div>
+  );
+}
+
+function SponsorshipsList({
+  sponsorships,
+  locale,
+}: {
+  sponsorships: SponsorshipRow[];
+  locale: string;
+}) {
+  if (sponsorships.length === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">No sponsorships recorded.</p>
+    );
+  }
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead className="bg-muted/40 text-xs uppercase tracking-wide text-muted-foreground">
+          <tr>
+            <th className="px-3 py-2 text-left">Event</th>
+            <th className="px-3 py-2 text-left">Company</th>
+            <th className="px-3 py-2 text-left">Tier</th>
+            <th className="px-3 py-2 text-left">Status</th>
+            <th className="px-3 py-2 text-right">Deal value</th>
+          </tr>
+        </thead>
+        <tbody>
+          {sponsorships.map((s) => (
+            <tr key={s.id} className="border-t border-border">
+              <td className="px-3 py-2">{s.event?.title_en ?? "—"}</td>
+              <td className="px-3 py-2 font-medium">{s.company_name}</td>
+              <td className="px-3 py-2 capitalize">{s.tier}</td>
+              <td className="px-3 py-2 capitalize">{s.status}</td>
+              <td className="px-3 py-2 text-right">
+                {s.deal_value_cents != null
+                  ? (s.deal_value_cents / 100).toLocaleString(locale, {
+                      style: "currency",
+                      currency: s.currency || "EUR",
+                    })
+                  : "—"}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function ApplicationsList({
+  applications,
+  locale,
+}: {
+  applications: ApplicationRow[];
+  locale: string;
+}) {
+  if (applications.length === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">No applications recorded.</p>
+    );
+  }
+  return (
+    <div className="space-y-3">
+      {applications.map((a) => (
+        <div
+          key={a.id}
+          className="rounded-lg border border-border p-4 text-sm"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="font-semibold">
+                {a.company_name ?? a.founder_name}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {a.company_stage ?? "—"} ·{" "}
+                {new Date(a.created_at).toLocaleDateString(locale)}
+              </p>
+            </div>
+            <span className="rounded-full bg-muted px-2 py-0.5 text-xs capitalize">
+              {a.status}
+            </span>
+          </div>
+          <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
+            {a.pitch.length > 240 ? `${a.pitch.slice(0, 240)}…` : a.pitch}
+          </p>
+          {a.funding_needed_cents != null && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              Funding sought:{" "}
+              {(a.funding_needed_cents / 100).toLocaleString(locale, {
+                style: "currency",
+                currency: "EUR",
+              })}
+            </p>
+          )}
+        </div>
+      ))}
     </div>
   );
 }

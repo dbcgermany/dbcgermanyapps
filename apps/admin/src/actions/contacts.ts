@@ -106,35 +106,55 @@ export async function getContact(id: string) {
     .single();
   if (!contact) throw new Error("Contact not found.");
 
-  const [{ data: categories }, { data: allCategories }, { data: orders }, { data: tickets }] =
-    await Promise.all([
-      supabase
-        .from("contact_category_links")
-        .select("category:contact_categories(id, slug, name_en, color, is_system)")
-        .eq("contact_id", id),
-      supabase
-        .from("contact_categories")
-        .select("id, slug, name_en, color, is_system, sort_order")
-        .order("sort_order"),
-      supabase
-        .from("orders")
-        .select(
-          "id, status, acquisition_type, payment_method, total_cents, currency, created_at, event:events(id, title_en, starts_at)"
-        )
-        .eq("contact_id", id)
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("tickets")
-        .select(
-          `id, ticket_token, attendee_name, attendee_email, checked_in_at, created_at,
-           event:events(id, title_en, starts_at),
-           tier:ticket_tiers(name_en),
-           order:orders(acquisition_type, status),
-           checked_in_by_profile:profiles!tickets_checked_in_by_fkey(display_name)`
-        )
-        .eq("contact_id", id)
-        .order("created_at", { ascending: false }),
-    ]);
+  const [
+    { data: categories },
+    { data: allCategories },
+    { data: orders },
+    { data: tickets },
+    { data: sponsorships },
+    { data: applications },
+  ] = await Promise.all([
+    supabase
+      .from("contact_category_links")
+      .select("category:contact_categories(id, slug, name_en, color, is_system)")
+      .eq("contact_id", id),
+    supabase
+      .from("contact_categories")
+      .select("id, slug, name_en, color, is_system, sort_order")
+      .order("sort_order"),
+    supabase
+      .from("orders")
+      .select(
+        "id, status, acquisition_type, payment_method, total_cents, currency, created_at, event:events(id, title_en, starts_at)"
+      )
+      .eq("contact_id", id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("tickets")
+      .select(
+        `id, ticket_token, attendee_name, attendee_email, checked_in_at, created_at,
+         event:events(id, title_en, starts_at),
+         tier:ticket_tiers(name_en),
+         order:orders(acquisition_type, status),
+         checked_in_by_profile:profiles!tickets_checked_in_by_fkey(display_name)`
+      )
+      .eq("contact_id", id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("event_sponsors")
+      .select(
+        "id, company_name, tier, status, deal_value_cents, currency, created_at, event:events(id, title_en, starts_at)"
+      )
+      .eq("contact_id", id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("incubation_applications")
+      .select(
+        "id, founder_name, company_name, company_stage, status, created_at, pitch, funding_needed_cents"
+      )
+      .eq("contact_id", id)
+      .order("created_at", { ascending: false }),
+  ]);
 
   return {
     contact: contact as Contact,
@@ -143,6 +163,8 @@ export async function getContact(id: string) {
     allCategories: (allCategories ?? []) as ContactCategory[],
     orders: orders ?? [],
     tickets: tickets ?? [],
+    sponsorships: sponsorships ?? [],
+    applications: applications ?? [],
   };
 }
 
