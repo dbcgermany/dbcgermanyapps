@@ -430,7 +430,7 @@ function ItemRow({
           )}
           {item.estimated_cost_cents != null && item.estimated_cost_cents > 0 && (
             <span>
-              \u20AC{(item.estimated_cost_cents / 100).toLocaleString()}
+              {`\u20AC${(item.estimated_cost_cents / 100).toLocaleString()}`}
               {item.actual_cost_cents != null &&
                 ` / \u20AC${(item.actual_cost_cents / 100).toLocaleString()}`}
             </span>
