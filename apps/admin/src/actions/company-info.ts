@@ -253,6 +253,58 @@ const SECTION_FIELDS: Record<Section, Array<keyof CompanyInfo>> = {
   banking: ["bank_name", "account_holder", "iban", "bic"],
 };
 
+const EMAIL_FIELDS = new Set([
+  "primary_email",
+  "support_email",
+  "press_email",
+  "privacy_email",
+  "legal_email",
+  "careers_email",
+  "dpo_email",
+  "popia_info_officer_email",
+  "ndpr_dpco_email",
+]);
+
+const URL_FIELDS = new Set([
+  "contact_form_url",
+  "logo_light_url",
+  "logo_dark_url",
+  "logo_wordmark_url",
+  "favicon_url",
+  "og_default_image_url",
+  "linkedin_url",
+  "instagram_url",
+  "facebook_url",
+  "whatsapp_url",
+  "youtube_url",
+  "twitter_url",
+  "eu_odr_link",
+]);
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const HEX_COLOR_RE = /^#[0-9A-Fa-f]{6}$/;
+const PHONE_RE = /^\+[1-9]\d{7,14}$/;
+
+function validateField(key: string, value: string): string | null {
+  if (EMAIL_FIELDS.has(key) && !EMAIL_RE.test(value)) {
+    return `${key.replace(/_/g, " ")}: enter a valid email address`;
+  }
+  if (URL_FIELDS.has(key)) {
+    try {
+      new URL(value);
+    } catch {
+      return `${key.replace(/_/g, " ")}: enter a valid URL (include https://)`;
+    }
+  }
+  if (key === "phone" && !PHONE_RE.test(value)) {
+    return "phone: use E.164 format (e.g. +4915112345678)";
+  }
+  if (key === "primary_color" && !HEX_COLOR_RE.test(value)) {
+    return "primary_color: use a 6-digit hex like #c8102e";
+  }
+  return null;
+}
+
 export async function updateCompanyInfoSection(
   section: Section,
   formData: FormData
@@ -271,10 +323,16 @@ export async function updateCompanyInfoSection(
     }
     const raw = formData.get(field);
     const value = typeof raw === "string" ? raw.trim() : "";
-    patch[field] = value === "" ? null : value;
+    if (value === "") {
+      patch[field] = null;
+      continue;
+    }
+    const err = validateField(field, value);
+    if (err) return { error: err };
+    patch[field] = value;
   }
 
-  // primary_email must never be empty; fall back to current if blanked.
+  // Required fields must never be empty; fall back to current if blanked.
   if (section === "contact") {
     if (!patch.primary_email) delete patch.primary_email;
     if (!patch.support_email) delete patch.support_email;
@@ -283,11 +341,31 @@ export async function updateCompanyInfoSection(
   if (section === "legal" && !patch.legal_name) delete patch.legal_name;
   if (section === "brand" && !patch.brand_name) delete patch.brand_name;
 
-  const { error } = await supabase
+  // Optimistic locking: form submits the updated_at it loaded with; if another
+  // admin saved in the meantime, the WHERE clause misses → PGRST116.
+  const expectedUpdatedAt = formData.get("expected_updated_at") as string | null;
+  let query = supabase
     .from("company_info")
-    .update({ ...patch, updated_by: user.userId })
+    .update({ ...patch, updated_by: user.userId, updated_at: new Date().toISOString() })
     .eq("id", 1);
-  if (error) return { error: error.message };
+  if (expectedUpdatedAt) {
+    query = query.eq("updated_at", expectedUpdatedAt);
+  }
+  const { data, error } = await query.select("id").single();
+  if (error) {
+    if (error.code === "PGRST116") {
+      return {
+        error:
+          "Company info was modified by another admin. Refresh the page and try again.",
+      };
+    }
+    return { error: error.message };
+  }
+  if (!data) {
+    return {
+      error: "Company info update failed. Refresh the page and try again.",
+    };
+  }
 
   await supabase.from("audit_log").insert({
     user_id: user.userId,

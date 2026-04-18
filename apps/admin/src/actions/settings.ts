@@ -244,8 +244,25 @@ export async function updateSiteSettings(formData: FormData) {
     updated_by: user.userId,
   };
 
-  if (!patch.support_email.includes("@")) {
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!EMAIL_RE.test(patch.support_email)) {
     return { error: "Support email must be a valid address." };
+  }
+  if (patch.press_email && !EMAIL_RE.test(patch.press_email)) {
+    return { error: "Press email must be a valid address or blank." };
+  }
+  if (!/^[A-Z]{3}$/.test(patch.default_currency)) {
+    return { error: "Default currency must be a 3-letter ISO code (e.g. EUR)." };
+  }
+  // Cap maintenance message length to keep the public banner layout sane.
+  for (const field of [
+    "maintenance_message_en",
+    "maintenance_message_de",
+    "maintenance_message_fr",
+  ] as const) {
+    if (patch[field].length > 500) {
+      return { error: `${field}: keep under 500 characters.` };
+    }
   }
 
   const { error } = await supabase

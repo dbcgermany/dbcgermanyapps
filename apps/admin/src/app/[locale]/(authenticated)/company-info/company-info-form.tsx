@@ -412,6 +412,11 @@ function SectionForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      <input
+        type="hidden"
+        name="expected_updated_at"
+        value={info.updated_at ?? ""}
+      />
       <div className="grid gap-4 md:grid-cols-2">
         {fields.map((f) => {
           const value = (info[f.name] ?? "") as string;
