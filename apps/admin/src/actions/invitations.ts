@@ -4,6 +4,9 @@ import { createServerClient, requireRole } from "@dbc/supabase/server";
 import { sendTicketEmail } from "@dbc/email";
 import { revalidatePath } from "next/cache";
 
+export type DeliveryMode = "ticket_only" | "ticket_with_letter";
+export type AcquisitionType = "invited" | "assigned";
+
 export interface InvitationInput {
   eventId: string;
   tierId: string;
@@ -19,6 +22,13 @@ export interface InvitationInput {
   gender?: string;
   title?: string;
   customBody?: string;
+  // When "ticket_only" the recipient gets the informal ticket-delivery email
+  // with only the ticket PDF attached. When "ticket_with_letter" they get the
+  // formal invitation email + both invitation-letter and ticket PDFs.
+  deliveryMode?: DeliveryMode;
+  // "invited" = comped invited guest. "assigned" = pre-assigned ticket
+  // (e.g. given to a staff member). Defaults to "invited" for backward compat.
+  acquisitionType?: AcquisitionType;
 }
 
 export async function createInvitation(input: InvitationInput) {
@@ -39,6 +49,10 @@ export async function createInvitation(input: InvitationInput) {
   const title = input.title?.trim() || null;
   const customBody = input.customBody?.trim() || null;
   const sendEmail = input.sendEmail !== false;
+  const deliveryMode: DeliveryMode =
+    input.deliveryMode ?? "ticket_with_letter";
+  const acquisitionType: AcquisitionType =
+    input.acquisitionType ?? "invited";
 
   if (!email || !email.includes("@")) return { error: "A valid email is required." };
   if (!fullName) return { error: "At least a first name is required." };
@@ -98,7 +112,7 @@ export async function createInvitation(input: InvitationInput) {
       discount_cents: 0,
       total_cents: 0,
       status: "comped",
-      acquisition_type: "invited",
+      acquisition_type: acquisitionType,
       payment_method: null,
       recipient_email: email,
       recipient_name: fullName,
@@ -192,11 +206,14 @@ export async function createInvitation(input: InvitationInput) {
       supportEmail: companyInfo?.support_email ?? undefined,
       primaryColor: companyInfo?.primary_color ?? undefined,
       logoUrl: companyInfo?.logo_light_url ?? undefined,
-      isInvitation: true,
+      isInvitation: deliveryMode === "ticket_with_letter",
       gender: (gender as "female" | "male" | "diverse" | null) ?? undefined,
       title: title ?? undefined,
       lastName: lastName || undefined,
-      customBody: customBody ?? undefined,
+      customBody:
+        deliveryMode === "ticket_with_letter"
+          ? customBody ?? undefined
+          : undefined,
     });
 
     await supabase
@@ -216,12 +233,29 @@ export async function createInvitation(input: InvitationInput) {
     // Ticket still exists; staff can resend from the contact profile.
   }
 
+  // Keep audit action names stable for reports: ticket-only with
+  // acquisitionType=assigned was previously "assign_ticket"; invited was
+  // "invite_ticket"; with letter is "create_invitation".
+  const auditAction =
+    deliveryMode === "ticket_with_letter"
+      ? "create_invitation"
+      : acquisitionType === "assigned"
+        ? "assign_ticket"
+        : "invite_ticket";
+
   await supabase.from("audit_log").insert({
     user_id: user.userId,
-    action: "create_invitation",
+    action: auditAction,
     entity_type: "orders",
     entity_id: order.id,
-    details: { email, fullName, tier: tier.name_en, note: input.note ?? null },
+    details: {
+      email,
+      fullName,
+      tier: tier.name_en,
+      note: input.note ?? null,
+      delivery_mode: deliveryMode,
+      acquisition_type: acquisitionType,
+    },
   });
 
   revalidatePath(`/[locale]/events/${input.eventId}/invitations`, "layout");

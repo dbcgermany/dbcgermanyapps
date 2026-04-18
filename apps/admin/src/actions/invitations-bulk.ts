@@ -157,6 +157,8 @@ export interface BulkSendInput {
   rows: BulkInvitationRow[];
   defaultLocale: string;
   sendEmails: boolean;
+  deliveryMode?: "ticket_only" | "ticket_with_letter";
+  acquisitionType?: "invited" | "assigned";
 }
 
 export interface BulkSendResult {
@@ -213,6 +215,8 @@ export async function bulkCreateInvitations(
       sendEmail: input.sendEmails,
       gender: row.gender ?? undefined,
       title: row.title ?? undefined,
+      deliveryMode: input.deliveryMode,
+      acquisitionType: input.acquisitionType,
     });
 
     if ("error" in result) {

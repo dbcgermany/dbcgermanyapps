@@ -22,7 +22,6 @@ import {
   ScrollText,
   Settings,
   ShoppingCart,
-  Ticket,
   UserSquare,
   Users,
   X,
@@ -44,7 +43,6 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Reports", href: "/reports", icon: LineChart, minRole: "admin" },
 
   { label: "Events", href: "/events", icon: Calendar, minRole: "manager", dividerAbove: true },
-  { label: "Send Tickets", href: "/tickets/send", icon: Ticket, minRole: "manager" },
   { label: "Orders", href: "/orders", icon: ShoppingCart, minRole: "manager" },
   { label: "Manual Sales", href: "/door-sale", icon: DoorOpen, minRole: "team_member" },
   { label: "Scan", href: "/scan", icon: ScanLine, minRole: "team_member" },

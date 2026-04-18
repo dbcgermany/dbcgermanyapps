@@ -29,6 +29,12 @@ export function BulkInviteClient({
     Array<{ line: number; message: string }>
   >([]);
   const [sendEmails, setSendEmails] = useState(true);
+  const [deliveryMode, setDeliveryMode] = useState<
+    "ticket_only" | "ticket_with_letter"
+  >("ticket_with_letter");
+  const [acquisitionType, setAcquisitionType] = useState<"invited" | "assigned">(
+    "invited"
+  );
   const [result, setResult] = useState<BulkSendResult | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -69,6 +75,8 @@ export function BulkInviteClient({
         rows,
         defaultLocale: locale,
         sendEmails,
+        deliveryMode,
+        acquisitionType,
       });
       setResult(res);
     });
@@ -183,6 +191,56 @@ export function BulkInviteClient({
           </div>
         </div>
       )}
+
+      <fieldset className="rounded-lg border border-border p-3">
+        <legend className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Delivery
+        </legend>
+        <div className="flex flex-wrap gap-4 text-sm">
+          <label className="flex cursor-pointer items-center gap-2">
+            <input
+              type="radio"
+              name="bulk_delivery_mode"
+              checked={deliveryMode === "ticket_only"}
+              onChange={() => setDeliveryMode("ticket_only")}
+              className="accent-primary"
+            />
+            Just the ticket
+          </label>
+          <label className="flex cursor-pointer items-center gap-2">
+            <input
+              type="radio"
+              name="bulk_delivery_mode"
+              checked={deliveryMode === "ticket_with_letter"}
+              onChange={() => setDeliveryMode("ticket_with_letter")}
+              className="accent-primary"
+            />
+            Ticket + formal invitation letter
+          </label>
+        </div>
+        <div className="mt-3 flex flex-wrap gap-4 text-sm">
+          <label className="flex cursor-pointer items-center gap-2">
+            <input
+              type="radio"
+              name="bulk_acquisition_type"
+              checked={acquisitionType === "invited"}
+              onChange={() => setAcquisitionType("invited")}
+              className="accent-primary"
+            />
+            Invited guests
+          </label>
+          <label className="flex cursor-pointer items-center gap-2">
+            <input
+              type="radio"
+              name="bulk_acquisition_type"
+              checked={acquisitionType === "assigned"}
+              onChange={() => setAcquisitionType("assigned")}
+              className="accent-primary"
+            />
+            Pre-assigned tickets
+          </label>
+        </div>
+      </fieldset>
 
       <div className="flex flex-wrap items-center gap-3">
         <label className="flex items-center gap-2 text-sm">

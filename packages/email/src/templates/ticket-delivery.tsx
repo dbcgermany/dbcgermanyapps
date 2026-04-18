@@ -31,44 +31,53 @@ const TRANSLATIONS = {
   en: {
     preview: "Your ticket for {event}",
     greeting: "Hi {name},",
-    intro: "Your ticket for {event} is attached to this email as a PDF.",
+    intro:
+      "You\u2019re all set for {event} \u2014 your ticket is attached as a PDF.",
     detailsTitle: "Event details",
     dateLabel: "Date",
     venueLabel: "Venue",
     tierLabel: "Ticket type",
     ticketLabel: "Ticket #",
-    instructions: "Present the QR code on your PDF ticket at the entrance for fast check-in. You can also access your order online anytime.",
+    instructions:
+      "Show the QR code on your PDF ticket at the door for fast check-in. You can also pull up your order online anytime below.",
     viewOrder: "View order online",
-    footer: "Sent by DBC Germany (UG i.G.) \u00B7 tickets.dbc-germany.com",
-    questions: "Questions? Reply to this email or contact us at hello@dbc-germany.com.",
+    footer: "Sent by DBC Germany \u00B7 tickets.dbc-germany.com",
+    questions:
+      "Questions? Reply to this email and we\u2019ll get back to you.",
   },
   de: {
     preview: "Ihr Ticket f\u00FCr {event}",
     greeting: "Hallo {name},",
-    intro: "Ihr Ticket f\u00FCr {event} ist als PDF an diese E-Mail angeh\u00E4ngt.",
+    intro:
+      "Sie sind f\u00FCr {event} bereit \u2014 Ihr Ticket liegt als PDF an.",
     detailsTitle: "Veranstaltungsdetails",
     dateLabel: "Datum",
     venueLabel: "Veranstaltungsort",
     tierLabel: "Ticketart",
     ticketLabel: "Ticket-Nr.",
-    instructions: "Zeigen Sie den QR-Code auf Ihrem PDF-Ticket am Eingang f\u00FCr einen schnellen Check-in vor. Sie k\u00F6nnen Ihre Bestellung jederzeit online einsehen.",
+    instructions:
+      "Zeigen Sie den QR-Code auf Ihrem PDF-Ticket am Eingang f\u00FCr einen schnellen Check-in vor. Ihre Bestellung k\u00F6nnen Sie jederzeit online einsehen.",
     viewOrder: "Bestellung online ansehen",
-    footer: "Gesendet von DBC Germany (UG i.G.) \u00B7 tickets.dbc-germany.com",
-    questions: "Fragen? Antworten Sie auf diese E-Mail oder kontaktieren Sie uns unter hello@dbc-germany.com.",
+    footer: "Gesendet von DBC Germany \u00B7 tickets.dbc-germany.com",
+    questions:
+      "Fragen? Antworten Sie einfach auf diese E-Mail \u2014 wir melden uns zur\u00FCck.",
   },
   fr: {
     preview: "Votre billet pour {event}",
     greeting: "Bonjour {name},",
-    intro: "Votre billet pour {event} est joint \u00E0 cet e-mail au format PDF.",
+    intro:
+      "Tout est pr\u00EAt pour {event} \u2014 votre billet est joint au format PDF.",
     detailsTitle: "D\u00E9tails de l\u2019\u00E9v\u00E9nement",
     dateLabel: "Date",
     venueLabel: "Lieu",
     tierLabel: "Type de billet",
     ticketLabel: "Billet n\u00B0",
-    instructions: "Pr\u00E9sentez le code QR sur votre billet PDF \u00E0 l\u2019entr\u00E9e pour un enregistrement rapide. Vous pouvez \u00E9galement consulter votre commande en ligne \u00E0 tout moment.",
+    instructions:
+      "Pr\u00E9sentez le code QR de votre billet PDF \u00E0 l\u2019entr\u00E9e pour un enregistrement rapide. Vous pouvez aussi consulter votre commande en ligne \u00E0 tout moment.",
     viewOrder: "Voir la commande en ligne",
-    footer: "Envoy\u00E9 par DBC Germany (UG i.G.) \u00B7 tickets.dbc-germany.com",
-    questions: "Des questions ? R\u00E9pondez \u00E0 cet e-mail ou contactez-nous \u00E0 hello@dbc-germany.com.",
+    footer: "Envoy\u00E9 par DBC Germany \u00B7 tickets.dbc-germany.com",
+    questions:
+      "Une question ? R\u00E9pondez \u00E0 cet e-mail et nous vous recontacterons.",
   },
 };
 

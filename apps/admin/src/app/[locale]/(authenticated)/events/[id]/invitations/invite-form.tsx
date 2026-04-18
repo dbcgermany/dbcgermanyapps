@@ -30,6 +30,12 @@ export function InviteForm({
   const [inviteLocale, setInviteLocale] = useState(
     locale === "de" || locale === "fr" ? locale : "en"
   );
+  const [deliveryMode, setDeliveryMode] = useState<
+    "ticket_only" | "ticket_with_letter"
+  >("ticket_with_letter");
+  const [acquisitionType, setAcquisitionType] = useState<"invited" | "assigned">(
+    "invited"
+  );
   const [showCustomBody, setShowCustomBody] = useState(false);
   const [customBody, setCustomBody] = useState(
     DEFAULT_INVITATION_BODY[inviteLocale] ?? DEFAULT_INVITATION_BODY.en
@@ -63,7 +69,12 @@ export function InviteForm({
         locale: inviteLocale,
         gender: gender || undefined,
         title: effectiveTitle || undefined,
-        customBody: showCustomBody ? customBody : undefined,
+        customBody:
+          deliveryMode === "ticket_with_letter" && showCustomBody
+            ? customBody
+            : undefined,
+        deliveryMode,
+        acquisitionType,
       });
       if ("error" in result) {
         toast.error(result.error);
@@ -89,6 +100,76 @@ export function InviteForm({
 
   return (
     <form onSubmit={onSubmit} className="mt-4 space-y-3">
+      {/* Delivery mode — the core toggle */}
+      <fieldset className="rounded-lg border border-border p-3">
+        <legend className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Delivery
+        </legend>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <label className="flex cursor-pointer items-start gap-2 rounded-md border border-border p-2 text-sm hover:border-primary/50 has-checked:border-primary has-checked:bg-primary/5">
+            <input
+              type="radio"
+              name="delivery_mode"
+              checked={deliveryMode === "ticket_only"}
+              onChange={() => setDeliveryMode("ticket_only")}
+              className="mt-0.5 accent-primary"
+            />
+            <span>
+              <span className="block font-medium">Just the ticket</span>
+              <span className="block text-xs text-muted-foreground">
+                Informal email, ticket PDF only.
+              </span>
+            </span>
+          </label>
+          <label className="flex cursor-pointer items-start gap-2 rounded-md border border-border p-2 text-sm hover:border-primary/50 has-checked:border-primary has-checked:bg-primary/5">
+            <input
+              type="radio"
+              name="delivery_mode"
+              checked={deliveryMode === "ticket_with_letter"}
+              onChange={() => setDeliveryMode("ticket_with_letter")}
+              className="mt-0.5 accent-primary"
+            />
+            <span>
+              <span className="block font-medium">
+                Ticket + formal invitation letter
+              </span>
+              <span className="block text-xs text-muted-foreground">
+                Formal email with salutation, both PDFs attached.
+              </span>
+            </span>
+          </label>
+        </div>
+      </fieldset>
+
+      {/* Acquisition type */}
+      <fieldset className="rounded-lg border border-border p-3">
+        <legend className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Recipient type
+        </legend>
+        <div className="flex gap-4 text-sm">
+          <label className="flex cursor-pointer items-center gap-2">
+            <input
+              type="radio"
+              name="acquisition_type"
+              checked={acquisitionType === "invited"}
+              onChange={() => setAcquisitionType("invited")}
+              className="accent-primary"
+            />
+            Invited guest
+          </label>
+          <label className="flex cursor-pointer items-center gap-2">
+            <input
+              type="radio"
+              name="acquisition_type"
+              checked={acquisitionType === "assigned"}
+              onChange={() => setAcquisitionType("assigned")}
+              className="accent-primary"
+            />
+            Pre-assigned ticket
+          </label>
+        </div>
+      </fieldset>
+
       <label className="block">
         <span className="mb-1 block text-sm font-medium">Tier</span>
         <select
@@ -211,33 +292,37 @@ export function InviteForm({
         />
       </label>
 
-      {/* Collapsible custom body section */}
-      <div className="rounded-lg border border-border">
-        <button
-          type="button"
-          onClick={() => setShowCustomBody(!showCustomBody)}
-          className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground"
-        >
-          <span>Customize invitation text</span>
-          <span className="text-xs">{showCustomBody ? "\u25B2" : "\u25BC"}</span>
-        </button>
-        {showCustomBody && (
-          <div className="border-t border-border px-4 pb-4 pt-3">
-            <label className="mb-1.5 block text-sm font-medium">
-              Email body text
-            </label>
-            <textarea
-              value={customBody}
-              onChange={(e) => setCustomBody(e.target.value)}
-              className={`${input} min-h-48 resize-y`}
-              rows={10}
-            />
-            <p className="mt-2 text-xs text-muted-foreground">
-              Available placeholders: {"{event}"}, {"{date}"}, {"{venue}"}
-            </p>
-          </div>
-        )}
-      </div>
+      {/* Custom body only matters in formal mode */}
+      {deliveryMode === "ticket_with_letter" && (
+        <div className="rounded-lg border border-border">
+          <button
+            type="button"
+            onClick={() => setShowCustomBody(!showCustomBody)}
+            className="flex w-full items-center justify-between px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground"
+          >
+            <span>Customize invitation text</span>
+            <span className="text-xs">
+              {showCustomBody ? "\u25B2" : "\u25BC"}
+            </span>
+          </button>
+          {showCustomBody && (
+            <div className="border-t border-border px-4 pb-4 pt-3">
+              <label className="mb-1.5 block text-sm font-medium">
+                Email body text
+              </label>
+              <textarea
+                value={customBody}
+                onChange={(e) => setCustomBody(e.target.value)}
+                className={`${input} min-h-48 resize-y`}
+                rows={10}
+              />
+              <p className="mt-2 text-xs text-muted-foreground">
+                Available placeholders: {"{event}"}, {"{date}"}, {"{venue}"}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
 
       <button
         type="submit"
