@@ -8,6 +8,39 @@ import {
   toggleCouponActive,
 } from "@/actions/coupons";
 
+const CR_T = {
+  en: {
+    percent: "Percentage (%)", fixed: "Fixed (€)",
+    codePh: "CODE", value: "Value", maxUsesPh: "Max uses (empty=∞)",
+    appliesTo: "Applies to tiers (empty = all)",
+    saving: "Saving…", save: "Save", cancel: "Cancel",
+    inactive: "Inactive",
+    off: "off", used: "used", tier: "tier", tiers: "tiers", only: "only",
+    edit: "Edit", deactivate: "Deactivate", activate: "Activate",
+    delete: "Delete", deleteConfirm: 'Delete coupon "{code}"?',
+  },
+  de: {
+    percent: "Prozentual (%)", fixed: "Festbetrag (€)",
+    codePh: "CODE", value: "Wert", maxUsesPh: "Max. Nutzungen (leer=∞)",
+    appliesTo: "Gilt für Kategorien (leer = alle)",
+    saving: "Wird gespeichert…", save: "Speichern", cancel: "Abbrechen",
+    inactive: "Inaktiv",
+    off: "Rabatt", used: "genutzt", tier: "Kategorie", tiers: "Kategorien", only: "nur",
+    edit: "Bearbeiten", deactivate: "Deaktivieren", activate: "Aktivieren",
+    delete: "Löschen", deleteConfirm: 'Code „{code}" löschen?',
+  },
+  fr: {
+    percent: "Pourcentage (%)", fixed: "Fixe (€)",
+    codePh: "CODE", value: "Valeur", maxUsesPh: "Nb max (vide=∞)",
+    appliesTo: "S’applique aux catégories (vide = toutes)",
+    saving: "Enregistrement…", save: "Enregistrer", cancel: "Annuler",
+    inactive: "Inactif",
+    off: "de remise", used: "utilisé(s)", tier: "catégorie", tiers: "catégories", only: "uniquement",
+    edit: "Modifier", deactivate: "Désactiver", activate: "Activer",
+    delete: "Supprimer", deleteConfirm: "Supprimer le code « {code} » ?",
+  },
+} as const;
+
 type Coupon = {
   id: string;
   code: string;
@@ -37,6 +70,7 @@ export function CouponRow({
   tiers: { id: string; name: string }[];
 }) {
   const [mode, setMode] = useState<"view" | "edit">("view");
+  const cr = CR_T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof CR_T];
 
   const [state, formAction, isPending] = useActionState(
     async (
@@ -72,7 +106,7 @@ export function CouponRow({
             name="code"
             defaultValue={coupon.code}
             required
-            placeholder="CODE"
+            placeholder={cr.codePh}
             className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm font-mono uppercase"
           />
           <select
@@ -80,8 +114,8 @@ export function CouponRow({
             defaultValue={coupon.discount_type}
             className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
           >
-            <option value="percentage">Percentage (%)</option>
-            <option value="fixed_amount">Fixed (€)</option>
+            <option value="percentage">{cr.percent}</option>
+            <option value="fixed_amount">{cr.fixed}</option>
           </select>
           <input
             name="discount_value"
@@ -90,7 +124,7 @@ export function CouponRow({
             min="0"
             defaultValue={displayValue}
             required
-            placeholder="Value"
+            placeholder={cr.value}
             className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
           />
         </div>
@@ -100,7 +134,7 @@ export function CouponRow({
             type="number"
             min="1"
             defaultValue={coupon.max_uses ?? ""}
-            placeholder="Max uses (empty=∞)"
+            placeholder={cr.maxUsesPh}
             className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
           />
           <input
@@ -119,7 +153,7 @@ export function CouponRow({
         {tiers.length > 0 && (
           <div>
             <p className="mb-1.5 text-xs text-muted-foreground">
-              Applies to tiers (empty = all)
+              {cr.appliesTo}
             </p>
             <div className="grid gap-1.5 rounded-md border border-input bg-background p-2 sm:grid-cols-2">
               {tiers.map((t) => (
@@ -148,14 +182,14 @@ export function CouponRow({
             disabled={isPending}
             className="rounded-md bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
           >
-            {isPending ? "Saving..." : "Save"}
+            {isPending ? cr.saving : cr.save}
           </button>
           <button
             type="button"
             onClick={() => setMode("view")}
             className="rounded-md border border-input px-4 py-1.5 text-xs font-medium hover:bg-accent"
           >
-            Cancel
+            {cr.cancel}
           </button>
         </div>
       </form>
@@ -171,23 +205,24 @@ export function CouponRow({
           </code>
           {!coupon.is_active && (
             <Badge variant="error">
-              Inactive
+              {cr.inactive}
             </Badge>
           )}
         </div>
         <p className="mt-0.5 text-sm text-muted-foreground">
           {coupon.discount_type === "percentage"
-            ? `${coupon.discount_value}% off`
-            : `\u20AC${(coupon.discount_value / 100).toFixed(2)} off`}
+            ? `${coupon.discount_value}% ${cr.off}`
+            : `\u20AC${(coupon.discount_value / 100).toFixed(2)} ${cr.off}`}
           {" \u00B7 "}
           {coupon.times_used}
-          {coupon.max_uses ? ` / ${coupon.max_uses}` : ""} used
+          {coupon.max_uses ? ` / ${coupon.max_uses}` : ""} {cr.used}
           {coupon.applicable_tier_ids &&
             coupon.applicable_tier_ids.length > 0 && (
               <>
                 {" \u00B7 "}
-                {coupon.applicable_tier_ids.length} tier
-                {coupon.applicable_tier_ids.length === 1 ? "" : "s"} only
+                {coupon.applicable_tier_ids.length}{" "}
+                {coupon.applicable_tier_ids.length === 1 ? cr.tier : cr.tiers}{" "}
+                {cr.only}
               </>
             )}
         </p>
@@ -198,7 +233,7 @@ export function CouponRow({
           onClick={() => setMode("edit")}
           className="text-xs text-primary hover:text-primary/80"
         >
-          Edit
+          {cr.edit}
         </button>
         <form
           action={async () => {
@@ -209,12 +244,12 @@ export function CouponRow({
             type="submit"
             className="text-xs text-muted-foreground hover:text-foreground"
           >
-            {coupon.is_active ? "Deactivate" : "Activate"}
+            {coupon.is_active ? cr.deactivate : cr.activate}
           </button>
         </form>
         <form
           action={async () => {
-            if (!confirm(`Delete coupon "${coupon.code}"?`)) return;
+            if (!confirm(cr.deleteConfirm.replace("{code}", coupon.code))) return;
             const r = await deleteCoupon(coupon.id, eventId, locale);
             if (r?.error) alert(r.error);
           }}
@@ -223,7 +258,7 @@ export function CouponRow({
             type="submit"
             className="text-xs text-red-500 hover:text-red-700"
           >
-            Delete
+            {cr.delete}
           </button>
         </form>
       </div>

@@ -3,6 +3,36 @@
 import { useActionState, useState } from "react";
 import { updateTier, toggleTierPublic, deleteTier } from "@/actions/tiers";
 
+const TR_T = {
+  en: {
+    nameEn: "Name (EN)", nameDe: "Name (DE)", nameFr: "Name (FR)",
+    price: "Price (€)", maxQty: "Max qty (empty=∞)", sort: "Sort",
+    descEn: "Description (EN)", descDe: "Description (DE)", descFr: "Description (FR)",
+    saving: "Saving…", save: "Save", cancel: "Cancel",
+    hidden: "Hidden", sold: "sold",
+    edit: "Edit", hide: "Hide", publish: "Publish", delete: "Delete",
+    deleteConfirm: 'Delete tier "{name}"?',
+  },
+  de: {
+    nameEn: "Name (EN)", nameDe: "Name (DE)", nameFr: "Name (FR)",
+    price: "Preis (€)", maxQty: "Max. Menge (leer=∞)", sort: "Sort.",
+    descEn: "Beschreibung (EN)", descDe: "Beschreibung (DE)", descFr: "Beschreibung (FR)",
+    saving: "Wird gespeichert…", save: "Speichern", cancel: "Abbrechen",
+    hidden: "Ausgeblendet", sold: "verkauft",
+    edit: "Bearbeiten", hide: "Ausblenden", publish: "Veröffentlichen", delete: "Löschen",
+    deleteConfirm: 'Kategorie „{name}" löschen?',
+  },
+  fr: {
+    nameEn: "Nom (EN)", nameDe: "Nom (DE)", nameFr: "Nom (FR)",
+    price: "Prix (€)", maxQty: "Quantité max (vide=∞)", sort: "Ordre",
+    descEn: "Description (EN)", descDe: "Description (DE)", descFr: "Description (FR)",
+    saving: "Enregistrement…", save: "Enregistrer", cancel: "Annuler",
+    hidden: "Masqué", sold: "vendus",
+    edit: "Modifier", hide: "Masquer", publish: "Publier", delete: "Supprimer",
+    deleteConfirm: "Supprimer la catégorie « {name} » ?",
+  },
+} as const;
+
 type Tier = {
   id: string;
   name_en: string;
@@ -34,6 +64,7 @@ export function TierRow({
   locale: string;
 }) {
   const [mode, setMode] = useState<"view" | "edit">("view");
+  const t = TR_T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof TR_T];
 
   const [state, formAction, isPending] = useActionState(
     async (
@@ -64,20 +95,20 @@ export function TierRow({
           <input
             name="name_en"
             defaultValue={tier.name_en}
-            placeholder="Name (EN)"
+            placeholder={t.nameEn}
             required
             className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
           />
           <input
             name="name_de"
             defaultValue={tier.name_de ?? ""}
-            placeholder="Name (DE)"
+            placeholder={t.nameDe}
             className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
           />
           <input
             name="name_fr"
             defaultValue={tier.name_fr ?? ""}
-            placeholder="Name (FR)"
+            placeholder={t.nameFr}
             className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
           />
         </div>
@@ -89,7 +120,7 @@ export function TierRow({
             min="0"
             defaultValue={(tier.price_cents / 100).toFixed(2)}
             required
-            placeholder="Price (€)"
+            placeholder={t.price}
             className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
           />
           <input
@@ -97,14 +128,14 @@ export function TierRow({
             type="number"
             min="1"
             defaultValue={tier.max_quantity ?? ""}
-            placeholder="Max qty (empty=∞)"
+            placeholder={t.maxQty}
             className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
           />
           <input
             name="sort_order"
             type="number"
             defaultValue={tier.sort_order}
-            placeholder="Sort"
+            placeholder={t.sort}
             className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
           />
         </div>
@@ -126,21 +157,21 @@ export function TierRow({
           <textarea
             name="description_en"
             defaultValue={tier.description_en ?? ""}
-            placeholder="Description (EN)"
+            placeholder={t.descEn}
             rows={2}
             className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
           />
           <textarea
             name="description_de"
             defaultValue={tier.description_de ?? ""}
-            placeholder="Description (DE)"
+            placeholder={t.descDe}
             rows={2}
             className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
           />
           <textarea
             name="description_fr"
             defaultValue={tier.description_fr ?? ""}
-            placeholder="Description (FR)"
+            placeholder={t.descFr}
             rows={2}
             className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
           />
@@ -151,14 +182,14 @@ export function TierRow({
             disabled={isPending}
             className="rounded-md bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
           >
-            {isPending ? "Saving..." : "Save"}
+            {isPending ? t.saving : t.save}
           </button>
           <button
             type="button"
             onClick={() => setMode("view")}
             className="rounded-md border border-input px-4 py-1.5 text-xs font-medium hover:bg-accent"
           >
-            Cancel
+            {t.cancel}
           </button>
         </div>
       </form>
@@ -172,13 +203,13 @@ export function TierRow({
           <p className="font-medium">{tier.name_en}</p>
           {!tier.is_public && (
             <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
-              Hidden
+              {t.hidden}
             </span>
           )}
         </div>
         <p className="mt-0.5 text-sm text-muted-foreground">
           &euro;{(tier.price_cents / 100).toFixed(2)} &middot; {tier.quantity_sold}
-          {tier.max_quantity ? ` / ${tier.max_quantity}` : ""} sold
+          {tier.max_quantity ? ` / ${tier.max_quantity}` : ""} {t.sold}
         </p>
       </div>
       <div className="flex items-center gap-3">
@@ -187,7 +218,7 @@ export function TierRow({
           onClick={() => setMode("edit")}
           className="text-xs text-primary hover:text-primary/80"
         >
-          Edit
+          {t.edit}
         </button>
         <form
           action={async () => {
@@ -198,12 +229,12 @@ export function TierRow({
             type="submit"
             className="text-xs text-muted-foreground hover:text-foreground"
           >
-            {tier.is_public ? "Hide" : "Publish"}
+            {tier.is_public ? t.hide : t.publish}
           </button>
         </form>
         <form
           action={async () => {
-            if (!confirm(`Delete tier "${tier.name_en}"?`)) return;
+            if (!confirm(t.deleteConfirm.replace("{name}", tier.name_en))) return;
             await deleteTier(tier.id, eventId, locale);
           }}
         >
@@ -211,7 +242,7 @@ export function TierRow({
             type="submit"
             className="text-xs text-red-500 hover:text-red-700"
           >
-            Delete
+            {t.delete}
           </button>
         </form>
       </div>
