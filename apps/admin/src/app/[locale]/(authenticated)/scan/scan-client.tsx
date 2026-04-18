@@ -318,7 +318,7 @@ export function ScanClient({
       </form>
 
       {/* Quick-find by name (for lost-ticket visitors) */}
-      <NameFindPanel eventId={eventId} onCheckedIn={() => refreshStats()} />
+      <NameFindPanel eventId={eventId} locale={locale} onCheckedIn={() => refreshStats()} />
     </div>
   );
 
@@ -328,13 +328,52 @@ export function ScanClient({
   }
 }
 
+const FIND_T = {
+  en: {
+    heading: "Can’t scan? Find by name",
+    placeholder: "Type a name, email, or surname…",
+    searching: "Searching…",
+    invited: "Invited", door: "Door", paid: "Paid",
+    checkedInTag: "✓ Checked in",
+    checkIn: "Check in",
+    resendPdf: "Resend PDF",
+    checkedInToast: "Checked in: {name}",
+    resendToast: "Ticket sent to {email}.",
+  },
+  de: {
+    heading: "Scan nicht möglich? Namen suchen",
+    placeholder: "Name, E-Mail oder Nachname eingeben…",
+    searching: "Wird gesucht…",
+    invited: "Eingeladen", door: "Abendkasse", paid: "Bezahlt",
+    checkedInTag: "✓ Eingecheckt",
+    checkIn: "Einchecken",
+    resendPdf: "PDF erneut senden",
+    checkedInToast: "Eingecheckt: {name}",
+    resendToast: "Ticket gesendet an {email}.",
+  },
+  fr: {
+    heading: "Impossible de scanner ? Rechercher par nom",
+    placeholder: "Tapez un nom, un e-mail ou un prénom…",
+    searching: "Recherche…",
+    invited: "Invité", door: "Entrée", paid: "Payé",
+    checkedInTag: "✓ Enregistré",
+    checkIn: "Enregistrer",
+    resendPdf: "Renvoyer le PDF",
+    checkedInToast: "Enregistré : {name}",
+    resendToast: "Billet envoyé à {email}.",
+  },
+} as const;
+
 function NameFindPanel({
   eventId,
+  locale,
   onCheckedIn,
 }: {
   eventId: string;
+  locale: string;
   onCheckedIn: () => void;
 }) {
+  const ft = FIND_T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof FIND_T];
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<AttendeeSearchResult[]>([]);
   const [searching, startSearch] = useTransition();
@@ -367,7 +406,7 @@ function NameFindPanel({
           }`
         );
       } else {
-        toast.success(`Checked in: ${result.attendee_name}`);
+        toast.success(ft.checkedInToast.replace("{name}", result.attendee_name));
         onCheckedIn();
         setResults((rs) =>
           rs.map((row) =>
@@ -384,22 +423,22 @@ function NameFindPanel({
     startAction(async () => {
       const result = await resendTicketPdf(r.ticket_id);
       if ("error" in result) toast.error(result.error);
-      else toast.success(`Ticket sent to ${r.attendee_email}.`);
+      else toast.success(ft.resendToast.replace("{email}", r.attendee_email));
     });
   }
 
   return (
     <div className="rounded-lg border border-border p-4">
-      <p className="text-sm font-medium mb-2">Can&apos;t scan? Find by name</p>
+      <p className="text-sm font-medium mb-2">{ft.heading}</p>
       <input
         type="search"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Type a name, email, or surname…"
+        placeholder={ft.placeholder}
         className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
       />
       {searching && shouldShowResults && (
-        <p className="mt-2 text-xs text-muted-foreground">Searching…</p>
+        <p className="mt-2 text-xs text-muted-foreground">{ft.searching}</p>
       )}
       {visibleResults.length > 0 && (
         <ul className="mt-3 space-y-2">
@@ -418,16 +457,16 @@ function NameFindPanel({
                   {r.attendee_email} · {r.tier_name} ·{" "}
                   {r.acquisition_type === "invited" ||
                   r.acquisition_type === "assigned"
-                    ? "Invited"
+                    ? ft.invited
                     : r.acquisition_type === "door_sale"
-                      ? "Door"
-                      : "Paid"}
+                      ? ft.door
+                      : ft.paid}
                 </p>
               </div>
               <div className="flex items-center gap-2">
                 {r.checked_in_at ? (
                   <span className="text-xs font-medium text-green-600">
-                    ✓ Checked in
+                    {ft.checkedInTag}
                   </span>
                 ) : (
                   <button
@@ -436,7 +475,7 @@ function NameFindPanel({
                     disabled={actionPending}
                     className="rounded-md bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
                   >
-                    Check in
+                    {ft.checkIn}
                   </button>
                 )}
                 <button
@@ -445,7 +484,7 @@ function NameFindPanel({
                   disabled={actionPending}
                   className="rounded-md border border-border px-3 py-1 text-xs font-medium hover:bg-muted disabled:opacity-50"
                 >
-                  Resend PDF
+                  {ft.resendPdf}
                 </button>
               </div>
             </li>
