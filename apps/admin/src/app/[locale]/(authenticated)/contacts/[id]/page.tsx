@@ -4,12 +4,31 @@ import { listContactMessages } from "@/actions/contact-messages";
 import { ContactProfileTabs } from "./profile-tabs";
 import { ComposeDialog } from "./compose-dialog";
 
+const T = {
+  en: {
+    back: "← Contacts",
+    invited: "Invited", door: "Door", buyer: "Buyer", subscriber: "Subscriber",
+    messageHistory: "Message history",
+  },
+  de: {
+    back: "← Kontakte",
+    invited: "Eingeladen", door: "Abendkasse", buyer: "Käufer:in", subscriber: "Abonnent:in",
+    messageHistory: "Nachrichtenverlauf",
+  },
+  fr: {
+    back: "← Contacts",
+    invited: "Invité", door: "Entrée", buyer: "Acheteur", subscriber: "Abonné",
+    messageHistory: "Historique des messages",
+  },
+} as const;
+
 export default async function ContactDetailPage({
   params,
 }: {
   params: Promise<{ locale: string; id: string }>;
 }) {
   const { locale, id } = await params;
+  const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
   const data = await getContact(id);
   const messages = await listContactMessages(id);
 
@@ -22,15 +41,15 @@ export default async function ContactDetailPage({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   for (const o of data.orders as any[]) {
     if (o.acquisition_type === "invited" || o.acquisition_type === "assigned") {
-      acquisitionBadges.add("Invited");
+      acquisitionBadges.add(t.invited);
     } else if (o.acquisition_type === "door_sale") {
-      acquisitionBadges.add("Door");
+      acquisitionBadges.add(t.door);
     } else {
-      acquisitionBadges.add("Buyer");
+      acquisitionBadges.add(t.buyer);
     }
   }
   if (data.contact.marketing_consent && !data.contact.unsubscribed_at) {
-    acquisitionBadges.add("Subscriber");
+    acquisitionBadges.add(t.subscriber);
   }
 
   return (
@@ -39,7 +58,7 @@ export default async function ContactDetailPage({
         href={`/${locale}/contacts`}
         className="text-sm text-muted-foreground hover:text-foreground"
       >
-        ← Contacts
+        {t.back}
       </Link>
 
       <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
@@ -83,7 +102,7 @@ export default async function ContactDetailPage({
 
       {messages.length > 0 && (
         <section className="mt-10">
-          <h2 className="font-heading text-lg font-bold">Message history</h2>
+          <h2 className="font-heading text-lg font-bold">{t.messageHistory}</h2>
           <ul className="mt-4 space-y-3">
             {messages.map((m) => (
               <li
