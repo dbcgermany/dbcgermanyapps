@@ -5,6 +5,48 @@ import { toast } from "sonner";
 import { AssetUpload } from "@dbc/ui";
 import { addEventMedia, uploadEventMediaFile } from "@/actions/media";
 
+const MF_T = {
+  en: {
+    added: "Media added.",
+    uploadToast: "File uploaded — click Add Media to save.",
+    typeLabel: "Type",
+    photo: "Photo", video: "Video", link: "Link",
+    titleLabel: "Title (optional)", titlePh: "e.g., Keynote photos",
+    sort: "Sort order",
+    uploadLabel: "Upload a file (optional)",
+    uploadDesc: "Upload to Supabase Storage. Or skip and paste any public URL below.",
+    urlLabel: "URL",
+    urlHint: "Paste a URL from Supabase Storage, Google Drive, YouTube, Vimeo, or any public link.",
+    adding: "Adding…", add: "Add Media",
+  },
+  de: {
+    added: "Medium hinzugefügt.",
+    uploadToast: "Datei hochgeladen — klicken Sie auf „Medium hinzufügen“ zum Speichern.",
+    typeLabel: "Typ",
+    photo: "Foto", video: "Video", link: "Link",
+    titleLabel: "Titel (optional)", titlePh: "z. B. Keynote-Fotos",
+    sort: "Sortierung",
+    uploadLabel: "Datei hochladen (optional)",
+    uploadDesc: "Zu Supabase Storage hochladen. Oder überspringen und unten eine öffentliche URL einfügen.",
+    urlLabel: "URL",
+    urlHint: "URL aus Supabase Storage, Google Drive, YouTube, Vimeo oder jedem öffentlichen Link einfügen.",
+    adding: "Wird hinzugefügt…", add: "Medium hinzufügen",
+  },
+  fr: {
+    added: "Média ajouté.",
+    uploadToast: "Fichier téléversé — cliquez sur Ajouter pour enregistrer.",
+    typeLabel: "Type",
+    photo: "Photo", video: "Vidéo", link: "Lien",
+    titleLabel: "Titre (optionnel)", titlePh: "ex. Photos keynote",
+    sort: "Ordre",
+    uploadLabel: "Téléverser un fichier (optionnel)",
+    uploadDesc: "Téléverser vers Supabase Storage. Ou ignorer et coller une URL publique ci-dessous.",
+    urlLabel: "URL",
+    urlHint: "Collez une URL depuis Supabase Storage, Google Drive, YouTube, Vimeo ou tout lien public.",
+    adding: "Ajout…", add: "Ajouter un média",
+  },
+} as const;
+
 export function MediaForm({
   eventId,
   locale,
@@ -14,6 +56,7 @@ export function MediaForm({
 }) {
   const [url, setUrl] = useState("");
   const [type, setType] = useState<"photo" | "video" | "link">("photo");
+  const t = MF_T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof MF_T];
   const [state, formAction, isPending] = useActionState(
     async (
       _prev: { error?: string; success?: boolean } | null,
@@ -39,7 +82,7 @@ export function MediaForm({
     }
     if ("url" in result && result.url) {
       setUrl(result.url);
-      toast.success("File uploaded — click Add Media to save.");
+      toast.success(t.uploadToast);
       return result.url;
     }
     throw new Error("Upload returned no URL.");
@@ -54,39 +97,39 @@ export function MediaForm({
       )}
       {state?.success && (
         <div className="rounded-md bg-green-50 p-3 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-400">
-          Media added.
+          {t.added}
         </div>
       )}
 
       <div className="grid gap-3 sm:grid-cols-4">
         <div>
           <label className="block text-xs text-muted-foreground mb-1">
-            Type
+            {t.typeLabel}
           </label>
           <select
             value={type}
             onChange={(e) => setType(e.target.value as typeof type)}
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           >
-            <option value="photo">Photo</option>
-            <option value="video">Video</option>
-            <option value="link">Link</option>
+            <option value="photo">{t.photo}</option>
+            <option value="video">{t.video}</option>
+            <option value="link">{t.link}</option>
           </select>
         </div>
         <div className="sm:col-span-2">
           <label className="block text-xs text-muted-foreground mb-1">
-            Title (optional)
+            {t.titleLabel}
           </label>
           <input
             name="title"
             type="text"
-            placeholder="e.g., Keynote photos"
+            placeholder={t.titlePh}
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
         <div>
           <label className="block text-xs text-muted-foreground mb-1">
-            Sort order
+            {t.sort}
           </label>
           <input
             name="sort_order"
@@ -99,8 +142,8 @@ export function MediaForm({
 
       {type !== "link" && (
         <AssetUpload
-          label="Upload a file (optional)"
-          description="Upload to Supabase Storage. Or skip and paste any public URL below."
+          label={t.uploadLabel}
+          description={t.uploadDesc}
           accept={
             type === "video"
               ? "video/mp4,video/webm,video/quicktime"
@@ -114,7 +157,7 @@ export function MediaForm({
       )}
 
       <div>
-        <label className="block text-xs text-muted-foreground mb-1">URL</label>
+        <label className="block text-xs text-muted-foreground mb-1">{t.urlLabel}</label>
         <input
           value={url}
           onChange={(e) => setUrl(e.target.value)}
@@ -124,8 +167,7 @@ export function MediaForm({
           className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ring"
         />
         <p className="mt-1 text-xs text-muted-foreground">
-          Paste a URL from Supabase Storage, Google Drive, YouTube, Vimeo, or any
-          public link.
+          {t.urlHint}
         </p>
       </div>
 
@@ -134,7 +176,7 @@ export function MediaForm({
         disabled={isPending || !url}
         className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 disabled:opacity-50"
       >
-        {isPending ? "Adding…" : "Add Media"}
+        {isPending ? t.adding : t.add}
       </button>
     </form>
   );
