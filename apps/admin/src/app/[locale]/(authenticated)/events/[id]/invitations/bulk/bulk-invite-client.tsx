@@ -14,6 +14,99 @@ interface TierOption {
   remaining: number | null;
 }
 
+const T = {
+  en: {
+    defaultTier: "Default tier",
+    defaultTierHelp:
+      "Used for any row without a tier_slug. Rows with a slug look up the matching tier on this event.",
+    left: "left", unlimited: "unlimited",
+    csvFile: "CSV file",
+    loaded: "Loaded",
+    validRow: "valid row", validRows: "valid rows",
+    errors: "errors", error: "error",
+    parseErrors: "Parse errors",
+    line: "Line", andMore: "… and {n} more",
+    preview: "Preview", email: "Email", name: "Name", gender: "Gender",
+    country: "Country", tags: "Tags", tier: "Tier",
+    showingFirst: "Showing first 50 of {n}.",
+    delivery: "Delivery",
+    justTicket: "Just the ticket",
+    ticketWithLetter: "Ticket + formal invitation letter",
+    invitedGuests: "Invited guests",
+    preAssigned: "Pre-assigned tickets",
+    sendNow: "Send ticket emails immediately",
+    processing: "Processing…",
+    inviteAndEmail: "Invite & email",
+    createWithoutEmail: "Create without email",
+    guest: "guest", guests: "guests",
+    notEnough: "Not enough inventory in the selected default tier.",
+    done: "Done — {s} succeeded, {f} failed.",
+    downloadResults: "Download results CSV",
+    status: "Status", errorCol: "Error",
+    defaultTierTag: "(default)",
+  },
+  de: {
+    defaultTier: "Standardkategorie",
+    defaultTierHelp:
+      "Wird für alle Zeilen ohne tier_slug verwendet. Zeilen mit slug suchen die passende Kategorie.",
+    left: "übrig", unlimited: "unbegrenzt",
+    csvFile: "CSV-Datei",
+    loaded: "Geladen",
+    validRow: "gültige Zeile", validRows: "gültige Zeilen",
+    errors: "Fehler", error: "Fehler",
+    parseErrors: "Parse-Fehler",
+    line: "Zeile", andMore: "… und {n} weitere",
+    preview: "Vorschau", email: "E-Mail", name: "Name", gender: "Geschlecht",
+    country: "Land", tags: "Tags", tier: "Kategorie",
+    showingFirst: "Zeige die ersten 50 von {n}.",
+    delivery: "Versand",
+    justTicket: "Nur das Ticket",
+    ticketWithLetter: "Ticket + formeller Einladungsbrief",
+    invitedGuests: "Eingeladene Gäste",
+    preAssigned: "Vorab zugewiesene Tickets",
+    sendNow: "Ticket-E-Mails sofort senden",
+    processing: "Wird verarbeitet…",
+    inviteAndEmail: "Einladen & senden",
+    createWithoutEmail: "Erstellen ohne E-Mail",
+    guest: "Gast", guests: "Gäste",
+    notEnough: "Nicht genug Bestand in der gewählten Standardkategorie.",
+    done: "Fertig — {s} erfolgreich, {f} fehlgeschlagen.",
+    downloadResults: "Ergebnisse als CSV herunterladen",
+    status: "Status", errorCol: "Fehler",
+    defaultTierTag: "(Standard)",
+  },
+  fr: {
+    defaultTier: "Catégorie par défaut",
+    defaultTierHelp:
+      "Utilisée pour toute ligne sans tier_slug. Les lignes avec slug recherchent la catégorie correspondante.",
+    left: "restants", unlimited: "illimité",
+    csvFile: "Fichier CSV",
+    loaded: "Chargé",
+    validRow: "ligne valide", validRows: "lignes valides",
+    errors: "erreurs", error: "erreur",
+    parseErrors: "Erreurs d’analyse",
+    line: "Ligne", andMore: "… et {n} de plus",
+    preview: "Aperçu", email: "E-mail", name: "Nom", gender: "Genre",
+    country: "Pays", tags: "Tags", tier: "Catégorie",
+    showingFirst: "Affichage des 50 premières sur {n}.",
+    delivery: "Envoi",
+    justTicket: "Uniquement le billet",
+    ticketWithLetter: "Billet + lettre d’invitation formelle",
+    invitedGuests: "Invités",
+    preAssigned: "Billets pré-attribués",
+    sendNow: "Envoyer les e-mails immédiatement",
+    processing: "Traitement…",
+    inviteAndEmail: "Inviter & envoyer",
+    createWithoutEmail: "Créer sans e-mail",
+    guest: "invité", guests: "invités",
+    notEnough: "Stock insuffisant dans la catégorie par défaut sélectionnée.",
+    done: "Terminé — {s} réussies, {f} échouées.",
+    downloadResults: "Télécharger les résultats en CSV",
+    status: "Statut", errorCol: "Erreur",
+    defaultTierTag: "(par défaut)",
+  },
+} as const;
+
 export function BulkInviteClient({
   eventId,
   locale,
@@ -23,6 +116,7 @@ export function BulkInviteClient({
   locale: string;
   tiers: TierOption[];
 }) {
+  const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
   const [defaultTierId, setDefaultTierId] = useState(tiers[0]?.id ?? "");
   const [rows, setRows] = useState<BulkInvitationRow[]>([]);
   const [parseErrors, setParseErrors] = useState<
@@ -89,27 +183,26 @@ export function BulkInviteClient({
   return (
     <div className="mt-8 space-y-6">
       <div className="rounded-lg border border-border p-4">
-        <label className="block text-sm font-medium">Default tier</label>
+        <label className="block text-sm font-medium">{t.defaultTier}</label>
         <p className="mt-1 text-xs text-muted-foreground">
-          Used for any row without a tier_slug. Rows with a slug look up the
-          matching tier on this event.
+          {t.defaultTierHelp}
         </p>
         <select
           value={defaultTierId}
           onChange={(e) => setDefaultTierId(e.target.value)}
           className="mt-2 w-full max-w-md rounded-md border border-input bg-background px-3 py-2 text-sm"
         >
-          {tiers.map((t) => (
-            <option key={t.id} value={t.id}>
-              {t.name}
-              {t.remaining !== null ? ` — ${t.remaining} left` : " — unlimited"}
+          {tiers.map((tier) => (
+            <option key={tier.id} value={tier.id}>
+              {tier.name}
+              {tier.remaining !== null ? ` — ${tier.remaining} ${t.left}` : ` — ${t.unlimited}`}
             </option>
           ))}
         </select>
       </div>
 
       <div className="rounded-lg border border-dashed border-border p-4">
-        <label className="block text-sm font-medium">CSV file</label>
+        <label className="block text-sm font-medium">{t.csvFile}</label>
         <input
           type="file"
           accept=".csv,text/csv"
@@ -121,10 +214,9 @@ export function BulkInviteClient({
         />
         {fileName && (
           <p className="mt-2 text-xs text-muted-foreground">
-            Loaded: <code>{fileName}</code> — {rows.length} valid row
-            {rows.length === 1 ? "" : "s"}
+            {t.loaded}: <code>{fileName}</code> — {rows.length} {rows.length === 1 ? t.validRow : t.validRows}
             {parseErrors.length > 0
-              ? `, ${parseErrors.length} error${parseErrors.length === 1 ? "" : "s"}`
+              ? `, ${parseErrors.length} ${parseErrors.length === 1 ? t.error : t.errors}`
               : ""}
             .
           </p>
@@ -134,16 +226,16 @@ export function BulkInviteClient({
       {parseErrors.length > 0 && (
         <div className="rounded-md border border-red-300 bg-red-50 p-4 text-sm dark:bg-red-900/20">
           <p className="font-medium text-red-700 dark:text-red-300">
-            Parse errors
+            {t.parseErrors}
           </p>
           <ul className="mt-2 space-y-1 text-xs text-red-700 dark:text-red-300">
             {parseErrors.slice(0, 20).map((err, i) => (
               <li key={i}>
-                Line {err.line}: {err.message}
+                {t.line} {err.line}: {err.message}
               </li>
             ))}
             {parseErrors.length > 20 && (
-              <li>… and {parseErrors.length - 20} more</li>
+              <li>{t.andMore.replace("{n}", String(parseErrors.length - 20))}</li>
             )}
           </ul>
         </div>
@@ -152,18 +244,18 @@ export function BulkInviteClient({
       {rows.length > 0 && (
         <div className="rounded-lg border border-border">
           <div className="border-b border-border p-3 text-sm font-medium">
-            Preview ({rows.length})
+            {t.preview} ({rows.length})
           </div>
           <div className="max-h-72 overflow-auto">
             <table className="w-full text-xs">
               <thead className="sticky top-0 bg-muted">
                 <tr>
-                  <th className="px-3 py-2 text-left">Email</th>
-                  <th className="px-3 py-2 text-left">Name</th>
-                  <th className="px-3 py-2 text-left">Gender</th>
-                  <th className="px-3 py-2 text-left">Country</th>
-                  <th className="px-3 py-2 text-left">Tags</th>
-                  <th className="px-3 py-2 text-left">Tier</th>
+                  <th className="px-3 py-2 text-left">{t.email}</th>
+                  <th className="px-3 py-2 text-left">{t.name}</th>
+                  <th className="px-3 py-2 text-left">{t.gender}</th>
+                  <th className="px-3 py-2 text-left">{t.country}</th>
+                  <th className="px-3 py-2 text-left">{t.tags}</th>
+                  <th className="px-3 py-2 text-left">{t.tier}</th>
                 </tr>
               </thead>
               <tbody>
@@ -178,14 +270,14 @@ export function BulkInviteClient({
                     <td className="px-3 py-1.5">
                       {r.categoryTags.join(", ") || "—"}
                     </td>
-                    <td className="px-3 py-1.5">{r.tierSlug ?? "(default)"}</td>
+                    <td className="px-3 py-1.5">{r.tierSlug ?? t.defaultTierTag}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
             {rows.length > 50 && (
               <p className="p-3 text-xs text-muted-foreground">
-                Showing first 50 of {rows.length}.
+                {t.showingFirst.replace("{n}", String(rows.length))}
               </p>
             )}
           </div>
@@ -194,7 +286,7 @@ export function BulkInviteClient({
 
       <fieldset className="rounded-lg border border-border p-3">
         <legend className="px-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Delivery
+          {t.delivery}
         </legend>
         <div className="flex flex-wrap gap-4 text-sm">
           <label className="flex cursor-pointer items-center gap-2">
@@ -205,7 +297,7 @@ export function BulkInviteClient({
               onChange={() => setDeliveryMode("ticket_only")}
               className="accent-primary"
             />
-            Just the ticket
+            {t.justTicket}
           </label>
           <label className="flex cursor-pointer items-center gap-2">
             <input
@@ -215,7 +307,7 @@ export function BulkInviteClient({
               onChange={() => setDeliveryMode("ticket_with_letter")}
               className="accent-primary"
             />
-            Ticket + formal invitation letter
+            {t.ticketWithLetter}
           </label>
         </div>
         <div className="mt-3 flex flex-wrap gap-4 text-sm">
@@ -227,7 +319,7 @@ export function BulkInviteClient({
               onChange={() => setAcquisitionType("invited")}
               className="accent-primary"
             />
-            Invited guests
+            {t.invitedGuests}
           </label>
           <label className="flex cursor-pointer items-center gap-2">
             <input
@@ -237,7 +329,7 @@ export function BulkInviteClient({
               onChange={() => setAcquisitionType("assigned")}
               className="accent-primary"
             />
-            Pre-assigned tickets
+            {t.preAssigned}
           </label>
         </div>
       </fieldset>
@@ -249,7 +341,7 @@ export function BulkInviteClient({
             checked={sendEmails}
             onChange={(e) => setSendEmails(e.target.checked)}
           />
-          Send ticket emails immediately
+          {t.sendNow}
         </label>
         <button
           type="button"
@@ -258,12 +350,12 @@ export function BulkInviteClient({
           className="rounded-md bg-primary px-5 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
         >
           {isPending
-            ? "Processing…"
-            : `${sendEmails ? "Invite & email" : "Create without email"} ${rows.length} guest${rows.length === 1 ? "" : "s"}`}
+            ? t.processing
+            : `${sendEmails ? t.inviteAndEmail : t.createWithoutEmail} ${rows.length} ${rows.length === 1 ? t.guest : t.guests}`}
         </button>
         {!tierCapacityOk && (
           <p className="text-xs text-destructive">
-            Not enough inventory in the selected default tier.
+            {t.notEnough}
           </p>
         )}
       </div>
@@ -271,22 +363,22 @@ export function BulkInviteClient({
       {result && (
         <div className="rounded-lg border border-border p-4">
           <p className="font-medium">
-            Done — {result.success} succeeded, {result.failed} failed.
+            {t.done.replace("{s}", String(result.success)).replace("{f}", String(result.failed))}
           </p>
           <button
             type="button"
             onClick={downloadReport}
             className="mt-3 text-sm font-medium text-primary hover:opacity-80"
           >
-            Download results CSV
+            {t.downloadResults}
           </button>
           <div className="mt-4 max-h-60 overflow-auto rounded border border-border text-xs">
             <table className="w-full">
               <thead className="bg-muted">
                 <tr>
-                  <th className="px-3 py-2 text-left">Email</th>
-                  <th className="px-3 py-2 text-left">Status</th>
-                  <th className="px-3 py-2 text-left">Error</th>
+                  <th className="px-3 py-2 text-left">{t.email}</th>
+                  <th className="px-3 py-2 text-left">{t.status}</th>
+                  <th className="px-3 py-2 text-left">{t.errorCol}</th>
                 </tr>
               </thead>
               <tbody>
