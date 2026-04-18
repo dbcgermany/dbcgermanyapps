@@ -41,12 +41,15 @@ export async function generateMetadata(): Promise<Metadata> {
     title: {
       default:
         company?.seo_title_en ??
-        "DBC Germany — Africa's Top Business Group",
-      template: "%s — DBC Germany",
+        (company?.brand_tagline_en
+          ? `${company?.brand_name ?? "DBC Germany"} — ${company.brand_tagline_en}`
+          : company?.brand_name ?? "DBC Germany"),
+      template: `%s — ${company?.brand_name ?? "DBC Germany"}`,
     },
     description:
       company?.seo_description_en ??
-      "Diambilay Business Center Germany: incubation, courses, investments, mentorship and Richesses d'Afrique events for entrepreneurs with African roots.",
+      company?.brand_tagline_en ??
+      undefined,
     openGraph: {
       type: "website",
       siteName: company?.brand_name ?? "DBC Germany",

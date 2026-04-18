@@ -1,5 +1,6 @@
 import { createServerClient } from "@dbc/supabase/server";
 import { cache } from "react";
+import { unstable_cache } from "next/cache";
 
 /**
  * Read-only snapshot of every legal/identity fact about the company.
@@ -113,7 +114,9 @@ export interface PublicCompanyInfo {
   bic: string | null;
 }
 
-export const getCompanyInfo = cache(
+// Actual DB read, wrapped in unstable_cache with tag so
+// revalidateTag("company-info") propagates across route segments and apps.
+const fetchCompanyInfoCached = unstable_cache(
   async (): Promise<PublicCompanyInfo | null> => {
     try {
       const supabase = await createServerClient();
@@ -126,7 +129,15 @@ export const getCompanyInfo = cache(
     } catch {
       return null;
     }
-  }
+  },
+  ["company-info"],
+  { tags: ["company-info"], revalidate: 60 }
+);
+
+// React cache() memoizes across all server components within a single request,
+// so downstream callers (layout, JSON-LD, footer, page bodies) share one fetch.
+export const getCompanyInfo = cache(
+  async (): Promise<PublicCompanyInfo | null> => fetchCompanyInfoCached()
 );
 
 export function getTagline(

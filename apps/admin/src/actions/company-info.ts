@@ -376,7 +376,31 @@ export async function updateCompanyInfoSection(
   });
 
   revalidatePath("/", "layout");
+  await pingSiteRevalidate("company-info");
   return { success: true };
+}
+
+/**
+ * Fire-and-forget POST to the marketing site's on-demand revalidate endpoint
+ * so the public pages (footer, imprint, SEO meta, contact) reflect company
+ * info edits within seconds instead of waiting for the 60s ISR window.
+ * Silent fallback if the secret or URL isn't set.
+ */
+async function pingSiteRevalidate(tag: string) {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  const secret = process.env.REVALIDATE_SECRET;
+  if (!siteUrl || !secret) return;
+  try {
+    await fetch(`${siteUrl}/api/revalidate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tag, secret }),
+      // Don't block save response on this.
+      cache: "no-store",
+    });
+  } catch (err) {
+    console.error("[pingSiteRevalidate] failed:", err);
+  }
 }
 
 export async function uploadBrandAsset(
@@ -406,10 +430,15 @@ export async function uploadBrandAsset(
 
   const { error } = await supabase
     .from("company_info")
-    .update({ [field]: publicUrl, updated_by: user.userId })
+    .update({
+      [field]: publicUrl,
+      updated_by: user.userId,
+      updated_at: new Date().toISOString(),
+    })
     .eq("id", 1);
   if (error) return { error: error.message };
 
   revalidatePath("/", "layout");
+  await pingSiteRevalidate("company-info");
   return { success: true, url: publicUrl };
 }

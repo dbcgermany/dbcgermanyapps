@@ -33,12 +33,21 @@ export async function generateMetadata({
     | "seo_description_de"
     | "seo_description_fr";
 
+  const taglineKey = `brand_tagline_${locale}` as
+    | "brand_tagline_en"
+    | "brand_tagline_de"
+    | "brand_tagline_fr";
+  const brandName = company?.brand_name ?? "DBC Germany";
+  const computedTitle =
+    (company?.[seoKey] as string | null) ??
+    (company?.[taglineKey]
+      ? `${brandName} \u2014 ${company[taglineKey]}`
+      : brandName);
+
   return {
     title: {
-      default:
-        (company?.[seoKey] as string | null) ??
-        "DBC Germany \u2014 Africa\u2019s Top Business Group",
-      template: "%s \u2014 DBC Germany",
+      default: computedTitle,
+      template: `%s \u2014 ${brandName}`,
     },
     description: (company?.[descKey] as string | null) ?? undefined,
     alternates: {

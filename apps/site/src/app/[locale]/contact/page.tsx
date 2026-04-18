@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 import { ContactForm } from "./contact-form";
+import { getCompanyInfo, formatOfficeAddress } from "@dbc/legal";
 
 export async function generateMetadata({
   params,
@@ -19,6 +20,13 @@ export default async function ContactPage({
 }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "site.contact" });
+  const company = await getCompanyInfo();
+  const officeAddress = formatOfficeAddress(company);
+  const brandName = company?.brand_name ?? "DBC Germany";
+  const phoneLabel = locale === "de" ? "Telefon" : locale === "fr" ? "Téléphone" : "Phone";
+  const hoursLabel = locale === "de" ? "Öffnungszeiten" : locale === "fr" ? "Horaires" : "Office hours";
+  const supportLabel = locale === "de" ? "Support" : locale === "fr" ? "Support" : "Support";
+  const pressLabel = locale === "de" ? "Presse" : "Press";
 
   const topicOptions = [
     { value: "general", label: t("topicOptions.general") },
@@ -44,42 +52,79 @@ export default async function ContactPage({
           </p>
 
           <div className="mt-10 space-y-6 text-sm">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                {t("office")}
-              </p>
-              <p className="mt-1 text-base">
-                DBC Germany
-                <br />
-                Speditionstraße 15a
-                <br />
-                40221 Düsseldorf
-                <br />
-                Deutschland
-              </p>
-            </div>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                {locale === "de" ? "Telefon" : locale === "fr" ? "Téléphone" : "Phone"}
-              </p>
-              <a
-                href="tel:+4916314895470"
-                className="mt-1 inline-block text-base text-primary hover:text-primary/80"
-              >
-                +49 163 148 95 47
-              </a>
-            </div>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Email
-              </p>
-              <a
-                href="mailto:info@dbc-germany.com"
-                className="mt-1 inline-block text-base text-primary hover:text-primary/80"
-              >
-                info@dbc-germany.com
-              </a>
-            </div>
+            {officeAddress && (
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  {t("office")}
+                </p>
+                <p className="mt-1 whitespace-pre-line text-base">
+                  {brandName}
+                  {"\n"}
+                  {officeAddress}
+                </p>
+              </div>
+            )}
+            {company?.office_hours && (
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  {hoursLabel}
+                </p>
+                <p className="mt-1 text-base">{company.office_hours}</p>
+              </div>
+            )}
+            {company?.phone && (
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  {phoneLabel}
+                </p>
+                <a
+                  href={`tel:${company.phone.replace(/\s/g, "")}`}
+                  className="mt-1 inline-block text-base text-primary hover:text-primary/80"
+                >
+                  {company.phone}
+                </a>
+              </div>
+            )}
+            {company?.primary_email && (
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Email
+                </p>
+                <a
+                  href={`mailto:${company.primary_email}`}
+                  className="mt-1 inline-block text-base text-primary hover:text-primary/80"
+                >
+                  {company.primary_email}
+                </a>
+              </div>
+            )}
+            {company?.support_email &&
+              company.support_email !== company.primary_email && (
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    {supportLabel}
+                  </p>
+                  <a
+                    href={`mailto:${company.support_email}`}
+                    className="mt-1 inline-block text-base text-primary hover:text-primary/80"
+                  >
+                    {company.support_email}
+                  </a>
+                </div>
+              )}
+            {company?.press_email && (
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  {pressLabel}
+                </p>
+                <a
+                  href={`mailto:${company.press_email}`}
+                  className="mt-1 inline-block text-base text-primary hover:text-primary/80"
+                >
+                  {company.press_email}
+                </a>
+              </div>
+            )}
           </div>
         </div>
 
