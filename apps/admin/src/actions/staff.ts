@@ -145,7 +145,8 @@ export async function inviteStaff(formData: FormData) {
     return { error: "You do not have permission to create admins" };
   }
 
-  // Invite via Supabase Auth (sends magic link invite email)
+  // Invite via Supabase Auth. `must_change_password: true` forces them through
+  // /set-password on first login (enforced by middleware in proxy.ts).
   const ticketsUrl =
     process.env.NEXT_PUBLIC_ADMIN_URL ?? "https://admin.dbc-germany.com";
 
@@ -154,8 +155,9 @@ export async function inviteStaff(formData: FormData) {
       data: {
         display_name: displayName || email.split("@")[0],
         locale,
+        must_change_password: true,
       },
-      redirectTo: `${ticketsUrl}/${locale}/dashboard`,
+      redirectTo: `${ticketsUrl}/${locale}/set-password`,
     });
 
   if (inviteError || !inviteData?.user) {

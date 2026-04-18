@@ -298,7 +298,7 @@ export default async function EventDetailPage({
         {/* Marketing */}
         <section>
           <h2 className="font-heading text-base font-semibold text-muted-foreground">Marketing</h2>
-          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <HubLink href={`/${locale}/events/${id}/emails`} icon={Mail} title="Email Sequences" desc="Automated post-event email campaigns" />
             <HubLink href={`/${locale}/events/${id}/invitations`} icon={Gift} title="Invitations" desc="Send formal invitations with comped tickets" />
             <HubLink href={`/${locale}/events/${id}/invitations/bulk`} icon={Upload} title="Bulk Invitations" desc="Import a CSV of invitees" />
@@ -308,7 +308,7 @@ export default async function EventDetailPage({
         {/* Operations */}
         <section>
           <h2 className="font-heading text-base font-semibold text-muted-foreground">Operations</h2>
-          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <HubLink
               href={`/${locale}/events/${id}/checklist`}
               icon={ListChecks}
@@ -325,7 +325,7 @@ export default async function EventDetailPage({
         {/* Post-event */}
         <section>
           <h2 className="font-heading text-base font-semibold text-muted-foreground">Post-event</h2>
-          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <HubLink href={`/${locale}/events/${id}/attendees`} icon={Users} title="Attendees" desc="View registrations and check-in status" />
             <HubLink href={`/${locale}/events/${id}/media`} icon={ImageIcon} title="Media" desc="Upload photos and videos after the event" />
             <HubLink href={`/${locale}/events/${id}/poster`} icon={QrCode} title="Door-sale Poster" desc="Printable QR poster for venue entrance" />

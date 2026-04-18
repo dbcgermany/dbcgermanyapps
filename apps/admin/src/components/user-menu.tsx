@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { LogOut, Lock, Settings, User } from "lucide-react";
 import { useTheme } from "@dbc/ui";
 import { toast } from "sonner";
 import { signOutEverywhere } from "@/actions/account";
+import { logout } from "@/actions/auth";
 
 export interface UserMenuProps {
   locale: string;
@@ -37,7 +37,6 @@ export function UserMenu({
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const ref = useRef<HTMLDivElement>(null);
-  const router = useRouter();
   const { theme, setTheme } = useTheme();
 
   useEffect(() => {
@@ -59,11 +58,17 @@ export function UserMenu({
   function handleSignOut() {
     startTransition(async () => {
       try {
-        await fetch("/auth/signout", { method: "POST" });
-        router.push(`/${locale}/auth`);
-        router.refresh();
-      } catch {
-        toast.error("Sign-out failed.");
+        // logout() clears the Supabase session cookie and throws a redirect to /login
+        await logout(locale);
+      } catch (err) {
+        // Next.js redirects surface as a thrown "NEXT_REDIRECT" — that's expected.
+        // Any other error is a real failure.
+        if (
+          err instanceof Error &&
+          !err.message.includes("NEXT_REDIRECT")
+        ) {
+          toast.error("Sign-out failed.");
+        }
       }
     });
   }
@@ -76,8 +81,12 @@ export function UserMenu({
         return;
       }
       toast.success("Signed out on all devices.");
-      router.push(`/${locale}/auth`);
-      router.refresh();
+      // signOutEverywhere revokes server-side; also clear local session and redirect
+      try {
+        await logout(locale);
+      } catch {
+        /* NEXT_REDIRECT expected */
+      }
     });
   }
 
