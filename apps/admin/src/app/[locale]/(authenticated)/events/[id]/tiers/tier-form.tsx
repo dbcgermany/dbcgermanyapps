@@ -3,6 +3,56 @@
 import { useActionState } from "react";
 import { createTier } from "@/actions/tiers";
 
+const T = {
+  en: {
+    success: "Tier created successfully.",
+    nameEn: "Name (EN)",
+    nameDe: "Name (DE)",
+    nameFr: "Name (FR)",
+    priceLabel: "Price (€)",
+    maxQty: "Max quantity (empty = unlimited)",
+    sortOrder: "Sort order",
+    salesStart: "Sales start (optional)",
+    salesEnd: "Sales end (optional)",
+    publicTier: "Public tier (visible on event page)",
+    publicHint: "Uncheck for invite-only / team / partner tiers",
+    adding: "Adding…",
+    addTier: "Add Tier",
+  },
+  de: {
+    success: "Kategorie erfolgreich erstellt.",
+    nameEn: "Name (EN)",
+    nameDe: "Name (DE)",
+    nameFr: "Name (FR)",
+    priceLabel: "Preis (€)",
+    maxQty: "Maximale Menge (leer = unbegrenzt)",
+    sortOrder: "Sortierung",
+    salesStart: "Verkaufsstart (optional)",
+    salesEnd: "Verkaufsende (optional)",
+    publicTier: "Öffentliche Kategorie (auf Event-Seite sichtbar)",
+    publicHint:
+      "Deaktivieren für Einladungs-, Team- oder Partnerkategorien",
+    adding: "Wird hinzugefügt…",
+    addTier: "Kategorie hinzufügen",
+  },
+  fr: {
+    success: "Catégorie créée avec succès.",
+    nameEn: "Nom (EN)",
+    nameDe: "Nom (DE)",
+    nameFr: "Nom (FR)",
+    priceLabel: "Prix (€)",
+    maxQty: "Quantité max (vide = illimité)",
+    sortOrder: "Ordre",
+    salesStart: "Début des ventes (optionnel)",
+    salesEnd: "Fin des ventes (optionnel)",
+    publicTier: "Catégorie publique (visible sur la page événement)",
+    publicHint:
+      "Décochez pour les catégories invités / équipe / partenaires",
+    adding: "Ajout…",
+    addTier: "Ajouter la catégorie",
+  },
+} as const;
+
 export function TierForm({
   eventId,
   locale,
@@ -10,6 +60,7 @@ export function TierForm({
   eventId: string;
   locale: string;
 }) {
+  const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
   const [state, formAction, isPending] = useActionState(
     async (_prev: { error?: string; success?: boolean } | null, formData: FormData) => {
       formData.set("event_id", eventId);
@@ -28,7 +79,7 @@ export function TierForm({
       )}
       {state?.success && (
         <div className="rounded-md bg-green-50 p-3 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-400">
-          Tier created successfully.
+          {t.success}
         </div>
       )}
 
@@ -36,7 +87,7 @@ export function TierForm({
       <div className="grid gap-3 sm:grid-cols-3">
         <div>
           <label htmlFor="name_en" className="block text-xs text-muted-foreground mb-1">
-            Name (EN)
+            {t.nameEn}
           </label>
           <input
             id="name_en"
@@ -49,7 +100,7 @@ export function TierForm({
         </div>
         <div>
           <label htmlFor="name_de" className="block text-xs text-muted-foreground mb-1">
-            Name (DE)
+            {t.nameDe}
           </label>
           <input
             id="name_de"
@@ -61,7 +112,7 @@ export function TierForm({
         </div>
         <div>
           <label htmlFor="name_fr" className="block text-xs text-muted-foreground mb-1">
-            Name (FR)
+            {t.nameFr}
           </label>
           <input
             id="name_fr"
@@ -77,7 +128,7 @@ export function TierForm({
       <div className="grid gap-3 sm:grid-cols-3">
         <div>
           <label htmlFor="price" className="block text-xs text-muted-foreground mb-1">
-            Price (&euro;)
+            {t.priceLabel}
           </label>
           <input
             id="price"
@@ -92,7 +143,7 @@ export function TierForm({
         </div>
         <div>
           <label htmlFor="max_quantity" className="block text-xs text-muted-foreground mb-1">
-            Max quantity (empty = unlimited)
+            {t.maxQty}
           </label>
           <input
             id="max_quantity"
@@ -105,7 +156,7 @@ export function TierForm({
         </div>
         <div>
           <label htmlFor="sort_order" className="block text-xs text-muted-foreground mb-1">
-            Sort order
+            {t.sortOrder}
           </label>
           <input
             id="sort_order"
@@ -121,7 +172,7 @@ export function TierForm({
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
           <label htmlFor="sales_start_at" className="block text-xs text-muted-foreground mb-1">
-            Sales start (optional)
+            {t.salesStart}
           </label>
           <input
             id="sales_start_at"
@@ -132,7 +183,7 @@ export function TierForm({
         </div>
         <div>
           <label htmlFor="sales_end_at" className="block text-xs text-muted-foreground mb-1">
-            Sales end (optional)
+            {t.salesEnd}
           </label>
           <input
             id="sales_end_at"
@@ -158,10 +209,10 @@ export function TierForm({
             defaultChecked
             className="accent-primary"
           />
-          Public tier (visible on event page)
+          {t.publicTier}
         </label>
         <p className="ml-6 text-xs text-muted-foreground">
-          Uncheck for invite-only / team / partner tiers
+          {t.publicHint}
         </p>
       </div>
 
@@ -170,7 +221,7 @@ export function TierForm({
         disabled={isPending}
         className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 disabled:opacity-50"
       >
-        {isPending ? "Adding..." : "Add Tier"}
+        {isPending ? t.adding : t.addTier}
       </button>
     </form>
   );

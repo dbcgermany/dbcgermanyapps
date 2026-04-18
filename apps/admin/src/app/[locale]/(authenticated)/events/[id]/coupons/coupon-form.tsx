@@ -3,6 +3,54 @@
 import { useActionState } from "react";
 import { createCoupon } from "@/actions/coupons";
 
+const CP_T = {
+  en: {
+    success: "Coupon created successfully.",
+    codeLabel: "Code",
+    typeLabel: "Type",
+    percentage: "Percentage (%)",
+    fixed: "Fixed amount (€)",
+    valueLabel: "Value",
+    maxUses: "Max uses (empty = unlimited)",
+    validFrom: "Valid from (optional)",
+    validUntil: "Valid until (optional)",
+    appliesTo: "Applies to tiers",
+    appliesAll: "(leave empty = all tiers)",
+    creating: "Creating…",
+    create: "Create Coupon",
+  },
+  de: {
+    success: "Rabattcode erfolgreich erstellt.",
+    codeLabel: "Code",
+    typeLabel: "Typ",
+    percentage: "Prozentual (%)",
+    fixed: "Festbetrag (€)",
+    valueLabel: "Wert",
+    maxUses: "Max. Nutzungen (leer = unbegrenzt)",
+    validFrom: "Gültig ab (optional)",
+    validUntil: "Gültig bis (optional)",
+    appliesTo: "Gilt für Kategorien",
+    appliesAll: "(leer lassen = alle Kategorien)",
+    creating: "Wird erstellt…",
+    create: "Rabattcode erstellen",
+  },
+  fr: {
+    success: "Code promo créé avec succès.",
+    codeLabel: "Code",
+    typeLabel: "Type",
+    percentage: "Pourcentage (%)",
+    fixed: "Montant fixe (€)",
+    valueLabel: "Valeur",
+    maxUses: "Nombre max (vide = illimité)",
+    validFrom: "Valide à partir de (optionnel)",
+    validUntil: "Valide jusqu’à (optionnel)",
+    appliesTo: "S’applique aux catégories",
+    appliesAll: "(vide = toutes les catégories)",
+    creating: "Création…",
+    create: "Créer le code",
+  },
+} as const;
+
 export function CouponForm({
   eventId,
   locale,
@@ -12,6 +60,7 @@ export function CouponForm({
   locale: string;
   tiers: { id: string; name: string }[];
 }) {
+  const t = CP_T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof CP_T];
   const [state, formAction, isPending] = useActionState(
     async (_prev: { error?: string; success?: boolean } | null, formData: FormData) => {
       formData.set("event_id", eventId);
@@ -30,14 +79,14 @@ export function CouponForm({
       )}
       {state?.success && (
         <div className="rounded-md bg-green-50 p-3 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-400">
-          Coupon created successfully.
+          {t.success}
         </div>
       )}
 
       <div className="grid gap-3 sm:grid-cols-3">
         <div>
           <label htmlFor="code" className="block text-xs text-muted-foreground mb-1">
-            Code
+            {t.codeLabel}
           </label>
           <input
             id="code"
@@ -50,20 +99,20 @@ export function CouponForm({
         </div>
         <div>
           <label htmlFor="discount_type" className="block text-xs text-muted-foreground mb-1">
-            Type
+            {t.typeLabel}
           </label>
           <select
             id="discount_type"
             name="discount_type"
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           >
-            <option value="percentage">Percentage (%)</option>
-            <option value="fixed_amount">Fixed amount (&euro;)</option>
+            <option value="percentage">{t.percentage}</option>
+            <option value="fixed_amount">{t.fixed}</option>
           </select>
         </div>
         <div>
           <label htmlFor="discount_value" className="block text-xs text-muted-foreground mb-1">
-            Value
+            {t.valueLabel}
           </label>
           <input
             id="discount_value"
@@ -81,7 +130,7 @@ export function CouponForm({
       <div className="grid gap-3 sm:grid-cols-3">
         <div>
           <label htmlFor="max_uses" className="block text-xs text-muted-foreground mb-1">
-            Max uses (empty = unlimited)
+            {t.maxUses}
           </label>
           <input
             id="max_uses"
@@ -94,7 +143,7 @@ export function CouponForm({
         </div>
         <div>
           <label htmlFor="valid_from" className="block text-xs text-muted-foreground mb-1">
-            Valid from (optional)
+            {t.validFrom}
           </label>
           <input
             id="valid_from"
@@ -105,7 +154,7 @@ export function CouponForm({
         </div>
         <div>
           <label htmlFor="valid_until" className="block text-xs text-muted-foreground mb-1">
-            Valid until (optional)
+            {t.validUntil}
           </label>
           <input
             id="valid_until"
@@ -119,9 +168,9 @@ export function CouponForm({
       {tiers.length > 0 && (
         <div>
           <label className="mb-1.5 block text-xs text-muted-foreground">
-            Applies to tiers
+            {t.appliesTo}
             <span className="ml-1 text-muted-foreground/70">
-              (leave empty = all tiers)
+              {t.appliesAll}
             </span>
           </label>
           <div className="grid gap-2 rounded-md border border-input bg-background p-3 sm:grid-cols-2">
@@ -148,7 +197,7 @@ export function CouponForm({
         disabled={isPending}
         className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 disabled:opacity-50"
       >
-        {isPending ? "Creating..." : "Create Coupon"}
+        {isPending ? t.creating : t.create}
       </button>
     </form>
   );

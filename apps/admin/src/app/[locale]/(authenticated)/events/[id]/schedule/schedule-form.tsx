@@ -3,6 +3,54 @@
 import { useActionState } from "react";
 import { createScheduleItem } from "@/actions/schedule";
 
+const T = {
+  en: {
+    success: "Schedule item added.",
+    titleEn: "Title (EN)",
+    titleDe: "Title (DE)",
+    titleFr: "Title (FR)",
+    titlePh: "e.g., Opening Keynote",
+    startTime: "Start time",
+    endTime: "End time",
+    sortOrder: "Sort order",
+    speakerName: "Speaker name (optional)",
+    speakerTitle: "Speaker title (optional)",
+    speakerTitlePh: "Founder & CEO, DBC",
+    adding: "Adding…",
+    add: "Add to Schedule",
+  },
+  de: {
+    success: "Programmpunkt hinzugefügt.",
+    titleEn: "Titel (EN)",
+    titleDe: "Titel (DE)",
+    titleFr: "Titel (FR)",
+    titlePh: "z. B. Eröffnungs-Keynote",
+    startTime: "Startzeit",
+    endTime: "Endzeit",
+    sortOrder: "Sortierung",
+    speakerName: "Name Sprecher:in (optional)",
+    speakerTitle: "Titel Sprecher:in (optional)",
+    speakerTitlePh: "Gründer & CEO, DBC",
+    adding: "Wird hinzugefügt…",
+    add: "Zum Programm hinzufügen",
+  },
+  fr: {
+    success: "Élément ajouté au programme.",
+    titleEn: "Titre (EN)",
+    titleDe: "Titre (DE)",
+    titleFr: "Titre (FR)",
+    titlePh: "ex. Keynote d’ouverture",
+    startTime: "Heure de début",
+    endTime: "Heure de fin",
+    sortOrder: "Ordre",
+    speakerName: "Nom de l’intervenant (optionnel)",
+    speakerTitle: "Titre de l’intervenant (optionnel)",
+    speakerTitlePh: "Fondateur & CEO, DBC",
+    adding: "Ajout…",
+    add: "Ajouter au programme",
+  },
+} as const;
+
 export function ScheduleForm({
   eventId,
   locale,
@@ -10,6 +58,7 @@ export function ScheduleForm({
   eventId: string;
   locale: string;
 }) {
+  const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
   const [state, formAction, isPending] = useActionState(
     async (_prev: { error?: string; success?: boolean } | null, formData: FormData) => {
       formData.set("event_id", eventId);
@@ -28,7 +77,7 @@ export function ScheduleForm({
       )}
       {state?.success && (
         <div className="rounded-md bg-green-50 p-3 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-400">
-          Schedule item added.
+          {t.success}
         </div>
       )}
 
@@ -36,20 +85,20 @@ export function ScheduleForm({
       <div className="grid gap-3 sm:grid-cols-3">
         <div>
           <label htmlFor="title_en" className="block text-xs text-muted-foreground mb-1">
-            Title (EN)
+            {t.titleEn}
           </label>
           <input
             id="title_en"
             name="title_en"
             type="text"
             required
-            placeholder="e.g., Opening Keynote"
+            placeholder={t.titlePh}
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
         <div>
           <label htmlFor="title_de" className="block text-xs text-muted-foreground mb-1">
-            Title (DE)
+            {t.titleDe}
           </label>
           <input
             id="title_de"
@@ -60,7 +109,7 @@ export function ScheduleForm({
         </div>
         <div>
           <label htmlFor="title_fr" className="block text-xs text-muted-foreground mb-1">
-            Title (FR)
+            {t.titleFr}
           </label>
           <input
             id="title_fr"
@@ -75,7 +124,7 @@ export function ScheduleForm({
       <div className="grid gap-3 sm:grid-cols-3">
         <div>
           <label htmlFor="starts_at" className="block text-xs text-muted-foreground mb-1">
-            Start time
+            {t.startTime}
           </label>
           <input
             id="starts_at"
@@ -87,7 +136,7 @@ export function ScheduleForm({
         </div>
         <div>
           <label htmlFor="ends_at" className="block text-xs text-muted-foreground mb-1">
-            End time
+            {t.endTime}
           </label>
           <input
             id="ends_at"
@@ -99,7 +148,7 @@ export function ScheduleForm({
         </div>
         <div>
           <label htmlFor="sort_order" className="block text-xs text-muted-foreground mb-1">
-            Sort order
+            {t.sortOrder}
           </label>
           <input
             id="sort_order"
@@ -115,7 +164,7 @@ export function ScheduleForm({
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
           <label htmlFor="speaker_name" className="block text-xs text-muted-foreground mb-1">
-            Speaker name (optional)
+            {t.speakerName}
           </label>
           <input
             id="speaker_name"
@@ -127,13 +176,13 @@ export function ScheduleForm({
         </div>
         <div>
           <label htmlFor="speaker_title" className="block text-xs text-muted-foreground mb-1">
-            Speaker title (optional)
+            {t.speakerTitle}
           </label>
           <input
             id="speaker_title"
             name="speaker_title"
             type="text"
-            placeholder="Founder & CEO, DBC"
+            placeholder={t.speakerTitlePh}
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
@@ -144,7 +193,7 @@ export function ScheduleForm({
         disabled={isPending}
         className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 disabled:opacity-50"
       >
-        {isPending ? "Adding..." : "Add to Schedule"}
+        {isPending ? t.adding : t.add}
       </button>
     </form>
   );

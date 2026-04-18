@@ -6,12 +6,19 @@ import { CouponRow } from "./coupon-row";
 import { Card } from "@dbc/ui";
 import { PageHeader } from "@/components/page-header";
 
+const T = {
+  en: { back: "← Back to event", title: "Coupon Codes", addCoupon: "Add Coupon" },
+  de: { back: "← Zurück zur Veranstaltung", title: "Rabattcodes", addCoupon: "Rabattcode hinzufügen" },
+  fr: { back: "← Retour à l’événement", title: "Codes promo", addCoupon: "Ajouter un code" },
+} as const;
+
 export default async function CouponsPage({
   params,
 }: {
   params: Promise<{ locale: string; id: string }>;
 }) {
   const { locale, id: eventId } = await params;
+  const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
   const coupons = await getCoupons(eventId);
   const supabase = await createServerClient();
   const { data: tiersData } = await supabase
@@ -33,9 +40,9 @@ export default async function CouponsPage({
           href={`/${locale}/events/${eventId}`}
           className="text-sm text-muted-foreground hover:text-foreground"
         >
-          &larr; Back to event
+          {t.back}
         </Link>
-        <PageHeader title="Coupon Codes" className="mt-2" />
+        <PageHeader title={t.title} className="mt-2" />
       </div>
 
       {/* Existing coupons */}
@@ -55,7 +62,7 @@ export default async function CouponsPage({
 
       {/* Add new coupon */}
       <Card padding="md" className="mt-8">
-        <h2 className="font-heading text-lg font-semibold">Add Coupon</h2>
+        <h2 className="font-heading text-lg font-semibold">{t.addCoupon}</h2>
         <CouponForm eventId={eventId} locale={locale} tiers={tiers} />
       </Card>
     </div>
