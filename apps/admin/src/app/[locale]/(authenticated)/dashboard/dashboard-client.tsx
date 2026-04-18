@@ -2,24 +2,15 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 import { Card } from "@dbc/ui";
 import {
   DateRangeSelect,
   type DateRange,
 } from "@/components/date-range-select";
 import { StatCard } from "@/components/stat-card";
+import { StatGrid } from "@/components/stat-grid";
 import { EmptyState } from "@/components/empty-state";
+import { AreaChart, BarChart, ChartCard } from "@/components/charts";
 import type { DashboardKpis } from "@/actions/dashboard";
 
 type T = {
@@ -97,178 +88,114 @@ export function DashboardClient({
         </p>
       </div>
 
-      {/* Headline KPI Grid */}
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          label={t.totalRevenue}
-          value={fmtEur(kpis.totalRevenueCents)}
-          delta={pctChange(kpis.current.revenueCents, kpis.prior.revenueCents)}
-          deltaLabel={t.vsPrior}
-        />
-        <StatCard
-          label={t.ticketsSold}
-          value={kpis.ticketsSold.toLocaleString(locale)}
-          delta={pctChange(kpis.current.ticketsSold, kpis.prior.ticketsSold)}
-          deltaLabel={t.vsPrior}
-        />
-        <StatCard
-          label={t.activeEvents}
-          value={kpis.activeEventCount.toLocaleString(locale)}
-        />
-        <StatCard label={t.checkInRate} value={`${kpis.checkInRate}%`} />
+      {/* Headline KPIs — 4 cards */}
+      <div className="mt-6">
+        <StatGrid cols={4}>
+          <StatCard
+            label={t.totalRevenue}
+            value={fmtEur(kpis.totalRevenueCents)}
+            delta={pctChange(kpis.current.revenueCents, kpis.prior.revenueCents)}
+            deltaLabel={t.vsPrior}
+          />
+          <StatCard
+            label={t.ticketsSold}
+            value={kpis.ticketsSold.toLocaleString(locale)}
+            delta={pctChange(kpis.current.ticketsSold, kpis.prior.ticketsSold)}
+            deltaLabel={t.vsPrior}
+          />
+          <StatCard
+            label={t.activeEvents}
+            value={kpis.activeEventCount.toLocaleString(locale)}
+          />
+          <StatCard label={t.checkInRate} value={`${kpis.checkInRate}%`} />
+        </StatGrid>
       </div>
 
-      {/* Phase A KPIs */}
-      <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <StatCard
-          label={t.aov}
-          sub={t.aovSub}
-          value={fmtEur(kpis.current.aovCents)}
-          delta={pctChange(kpis.current.aovCents, kpis.prior.aovCents)}
-          deltaLabel={t.vsPrior}
-          dense
-        />
-        <StatCard
-          label={t.arpa}
-          sub={t.arpaSub}
-          value={fmtEur(kpis.current.arpaCents)}
-          delta={pctChange(kpis.current.arpaCents, kpis.prior.arpaCents)}
-          deltaLabel={t.vsPrior}
-          dense
-        />
-        <StatCard
-          label={t.netRevenue}
-          sub={t.netRevenueSub}
-          value={fmtEur(kpis.current.netRevenueCents)}
-          delta={pctChange(
-            kpis.current.netRevenueCents,
-            kpis.prior.netRevenueCents
-          )}
-          deltaLabel={t.vsPrior}
-          dense
-        />
-        <StatCard
-          label={t.refundRate}
-          sub={t.refundRateSub}
-          value={`${kpis.refundRatePct.toFixed(1)}%`}
-          // Lower is better for refund rate — flip the direction tint
-          delta={-pctChange(
-            kpis.current.refundCents,
-            kpis.prior.refundCents
-          )}
-          deltaLabel={t.vsPrior}
-          dense
-        />
-        <StatCard
-          label={t.velocity}
-          sub={t.velocitySub}
-          value={kpis.velocity7dAvg.toFixed(1)}
-          dense
-        />
+      {/* Secondary KPIs — 4 cards (velocity moved to revenue chart subtitle) */}
+      <div className="mt-4">
+        <StatGrid cols={4}>
+          <StatCard
+            label={t.aov}
+            sub={t.aovSub}
+            value={fmtEur(kpis.current.aovCents)}
+            delta={pctChange(kpis.current.aovCents, kpis.prior.aovCents)}
+            deltaLabel={t.vsPrior}
+            dense
+          />
+          <StatCard
+            label={t.arpa}
+            sub={t.arpaSub}
+            value={fmtEur(kpis.current.arpaCents)}
+            delta={pctChange(kpis.current.arpaCents, kpis.prior.arpaCents)}
+            deltaLabel={t.vsPrior}
+            dense
+          />
+          <StatCard
+            label={t.netRevenue}
+            sub={t.netRevenueSub}
+            value={fmtEur(kpis.current.netRevenueCents)}
+            delta={pctChange(
+              kpis.current.netRevenueCents,
+              kpis.prior.netRevenueCents
+            )}
+            deltaLabel={t.vsPrior}
+            dense
+          />
+          <StatCard
+            label={t.refundRate}
+            sub={t.refundRateSub}
+            value={`${kpis.refundRatePct.toFixed(1)}%`}
+            delta={-pctChange(
+              kpis.current.refundCents,
+              kpis.prior.refundCents
+            )}
+            deltaLabel={t.vsPrior}
+            dense
+          />
+        </StatGrid>
       </div>
 
-      {/* Charts */}
+      {/* Charts — 2 wide */}
       <div className="mt-8 grid gap-4 lg:grid-cols-2">
-        <Card padding="md" className="rounded-lg">
-          <h2 className="font-heading text-lg font-semibold">{t.revenue}</h2>
-          {revenueData.every((d) => d.eur === 0) ? (
+        {revenueData.every((d) => d.eur === 0) ? (
+          <Card padding="md" className="rounded-lg">
+            <h2 className="font-heading text-sm font-semibold">{t.revenue}</h2>
             <p className="mt-8 text-center text-sm text-muted-foreground">
               {t.noData}
             </p>
-          ) : (
-            <div className="mt-4 h-56">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={revenueData} margin={{ top: 4, right: 12, bottom: 4, left: 0 }}>
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke="currentColor"
-                    className="text-border"
-                  />
-                  <XAxis
-                    dataKey="date"
-                    stroke="currentColor"
-                    className="text-muted-foreground"
-                    fontSize={11}
-                  />
-                  <YAxis
-                    stroke="currentColor"
-                    className="text-muted-foreground"
-                    fontSize={11}
-                    tickFormatter={(v) =>
-                      `\u20AC${Math.round(Number(v)).toLocaleString()}`
-                    }
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      background: "hsl(var(--background))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: 8,
-                      fontSize: 12,
-                    }}
-                    formatter={(v) =>
-                      typeof v === "number"
-                        ? `\u20AC${v.toFixed(2)}`
-                        : String(v)
-                    }
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="eur"
-                    stroke="hsl(var(--primary))"
-                    strokeWidth={2}
-                    dot={false}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-        </Card>
+          </Card>
+        ) : (
+          <ChartCard
+            title={t.revenue}
+            description={`${t.velocity}: ${kpis.velocity7dAvg.toFixed(1)} ${t.velocitySub.toLowerCase()}`}
+          >
+            <AreaChart
+              data={revenueData}
+              xKey="date"
+              series={[{ key: "eur", label: t.revenue }]}
+              yFormatter={(v) =>
+                `\u20AC${Math.round(v).toLocaleString()}`
+              }
+            />
+          </ChartCard>
+        )}
 
-        <Card padding="md" className="rounded-lg">
-          <h2 className="font-heading text-lg font-semibold">{t.checkIns}</h2>
-          {checkInData.every((d) => d.count === 0) ? (
+        {checkInData.every((d) => d.count === 0) ? (
+          <Card padding="md" className="rounded-lg">
+            <h2 className="font-heading text-sm font-semibold">{t.checkIns}</h2>
             <p className="mt-8 text-center text-sm text-muted-foreground">
               {t.noData}
             </p>
-          ) : (
-            <div className="mt-4 h-56">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={checkInData} margin={{ top: 4, right: 12, bottom: 4, left: 0 }}>
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke="currentColor"
-                    className="text-border"
-                  />
-                  <XAxis
-                    dataKey="date"
-                    stroke="currentColor"
-                    className="text-muted-foreground"
-                    fontSize={11}
-                  />
-                  <YAxis
-                    stroke="currentColor"
-                    className="text-muted-foreground"
-                    fontSize={11}
-                    allowDecimals={false}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      background: "hsl(var(--background))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: 8,
-                      fontSize: 12,
-                    }}
-                  />
-                  <Bar
-                    dataKey="count"
-                    fill="hsl(var(--accent))"
-                    radius={[4, 4, 0, 0]}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-        </Card>
+          </Card>
+        ) : (
+          <ChartCard title={t.checkIns}>
+            <BarChart
+              data={checkInData}
+              xKey="date"
+              series={[{ key: "count", label: t.checkIns, color: "#d4a017" }]}
+            />
+          </ChartCard>
+        )}
       </div>
 
       {/* Sell-through per active event */}

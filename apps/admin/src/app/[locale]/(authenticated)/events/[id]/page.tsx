@@ -21,6 +21,8 @@ import { Badge, Card } from "@dbc/ui";
 import { getEvent, togglePublish, duplicateEvent } from "@/actions/events";
 import { getEventChecklist } from "@/actions/checklist";
 import { getLiveEventStats } from "@/actions/live-event";
+import { StatCard } from "@/components/stat-card";
+import { StatGrid } from "@/components/stat-grid";
 import { PageHeader } from "@/components/page-header";
 import { DeleteEventButton } from "./delete-button";
 
@@ -51,6 +53,19 @@ export default async function EventDetailPage({
   const revenueTarget = event.sales_target_revenue_cents;
   const ticketsSoldForTarget = liveStats.totalTickets;
   const revenueForTarget = liveStats.revenueCents;
+
+  // Days-until computation (server component — Date.now is fine here)
+  // eslint-disable-next-line react-hooks/purity
+  const nowMs = Date.now();
+  const daysUntil = Math.ceil(
+    (new Date(event.starts_at).getTime() - nowMs) / 86400000
+  );
+  const daysLabel =
+    daysUntil > 0
+      ? `${daysUntil} day${daysUntil === 1 ? "" : "s"}`
+      : daysUntil === 0
+        ? "Today"
+        : `${Math.abs(daysUntil)} day${Math.abs(daysUntil) === 1 ? "" : "s"} ago`;
   const ticketProgressPct = ticketTarget && ticketTarget > 0
     ? Math.min(100, Math.round((ticketsSoldForTarget / ticketTarget) * 100))
     : null;
@@ -120,6 +135,33 @@ export default async function EventDetailPage({
             {event.event_type}
           </span>
         </div>
+      </div>
+
+      {/* Event KPIs — 4 cards */}
+      <div className="mt-8">
+        <StatGrid cols={4}>
+          <StatCard
+            label="Tickets sold"
+            value={liveStats.totalTickets.toLocaleString(locale)}
+            sub={
+              event.capacity
+                ? `of ${event.capacity.toLocaleString(locale)} capacity`
+                : undefined
+            }
+          />
+          <StatCard
+            label="Revenue"
+            value={`\u20AC${(liveStats.revenueCents / 100).toLocaleString(locale, { maximumFractionDigits: 0 })}`}
+          />
+          <StatCard
+            label="Checked in"
+            value={`${liveStats.checkedIn.toLocaleString(locale)} (${liveStats.checkedInPct}%)`}
+          />
+          <StatCard
+            label={daysUntil >= 0 ? "Starts in" : "Ended"}
+            value={daysLabel}
+          />
+        </StatGrid>
       </div>
 
       {/* Event Info */}

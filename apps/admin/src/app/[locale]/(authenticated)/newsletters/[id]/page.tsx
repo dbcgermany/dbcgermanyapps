@@ -7,6 +7,7 @@ import {
 } from "@/actions/newsletters";
 import { PageHeader } from "@/components/page-header";
 import { StatCard } from "@/components/stat-card";
+import { StatGrid } from "@/components/stat-grid";
 import { NewsletterComposer } from "../composer";
 
 export default async function NewsletterEditPage({
@@ -46,23 +47,29 @@ export default async function NewsletterEditPage({
           <h2 className="font-heading text-lg font-semibold">
             Delivery analytics
           </h2>
-          <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <StatCard label="Delivered" value={String(stats.delivered)} dense />
-            <StatCard
-              label="Opened"
-              value={`${stats.opened} (${stats.openRate}%)`}
-              dense
-            />
-            <StatCard
-              label="Clicked"
-              value={`${stats.clicked} (${stats.clickRate}%)`}
-              dense
-            />
-            <StatCard
-              label="Bounced / Failed"
-              value={String(stats.bounced)}
-              dense
-            />
+          <div className="mt-3">
+            <StatGrid cols={4}>
+              <StatCard
+                label="Delivered"
+                value={String(stats.delivered)}
+                dense
+              />
+              <StatCard
+                label="Opened"
+                value={`${stats.opened} (${stats.openRate}%)`}
+                dense
+              />
+              <StatCard
+                label="Clicked"
+                value={`${stats.clicked} (${stats.clickRate}%)`}
+                dense
+              />
+              <StatCard
+                label="Bounced / Failed"
+                value={String(stats.bounced)}
+                dense
+              />
+            </StatGrid>
           </div>
           {stats.unsubscribed > 0 && (
             <p className="mt-2 text-xs text-muted-foreground">

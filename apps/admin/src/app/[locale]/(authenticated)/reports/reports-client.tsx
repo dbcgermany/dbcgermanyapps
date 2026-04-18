@@ -2,6 +2,13 @@
 
 import { Badge } from "@dbc/ui";
 import { useRouter } from "next/navigation";
+import {
+  BarChart,
+  DonutChart,
+  ChartCard,
+  ChartLegend,
+  CHART_COLORS,
+} from "@/components/charts";
 import type {
   OrdersReportRow,
   AttendeesReportRow,
@@ -457,6 +464,71 @@ export function ReportsClient({
         </div>
       </div>
 
+      {/* Charts overview — visual summary above the tables */}
+      {(() => {
+        // Orders by status donut data
+        const statusCounts = new Map<string, number>();
+        for (const o of orders) {
+          statusCounts.set(o.status, (statusCounts.get(o.status) ?? 0) + 1);
+        }
+        const statusData = [...statusCounts.entries()].map(([name, value], i) => ({
+          name: name.charAt(0).toUpperCase() + name.slice(1),
+          value,
+          color: CHART_COLORS[i % CHART_COLORS.length],
+        }));
+
+        // Revenue by event bar data (top 10 by revenue)
+        const revenueBarData = revenueByEvent
+          .slice(0, 10)
+          .map((r) => ({
+            event:
+              r.eventTitle.length > 22
+                ? r.eventTitle.slice(0, 22) + "…"
+                : r.eventTitle,
+            revenue: r.revenueCents / 100,
+          }));
+
+        if (orders.length === 0 && revenueByEvent.length === 0) return null;
+
+        return (
+          <div className="grid gap-4 lg:grid-cols-2">
+            {statusData.length > 0 && (
+              <div>
+                <ChartCard title={`${t.ordersSection} — status`} height={260}>
+                  <DonutChart
+                    data={statusData}
+                    centerLabel={t.ordersSection}
+                    centerValue={orders.length.toLocaleString(locale)}
+                  />
+                </ChartCard>
+                <ChartLegend
+                  items={statusData.map((d) => ({
+                    name: d.name,
+                    color: d.color,
+                    value: String(d.value),
+                  }))}
+                />
+              </div>
+            )}
+            {revenueBarData.length > 0 && (
+              <ChartCard
+                title={t.revenueSection}
+                description="Top 10 events"
+                height={320}
+              >
+                <BarChart
+                  data={revenueBarData}
+                  xKey="event"
+                  series={[{ key: "revenue", label: t.revenue }]}
+                  yFormatter={(v) => `\u20AC${Math.round(v).toLocaleString()}`}
+                  horizontal
+                />
+              </ChartCard>
+            )}
+          </div>
+        );
+      })()}
+
       {/* Orders section */}
       <ReportSection
         title={t.ordersSection}
@@ -661,6 +733,26 @@ export function ReportsClient({
           </table>
         )}
       </ReportSection>
+
+      {/* Coupon performance chart */}
+      {coupons.length > 0 && (
+        <ChartCard
+          title={t.couponsSection}
+          description={`${coupons.length} code${coupons.length === 1 ? "" : "s"} used`}
+          height={Math.max(200, coupons.length * 30 + 40)}
+        >
+          <BarChart
+            data={coupons.slice(0, 10).map((c) => ({
+              code: c.code,
+              revenue: c.totalRevenueCents / 100,
+            }))}
+            xKey="code"
+            series={[{ key: "revenue", label: t.revenueDriven }]}
+            yFormatter={(v) => `\u20AC${Math.round(v).toLocaleString()}`}
+            horizontal
+          />
+        </ChartCard>
+      )}
 
       {/* Coupon performance section */}
       <ReportSection
