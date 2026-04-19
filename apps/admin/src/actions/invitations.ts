@@ -3,6 +3,13 @@
 import { createServerClient, requireRole } from "@dbc/supabase/server";
 import { sendTicketEmail } from "@dbc/email";
 import { revalidatePath } from "next/cache";
+import {
+  GENDER_VALUES,
+  TITLE_VALUES,
+  impliedGenderFromTitle,
+  type Gender,
+  type Title,
+} from "@dbc/ui";
 
 export type DeliveryMode = "ticket_only" | "ticket_with_letter";
 export type AcquisitionType = "invited" | "assigned";
@@ -15,6 +22,7 @@ export interface InvitationInput {
   email: string;
   country?: string | null;
   occupation?: string | null;
+  birthday?: string | null;
   extraCategoryTags?: string[];
   sendEmail?: boolean;
   note?: string;
@@ -45,8 +53,17 @@ export async function createInvitation(input: InvitationInput) {
   const extraTags = (input.extraCategoryTags ?? [])
     .map((t) => t.trim())
     .filter(Boolean);
-  const gender = input.gender?.trim() || null;
-  const title = input.title?.trim() || null;
+  const rawTitle = input.title?.trim() || null;
+  const title = rawTitle && (TITLE_VALUES as readonly string[]).includes(rawTitle)
+    ? (rawTitle as Title)
+    : null;
+  const rawGender = input.gender?.trim() || null;
+  const implied = impliedGenderFromTitle(title);
+  const gender: Gender | null = implied
+    ?? (rawGender && (GENDER_VALUES as readonly string[]).includes(rawGender)
+      ? (rawGender as Gender)
+      : null);
+  const birthday = input.birthday?.trim() || null;
   const customBody = input.customBody?.trim() || null;
   const sendEmail = input.sendEmail !== false;
   const deliveryMode: DeliveryMode =
@@ -93,11 +110,14 @@ export async function createInvitation(input: InvitationInput) {
     p_extra_category_slugs: extraTags,
   });
 
-  // Update contact title if provided (title column exists but RPC doesn't accept it)
-  if (title && contactId) {
+  // Update contact title / birthday if provided (columns exist but RPC doesn't accept them)
+  if (contactId && (title || birthday)) {
+    const contactPatch: Record<string, unknown> = {};
+    if (title) contactPatch.title = title;
+    if (birthday) contactPatch.birthday = birthday;
     await supabase
       .from("contacts")
-      .update({ title })
+      .update(contactPatch)
       .eq("id", contactId as string);
   }
 
@@ -115,7 +135,11 @@ export async function createInvitation(input: InvitationInput) {
       acquisition_type: acquisitionType,
       payment_method: null,
       recipient_email: email,
+      recipient_first_name: firstName || null,
+      recipient_last_name: lastName || null,
       recipient_name: fullName,
+      recipient_title: title,
+      recipient_gender: gender,
       locale,
     })
     .select("id")
@@ -138,6 +162,9 @@ export async function createInvitation(input: InvitationInput) {
       attendee_first_name: firstName || null,
       attendee_last_name: lastName || null,
       attendee_email: email,
+      attendee_title: title,
+      attendee_gender: gender,
+      attendee_birthday: birthday,
     })
     .select("id, ticket_token")
     .single();

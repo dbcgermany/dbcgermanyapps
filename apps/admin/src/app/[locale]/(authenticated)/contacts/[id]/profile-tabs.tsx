@@ -2,7 +2,20 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { ConfirmDialog, PhoneInput, CountrySelect } from "@dbc/ui";
+import {
+  ConfirmDialog,
+  PhoneInput,
+  CountrySelect,
+  GENDER_VALUES,
+  type Gender,
+} from "@dbc/ui";
+
+const GENDER_LABELS: Record<Gender, string> = {
+  female: "Female",
+  male: "Male",
+  non_binary: "Non-binary",
+  prefer_not_to_say: "Prefer not to say",
+};
 import {
   updateContactProfile,
   toggleContactCategory,
@@ -301,10 +314,11 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
             className={input}
           >
             <option value="">—</option>
-            <option value="female">Female</option>
-            <option value="male">Male</option>
-            <option value="diverse">Diverse</option>
-            <option value="prefer_not_to_say">Prefer not to say</option>
+            {GENDER_VALUES.map((v) => (
+              <option key={v} value={v}>
+                {GENDER_LABELS[v]}
+              </option>
+            ))}
           </select>
         </label>
       </div>

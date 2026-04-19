@@ -19,6 +19,11 @@ export interface TeamMember {
   id: string;
   slug: string;
   name: string;
+  first_name: string | null;
+  last_name: string | null;
+  gender: "female" | "male" | "non_binary" | "prefer_not_to_say" | null;
+  birthday: string | null;
+  country: string | null;
   role_en: string;
   role_de: string | null;
   role_fr: string | null;
@@ -36,7 +41,7 @@ export interface TeamMember {
 }
 
 const COLUMNS =
-  "id, slug, name, role_en, role_de, role_fr, bio_en, bio_de, bio_fr, photo_url, email, linkedin_url, sort_order, visibility, profile_id, created_at, updated_at" as const;
+  "id, slug, name, first_name, last_name, gender, birthday, country, role_en, role_de, role_fr, bio_en, bio_de, bio_fr, photo_url, email, linkedin_url, sort_order, visibility, profile_id, created_at, updated_at" as const;
 
 export async function getTeamMembers(): Promise<TeamMember[]> {
   await requireRole("manager");
@@ -108,13 +113,45 @@ export async function getStaffAccountsForLinking(excludeTeamMemberId?: string) {
   return staffWithEmail.filter((s) => !s.alreadyLinked);
 }
 
+type GenderEnum = "female" | "male" | "non_binary" | "prefer_not_to_say";
+const GENDER_ENUM: readonly GenderEnum[] = [
+  "female",
+  "male",
+  "non_binary",
+  "prefer_not_to_say",
+];
+
+function sanitizeGender(raw: string | null | undefined): GenderEnum | null {
+  if (!raw) return null;
+  return GENDER_ENUM.includes(raw as GenderEnum) ? (raw as GenderEnum) : null;
+}
+
+function readPersonFields(formData: FormData) {
+  const first = ((formData.get("first_name") as string) || "").trim();
+  const last = ((formData.get("last_name") as string) || "").trim();
+  const gender = sanitizeGender(formData.get("gender") as string | null);
+  const birthdayRaw = ((formData.get("birthday") as string) || "").trim();
+  const countryRaw = ((formData.get("country") as string) || "").trim();
+  return {
+    first_name: first || null,
+    last_name: last || null,
+    gender,
+    birthday: birthdayRaw || null,
+    country: countryRaw || null,
+    fullName: [first, last].filter(Boolean).join(" "),
+  };
+}
+
 export async function createTeamMember(formData: FormData) {
   const user = await requireRole("manager");
   const supabase = await createServerClient();
   const locale = (formData.get("locale") as string) || "en";
 
-  const name = ((formData.get("name") as string) || "").trim();
-  if (!name) return { error: "Name is required." };
+  const person = readPersonFields(formData);
+  if (!person.first_name || !person.last_name) {
+    return { error: "First and last name are required." };
+  }
+  const name = person.fullName;
   const manualSlug = ((formData.get("slug") as string) ?? "").trim();
   const base = manualSlug || slugify(name, "member");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -123,7 +160,11 @@ export async function createTeamMember(formData: FormData) {
   const rawProfileId = ((formData.get("profile_id") as string) || "").trim();
   const record = {
     slug,
-    name,
+    first_name: person.first_name,
+    last_name: person.last_name,
+    gender: person.gender,
+    birthday: person.birthday,
+    country: person.country,
     role_en: ((formData.get("role_en") as string) || "").trim(),
     role_de: ((formData.get("role_de") as string) || "").trim() || null,
     role_fr: ((formData.get("role_fr") as string) || "").trim() || null,
@@ -166,12 +207,19 @@ export async function updateTeamMember(id: string, formData: FormData) {
   const supabase = await createServerClient();
   const locale = (formData.get("locale") as string) || "en";
 
-  const name = ((formData.get("name") as string) || "").trim();
-  if (!name) return { error: "Name is required." };
+  const person = readPersonFields(formData);
+  if (!person.first_name || !person.last_name) {
+    return { error: "First and last name are required." };
+  }
+  const name = person.fullName;
 
   const rawProfileId = ((formData.get("profile_id") as string) || "").trim();
   const record: Record<string, unknown> = {
-    name,
+    first_name: person.first_name,
+    last_name: person.last_name,
+    gender: person.gender,
+    birthday: person.birthday,
+    country: person.country,
     role_en: ((formData.get("role_en") as string) || "").trim(),
     role_de: ((formData.get("role_de") as string) || "").trim() || null,
     role_fr: ((formData.get("role_fr") as string) || "").trim() || null,

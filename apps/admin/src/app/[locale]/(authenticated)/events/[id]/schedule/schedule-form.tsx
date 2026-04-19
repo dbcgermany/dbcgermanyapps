@@ -13,7 +13,8 @@ const T = {
     startTime: "Start time",
     endTime: "End time",
     sortOrder: "Sort order",
-    speakerName: "Speaker name (optional)",
+    speakerFirstName: "Speaker first name (optional)",
+    speakerLastName: "Speaker last name (optional)",
     speakerTitle: "Speaker title (optional)",
     speakerTitlePh: "Founder & CEO, DBC",
     adding: "Adding…",
@@ -28,7 +29,8 @@ const T = {
     startTime: "Startzeit",
     endTime: "Endzeit",
     sortOrder: "Sortierung",
-    speakerName: "Name Sprecher:in (optional)",
+    speakerFirstName: "Vorname Sprecher:in (optional)",
+    speakerLastName: "Nachname Sprecher:in (optional)",
     speakerTitle: "Titel Sprecher:in (optional)",
     speakerTitlePh: "Gründer & CEO, DBC",
     adding: "Wird hinzugefügt…",
@@ -43,7 +45,8 @@ const T = {
     startTime: "Heure de début",
     endTime: "Heure de fin",
     sortOrder: "Ordre",
-    speakerName: "Nom de l’intervenant (optionnel)",
+    speakerFirstName: "Prénom de l’intervenant (optionnel)",
+    speakerLastName: "Nom de l’intervenant (optionnel)",
     speakerTitle: "Titre de l’intervenant (optionnel)",
     speakerTitlePh: "Fondateur & CEO, DBC",
     adding: "Ajout…",
@@ -163,29 +166,43 @@ export function ScheduleForm({
       {/* Speaker */}
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
-          <label htmlFor="speaker_name" className="block text-xs text-muted-foreground mb-1">
-            {t.speakerName}
+          <label htmlFor="speaker_first_name" className="block text-xs text-muted-foreground mb-1">
+            {t.speakerFirstName}
           </label>
           <input
-            id="speaker_name"
-            name="speaker_name"
+            id="speaker_first_name"
+            name="speaker_first_name"
             type="text"
-            placeholder="Dr. Jean-Clément Diambilay"
+            placeholder="Jean-Clément"
+            autoComplete="given-name"
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
         <div>
-          <label htmlFor="speaker_title" className="block text-xs text-muted-foreground mb-1">
-            {t.speakerTitle}
+          <label htmlFor="speaker_last_name" className="block text-xs text-muted-foreground mb-1">
+            {t.speakerLastName}
           </label>
           <input
-            id="speaker_title"
-            name="speaker_title"
+            id="speaker_last_name"
+            name="speaker_last_name"
             type="text"
-            placeholder={t.speakerTitlePh}
+            placeholder="Diambilay"
+            autoComplete="family-name"
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
+      </div>
+      <div>
+        <label htmlFor="speaker_title" className="block text-xs text-muted-foreground mb-1">
+          {t.speakerTitle}
+        </label>
+        <input
+          id="speaker_title"
+          name="speaker_title"
+          type="text"
+          placeholder={t.speakerTitlePh}
+          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+        />
       </div>
 
       <button

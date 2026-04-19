@@ -50,6 +50,32 @@
       "noData": "No data available"
     }
   },
+  "person": {
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "email": "E-mail",
+    "title": "Civilité",
+    "gender": "Genre",
+    "birthday": "Date de naissance",
+    "country": "Pays",
+    "phone": "Téléphone",
+    "occupation": "Profession",
+    "address": "Adresse",
+    "moreDetails": "Plus de détails (facultatif)",
+    "genderFemale": "Femme",
+    "genderMale": "Homme",
+    "genderNonBinary": "Non-binaire",
+    "genderPreferNotToSay": "Préfère ne pas répondre",
+    "titleMr": "M.",
+    "titleMs": "Mme",
+    "titleMrs": "Mme",
+    "titleMx": "Mx.",
+    "titleDr": "Dr",
+    "titleProf": "Pr",
+    "titleExcellency": "S.E.",
+    "titleHonourable": "Hon.",
+    "titleRev": "Rév."
+  },
   "auth": {
     "login": {
       "title": "Sign in",

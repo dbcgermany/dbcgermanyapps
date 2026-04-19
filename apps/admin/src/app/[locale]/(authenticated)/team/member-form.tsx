@@ -2,8 +2,18 @@
 
 import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { AssetUpload } from "@dbc/ui";
+import {
+  AssetUpload,
+  BirthdayField,
+  CountrySelect,
+  NameFields,
+  TITLE_VALUES,
+  TitleGenderFields,
+  type Gender,
+  type Title,
+} from "@dbc/ui";
 import {
   createTeamMember,
   updateTeamMember,
@@ -26,7 +36,7 @@ const T = {
   en: {
     photoUploaded: "Photo uploaded.", saved: "Saved.",
     slug: "URL slug", slugHelp: "Shown in public profile URLs. Leave unchanged to keep the current one.",
-    name: "Name", email: "Email", linkedin: "LinkedIn URL", sortOrder: "Sort order",
+    email: "Email", linkedin: "LinkedIn URL", sortOrder: "Sort order",
     visibility: "Visibility",
     visPublic: "Public (shown on dbc-germany.com/team)",
     visInternal: "Internal (admin-only)",
@@ -43,7 +53,7 @@ const T = {
   de: {
     photoUploaded: "Foto hochgeladen.", saved: "Gespeichert.",
     slug: "URL-Kennung", slugHelp: "Teil der öffentlichen Profil-URL. Unverändert lassen, um die aktuelle beizubehalten.",
-    name: "Name", email: "E-Mail", linkedin: "LinkedIn-URL", sortOrder: "Sortierung",
+    email: "E-Mail", linkedin: "LinkedIn-URL", sortOrder: "Sortierung",
     visibility: "Sichtbarkeit",
     visPublic: "Öffentlich (sichtbar auf dbc-germany.com/team)",
     visInternal: "Intern (nur Admin)",
@@ -60,7 +70,7 @@ const T = {
   fr: {
     photoUploaded: "Photo téléversée.", saved: "Enregistré.",
     slug: "Identifiant d’URL", slugHelp: "Visible dans l’URL du profil public. Laissez inchangé pour conserver l’actuel.",
-    name: "Nom", email: "E-mail", linkedin: "URL LinkedIn", sortOrder: "Ordre",
+    email: "E-mail", linkedin: "URL LinkedIn", sortOrder: "Ordre",
     visibility: "Visibilité",
     visPublic: "Public (visible sur dbc-germany.com/team)",
     visInternal: "Interne (admin uniquement)",
@@ -88,9 +98,47 @@ export function TeamMemberForm({
   staffAccounts?: StaffAccount[];
 }) {
   const router = useRouter();
+  const tPerson = useTranslations("person");
   const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
 
   const [photoUrl, setPhotoUrl] = useState(initial?.photo_url ?? "");
+  const [firstName, setFirstName] = useState(initial?.first_name ?? "");
+  const [lastName, setLastName] = useState(initial?.last_name ?? "");
+  const [title, setTitle] = useState<Title | "">("");
+  const [gender, setGender] = useState<Gender | "">(
+    (initial?.gender as Gender | null | undefined) ?? ""
+  );
+  const [birthday, setBirthday] = useState(initial?.birthday ?? "");
+  const [country, setCountry] = useState(initial?.country ?? "");
+  const [showOptional, setShowOptional] = useState(
+    Boolean(
+      initial?.gender || initial?.birthday || initial?.country
+    )
+  );
+
+  const titleLabels = Object.fromEntries(
+    TITLE_VALUES.map((v) => [
+      v,
+      tPerson(
+        `title${v.charAt(0).toUpperCase() + v.slice(1)}` as
+          | "titleMr"
+          | "titleMs"
+          | "titleMrs"
+          | "titleMx"
+          | "titleDr"
+          | "titleProf"
+          | "titleExcellency"
+          | "titleHonourable"
+          | "titleRev"
+      ),
+    ])
+  ) as Record<Title, string>;
+  const genderLabels: Record<Gender, string> = {
+    female: tPerson("genderFemale"),
+    male: tPerson("genderMale"),
+    non_binary: tPerson("genderNonBinary"),
+    prefer_not_to_say: tPerson("genderPreferNotToSay"),
+  };
 
   const [state, formAction, isPending] = useActionState<FormState, FormData>(
     async (_prev, formData) => {
@@ -138,8 +186,60 @@ export function TeamMemberForm({
         </div>
       )}
 
+      <NameFields
+        firstName={firstName}
+        lastName={lastName}
+        onFirstNameChange={setFirstName}
+        onLastNameChange={setLastName}
+        firstNameLabel={tPerson("firstName")}
+        lastNameLabel={tPerson("lastName")}
+        required
+      />
+
+      <div>
+        <button
+          type="button"
+          onClick={() => setShowOptional(!showOptional)}
+          className="text-xs font-medium text-primary hover:text-primary/80"
+        >
+          {showOptional ? "− " : "+ "}
+          {tPerson("moreDetails")}
+        </button>
+        {showOptional && (
+          <div className="mt-3 space-y-3">
+            <TitleGenderFields
+              title={title}
+              gender={gender}
+              onTitleChange={setTitle}
+              onGenderChange={setGender}
+              titleLabel={tPerson("title")}
+              genderLabel={tPerson("gender")}
+              titleOptionLabels={titleLabels}
+              genderOptionLabels={genderLabels}
+            />
+            <div className="grid gap-3 sm:grid-cols-2">
+              <BirthdayField
+                value={birthday}
+                onChange={(iso) => setBirthday(iso ?? "")}
+                label={tPerson("birthday")}
+              />
+              <div>
+                <label className="mb-1 block text-sm font-medium">
+                  {tPerson("country")}
+                </label>
+                <CountrySelect
+                  locale={locale}
+                  name="country"
+                  value={country}
+                  onChange={(e) => setCountry(e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label={t.name} name="name" defaultValue={initial?.name ?? ""} required />
         <Field
           label={t.slug}
           name="slug"

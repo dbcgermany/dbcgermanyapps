@@ -2,21 +2,43 @@
 
 import { sendJobApplicationConfirm } from "@dbc/email";
 import { createServerClient, notifyAdmins } from "@dbc/supabase/server";
+import {
+  GENDER_VALUES,
+  TITLE_VALUES,
+  impliedGenderFromTitle,
+  type Gender,
+  type Title,
+} from "@dbc/ui";
 
 type Locale = "en" | "de" | "fr";
+
+function sanitizeGender(raw: string | null): Gender | null {
+  if (!raw) return null;
+  return (GENDER_VALUES as readonly string[]).includes(raw)
+    ? (raw as Gender)
+    : null;
+}
+
+function sanitizeTitle(raw: string | null): Title | null {
+  if (!raw) return null;
+  return (TITLE_VALUES as readonly string[]).includes(raw)
+    ? (raw as Title)
+    : null;
+}
 
 export async function submitJobApplication(
   _prev: { success?: boolean; error?: string } | null,
   formData: FormData
 ): Promise<{ success?: boolean; error?: string }> {
-  const applicantName = (formData.get("applicant_name") as string)?.trim() ?? "";
-  const applicantEmail = (formData.get("applicant_email") as string)?.trim() ?? "";
-  const coverLetter = (formData.get("cover_letter") as string)?.trim() ?? "";
+  const firstName = ((formData.get("applicant_first_name") as string) || "").trim();
+  const lastName = ((formData.get("applicant_last_name") as string) || "").trim();
+  const applicantEmail = ((formData.get("applicant_email") as string) || "").trim();
+  const coverLetter = ((formData.get("cover_letter") as string) || "").trim();
   const jobOfferId = (formData.get("job_offer_id") as string) ?? "";
   const locale = ((formData.get("locale") as string) || "en") as Locale;
 
-  if (!applicantName || !applicantEmail) {
-    return { error: "Please complete all required fields (name, email)." };
+  if (!firstName || !lastName || !applicantEmail) {
+    return { error: "Please complete all required fields (first name, last name, email)." };
   }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(applicantEmail)) {
     return { error: "Please enter a valid email address." };
@@ -25,12 +47,24 @@ export async function submitJobApplication(
     return { error: "Please include a cover letter." };
   }
 
+  const title = sanitizeTitle((formData.get("title") as string) || null);
+  const rawGender = sanitizeGender((formData.get("gender") as string) || null);
+  const gender = impliedGenderFromTitle(title) ?? rawGender;
+  const birthday = ((formData.get("birthday") as string) || "").trim() || null;
+  const country = ((formData.get("country") as string) || "").trim() || null;
+  const applicantName = [firstName, lastName].filter(Boolean).join(" ");
+
   const record = {
     job_offer_id: jobOfferId,
+    applicant_first_name: firstName,
+    applicant_last_name: lastName,
     applicant_name: applicantName,
     applicant_email: applicantEmail,
     applicant_phone:
       ((formData.get("applicant_phone") as string) || "").trim() || null,
+    applicant_gender: gender,
+    applicant_birthday: birthday,
+    applicant_country: country,
     cover_letter: coverLetter,
     resume_url:
       ((formData.get("resume_url") as string) || "").trim() || null,
@@ -51,7 +85,6 @@ export async function submitJobApplication(
     };
   }
 
-  // --- Fetch job title for emails / notifications ---
   const titleCol = `title_${locale}` as const;
   const { data: jobOffer } = await supabase
     .from("job_offers")
@@ -64,7 +97,6 @@ export async function submitJobApplication(
     jobOffer?.title_en ??
     "the open position";
 
-  // --- Send branded confirmation email to applicant ---
   try {
     if (process.env.RESEND_API_KEY) {
       await sendJobApplicationConfirm({
@@ -75,11 +107,9 @@ export async function submitJobApplication(
       });
     }
   } catch (err) {
-    // Non-blocking: log but don't fail the submission
     console.error("[job-apply] confirmation email failed:", err);
   }
 
-  // --- Notify admin dashboard ---
   try {
     await notifyAdmins(supabase, {
       type: "new_application",

@@ -2,6 +2,15 @@
 
 import { useState, useTransition, useEffect } from "react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
+import {
+  BirthdayField,
+  CountrySelect,
+  TITLE_VALUES,
+  TitleGenderFields,
+  type Gender,
+  type Title,
+} from "@dbc/ui";
 import { createInvitation } from "@/actions/invitations";
 
 const DEFAULT_INVITATION_BODY: Record<string, string> = {
@@ -102,9 +111,34 @@ export function InviteForm({
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [note, setNote] = useState("");
-  const [gender, setGender] = useState<string>("");
-  const [title, setTitle] = useState<string>("");
-  const [customTitle, setCustomTitle] = useState("");
+  const [gender, setGender] = useState<Gender | "">("");
+  const [title, setTitle] = useState<Title | "">("");
+  const [birthday, setBirthday] = useState<string>("");
+  const [country, setCountry] = useState<string>("");
+  const tPerson = useTranslations("person");
+  const titleLabels = Object.fromEntries(
+    TITLE_VALUES.map((v) => [
+      v,
+      tPerson(
+        `title${v.charAt(0).toUpperCase() + v.slice(1)}` as
+          | "titleMr"
+          | "titleMs"
+          | "titleMrs"
+          | "titleMx"
+          | "titleDr"
+          | "titleProf"
+          | "titleExcellency"
+          | "titleHonourable"
+          | "titleRev"
+      ),
+    ])
+  ) as Record<Title, string>;
+  const genderLabels: Record<Gender, string> = {
+    female: tPerson("genderFemale"),
+    male: tPerson("genderMale"),
+    non_binary: tPerson("genderNonBinary"),
+    prefer_not_to_say: tPerson("genderPreferNotToSay"),
+  };
   const [inviteLocale, setInviteLocale] = useState(
     locale === "de" || locale === "fr" ? locale : "en"
   );
@@ -136,7 +170,6 @@ export function InviteForm({
       toast.error(t.pickTier);
       return;
     }
-    const effectiveTitle = title === "custom" ? customTitle : title;
     startTransition(async () => {
       const result = await createInvitation({
         eventId,
@@ -147,7 +180,9 @@ export function InviteForm({
         note,
         locale: inviteLocale,
         gender: gender || undefined,
-        title: effectiveTitle || undefined,
+        title: title || undefined,
+        birthday: birthday || null,
+        country: country || null,
         customBody:
           deliveryMode === "ticket_with_letter" && showCustomBody
             ? customBody
@@ -165,7 +200,8 @@ export function InviteForm({
         setNote("");
         setGender("");
         setTitle("");
-        setCustomTitle("");
+        setBirthday("");
+        setCountry("");
         setShowCustomBody(false);
         setCustomBody(
           DEFAULT_INVITATION_BODY[inviteLocale] ?? DEFAULT_INVITATION_BODY.en
@@ -265,70 +301,53 @@ export function InviteForm({
         </select>
       </label>
 
-      {/* Gender + Title row */}
-      <div className="grid grid-cols-2 gap-3">
-        <label className="block">
-          <span className="mb-1 block text-sm font-medium">{t.gender}</span>
-          <select
-            value={gender}
-            onChange={(e) => setGender(e.target.value)}
-            className={input}
-          >
-            <option value="">{t.select}</option>
-            <option value="female">{t.female}</option>
-            <option value="male">{t.male}</option>
-            <option value="diverse">{t.diverse}</option>
-          </select>
-        </label>
-        <label className="block">
-          <span className="mb-1 block text-sm font-medium">
-            {t.titleOpt}
-          </span>
-          <select
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className={input}
-          >
-            <option value="">{t.none}</option>
-            <option value="mr">{t.mr}</option>
-            <option value="mrs">{t.mrs}</option>
-            <option value="ms">{t.ms}</option>
-            <option value="dr">{t.dr}</option>
-            <option value="prof">{t.prof}</option>
-            <option value="custom">{t.custom}</option>
-          </select>
-        </label>
-      </div>
-
-      {/* Custom title input */}
-      {title === "custom" && (
-        <label className="block">
-          <span className="mb-1 block text-sm font-medium">{t.customTitle}</span>
-          <input
-            value={customTitle}
-            onChange={(e) => setCustomTitle(e.target.value)}
-            className={input}
-            placeholder={t.customTitlePh}
-          />
-        </label>
-      )}
+      {/* Title + Gender (coupled for Mr/Ms/Mrs) */}
+      <TitleGenderFields
+        title={title}
+        gender={gender}
+        onTitleChange={setTitle}
+        onGenderChange={setGender}
+        titleLabel={tPerson("title")}
+        genderLabel={tPerson("gender")}
+        titleOptionLabels={titleLabels}
+        genderOptionLabels={genderLabels}
+      />
 
       <div className="grid grid-cols-2 gap-3">
         <label className="block">
-          <span className="mb-1 block text-sm font-medium">{t.firstName}</span>
+          <span className="mb-1 block text-sm font-medium">{tPerson("firstName")}</span>
           <input
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
             className={input}
+            autoComplete="given-name"
             required
           />
         </label>
         <label className="block">
-          <span className="mb-1 block text-sm font-medium">{t.lastName}</span>
+          <span className="mb-1 block text-sm font-medium">{tPerson("lastName")}</span>
           <input
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
             className={input}
+            autoComplete="family-name"
+            required
+          />
+        </label>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <BirthdayField
+          value={birthday}
+          onChange={(iso) => setBirthday(iso ?? "")}
+          label={tPerson("birthday")}
+        />
+        <label className="block">
+          <span className="mb-1 block text-sm font-medium">{tPerson("country")}</span>
+          <CountrySelect
+            locale={locale}
+            value={country}
+            onChange={(e) => setCountry(e.target.value)}
           />
         </label>
       </div>

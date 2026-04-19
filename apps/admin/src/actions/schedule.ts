@@ -4,7 +4,16 @@ import { createServerClient, requireRole } from "@dbc/supabase/server";
 import { revalidatePath } from "next/cache";
 
 const SCHEDULE_COLUMNS =
-  "id, event_id, title_en, title_de, title_fr, description_en, description_de, description_fr, starts_at, ends_at, speaker_name, speaker_title, speaker_image_url, sort_order" as const;
+  "id, event_id, title_en, title_de, title_fr, description_en, description_de, description_fr, starts_at, ends_at, speaker_name, speaker_first_name, speaker_last_name, speaker_title, speaker_image_url, sort_order" as const;
+
+function readSpeakerNames(formData: FormData) {
+  const first = ((formData.get("speaker_first_name") as string) || "").trim();
+  const last = ((formData.get("speaker_last_name") as string) || "").trim();
+  return {
+    first_name: first || null,
+    last_name: last || null,
+  };
+}
 
 export async function getScheduleItems(eventId: string) {
   await requireRole("manager");
@@ -38,7 +47,8 @@ export async function createScheduleItem(formData: FormData) {
     description_fr: formData.get("description_fr") as string,
     starts_at: formData.get("starts_at") as string,
     ends_at: formData.get("ends_at") as string,
-    speaker_name: formData.get("speaker_name") as string,
+    speaker_first_name: readSpeakerNames(formData).first_name,
+    speaker_last_name: readSpeakerNames(formData).last_name,
     speaker_title: formData.get("speaker_title") as string,
     sort_order: parseInt((formData.get("sort_order") as string) || "0", 10),
   };
@@ -83,7 +93,8 @@ export async function updateScheduleItem(
     description_fr: formData.get("description_fr") as string,
     starts_at: formData.get("starts_at") as string,
     ends_at: formData.get("ends_at") as string,
-    speaker_name: formData.get("speaker_name") as string,
+    speaker_first_name: readSpeakerNames(formData).first_name,
+    speaker_last_name: readSpeakerNames(formData).last_name,
     speaker_title: formData.get("speaker_title") as string,
     sort_order: parseInt((formData.get("sort_order") as string) || "0", 10),
   };

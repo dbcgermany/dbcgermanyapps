@@ -1,7 +1,20 @@
 "use client";
 
-import { useActionState } from "react";
-import { Button, FormField, Input, Textarea } from "@dbc/ui";
+import { useActionState, useState } from "react";
+import { useTranslations } from "next-intl";
+import {
+  BirthdayField,
+  Button,
+  CountrySelect,
+  FormField,
+  Input,
+  NameFields,
+  TITLE_VALUES,
+  Textarea,
+  TitleGenderFields,
+  type Gender,
+  type Title,
+} from "@dbc/ui";
 import { submitJobApplication } from "@/actions/job-apply";
 
 type Locale = "en" | "de" | "fr";
@@ -13,6 +26,12 @@ export function JobApplicationForm({
   locale: Locale;
   jobOfferId: string;
 }) {
+  const tPerson = useTranslations("person");
+  const [title, setTitle] = useState<Title | "">("");
+  const [gender, setGender] = useState<Gender | "">("");
+  const [birthday, setBirthday] = useState("");
+  const [country, setCountry] = useState("");
+
   const [state, formAction, isPending] = useActionState(
     async (
       prev: { success?: boolean; error?: string } | null,
@@ -25,9 +44,32 @@ export function JobApplicationForm({
     null
   );
 
+  const titleLabels = Object.fromEntries(
+    TITLE_VALUES.map((v) => [
+      v,
+      tPerson(
+        `title${v.charAt(0).toUpperCase() + v.slice(1)}` as
+          | "titleMr"
+          | "titleMs"
+          | "titleMrs"
+          | "titleMx"
+          | "titleDr"
+          | "titleProf"
+          | "titleExcellency"
+          | "titleHonourable"
+          | "titleRev"
+      ),
+    ])
+  ) as Record<Title, string>;
+  const genderLabels: Record<Gender, string> = {
+    female: tPerson("genderFemale"),
+    male: tPerson("genderMale"),
+    non_binary: tPerson("genderNonBinary"),
+    prefer_not_to_say: tPerson("genderPreferNotToSay"),
+  };
+
   const t = {
     en: {
-      name: "Your name",
       email: "Email",
       phone: "Phone (optional)",
       coverLetter: "Cover letter",
@@ -41,7 +83,6 @@ export function JobApplicationForm({
         "Thanks \u2014 your application has been submitted. We\u2019ll be in touch soon.",
     },
     de: {
-      name: "Ihr Name",
       email: "E-Mail",
       phone: "Telefon (optional)",
       coverLetter: "Anschreiben",
@@ -55,7 +96,6 @@ export function JobApplicationForm({
         "Danke \u2014 Ihre Bewerbung wurde eingereicht. Wir melden uns in K\u00fcrze.",
     },
     fr: {
-      name: "Votre nom",
       email: "E-mail",
       phone: "T\u00e9l\u00e9phone (optionnel)",
       coverLetter: "Lettre de motivation",
@@ -83,16 +123,48 @@ export function JobApplicationForm({
         </div>
       )}
 
+      <NameFields
+        firstNameName="applicant_first_name"
+        lastNameName="applicant_last_name"
+        firstNameLabel={tPerson("firstName")}
+        lastNameLabel={tPerson("lastName")}
+        required
+      />
+
+      <TitleGenderFields
+        title={title}
+        gender={gender}
+        onTitleChange={setTitle}
+        onGenderChange={setGender}
+        titleLabel={tPerson("title")}
+        genderLabel={tPerson("gender")}
+        titleOptionLabels={titleLabels}
+        genderOptionLabels={genderLabels}
+      />
+
       <div className="grid gap-4 sm:grid-cols-2">
-        <FormField label={t.name} required>
-          <Input name="applicant_name" type="text" required />
-        </FormField>
         <FormField label={t.email} required>
-          <Input name="applicant_email" type="email" required />
+          <Input name="applicant_email" type="email" required autoComplete="email" />
         </FormField>
         <FormField label={t.phone}>
-          <Input name="applicant_phone" type="tel" />
+          <Input name="applicant_phone" type="tel" autoComplete="tel" />
         </FormField>
+        <BirthdayField
+          value={birthday}
+          onChange={(iso) => setBirthday(iso ?? "")}
+          label={tPerson("birthday")}
+        />
+        <div>
+          <label className="mb-1 block text-sm font-medium">
+            {tPerson("country")}
+          </label>
+          <CountrySelect
+            locale={locale}
+            name="country"
+            value={country}
+            onChange={(e) => setCountry(e.target.value)}
+          />
+        </div>
         <FormField label={t.resume}>
           <Input
             name="resume_url"

@@ -55,3 +55,19 @@ export type { NotFoundHeroProps } from "./not-found-hero";
 export { Reveal, PageTransition } from "./motion";
 export type { RevealProps, RevealVariant, PageTransitionProps } from "./motion";
 export { PageBack } from "./page-back";
+export {
+  GENDER_VALUES,
+  TITLE_VALUES,
+  impliedGenderFromTitle,
+} from "./person-fields";
+export type { Gender, Title } from "./person-fields";
+export {
+  NameFields,
+  TitleGenderFields,
+  BirthdayField,
+} from "./person-fields-inputs";
+export type {
+  NameFieldsProps,
+  TitleGenderFieldsProps,
+  BirthdayFieldProps,
+} from "./person-fields-inputs";

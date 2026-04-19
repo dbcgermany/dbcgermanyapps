@@ -4,7 +4,7 @@ import { createServerClient, requireRole } from "@dbc/supabase/server";
 import { revalidatePath } from "next/cache";
 
 const SPONSOR_COLUMNS =
-  "id, event_id, company_name, contact_name, contact_email, contact_phone, tier, deal_value_cents, currency, status, logo_url, website_url, deliverables, notes, sort_order, created_by, created_at" as const;
+  "id, event_id, company_name, contact_name, contact_first_name, contact_last_name, contact_email, contact_phone, tier, deal_value_cents, currency, status, logo_url, website_url, deliverables, notes, sort_order, created_by, created_at" as const;
 
 export async function getEventSponsors(eventId: string) {
   await requireRole("manager");
@@ -22,18 +22,17 @@ export async function getEventSponsors(eventId: string) {
 
 async function upsertSponsorContact(
   supabase: Awaited<ReturnType<typeof createServerClient>>,
-  contactName: string | null,
+  firstName: string | null,
+  lastName: string | null,
   contactEmail: string | null,
   contactPhone: string | null
 ): Promise<string | null> {
   if (!contactEmail?.trim()) return null;
-  const [firstName, ...rest] = (contactName ?? "").trim().split(/\s+/);
-  const lastName = rest.join(" ") || null;
   const { data: contactId } = await supabase.rpc(
     "upsert_contact_from_checkout",
     {
       p_email: contactEmail.trim().toLowerCase(),
-      p_first_name: firstName || null,
+      p_first_name: firstName,
       p_last_name: lastName,
       p_country: null,
       p_gender: null,
@@ -49,6 +48,15 @@ async function upsertSponsorContact(
       .eq("id", contactId as string);
   }
   return (contactId as string) ?? null;
+}
+
+function readSponsorContact(formData: FormData) {
+  const first = ((formData.get("contact_first_name") as string) || "").trim();
+  const last = ((formData.get("contact_last_name") as string) || "").trim();
+  return {
+    first_name: first || null,
+    last_name: last || null,
+  };
 }
 
 export async function createSponsor(eventId: string, formData: FormData) {
@@ -67,12 +75,13 @@ export async function createSponsor(eventId: string, formData: FormData) {
     .maybeSingle();
   const nextSort = ((maxRow?.sort_order as number | undefined) ?? 0) + 10;
 
-  const contactName = (formData.get("contact_name") as string) || null;
+  const contactNames = readSponsorContact(formData);
   const contactEmail = (formData.get("contact_email") as string) || null;
   const contactPhone = (formData.get("contact_phone") as string) || null;
   const contactId = await upsertSponsorContact(
     supabase,
-    contactName,
+    contactNames.first_name,
+    contactNames.last_name,
     contactEmail,
     contactPhone
   );
@@ -80,7 +89,8 @@ export async function createSponsor(eventId: string, formData: FormData) {
   const sponsorData = {
     event_id: eventId,
     company_name: companyName,
-    contact_name: contactName,
+    contact_first_name: contactNames.first_name,
+    contact_last_name: contactNames.last_name,
     contact_email: contactEmail,
     contact_phone: contactPhone,
     tier: formData.get("tier") as string,
@@ -128,19 +138,21 @@ export async function updateSponsor(id: string, formData: FormData) {
   const locale = formData.get("locale") as string;
   const companyName = (formData.get("company_name") as string).trim();
 
-  const contactName = (formData.get("contact_name") as string) || null;
+  const contactNames = readSponsorContact(formData);
   const contactEmail = (formData.get("contact_email") as string) || null;
   const contactPhone = (formData.get("contact_phone") as string) || null;
   const contactId = await upsertSponsorContact(
     supabase,
-    contactName,
+    contactNames.first_name,
+    contactNames.last_name,
     contactEmail,
     contactPhone
   );
 
   const sponsorData = {
     company_name: companyName,
-    contact_name: contactName,
+    contact_first_name: contactNames.first_name,
+    contact_last_name: contactNames.last_name,
     contact_email: contactEmail,
     contact_phone: contactPhone,
     tier: formData.get("tier") as string,

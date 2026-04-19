@@ -65,11 +65,18 @@ async function verifyTurnstile(token: string | undefined): Promise<boolean> {
   }
 }
 
+import type { Gender, Title } from "@dbc/ui";
+import { impliedGenderFromTitle } from "@dbc/ui";
+
 interface AttendeeInfo {
-  name: string;
+  first_name: string;
+  last_name: string;
   email: string;
   country: string;
   tierId: string;
+  title?: Title | "";
+  gender?: Gender | "";
+  birthday?: string | null;
 }
 
 interface CheckoutInput {
@@ -81,12 +88,17 @@ interface CheckoutInput {
   source?: string;
 }
 
-function splitName(full: string): { first: string | null; last: string | null } {
-  const trimmed = full.trim();
-  if (!trimmed) return { first: null, last: null };
-  const parts = trimmed.split(/\s+/);
-  if (parts.length === 1) return { first: parts[0], last: null };
-  return { first: parts[0], last: parts.slice(1).join(" ") };
+function composeName(first: string, last: string): string {
+  return [first, last].map((s) => s.trim()).filter(Boolean).join(" ");
+}
+
+function effectiveGender(
+  title: Title | "" | undefined,
+  gender: Gender | "" | undefined
+): Gender | null {
+  const implied = impliedGenderFromTitle(title ? (title as Title) : null);
+  if (implied) return implied;
+  return gender ? (gender as Gender) : null;
 }
 
 export async function createCheckoutSession(input: CheckoutInput) {
@@ -286,14 +298,17 @@ export async function createCheckoutSession(input: CheckoutInput) {
 
   // 8a. Upsert contacts for every attendee (country + demographics are captured
   // at checkout). The primary contact for the order is the buyer (attendee 0).
-  const buyerSplit = splitName(input.attendees[0].name);
+  const buyer = input.attendees[0];
+  const buyerFirst = buyer.first_name.trim() || null;
+  const buyerLast = buyer.last_name.trim() || null;
+  const buyerFullName = composeName(buyer.first_name, buyer.last_name);
   const { data: buyerContactId } = await supabase.rpc(
     "upsert_contact_from_checkout",
     {
       p_email: buyerEmail,
-      p_first_name: buyerSplit.first,
-      p_last_name: buyerSplit.last,
-      p_country: input.attendees[0].country || null,
+      p_first_name: buyerFirst,
+      p_last_name: buyerLast,
+      p_country: buyer.country || null,
       p_auto_category_slug: "event_attendees",
     }
   );
@@ -312,7 +327,9 @@ export async function createCheckoutSession(input: CheckoutInput) {
       acquisition_type: "purchased",
       coupon_id: couponId,
       recipient_email: buyerEmail,
-      recipient_name: input.attendees[0].name,
+      recipient_first_name: buyerFirst,
+      recipient_last_name: buyerLast,
+      recipient_name: buyerFullName,
       locale: input.locale,
       source: input.source ?? null,
       reservation_expires_at:
@@ -335,15 +352,21 @@ export async function createCheckoutSession(input: CheckoutInput) {
   const ticketRows: Array<Record<string, unknown>> = [];
   for (const attendee of input.attendees) {
     const attendeeEmail = attendee.email.trim().toLowerCase();
-    const split = splitName(attendee.name);
+    const first = attendee.first_name.trim() || null;
+    const last = attendee.last_name.trim() || null;
+    const fullName = composeName(attendee.first_name, attendee.last_name);
+    const gender = effectiveGender(attendee.title, attendee.gender);
+    const title = attendee.title ? attendee.title : null;
+    const birthday = attendee.birthday && attendee.birthday.trim() ? attendee.birthday : null;
+
     const isBuyer = attendeeEmail === buyerEmail;
     const contactId = isBuyer
       ? (buyerContactId as string | null)
       : ((
           await supabase.rpc("upsert_contact_from_checkout", {
             p_email: attendeeEmail,
-            p_first_name: split.first,
-            p_last_name: split.last,
+            p_first_name: first,
+            p_last_name: last,
             p_country: attendee.country || null,
             p_auto_category_slug: "event_attendees",
           })
@@ -355,10 +378,13 @@ export async function createCheckoutSession(input: CheckoutInput) {
       tier_id: attendee.tierId,
       buyer_id: user?.id ?? null,
       contact_id: contactId,
-      attendee_name: attendee.name,
-      attendee_first_name: split.first,
-      attendee_last_name: split.last,
+      attendee_name: fullName,
+      attendee_first_name: first,
+      attendee_last_name: last,
       attendee_email: attendeeEmail,
+      attendee_title: title,
+      attendee_gender: gender,
+      attendee_birthday: birthday,
     });
   }
 
@@ -400,7 +426,7 @@ export async function createCheckoutSession(input: CheckoutInput) {
         currency: "eur" as const,
         product_data: {
           name: tier.name_en,
-          description: `Attendee: ${attendee.name}`,
+          description: `Attendee: ${composeName(attendee.first_name, attendee.last_name)}`,
         },
         unit_amount: tier.price_cents,
       },

@@ -2,7 +2,17 @@
 
 import { useEffect, useRef, useState, useActionState } from "react";
 import Script from "next/script";
-import { CountrySelect } from "@dbc/ui";
+import { useTranslations } from "next-intl";
+import {
+  CountrySelect,
+  NameFields,
+  TitleGenderFields,
+  BirthdayField,
+  TITLE_VALUES,
+  GENDER_VALUES,
+  type Gender,
+  type Title,
+} from "@dbc/ui";
 import { createCheckoutSession } from "@/actions/purchase";
 
 interface Tier {
@@ -12,10 +22,15 @@ interface Tier {
 }
 
 interface Attendee {
-  name: string;
+  first_name: string;
+  last_name: string;
   email: string;
   country: string;
   tierId: string;
+  title: Title | "";
+  gender: Gender | "";
+  birthday: string;
+  showOptional: boolean;
 }
 
 declare global {
@@ -37,6 +52,20 @@ declare global {
   }
 }
 
+function emptyAttendee(tierId: string): Attendee {
+  return {
+    first_name: "",
+    last_name: "",
+    email: "",
+    country: "",
+    tierId,
+    title: "",
+    gender: "",
+    birthday: "",
+    showOptional: false,
+  };
+}
+
 export function CheckoutForm({
   eventSlug,
   locale,
@@ -52,13 +81,40 @@ export function CheckoutForm({
   turnstileSiteKey: string | null;
   source?: string | null;
 }) {
+  const tPerson = useTranslations("person");
   const [attendees, setAttendees] = useState<Attendee[]>([
-    { name: "", email: "", country: "", tierId: tiers[0]?.id ?? "" },
+    emptyAttendee(tiers[0]?.id ?? ""),
   ]);
   const [couponCode, setCouponCode] = useState("");
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const turnstileRef = useRef<HTMLDivElement>(null);
   const turnstileWidgetIdRef = useRef<string | null>(null);
+
+  const titleLabels = Object.fromEntries(
+    TITLE_VALUES.map((v) => [
+      v,
+      tPerson(
+        `title${v.charAt(0).toUpperCase() + v.slice(1)}` as
+          | "titleMr"
+          | "titleMs"
+          | "titleMrs"
+          | "titleMx"
+          | "titleDr"
+          | "titleProf"
+          | "titleExcellency"
+          | "titleHonourable"
+          | "titleRev"
+      ),
+    ])
+  ) as Record<Title, string>;
+  const genderLabels: Record<Gender, string> = {
+    female: tPerson("genderFemale"),
+    male: tPerson("genderMale"),
+    non_binary: tPerson("genderNonBinary"),
+    prefer_not_to_say: tPerson("genderPreferNotToSay"),
+  };
+  // Reference GENDER_VALUES to keep the enum SSOT bundled and tree-shake-proof.
+  void GENDER_VALUES;
 
   useEffect(() => {
     if (!turnstileSiteKey) return;
@@ -95,18 +151,20 @@ export function CheckoutForm({
   const [state, formAction, isPending] = useActionState(
     async () => {
       for (let i = 0; i < attendees.length; i++) {
+        const a = attendees[i];
         if (
-          !attendees[i].name.trim() ||
-          !attendees[i].email.trim() ||
-          !attendees[i].country
+          !a.first_name.trim() ||
+          !a.last_name.trim() ||
+          !a.email.trim() ||
+          !a.country
         ) {
           return {
             error:
               locale === "de"
-                ? `Bitte f\u00fcllen Sie Name, E-Mail und Land f\u00fcr Ticket ${i + 1} aus.`
+                ? `Bitte f\u00fcllen Sie Vorname, Nachname, E-Mail und Land f\u00fcr Ticket ${i + 1} aus.`
                 : locale === "fr"
-                  ? `Veuillez renseigner le nom, l'e-mail et le pays pour le billet ${i + 1}.`
-                  : `Please fill in name, email and country for ticket ${i + 1}.`,
+                  ? `Veuillez renseigner le pr\u00e9nom, le nom, l'e-mail et le pays pour le billet ${i + 1}.`
+                  : `Please fill in first name, last name, email and country for ticket ${i + 1}.`,
           };
         }
       }
@@ -124,14 +182,22 @@ export function CheckoutForm({
 
       const result = await createCheckoutSession({
         eventSlug,
-        attendees,
+        attendees: attendees.map((a) => ({
+          first_name: a.first_name.trim(),
+          last_name: a.last_name.trim(),
+          email: a.email.trim(),
+          country: a.country,
+          tierId: a.tierId,
+          title: a.title || undefined,
+          gender: a.gender || undefined,
+          birthday: a.birthday || null,
+        })),
         couponCode: couponCode.trim() || undefined,
         locale,
         turnstileToken: turnstileToken ?? undefined,
         source: source ?? undefined,
       });
 
-      // Reset widget after submission so retries get a fresh token.
       if (window.turnstile && turnstileWidgetIdRef.current) {
         window.turnstile.reset(turnstileWidgetIdRef.current);
         setTurnstileToken(null);
@@ -144,10 +210,7 @@ export function CheckoutForm({
 
   function addAttendee() {
     if (attendees.length >= maxPerOrder) return;
-    setAttendees([
-      ...attendees,
-      { name: "", email: "", country: "", tierId: tiers[0]?.id ?? "" },
-    ]);
+    setAttendees([...attendees, emptyAttendee(tiers[0]?.id ?? "")]);
   }
 
   function removeAttendee(index: number) {
@@ -155,17 +218,16 @@ export function CheckoutForm({
     setAttendees(attendees.filter((_, i) => i !== index));
   }
 
-  function updateAttendee(
+  function updateAttendee<K extends keyof Attendee>(
     index: number,
-    field: keyof Attendee,
-    value: string
+    field: K,
+    value: Attendee[K]
   ) {
     setAttendees(
       attendees.map((a, i) => (i === index ? { ...a, [field]: value } : a))
     );
   }
 
-  // Compute subtotal
   const tierMap = new Map(tiers.map((t) => [t.id, t]));
   const subtotalCents = attendees.reduce((sum, a) => {
     const tier = tierMap.get(a.tierId);
@@ -224,7 +286,7 @@ export function CheckoutForm({
               </div>
               <div>
                 <label className="block text-xs text-muted-foreground mb-1">
-                  {locale === "de" ? "Land" : locale === "fr" ? "Pays" : "Country"}
+                  {tPerson("country")}
                 </label>
                 <CountrySelect
                   locale={locale}
@@ -243,36 +305,69 @@ export function CheckoutForm({
                   }
                 />
               </div>
-              <div>
-                <label className="block text-xs text-muted-foreground mb-1">
-                  {locale === "de" ? "Name" : locale === "fr" ? "Nom" : "Name"}
-                </label>
-                <input
-                  type="text"
-                  required
-                  autoComplete="name"
-                  value={attendee.name}
-                  onChange={(e) =>
-                    updateAttendee(index, "name", e.target.value)
-                  }
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                />
-              </div>
-              <div>
-                <label className="block text-xs text-muted-foreground mb-1">
-                  {locale === "de" ? "E-Mail" : locale === "fr" ? "E-mail" : "Email"}
-                </label>
-                <input
-                  type="email"
-                  required
-                  autoComplete="email"
-                  value={attendee.email}
-                  onChange={(e) =>
-                    updateAttendee(index, "email", e.target.value)
-                  }
-                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                />
-              </div>
+            </div>
+
+            <div className="mt-3">
+              <NameFields
+                firstName={attendee.first_name}
+                lastName={attendee.last_name}
+                onFirstNameChange={(v) => updateAttendee(index, "first_name", v)}
+                onLastNameChange={(v) => updateAttendee(index, "last_name", v)}
+                firstNameLabel={tPerson("firstName")}
+                lastNameLabel={tPerson("lastName")}
+                required
+              />
+            </div>
+
+            <div className="mt-3">
+              <label className="block text-xs text-muted-foreground mb-1">
+                {tPerson("email")}
+              </label>
+              <input
+                type="email"
+                required
+                autoComplete="email"
+                value={attendee.email}
+                onChange={(e) =>
+                  updateAttendee(index, "email", e.target.value)
+                }
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+            </div>
+
+            <div className="mt-4">
+              <button
+                type="button"
+                onClick={() =>
+                  updateAttendee(index, "showOptional", !attendee.showOptional)
+                }
+                className="text-xs font-medium text-primary hover:text-primary/80"
+              >
+                {attendee.showOptional ? "− " : "+ "}
+                {tPerson("moreDetails")}
+              </button>
+
+              {attendee.showOptional && (
+                <div className="mt-3 space-y-3">
+                  <TitleGenderFields
+                    title={attendee.title}
+                    gender={attendee.gender}
+                    onTitleChange={(v) => updateAttendee(index, "title", v)}
+                    onGenderChange={(v) => updateAttendee(index, "gender", v)}
+                    titleLabel={tPerson("title")}
+                    genderLabel={tPerson("gender")}
+                    titleOptionLabels={titleLabels}
+                    genderOptionLabels={genderLabels}
+                  />
+                  <BirthdayField
+                    value={attendee.birthday}
+                    onChange={(iso) =>
+                      updateAttendee(index, "birthday", iso ?? "")
+                    }
+                    label={tPerson("birthday")}
+                  />
+                </div>
+              )}
             </div>
           </div>
         ))}
@@ -316,10 +411,14 @@ export function CheckoutForm({
         <div className="mt-4 space-y-2 text-sm">
           {attendees.map((a, i) => {
             const tier = tierMap.get(a.tierId);
+            const fullName = [a.first_name, a.last_name]
+              .map((s) => s.trim())
+              .filter(Boolean)
+              .join(" ");
             return (
               <div key={i} className="flex justify-between">
                 <span className="text-muted-foreground">
-                  {tier?.name} {a.name && `\u2014 ${a.name}`}
+                  {tier?.name} {fullName && `\u2014 ${fullName}`}
                 </span>
                 <span>
                   {tier

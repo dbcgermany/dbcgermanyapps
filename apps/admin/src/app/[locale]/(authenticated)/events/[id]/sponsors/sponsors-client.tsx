@@ -9,6 +9,8 @@ interface Sponsor {
   id: string;
   company_name: string;
   contact_name: string | null;
+  contact_first_name: string | null;
+  contact_last_name: string | null;
   contact_email: string | null;
   contact_phone: string | null;
   tier: string;
@@ -68,7 +70,8 @@ const SP_T = {
     deleteConfirm: "Delete this sponsor?",
     addSponsor: "Add sponsor",
     companyName: "Company name *",
-    contactName: "Contact name",
+    contactFirstName: "Contact first name",
+    contactLastName: "Contact last name",
     contactEmail: "Contact email",
     phone: "Phone",
     dealValue: "Deal value (e.g. 5000.00)",
@@ -103,7 +106,8 @@ const SP_T = {
     deleteConfirm: "Diesen Sponsor löschen?",
     addSponsor: "Sponsor hinzufügen",
     companyName: "Firmenname *",
-    contactName: "Ansprechpartner:in",
+    contactFirstName: "Vorname",
+    contactLastName: "Nachname",
     contactEmail: "Kontakt-E-Mail",
     phone: "Telefon",
     dealValue: "Vertragswert (z. B. 5000.00)",
@@ -138,7 +142,8 @@ const SP_T = {
     deleteConfirm: "Supprimer ce sponsor ?",
     addSponsor: "Ajouter un sponsor",
     companyName: "Nom de la société *",
-    contactName: "Contact",
+    contactFirstName: "Prénom du contact",
+    contactLastName: "Nom du contact",
     contactEmail: "E-mail de contact",
     phone: "Téléphone",
     dealValue: "Valeur du contrat (ex. 5000.00)",
@@ -329,12 +334,19 @@ export function SponsorsClient({
               </select>
             </div>
           </div>
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2">
             <input
-              name="contact_name"
-              placeholder={t.contactName}
+              name="contact_first_name"
+              placeholder={t.contactFirstName}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             />
+            <input
+              name="contact_last_name"
+              placeholder={t.contactLastName}
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+            />
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
             <input
               name="contact_email"
               type="email"
