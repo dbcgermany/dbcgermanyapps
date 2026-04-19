@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { Card, Container, Eyebrow, Heading, Reveal, Section } from "@dbc/ui";
 import { createServerClient } from "@dbc/supabase/server";
 import { buildPageMetadata } from "@/lib/seo";
+import { JsonLd, personJsonLd } from "@/lib/json-ld";
 
 export const revalidate = 60;
 
@@ -104,8 +105,20 @@ export default async function TeamMemberPage({
     fr: "Toute l'équipe",
   }[l];
 
+  const personSchema = personJsonLd({
+    name: m.name,
+    role: role || null,
+    bio: bio || null,
+    imageUrl: m.photo_url,
+    slug: m.slug,
+    email: m.email,
+    linkedinUrl: m.linkedin_url,
+    locale: l,
+  });
+
   return (
     <Section>
+      <JsonLd data={personSchema} />
       <Container max="4xl">
         <Link
           href={`/${locale}/team`}
@@ -131,7 +144,7 @@ export default async function TeamMemberPage({
             ) : (
               <div
                 aria-hidden
-                className="flex h-40 w-40 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 via-primary/10 to-accent/20 font-heading text-4xl font-bold text-primary"
+                className="flex h-40 w-40 items-center justify-center rounded-full bg-linear-to-br from-primary/20 via-primary/10 to-accent/20 font-heading text-4xl font-bold text-primary"
               >
                 {initialsOf(m.name)}
               </div>

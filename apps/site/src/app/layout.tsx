@@ -4,7 +4,7 @@ import { ThemeProvider, CookieConsent } from "@dbc/ui";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { getCompanyInfo } from "@/lib/company-info";
-import { JsonLd, organizationJsonLd } from "@/lib/json-ld";
+import { JsonLd, organizationJsonLd, websiteJsonLd } from "@/lib/json-ld";
 import "./globals.css";
 
 const montserrat = Montserrat({
@@ -90,6 +90,7 @@ export default async function RootLayout({
 }>) {
   const company = await getCompanyInfo();
   const orgSchema = organizationJsonLd(company);
+  const siteSchema = websiteJsonLd();
 
   return (
     <html
@@ -99,6 +100,7 @@ export default async function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-background text-foreground font-body">
         {orgSchema && <JsonLd data={orgSchema} />}
+        <JsonLd data={siteSchema} />
         <ThemeProvider defaultTheme="system">
           {children}
           <CookieConsent

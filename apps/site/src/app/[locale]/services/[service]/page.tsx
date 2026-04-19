@@ -5,6 +5,7 @@ import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 import { Reveal } from "@dbc/ui";
 import { seoFromI18n } from "@/lib/seo";
+import { JsonLd, serviceJsonLd } from "@/lib/json-ld";
 import { DBC } from "@/lib/dbc-assets";
 
 const SERVICE_PAGE_KEY: Record<string, string> = {
@@ -66,8 +67,16 @@ export default async function ServiceDetailPage({
   const t = await getTranslations({ locale, namespace: "site" });
   const bullets = t.raw(`services.${service}.bullets`) as string[];
 
+  const serviceSchema = serviceJsonLd({
+    name: t(`services.${service}.title`),
+    description: t(`services.${service}.long`),
+    url: `https://dbc-germany.com/${locale}/services/${service}`,
+    image: SERVICE_PHOTOS[service as ValidService],
+  });
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
+      <JsonLd data={serviceSchema} />
       <Link
         href={`/${locale}/services`}
         className="text-sm text-muted-foreground hover:text-foreground"
@@ -160,9 +169,9 @@ export default async function ServiceDetailPage({
           />
           <div
             aria-hidden
-            className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/50 to-black/20"
+            className="absolute inset-0 bg-linear-to-t from-black/85 via-black/50 to-black/20"
           />
-          <div className="relative flex h-full min-h-[420px] flex-col justify-end p-8 text-white">
+          <div className="relative flex h-full min-h-105 flex-col justify-end p-8 text-white">
             <p className="text-xs font-semibold uppercase tracking-wider text-white/80">
               {t("services.eyebrow")}
             </p>

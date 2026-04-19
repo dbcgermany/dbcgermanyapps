@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { Reveal } from "@dbc/ui";
 import { createServerClient } from "@dbc/supabase/server";
 import { seoFromI18n } from "@/lib/seo";
+import { JsonLd, itemListJsonLd } from "@/lib/json-ld";
 import { DBC } from "@/lib/dbc-assets";
 
 export const revalidate = 60;
@@ -68,8 +69,19 @@ export default async function NewsIndexPage({
     };
   }
 
+  const listSchema =
+    posts.length > 0
+      ? itemListJsonLd(
+          posts.map((post) => ({
+            name: tFor(post).title,
+            url: `https://dbc-germany.com/${locale}/news/${post.slug}`,
+          }))
+        )
+      : null;
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
+      {listSchema && <JsonLd data={listSchema} />}
       <Reveal>
         <p className="text-xs font-semibold uppercase tracking-wider text-primary">
           {copy.eyebrow}

@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 import { Reveal } from "@dbc/ui";
 import { seoFromI18n } from "@/lib/seo";
+import { JsonLd, itemListJsonLd } from "@/lib/json-ld";
 import { getUpcomingEvents } from "@/lib/queries";
 
 export const revalidate = 60;
@@ -27,8 +28,25 @@ export default async function EventsPage({
   const ticketsUrl =
     process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://tickets.dbc-germany.com";
 
+  const l = (locale === "de" || locale === "fr" ? locale : "en") as
+    | "en"
+    | "de"
+    | "fr";
+  const listSchema =
+    events.length > 0
+      ? itemListJsonLd(
+          events.map((e) => ({
+            name:
+              ((e[`title_${l}` as keyof typeof e] as string) || e.title_en) ??
+              "",
+            url: `${ticketsUrl}/${locale}/events/${e.slug}`,
+          }))
+        )
+      : null;
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
+      {listSchema && <JsonLd data={listSchema} />}
       <Reveal>
         <div className="max-w-3xl">
           <p className="text-xs font-semibold uppercase tracking-wider text-primary">

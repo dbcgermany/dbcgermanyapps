@@ -10,6 +10,7 @@ import {
   Section,
 } from "@dbc/ui";
 import { seoFromI18n } from "@/lib/seo";
+import { JsonLd, itemListJsonLd } from "@/lib/json-ld";
 
 export const revalidate = 60;
 
@@ -98,8 +99,19 @@ export default async function CareersPage({
   const titleKey = `title_${l}` as keyof JobOffer;
   const descKey = `description_${l}` as keyof JobOffer;
 
+  const listSchema =
+    offers.length > 0
+      ? itemListJsonLd(
+          offers.map((job) => ({
+            name: (job[titleKey] as string) || job.title_en,
+            url: `https://dbc-germany.com/${locale}/careers/${job.id}`,
+          }))
+        )
+      : null;
+
   return (
     <Section>
+      {listSchema && <JsonLd data={listSchema} />}
       <Container max="4xl">
         <Reveal>
           <Eyebrow>{copy.eyebrow}</Eyebrow>

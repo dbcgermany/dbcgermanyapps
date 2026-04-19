@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { Card, Container, Eyebrow, Heading, Reveal, Section } from "@dbc/ui";
 import { createServerClient } from "@dbc/supabase/server";
 import { seoFromI18n } from "@/lib/seo";
+import { JsonLd, itemListJsonLd } from "@/lib/json-ld";
 
 export const revalidate = 60;
 
@@ -105,8 +106,19 @@ export default async function TeamPage({
     return en ?? "";
   }
 
+  const listSchema =
+    members.length > 0
+      ? itemListJsonLd(
+          members.map((m) => ({
+            name: m.name,
+            url: `https://dbc-germany.com/${locale}/team/${m.slug}`,
+          }))
+        )
+      : null;
+
   return (
     <Section>
+      {listSchema && <JsonLd data={listSchema} />}
       <Container max="5xl">
         <Reveal>
           <Eyebrow>{copy.eyebrow}</Eyebrow>

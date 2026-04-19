@@ -10,6 +10,8 @@ import {
   Section,
 } from "@dbc/ui";
 import { buildPageMetadata } from "@/lib/seo";
+import { JsonLd, jobPostingJsonLd } from "@/lib/json-ld";
+import { getCompanyInfo } from "@/lib/company-info";
 import { JobApplicationForm } from "./form";
 
 export const revalidate = 60;
@@ -91,7 +93,7 @@ export default async function JobDetailPage({
   const { data: job } = await supabase
     .from("job_offers")
     .select(
-      "id, title_en, title_de, title_fr, description_en, description_de, description_fr, requirements_en, requirements_de, requirements_fr, location, employment_type, department"
+      "id, title_en, title_de, title_fr, description_en, description_de, description_fr, requirements_en, requirements_de, requirements_fr, location, employment_type, department, created_at"
     )
     .eq("id", id)
     .eq("is_published", true)
@@ -106,6 +108,20 @@ export default async function JobDetailPage({
   const title = job[titleKey] as string;
   const description = (job[descKey] as string) || "";
   const requirements = (job[reqKey] as string | null) || "";
+  const company = await getCompanyInfo();
+  const postedAt =
+    (job as unknown as { created_at?: string }).created_at ??
+    new Date().toISOString();
+  const jobSchema = jobPostingJsonLd({
+    id: job.id,
+    title,
+    description: [description, requirements].filter(Boolean).join("\n\n"),
+    location: job.location,
+    employmentType: job.employment_type,
+    postedAt,
+    publisher: company?.brand_name ?? "DBC Germany",
+    publisher_logo: company?.logo_light_url ?? null,
+  });
   const typeLabel =
     job.employment_type && TYPE_LABELS[job.employment_type]
       ? TYPE_LABELS[job.employment_type][l]
@@ -120,6 +136,7 @@ export default async function JobDetailPage({
 
   return (
     <Section>
+      <JsonLd data={jobSchema} />
       <Container max="3xl">
         <a
           href={`/${locale}/careers`}

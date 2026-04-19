@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Card, Container, Eyebrow, Heading, Reveal, Section } from "@dbc/ui";
 import { seoFromI18n } from "@/lib/seo";
+import { JsonLd, faqJsonLd } from "@/lib/json-ld";
 
 export async function generateMetadata({
   params,
@@ -156,8 +157,15 @@ export default async function FaqPage({
     | "de"
     | "fr";
 
+  const faqSchema = faqJsonLd(
+    SECTIONS.flatMap((section) =>
+      section.qas.map((qa) => ({ question: qa.q[l], answer: qa.a[l] }))
+    )
+  );
+
   return (
     <Section>
+      <JsonLd data={faqSchema} />
       <Container max="3xl">
         <Reveal>
           <Eyebrow>FAQ</Eyebrow>
