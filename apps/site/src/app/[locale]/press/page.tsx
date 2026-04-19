@@ -1,6 +1,6 @@
 import Image from "next/image";
 import type { Metadata } from "next";
-import { Card, Container, Eyebrow, Heading, Section } from "@dbc/ui";
+import { Card, Container, Eyebrow, Heading, Reveal, Section } from "@dbc/ui";
 import { DBC } from "@/lib/dbc-assets";
 
 export async function generateMetadata({
@@ -111,19 +111,22 @@ export default async function PressPage({
   return (
     <Section>
       <Container max="4xl">
-        <Eyebrow>{copy.eyebrow}</Eyebrow>
-        <Heading level={1} className="mt-3">
-          {copy.title}
-        </Heading>
-        <p className="mt-6 text-lg leading-8 text-muted-foreground">
-          {copy.intro}
-        </p>
+        <Reveal>
+          <Eyebrow>{copy.eyebrow}</Eyebrow>
+          <Heading level={1} className="mt-3">
+            {copy.title}
+          </Heading>
+          <p className="mt-6 text-lg leading-8 text-muted-foreground">
+            {copy.intro}
+          </p>
+        </Reveal>
 
         <div className="mt-14">
-          <Heading level={2}>{copy.factsTitle}</Heading>
+          <Reveal><Heading level={2}>{copy.factsTitle}</Heading></Reveal>
           <dl className="mt-6 grid gap-4 sm:grid-cols-2">
-            {facts.map((f) => (
-              <Card key={f.label} padding="md">
+            {facts.map((f, i) => (
+              <Reveal key={f.label} delay={Math.min(i, 5) * 50} className="h-full">
+              <Card padding="md">
                 <dt className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   {f.label}
                 </dt>
@@ -131,11 +134,13 @@ export default async function PressPage({
                   {f.value}
                 </dd>
               </Card>
+              </Reveal>
             ))}
           </dl>
         </div>
 
         <div className="mt-14">
+          <Reveal>
           <Heading level={2}>{copy.logoKitTitle}</Heading>
           <p className="mt-3 text-muted-foreground">{copy.logoKitBody}</p>
           <Card className="mt-6 flex items-center gap-6">
@@ -173,9 +178,11 @@ export default async function PressPage({
               </a>
             </div>
           </Card>
+          </Reveal>
         </div>
 
         <div className="mt-14">
+          <Reveal>
           <Heading level={2}>{copy.contactTitle}</Heading>
           <p className="mt-3 text-muted-foreground">{copy.contactBody}</p>
           <p className="mt-4">
@@ -186,6 +193,7 @@ export default async function PressPage({
               jay@dbc-germany.com
             </a>
           </p>
+          </Reveal>
         </div>
       </Container>
     </Section>

@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Card, Container, Eyebrow, Heading, Section } from "@dbc/ui";
+import { Card, Container, Eyebrow, Heading, Reveal, Section } from "@dbc/ui";
 import { createServerClient } from "@dbc/supabase/server";
 
 export const revalidate = 60;
@@ -109,13 +109,15 @@ export default async function TeamPage({
   return (
     <Section>
       <Container max="5xl">
-        <Eyebrow>{copy.eyebrow}</Eyebrow>
-        <Heading level={1} className="mt-3">
-          {copy.title}
-        </Heading>
-        <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
-          {copy.intro}
-        </p>
+        <Reveal>
+          <Eyebrow>{copy.eyebrow}</Eyebrow>
+          <Heading level={1} className="mt-3">
+            {copy.title}
+          </Heading>
+          <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
+            {copy.intro}
+          </p>
+        </Reveal>
 
         {members.length === 0 ? (
           <Card className="mt-14 border-dashed text-center">
@@ -123,13 +125,13 @@ export default async function TeamPage({
           </Card>
         ) : (
           <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {members.map((m) => {
+            {members.map((m, i) => {
               const role = localeField(m, "role");
               return (
+                <Reveal key={m.id} delay={Math.min(i, 5) * 50} className="h-full">
                 <Link
-                  key={m.id}
                   href={`/${locale}/team/${m.slug}`}
-                  className="block transition-transform hover:-translate-y-1"
+                  className="block h-full transition-transform hover:-translate-y-1"
                 >
                   <Card className="flex h-full flex-col items-start transition-colors hover:border-primary/40">
                     {m.photo_url ? (
@@ -165,6 +167,7 @@ export default async function TeamPage({
                     </span>
                   </Card>
                 </Link>
+                </Reveal>
               );
             })}
           </div>

@@ -129,10 +129,12 @@
   --dbc-duration-normal:  200ms;
   --dbc-duration-slow:    300ms;
   --dbc-duration-page:    500ms;
+  --dbc-duration-reveal:  640ms;
   --dbc-easing-default:   cubic-bezier(0.4, 0, 0.2, 1);
   --dbc-easing-in:        cubic-bezier(0.4, 0, 1, 1);
   --dbc-easing-out:       cubic-bezier(0, 0, 0.2, 1);
   --dbc-easing-spring:    cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dbc-easing-reveal:    cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* =========================================================================
@@ -225,6 +227,29 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* =========================================================================
+   MOTION — reveal keyframes + selectors
+   Driven by the <Reveal> and <PageTransition> atoms in @dbc/ui. All motion
+   primitives live in packages/ui/src/motion.tsx; this block is the CSS half
+   of that SSOT. Retune the personality via --dbc-duration-reveal and
+   --dbc-easing-reveal only.
+   ========================================================================= */
+@keyframes dbc-reveal-fade-up  { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+@keyframes dbc-reveal-fade-in  { from { opacity: 0; }                              to { opacity: 1; } }
+@keyframes dbc-reveal-scale-in { from { opacity: 0; transform: scale(0.96); }      to { opacity: 1; transform: none; } }
+
+[data-reveal][data-visible="false"] { opacity: 0; }
+[data-reveal][data-visible="true"]  { animation: dbc-reveal-fade-up var(--dbc-duration-reveal) var(--dbc-easing-reveal) both; }
+[data-reveal="fade-in"][data-visible="true"]  { animation-name: dbc-reveal-fade-in; }
+[data-reveal="scale-in"][data-visible="true"] { animation-name: dbc-reveal-scale-in; }
+
+.dbc-page-enter { animation: dbc-reveal-fade-up 360ms var(--dbc-easing-reveal) both; }
+
+/* JS-disabled fallback — never leave content hidden if the observer never runs */
+@media (scripting: none) {
+  [data-reveal] { opacity: 1 !important; }
 }
 
 /* =========================================================================

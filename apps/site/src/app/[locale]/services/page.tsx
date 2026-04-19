@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
+import { Reveal } from "@dbc/ui";
 import { DBC } from "@/lib/dbc-assets";
 
 export async function generateMetadata({
@@ -78,27 +79,29 @@ export default async function ServicesHubPage({
           className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/85 to-background/60"
         />
         <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-24 lg:px-8">
-          <div className="max-w-3xl">
-            <p className="text-xs font-semibold uppercase tracking-wider text-primary">
-              {t("services.eyebrow")}
-            </p>
-            <h1 className="mt-3 font-heading text-4xl font-bold tracking-tight sm:text-5xl">
-              {t("services.title")}
-            </h1>
-            <p className="mt-4 text-lg text-muted-foreground">
-              {t("services.subtitle")}
-            </p>
-          </div>
+          <Reveal>
+            <div className="max-w-3xl">
+              <p className="text-xs font-semibold uppercase tracking-wider text-primary">
+                {t("services.eyebrow")}
+              </p>
+              <h1 className="mt-3 font-heading text-4xl font-bold tracking-tight sm:text-5xl">
+                {t("services.title")}
+              </h1>
+              <p className="mt-4 text-lg text-muted-foreground">
+                {t("services.subtitle")}
+              </p>
+            </div>
+          </Reveal>
         </div>
       </section>
 
       <div className="mx-auto max-w-7xl px-4 pt-20 sm:px-6 sm:pt-28 lg:px-8">
         <div className="grid gap-6 md:grid-cols-2">
-          {SERVICES.map((s) => (
+          {SERVICES.map((s, i) => (
+            <Reveal key={s.key} delay={Math.min(i, 5) * 60} className="h-full">
             <Link
-              key={s.key}
               href={s.href(locale)}
-              className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg"
+              className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg"
             >
               <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
                 <Image
@@ -140,36 +143,39 @@ export default async function ServicesHubPage({
                 </span>
               </div>
             </Link>
+            </Reveal>
           ))}
         </div>
       </div>
 
       <section className="mx-auto max-w-7xl px-4 pb-20 pt-16 sm:px-6 sm:pb-28 sm:pt-20 lg:px-8">
-        <div className="max-w-3xl">
-          <p className="text-xs font-semibold uppercase tracking-wider text-primary">
-            {t("services.germanyBand.eyebrow")}
-          </p>
-          <h2 className="mt-3 font-heading text-3xl font-bold tracking-tight sm:text-4xl">
-            {t("services.germanyBand.title")}
-          </h2>
-          <p className="mt-4 text-lg text-muted-foreground">
-            {t("services.germanyBand.subtitle")}
-          </p>
-        </div>
+        <Reveal>
+          <div className="max-w-3xl">
+            <p className="text-xs font-semibold uppercase tracking-wider text-primary">
+              {t("services.germanyBand.eyebrow")}
+            </p>
+            <h2 className="mt-3 font-heading text-3xl font-bold tracking-tight sm:text-4xl">
+              {t("services.germanyBand.title")}
+            </h2>
+            <p className="mt-4 text-lg text-muted-foreground">
+              {t("services.germanyBand.subtitle")}
+            </p>
+          </div>
+        </Reveal>
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {(["meetups", "incubator", "fund", "tickets"] as const).map(
-            (key) => {
+            (key, i) => {
               const href = t(`services.germanyBand.items.${key}.href`);
               const external = href.startsWith("http");
               const localHref = external ? href : `/${locale}${href}`;
               return (
+                <Reveal key={key} delay={Math.min(i, 5) * 60} className="h-full">
                 <Link
-                  key={key}
                   href={localHref}
                   {...(external
                     ? { target: "_blank", rel: "noopener noreferrer" }
                     : {})}
-                  className="group flex flex-col rounded-2xl border border-border bg-card p-6 transition-all hover:-translate-y-1 hover:border-primary/30 hover:shadow-md"
+                  className="group flex h-full flex-col rounded-2xl border border-border bg-card p-6 transition-all hover:-translate-y-1 hover:border-primary/30 hover:shadow-md"
                 >
                   <h3 className="font-heading text-lg font-bold">
                     {t(`services.germanyBand.items.${key}.title`)}
@@ -187,6 +193,7 @@ export default async function ServicesHubPage({
                     </span>
                   </span>
                 </Link>
+                </Reveal>
               );
             }
           )}

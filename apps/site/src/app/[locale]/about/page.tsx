@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
+import { Reveal } from "@dbc/ui";
 import { DBC } from "@/lib/dbc-assets";
 
 export async function generateMetadata({
@@ -39,31 +40,40 @@ export default async function AboutPage({
           className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/85 to-background/60"
         />
         <div className="relative mx-auto max-w-4xl px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
-          <p className="text-xs font-semibold uppercase tracking-wider text-primary">
-            {t("about.eyebrow")}
-          </p>
-          <h1 className="mt-3 font-heading text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
-            {t("about.title")}
-          </h1>
-          <p className="mt-8 text-lg leading-8 text-muted-foreground">
-            {t("about.body")}
-          </p>
-          <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-border bg-background/80 px-3 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur">
-            <Image
-              src={DBC.logo}
-              alt="DBC Germany"
-              width={18}
-              height={18}
-              className="h-4 w-4 object-contain"
-              referrerPolicy="no-referrer"
-            />
-            {t("affiliation.badge")}
-          </div>
+          <Reveal>
+            <p className="text-xs font-semibold uppercase tracking-wider text-primary">
+              {t("about.eyebrow")}
+            </p>
+          </Reveal>
+          <Reveal delay={80}>
+            <h1 className="mt-3 font-heading text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+              {t("about.title")}
+            </h1>
+          </Reveal>
+          <Reveal delay={160}>
+            <p className="mt-8 text-lg leading-8 text-muted-foreground">
+              {t("about.body")}
+            </p>
+          </Reveal>
+          <Reveal delay={240}>
+            <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-border bg-background/80 px-3 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur">
+              <Image
+                src={DBC.logo}
+                alt="DBC Germany"
+                width={18}
+                height={18}
+                className="h-4 w-4 object-contain"
+                referrerPolicy="no-referrer"
+              />
+              {t("affiliation.badge")}
+            </div>
+          </Reveal>
         </div>
       </section>
 
       <section className="py-20 sm:py-28">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+          <Reveal>
           <div className="grid items-center gap-12 md:grid-cols-[2fr_1fr]">
             <div>
               <h2 className="font-heading text-2xl font-bold">
@@ -106,7 +116,9 @@ export default async function AboutPage({
               </figcaption>
             </figure>
           </div>
+          </Reveal>
 
+          <Reveal>
           <blockquote className="mt-20 border-l-4 border-primary bg-muted/30 px-6 py-8 sm:px-10">
             <p className="font-heading text-xl italic leading-relaxed text-foreground sm:text-2xl">
               “{t("about.conviction")}”
@@ -115,7 +127,9 @@ export default async function AboutPage({
               — {t("about.convictionAttribution")}
             </footer>
           </blockquote>
+          </Reveal>
 
+          <Reveal>
           <div className="mt-20 grid items-center gap-12 md:grid-cols-2">
             <div className="relative order-last aspect-[4/3] overflow-hidden rounded-2xl md:order-first">
               <Image
@@ -195,7 +209,9 @@ export default async function AboutPage({
               </ul>
             </div>
           </div>
+          </Reveal>
 
+          <Reveal>
           <div className="mt-16 flex flex-wrap gap-3">
             <Link
               href={`/${locale}/contact`}
@@ -210,6 +226,7 @@ export default async function AboutPage({
               {t("nav.services")}
             </Link>
           </div>
+          </Reveal>
         </div>
       </section>
     </>

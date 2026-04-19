@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Card, Container, Eyebrow, Heading, Section } from "@dbc/ui";
+import { Card, Container, Eyebrow, Heading, Reveal, Section } from "@dbc/ui";
 
 export async function generateMetadata({
   params,
@@ -160,22 +160,27 @@ export default async function FaqPage({
   return (
     <Section>
       <Container max="3xl">
-        <Eyebrow>FAQ</Eyebrow>
-        <Heading level={1} className="mt-3">
-          {l === "de"
-            ? "Häufige Fragen"
-            : l === "fr"
-              ? "Questions fréquentes"
-              : "Frequently asked questions"}
-        </Heading>
+        <Reveal>
+          <Eyebrow>FAQ</Eyebrow>
+          <Heading level={1} className="mt-3">
+            {l === "de"
+              ? "Häufige Fragen"
+              : l === "fr"
+                ? "Questions fréquentes"
+                : "Frequently asked questions"}
+          </Heading>
+        </Reveal>
 
         <div className="mt-12 space-y-12">
           {SECTIONS.map((section) => (
             <section key={section.title.en}>
-              <Heading level={3}>{section.title[l]}</Heading>
+              <Reveal>
+                <Heading level={3}>{section.title[l]}</Heading>
+              </Reveal>
               <dl className="mt-6 space-y-4">
-                {section.qas.map((qa) => (
-                  <Card key={qa.q.en} padding="md">
+                {section.qas.map((qa, i) => (
+                  <Reveal key={qa.q.en} delay={Math.min(i, 5) * 40}>
+                  <Card padding="md">
                     <dt className="font-semibold text-foreground">
                       {qa.q[l]}
                     </dt>
@@ -183,6 +188,7 @@ export default async function FaqPage({
                       {qa.a[l]}
                     </dd>
                   </Card>
+                  </Reveal>
                 ))}
               </dl>
             </section>

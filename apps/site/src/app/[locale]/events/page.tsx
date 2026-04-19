@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
+import { Reveal } from "@dbc/ui";
 import { getUpcomingEvents } from "@/lib/queries";
 
 export const revalidate = 60;
@@ -41,17 +42,19 @@ export default async function EventsPage({
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
-      <div className="max-w-3xl">
-        <p className="text-xs font-semibold uppercase tracking-wider text-primary">
-          {t("events.eyebrow")}
-        </p>
-        <h1 className="mt-3 font-heading text-4xl font-bold tracking-tight sm:text-5xl">
-          {t("events.title")}
-        </h1>
-        <p className="mt-4 text-lg text-muted-foreground">
-          {t("events.subtitle")}
-        </p>
-      </div>
+      <Reveal>
+        <div className="max-w-3xl">
+          <p className="text-xs font-semibold uppercase tracking-wider text-primary">
+            {t("events.eyebrow")}
+          </p>
+          <h1 className="mt-3 font-heading text-4xl font-bold tracking-tight sm:text-5xl">
+            {t("events.title")}
+          </h1>
+          <p className="mt-4 text-lg text-muted-foreground">
+            {t("events.subtitle")}
+          </p>
+        </div>
+      </Reveal>
 
       {events.length === 0 ? (
         <p className="mt-16 rounded-xl border border-dashed border-border p-16 text-center text-muted-foreground">
@@ -59,14 +62,14 @@ export default async function EventsPage({
         </p>
       ) : (
         <div className="mt-16 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {events.map((event) => {
+          {events.map((event, i) => {
             const titleKey = `title_${locale}` as keyof typeof event;
             const title = (event[titleKey] as string) || event.title_en;
             return (
+              <Reveal key={event.id} delay={Math.min(i, 5) * 60} className="h-full">
               <a
-                key={event.id}
                 href={`${ticketsUrl}/${locale}/events/${event.slug}`}
-                className="group overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg"
+                className="group block h-full overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg"
               >
                 {event.cover_image_url ? (
                   /* eslint-disable-next-line @next/next/no-img-element */
@@ -101,6 +104,7 @@ export default async function EventsPage({
                   </p>
                 </div>
               </a>
+              </Reveal>
             );
           })}
         </div>

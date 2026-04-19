@@ -1,3 +1,4 @@
+import { Reveal } from "@dbc/ui";
 import { NewsletterSignupForm } from "./signup-form";
 
 const COPY = {
@@ -32,17 +33,21 @@ export default async function NewsletterPage({
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-16 sm:py-24">
-      <p className="text-xs font-semibold uppercase tracking-wider text-primary">
-        {t.eyebrow}
-      </p>
-      <h1 className="mt-3 font-heading text-3xl font-bold sm:text-4xl">
-        {t.title}
-      </h1>
-      <p className="mt-4 text-muted-foreground">{t.body}</p>
+      <Reveal>
+        <p className="text-xs font-semibold uppercase tracking-wider text-primary">
+          {t.eyebrow}
+        </p>
+        <h1 className="mt-3 font-heading text-3xl font-bold sm:text-4xl">
+          {t.title}
+        </h1>
+        <p className="mt-4 text-muted-foreground">{t.body}</p>
+      </Reveal>
 
-      <div className="mt-10">
-        <NewsletterSignupForm locale={key} />
-      </div>
+      <Reveal delay={80}>
+        <div className="mt-10">
+          <NewsletterSignupForm locale={key} />
+        </div>
+      </Reveal>
     </main>
   );
 }

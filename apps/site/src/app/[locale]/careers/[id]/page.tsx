@@ -6,6 +6,7 @@ import {
   Container,
   Eyebrow,
   Heading,
+  Reveal,
   Section,
 } from "@dbc/ui";
 import { JobApplicationForm } from "./form";
@@ -107,6 +108,7 @@ export default async function JobDetailPage({
           &larr; {copy.backLabel}
         </a>
 
+        <Reveal>
         <Heading level={1} className="mt-6">
           {title}
         </Heading>
@@ -122,29 +124,36 @@ export default async function JobDetailPage({
             <Eyebrow className="text-muted-foreground">{job.department}</Eyebrow>
           )}
         </div>
+        </Reveal>
 
         {description && (
+          <Reveal delay={80}>
           <div className="mt-10">
             <Heading level={3}>{copy.descriptionLabel}</Heading>
             <div className="mt-4 whitespace-pre-line text-base leading-7 text-muted-foreground">
               {description}
             </div>
           </div>
+          </Reveal>
         )}
 
         {requirements && (
+          <Reveal delay={160}>
           <div className="mt-10">
             <Heading level={3}>{copy.requirementsLabel}</Heading>
             <div className="mt-4 whitespace-pre-line text-base leading-7 text-muted-foreground">
               {requirements}
             </div>
           </div>
+          </Reveal>
         )}
 
+        <Reveal delay={240}>
         <Card className="mt-14">
           <Heading level={3}>{copy.applyLabel}</Heading>
           <JobApplicationForm locale={l} jobOfferId={job.id} />
         </Card>
+        </Reveal>
       </Container>
     </Section>
   );

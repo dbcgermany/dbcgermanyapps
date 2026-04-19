@@ -3,6 +3,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
+import { Reveal } from "@dbc/ui";
 import { DBC } from "@/lib/dbc-assets";
 
 const VALID_SERVICES = [
@@ -66,19 +67,21 @@ export default async function ServiceDetailPage({
 
       <div className="mt-6 grid gap-12 md:grid-cols-[3fr_2fr]">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-primary">
-            {t("services.eyebrow")}
-          </p>
-          <h1 className="mt-3 font-heading text-4xl font-bold tracking-tight sm:text-5xl">
-            {t(`services.${service}.title`)}
-          </h1>
-          <p className="mt-6 text-lg leading-8 text-muted-foreground">
-            {t(`services.${service}.long`)}
-          </p>
+          <Reveal>
+            <p className="text-xs font-semibold uppercase tracking-wider text-primary">
+              {t("services.eyebrow")}
+            </p>
+            <h1 className="mt-3 font-heading text-4xl font-bold tracking-tight sm:text-5xl">
+              {t(`services.${service}.title`)}
+            </h1>
+            <p className="mt-6 text-lg leading-8 text-muted-foreground">
+              {t(`services.${service}.long`)}
+            </p>
+          </Reveal>
 
           <ul className="mt-10 space-y-3">
-            {bullets.map((b) => (
-              <li key={b} className="flex gap-3">
+            {bullets.map((b, i) => (
+              <Reveal key={b} as="li" delay={Math.min(i, 5) * 40} className="flex gap-3">
                 <span
                   aria-hidden
                   className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary"
@@ -86,10 +89,11 @@ export default async function ServiceDetailPage({
                   &#x2713;
                 </span>
                 <span className="text-base leading-7 text-foreground">{b}</span>
-              </li>
+              </Reveal>
             ))}
           </ul>
 
+          <Reveal>
           <div className="mt-10 flex flex-wrap gap-3">
             {service === "elearning" ? (
               <a
@@ -130,9 +134,11 @@ export default async function ServiceDetailPage({
               {t("services.eyebrow")}
             </Link>
           </div>
+          </Reveal>
         </div>
 
         {/* Visual panel */}
+        <Reveal delay={80}>
         <aside className="relative overflow-hidden rounded-2xl border border-border">
           <Image
             src={SERVICE_PHOTOS[service as ValidService]}
@@ -161,6 +167,7 @@ export default async function ServiceDetailPage({
             </div>
           </div>
         </aside>
+        </Reveal>
       </div>
     </div>
   );

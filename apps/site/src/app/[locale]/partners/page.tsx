@@ -5,6 +5,7 @@ import {
   Eyebrow,
   Heading,
   LinkButton,
+  Reveal,
   Section,
 } from "@dbc/ui";
 
@@ -151,17 +152,20 @@ export default async function PartnersPage({
   return (
     <Section>
       <Container max="5xl">
-        <Eyebrow>{copy.eyebrow}</Eyebrow>
-        <Heading level={1} className="mt-3">
-          {copy.title}
-        </Heading>
-        <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
-          {copy.intro}
-        </p>
+        <Reveal>
+          <Eyebrow>{copy.eyebrow}</Eyebrow>
+          <Heading level={1} className="mt-3">
+            {copy.title}
+          </Heading>
+          <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
+            {copy.intro}
+          </p>
+        </Reveal>
 
         <div className="mt-14 grid gap-6 md:grid-cols-2">
-          {TIERS.map((tier) => (
-            <Card key={tier.name.en} className="flex flex-col">
+          {TIERS.map((tier, i) => (
+            <Reveal key={tier.name.en} delay={Math.min(i, 5) * 60} className="h-full">
+            <Card className="flex h-full flex-col">
               <div className="flex items-baseline justify-between">
                 <Heading level={3}>{tier.name[l]}</Heading>
                 <p className="font-heading text-xl font-bold text-primary">
@@ -180,9 +184,11 @@ export default async function PartnersPage({
                 ))}
               </ul>
             </Card>
+            </Reveal>
           ))}
         </div>
 
+        <Reveal>
         <div className="mt-14 flex flex-wrap gap-3">
           <LinkButton
             href={`mailto:jay@dbc-germany.com?subject=${encodeURIComponent(
@@ -195,6 +201,7 @@ export default async function PartnersPage({
             {copy.contact}
           </LinkButton>
         </div>
+        </Reveal>
       </Container>
     </Section>
   );

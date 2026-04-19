@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
+import { Reveal } from "@dbc/ui";
 import { ContactForm } from "./contact-form";
 import { getCompanyInfo, formatOfficeAddress } from "@dbc/legal";
 
@@ -40,6 +41,7 @@ export default async function ContactPage({
   return (
     <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
       <div className="grid gap-12 md:grid-cols-[2fr_3fr]">
+        <Reveal>
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-primary">
             {t("eyebrow")}
@@ -127,7 +129,9 @@ export default async function ContactPage({
             )}
           </div>
         </div>
+        </Reveal>
 
+        <Reveal delay={80}>
         <div>
           <ContactForm
             locale={locale}
@@ -145,6 +149,7 @@ export default async function ContactPage({
             topicOptions={topicOptions}
           />
         </div>
+        </Reveal>
       </div>
     </div>
   );

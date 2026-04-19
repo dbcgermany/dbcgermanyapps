@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
+import { Reveal } from "@dbc/ui";
 import { getUpcomingEvents } from "@/lib/queries";
 import { DBC } from "@/lib/dbc-assets";
 
@@ -84,39 +85,48 @@ export default async function HomePage({
         />
 
         <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-28 lg:px-8 lg:py-36">
-          <p className="inline-flex items-center gap-2 rounded-full border border-border bg-background/80 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-            {t("hero.tag")}
-          </p>
+          <Reveal>
+            <p className="inline-flex items-center gap-2 rounded-full border border-border bg-background/80 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+              {t("hero.tag")}
+            </p>
+          </Reveal>
 
-          <h1 className="mt-6 max-w-4xl font-heading text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
-            {t("hero.title")}
-          </h1>
+          <Reveal delay={80}>
+            <h1 className="mt-6 max-w-4xl font-heading text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+              {t("hero.title")}
+            </h1>
+          </Reveal>
 
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground sm:text-xl">
-            {t("hero.subtitle")}
-          </p>
+          <Reveal delay={160}>
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground sm:text-xl">
+              {t("hero.subtitle")}
+            </p>
+          </Reveal>
 
-          <div className="mt-10 flex flex-wrap items-center gap-4">
-            <a
-              href={ticketsUrl}
-              className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-lg"
-            >
-              {t("hero.ctaPrimary")}
-            </a>
-            <Link
-              href={`/${locale}/contact`}
-              className="rounded-full border border-border bg-background/60 px-6 py-3 text-sm font-semibold text-foreground backdrop-blur transition-colors hover:bg-muted"
-            >
-              {t("hero.ctaSecondary")}
-            </Link>
-          </div>
+          <Reveal delay={240}>
+            <div className="mt-10 flex flex-wrap items-center gap-4">
+              <a
+                href={ticketsUrl}
+                className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-lg"
+              >
+                {t("hero.ctaPrimary")}
+              </a>
+              <Link
+                href={`/${locale}/contact`}
+                className="rounded-full border border-border bg-background/60 px-6 py-3 text-sm font-semibold text-foreground backdrop-blur transition-colors hover:bg-muted"
+              >
+                {t("hero.ctaSecondary")}
+              </Link>
+            </div>
+          </Reveal>
         </div>
       </section>
 
       {/* Stats ------------------------------------------------------------ */}
       <section className="border-b border-border">
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+          <Reveal>
           <dl className="grid grid-cols-2 gap-8 sm:grid-cols-4">
             {[
               { label: t("stats.countries"), value: t("stats.countriesValue") },
@@ -136,6 +146,7 @@ export default async function HomePage({
               </div>
             ))}
           </dl>
+          </Reveal>
         </div>
       </section>
 
@@ -155,11 +166,11 @@ export default async function HomePage({
           </div>
 
           <div className="mt-16 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {SERVICES.map((s) => (
+            {SERVICES.map((s, i) => (
+              <Reveal key={s.key} delay={Math.min(i, 5) * 60} className="h-full">
               <Link
-                key={s.key}
                 href={s.href(locale)}
-                className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg"
+                className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg"
               >
                 <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
                   <Image
@@ -201,6 +212,7 @@ export default async function HomePage({
                   </span>
                 </div>
               </Link>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -267,16 +279,16 @@ export default async function HomePage({
             </div>
           ) : (
             <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {events.map((event) => {
+              {events.map((event, i) => {
                 const titleKey = `title_${locale}` as keyof typeof event;
                 const title =
                   (event[titleKey] as string) || event.title_en;
                 const cover = event.cover_image_url ?? DBC.photo.eventFallback;
                 return (
+                  <Reveal key={event.id} delay={Math.min(i, 5) * 60} className="h-full">
                   <a
-                    key={event.id}
                     href={`${ticketsUrl}/${locale}/events/${event.slug}`}
-                    className="group overflow-hidden rounded-2xl border border-border bg-background transition-all hover:-translate-y-1 hover:shadow-lg"
+                    className="group block h-full overflow-hidden rounded-2xl border border-border bg-background transition-all hover:-translate-y-1 hover:shadow-lg"
                   >
                     <div className="relative aspect-video w-full overflow-hidden">
                       <Image
@@ -309,6 +321,7 @@ export default async function HomePage({
                       </p>
                     </div>
                   </a>
+                  </Reveal>
                 );
               })}
             </div>
@@ -319,6 +332,7 @@ export default async function HomePage({
       {/* About snippet --------------------------------------------------- */}
       <section className="py-24 sm:py-32">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <Reveal>
           <div className="grid items-center gap-10 md:grid-cols-2">
             <div className="grid grid-cols-2 gap-3">
               {[DBC.gallery[0], DBC.gallery[1], DBC.gallery[2], DBC.gallery[3]].map(
@@ -370,6 +384,7 @@ export default async function HomePage({
               </div>
             </div>
           </div>
+          </Reveal>
         </div>
       </section>
 
@@ -388,28 +403,30 @@ export default async function HomePage({
           }}
         />
         <div className="relative mx-auto flex max-w-5xl flex-col items-start gap-8 px-4 py-20 text-primary-foreground sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
-          <div>
+          <Reveal>
             <h2 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">
               {t("cta.ready")}
             </h2>
             <p className="mt-3 max-w-xl text-primary-foreground/80">
               {t("cta.readySub")}
             </p>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href={`/${locale}/services/incubation`}
-              className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-primary shadow-sm transition-colors hover:bg-white/90"
-            >
-              {t("cta.primary")}
-            </Link>
-            <Link
-              href={`/${locale}/contact`}
-              className="rounded-full border border-white/40 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10"
-            >
-              {t("cta.secondary")}
-            </Link>
-          </div>
+          </Reveal>
+          <Reveal delay={80}>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href={`/${locale}/services/incubation`}
+                className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-primary shadow-sm transition-colors hover:bg-white/90"
+              >
+                {t("cta.primary")}
+              </Link>
+              <Link
+                href={`/${locale}/contact`}
+                className="rounded-full border border-white/40 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+              >
+                {t("cta.secondary")}
+              </Link>
+            </div>
+          </Reveal>
         </div>
       </section>
     </>

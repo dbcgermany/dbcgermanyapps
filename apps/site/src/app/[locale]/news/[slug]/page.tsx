@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { Reveal } from "@dbc/ui";
 import { createServerClient } from "@dbc/supabase/server";
 import { getCompanyInfo } from "@/lib/company-info";
 import { JsonLd, articleJsonLd } from "@/lib/json-ld";
@@ -113,6 +114,7 @@ export default async function NewsArticlePage({
         {l === "de" ? "Alle News" : l === "fr" ? "Toutes les actualités" : "All news"}
       </Link>
 
+      <Reveal>
       <div className="mt-6 flex items-center gap-3 text-xs text-muted-foreground">
         {post.published_at && (
           <time dateTime={post.published_at}>
@@ -129,7 +131,9 @@ export default async function NewsArticlePage({
       <h1 className="mt-3 font-heading text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
         {title}
       </h1>
+      </Reveal>
 
+      <Reveal delay={80}>
       <div className="relative mt-10 aspect-[16/9] w-full overflow-hidden rounded-2xl">
         <Image
           src={cover}
@@ -140,10 +144,13 @@ export default async function NewsArticlePage({
           referrerPolicy="no-referrer"
         />
       </div>
+      </Reveal>
 
+      <Reveal delay={160}>
       <div className="prose prose-neutral dark:prose-invert mt-10 max-w-none whitespace-pre-wrap text-base leading-8 text-foreground">
         {body}
       </div>
+      </Reveal>
     </article>
   );
 }

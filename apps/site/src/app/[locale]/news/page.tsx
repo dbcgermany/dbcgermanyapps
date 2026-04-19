@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
+import { Reveal } from "@dbc/ui";
 import { createServerClient } from "@dbc/supabase/server";
 import { DBC } from "@/lib/dbc-assets";
 
@@ -71,12 +72,14 @@ export default async function NewsIndexPage({
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
-      <p className="text-xs font-semibold uppercase tracking-wider text-primary">
-        {copy.eyebrow}
-      </p>
-      <h1 className="mt-3 font-heading text-4xl font-bold tracking-tight sm:text-5xl">
-        {copy.title}
-      </h1>
+      <Reveal>
+        <p className="text-xs font-semibold uppercase tracking-wider text-primary">
+          {copy.eyebrow}
+        </p>
+        <h1 className="mt-3 font-heading text-4xl font-bold tracking-tight sm:text-5xl">
+          {copy.title}
+        </h1>
+      </Reveal>
 
       {posts.length === 0 ? (
         <p className="mt-12 rounded-xl border border-dashed border-border bg-background p-12 text-center text-muted-foreground">
@@ -84,14 +87,14 @@ export default async function NewsIndexPage({
         </p>
       ) : (
         <div className="mt-12 grid gap-8 md:grid-cols-2">
-          {posts.map((post) => {
+          {posts.map((post, i) => {
             const { title, excerpt } = tFor(post);
             const cover = post.cover_image_url ?? DBC.photo.cohort;
             return (
+              <Reveal key={post.id} delay={Math.min(i, 5) * 60} className="h-full">
               <Link
-                key={post.id}
                 href={`/${locale}/news/${post.slug}`}
-                className="group overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-1 hover:shadow-lg"
+                className="group block h-full overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-1 hover:shadow-lg"
               >
                 <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
                   <Image
@@ -128,6 +131,7 @@ export default async function NewsIndexPage({
                   )}
                 </div>
               </Link>
+              </Reveal>
             );
           })}
         </div>

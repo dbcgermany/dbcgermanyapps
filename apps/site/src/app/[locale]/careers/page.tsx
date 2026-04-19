@@ -6,6 +6,7 @@ import {
   Eyebrow,
   Heading,
   LinkButton,
+  Reveal,
   Section,
 } from "@dbc/ui";
 
@@ -106,20 +107,22 @@ export default async function CareersPage({
   return (
     <Section>
       <Container max="4xl">
-        <Eyebrow>{copy.eyebrow}</Eyebrow>
-        <Heading level={1} className="mt-3">
-          {copy.title}
-        </Heading>
-        <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
-          {copy.intro}
-        </p>
+        <Reveal>
+          <Eyebrow>{copy.eyebrow}</Eyebrow>
+          <Heading level={1} className="mt-3">
+            {copy.title}
+          </Heading>
+          <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
+            {copy.intro}
+          </p>
+        </Reveal>
 
         <div className="mt-14 space-y-4">
           {offers.length === 0 && (
             <p className="text-sm text-muted-foreground">{copy.noOpenings}</p>
           )}
 
-          {offers.map((job) => {
+          {offers.map((job, i) => {
             const typeLabel =
               job.employment_type && TYPE_LABELS[job.employment_type]
                 ? TYPE_LABELS[job.employment_type][l]
@@ -127,7 +130,8 @@ export default async function CareersPage({
             const description = (job[descKey] as string) || "";
 
             return (
-              <Card key={job.id}>
+              <Reveal key={job.id} delay={Math.min(i, 5) * 50}>
+              <Card>
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
                     <Heading level={4}>{job[titleKey] as string}</Heading>
@@ -149,10 +153,12 @@ export default async function CareersPage({
                   </LinkButton>
                 </div>
               </Card>
+              </Reveal>
             );
           })}
         </div>
 
+        <Reveal>
         <Card className="mt-14 border-dashed bg-muted/30">
           <Heading level={4}>{copy.speculativeTitle}</Heading>
           <p className="mt-2 text-sm text-muted-foreground">
@@ -162,6 +168,7 @@ export default async function CareersPage({
             {copy.contact}
           </LinkButton>
         </Card>
+        </Reveal>
       </Container>
     </Section>
   );

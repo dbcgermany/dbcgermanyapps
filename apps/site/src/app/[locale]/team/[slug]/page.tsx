@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Card, Container, Eyebrow, Heading, Section } from "@dbc/ui";
+import { Card, Container, Eyebrow, Heading, Reveal, Section } from "@dbc/ui";
 import { createServerClient } from "@dbc/supabase/server";
 
 export const revalidate = 60;
@@ -97,6 +97,7 @@ export default async function TeamMemberPage({
         </Link>
 
         <div className="mt-6 grid items-start gap-10 md:grid-cols-[1fr_2fr]">
+          <Reveal>
           <Card className="flex flex-col items-center text-center">
             {m.photo_url ? (
               <div className="relative h-40 w-40 overflow-hidden rounded-full">
@@ -161,7 +162,9 @@ export default async function TeamMemberPage({
               </p>
             )}
           </Card>
+          </Reveal>
 
+          <Reveal delay={80}>
           <div>
             <Eyebrow>
               {l === "de"
@@ -188,6 +191,7 @@ export default async function TeamMemberPage({
               </p>
             )}
           </div>
+          </Reveal>
         </div>
       </Container>
     </Section>
