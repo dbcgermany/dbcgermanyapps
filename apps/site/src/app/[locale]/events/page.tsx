@@ -61,6 +61,12 @@ export default async function EventsPage({
         </div>
       </Reveal>
 
+      <Reveal delay={80}>
+        <p className="mt-8 max-w-3xl text-base leading-7 text-muted-foreground">
+          {t("intros.events")}
+        </p>
+      </Reveal>
+
       {events.length === 0 ? (
         <p className="mt-16 rounded-xl border border-dashed border-border p-16 text-center text-muted-foreground">
           {t("events.noUpcoming")}

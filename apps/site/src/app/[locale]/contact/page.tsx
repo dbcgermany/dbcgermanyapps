@@ -21,6 +21,7 @@ export default async function ContactPage({
 }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "site.contact" });
+  const tIntro = await getTranslations({ locale, namespace: "site.intros" });
   const company = await getCompanyInfo();
   const officeAddress = formatOfficeAddress(company);
   const brandName = company?.brand_name ?? "DBC Germany";
@@ -51,6 +52,10 @@ export default async function ContactPage({
           </h1>
           <p className="mt-6 text-lg leading-8 text-muted-foreground">
             {t("subtitle")}
+          </p>
+
+          <p className="mt-6 text-sm leading-6 text-muted-foreground">
+            {tIntro("contact")}
           </p>
 
           <div className="mt-10 space-y-6 text-sm">

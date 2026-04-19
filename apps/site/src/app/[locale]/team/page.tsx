@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { Card, Container, Eyebrow, Heading, Reveal, Section } from "@dbc/ui";
 import { createServerClient } from "@dbc/supabase/server";
 import { seoFromI18n } from "@/lib/seo";
@@ -71,6 +72,7 @@ export default async function TeamPage({
     | "fr";
 
   const members = await getPublicTeam();
+  const tIntro = await getTranslations({ locale, namespace: "site.intros" });
 
   const copy = {
     eyebrow: {
@@ -127,6 +129,12 @@ export default async function TeamPage({
           </Heading>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
             {copy.intro}
+          </p>
+        </Reveal>
+
+        <Reveal delay={80}>
+          <p className="mt-6 max-w-3xl text-base leading-7 text-muted-foreground">
+            {tIntro("team")}
           </p>
         </Reveal>
 

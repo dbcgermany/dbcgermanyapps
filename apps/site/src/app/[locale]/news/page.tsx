@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { Reveal } from "@dbc/ui";
 import { createServerClient } from "@dbc/supabase/server";
 import { seoFromI18n } from "@/lib/seo";
@@ -42,6 +43,7 @@ export default async function NewsIndexPage({
     | "de"
     | "fr";
   const posts = await getPosts();
+  const tIntro = await getTranslations({ locale, namespace: "site.intros" });
 
   const copy = {
     eyebrow: { en: "News", de: "News", fr: "Actualités" }[l],
@@ -89,6 +91,12 @@ export default async function NewsIndexPage({
         <h1 className="mt-3 font-heading text-4xl font-bold tracking-tight sm:text-5xl">
           {copy.title}
         </h1>
+      </Reveal>
+
+      <Reveal delay={80}>
+        <p className="mt-6 max-w-3xl text-base leading-7 text-muted-foreground">
+          {tIntro("news")}
+        </p>
       </Reveal>
 
       {posts.length === 0 ? (
