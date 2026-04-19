@@ -9,6 +9,15 @@ import { useTranslations } from "next-intl";
 import { signOutEverywhere } from "@/actions/account";
 import { logout } from "@/actions/auth";
 
+// Next.js throws a special "redirect" error from server actions to trigger
+// client navigation. Different Next versions shape the error differently
+// (message vs. digest), so check both so we don't mis-classify success as failure.
+function isRedirectError(err: unknown): boolean {
+  if (err instanceof Error && err.message.includes("NEXT_REDIRECT")) return true;
+  const digest = (err as { digest?: unknown } | null | undefined)?.digest;
+  return typeof digest === "string" && digest.startsWith("NEXT_REDIRECT");
+}
+
 export interface UserMenuProps {
   locale: string;
   userEmail: string;
@@ -60,15 +69,9 @@ export function UserMenu({
   function handleSignOut() {
     startTransition(async () => {
       try {
-        // logout() clears the Supabase session cookie and throws a redirect to /login
         await logout(locale);
       } catch (err) {
-        // Next.js redirects surface as a thrown "NEXT_REDIRECT" — that's expected.
-        // Any other error is a real failure.
-        if (
-          err instanceof Error &&
-          !err.message.includes("NEXT_REDIRECT")
-        ) {
+        if (!isRedirectError(err)) {
           toast.error("Sign-out failed.");
         }
       }
@@ -83,11 +86,12 @@ export function UserMenu({
         return;
       }
       toast.success("Signed out on all devices.");
-      // signOutEverywhere revokes server-side; also clear local session and redirect
       try {
         await logout(locale);
-      } catch {
-        /* NEXT_REDIRECT expected */
+      } catch (err) {
+        if (!isRedirectError(err)) {
+          toast.error("Sign-out failed.");
+        }
       }
     });
   }
