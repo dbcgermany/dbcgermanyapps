@@ -10,12 +10,46 @@ import { StatCard } from "@/components/stat-card";
 import { StatGrid } from "@/components/stat-grid";
 import { NewsletterComposer } from "../composer";
 
+const T = {
+  en: {
+    back: "← All newsletters",
+    untitled: "(untitled)",
+    statusLabel: "Status",
+    analytics: "Delivery analytics",
+    delivered: "Delivered", opened: "Opened", clicked: "Clicked",
+    bouncedFailed: "Bounced / Failed",
+    unsubscribe: "unsubscribe since send",
+    unsubscribes: "unsubscribes since send",
+  },
+  de: {
+    back: "← Alle Newsletter",
+    untitled: "(ohne Titel)",
+    statusLabel: "Status",
+    analytics: "Versand-Analytics",
+    delivered: "Zugestellt", opened: "Geöffnet", clicked: "Geklickt",
+    bouncedFailed: "Bounced / Fehlgeschlagen",
+    unsubscribe: "Abmeldung seit Versand",
+    unsubscribes: "Abmeldungen seit Versand",
+  },
+  fr: {
+    back: "← Toutes les newsletters",
+    untitled: "(sans titre)",
+    statusLabel: "Statut",
+    analytics: "Analytique d’envoi",
+    delivered: "Délivrés", opened: "Ouverts", clicked: "Cliqués",
+    bouncedFailed: "Rejetés / Échoués",
+    unsubscribe: "désabonnement depuis l’envoi",
+    unsubscribes: "désabonnements depuis l’envoi",
+  },
+} as const;
+
 export default async function NewsletterEditPage({
   params,
 }: {
   params: Promise<{ locale: string; id: string }>;
 }) {
   const { locale, id } = await params;
+  const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
   const [nl, categories] = await Promise.all([
     getNewsletter(id),
     listContactCategories(),
@@ -33,11 +67,11 @@ export default async function NewsletterEditPage({
         href={`/${locale}/newsletters`}
         className="text-sm text-muted-foreground hover:text-foreground"
       >
-        &larr; All newsletters
+        {t.back}
       </Link>
       <PageHeader
-        title={nl.subject || "(untitled)"}
-        description={`Status: ${nl.status}`}
+        title={nl.subject || t.untitled}
+        description={`${t.statusLabel}: ${nl.status}`}
         className="mt-3"
       />
 
@@ -45,27 +79,23 @@ export default async function NewsletterEditPage({
       {stats && (
         <section className="mt-6">
           <h2 className="font-heading text-lg font-semibold">
-            Delivery analytics
+            {t.analytics}
           </h2>
           <div className="mt-3">
             <StatGrid cols={4}>
+              <StatCard label={t.delivered} value={String(stats.delivered)} dense />
               <StatCard
-                label="Delivered"
-                value={String(stats.delivered)}
-                dense
-              />
-              <StatCard
-                label="Opened"
+                label={t.opened}
                 value={`${stats.opened} (${stats.openRate}%)`}
                 dense
               />
               <StatCard
-                label="Clicked"
+                label={t.clicked}
                 value={`${stats.clicked} (${stats.clickRate}%)`}
                 dense
               />
               <StatCard
-                label="Bounced / Failed"
+                label={t.bouncedFailed}
                 value={String(stats.bounced)}
                 dense
               />
@@ -73,14 +103,14 @@ export default async function NewsletterEditPage({
           </div>
           {stats.unsubscribed > 0 && (
             <p className="mt-2 text-xs text-muted-foreground">
-              {stats.unsubscribed} unsubscribe
-              {stats.unsubscribed === 1 ? "" : "s"} since send
+              {stats.unsubscribed} {stats.unsubscribed === 1 ? t.unsubscribe : t.unsubscribes}
             </p>
           )}
         </section>
       )}
 
       <NewsletterComposer
+        uiLocale={locale}
         categories={categories.map((c) => ({ slug: c.slug, name: c.name_en }))}
         initial={{
           id: nl.id,
