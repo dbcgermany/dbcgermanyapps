@@ -25,6 +25,7 @@ interface StaffAccount {
 const T = {
   en: {
     photoUploaded: "Photo uploaded.", saved: "Saved.",
+    slug: "URL slug", slugHelp: "Shown in public profile URLs. Leave unchanged to keep the current one.",
     name: "Name", email: "Email", linkedin: "LinkedIn URL", sortOrder: "Sort order",
     visibility: "Visibility",
     visPublic: "Public (shown on dbc-germany.com/team)",
@@ -41,6 +42,7 @@ const T = {
   },
   de: {
     photoUploaded: "Foto hochgeladen.", saved: "Gespeichert.",
+    slug: "URL-Kennung", slugHelp: "Teil der öffentlichen Profil-URL. Unverändert lassen, um die aktuelle beizubehalten.",
     name: "Name", email: "E-Mail", linkedin: "LinkedIn-URL", sortOrder: "Sortierung",
     visibility: "Sichtbarkeit",
     visPublic: "Öffentlich (sichtbar auf dbc-germany.com/team)",
@@ -57,6 +59,7 @@ const T = {
   },
   fr: {
     photoUploaded: "Photo téléversée.", saved: "Enregistré.",
+    slug: "Identifiant d’URL", slugHelp: "Visible dans l’URL du profil public. Laissez inchangé pour conserver l’actuel.",
     name: "Nom", email: "E-mail", linkedin: "URL LinkedIn", sortOrder: "Ordre",
     visibility: "Visibilité",
     visPublic: "Public (visible sur dbc-germany.com/team)",
@@ -137,6 +140,12 @@ export function TeamMemberForm({
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label={t.name} name="name" defaultValue={initial?.name ?? ""} required />
+        <Field
+          label={t.slug}
+          name="slug"
+          defaultValue={initial?.slug ?? ""}
+          hint={t.slugHelp}
+        />
         <Field label={t.email} name="email" type="email" defaultValue={initial?.email ?? ""} />
         <Field label={t.linkedin} name="linkedin_url" type="url" defaultValue={initial?.linkedin_url ?? ""} />
         <Field label={t.sortOrder} name="sort_order" type="number" defaultValue={initial?.sort_order?.toString() ?? "100"} />

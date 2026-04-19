@@ -8,21 +8,24 @@ import { CoverImageUpload } from "@/components/cover-image-upload";
 const T = {
   en: {
     saved: "Saved.",
-    slug: "Slug", titleEn: "Title (EN)", titleDe: "Title (DE)", titleFr: "Title (FR)",
+    slug: "Slug", slugHelp: "URL-safe identifier. Leave unchanged to keep the current one.",
+    titleEn: "Title (EN)", titleDe: "Title (DE)", titleFr: "Title (FR)",
     excerptEn: "Excerpt (EN)", excerptDe: "Excerpt (DE)", excerptFr: "Excerpt (FR)",
     bodyEn: "Body (EN)", bodyDe: "Body (DE)", bodyFr: "Body (FR)",
     author: "Author", saving: "Saving…", save: "Save",
   },
   de: {
     saved: "Gespeichert.",
-    slug: "Slug", titleEn: "Titel (EN)", titleDe: "Titel (DE)", titleFr: "Titel (FR)",
+    slug: "Slug", slugHelp: "URL-Kennung. Unverändert lassen, um die aktuelle beizubehalten.",
+    titleEn: "Titel (EN)", titleDe: "Titel (DE)", titleFr: "Titel (FR)",
     excerptEn: "Kurzfassung (EN)", excerptDe: "Kurzfassung (DE)", excerptFr: "Kurzfassung (FR)",
     bodyEn: "Inhalt (EN)", bodyDe: "Inhalt (DE)", bodyFr: "Inhalt (FR)",
     author: "Autor:in", saving: "Wird gespeichert…", save: "Speichern",
   },
   fr: {
     saved: "Enregistré.",
-    slug: "Slug", titleEn: "Titre (EN)", titleDe: "Titre (DE)", titleFr: "Titre (FR)",
+    slug: "Slug", slugHelp: "Identifiant d’URL. Laissez inchangé pour conserver l’actuel.",
+    titleEn: "Titre (EN)", titleDe: "Titre (DE)", titleFr: "Titre (FR)",
     excerptEn: "Extrait (EN)", excerptDe: "Extrait (DE)", excerptFr: "Extrait (FR)",
     bodyEn: "Contenu (EN)", bodyDe: "Contenu (DE)", bodyFr: "Contenu (FR)",
     author: "Auteur", saving: "Enregistrement…", save: "Enregistrer",
@@ -79,9 +82,19 @@ export function EditNewsForm({ locale, post }: { locale: string; post: Post }) {
         </div>
       )}
 
-      <p className="text-xs text-muted-foreground">
-        {t.slug}: <code>{post.slug}</code>
-      </p>
+      <div>
+        <label htmlFor="slug" className="mb-1 block text-sm font-medium">
+          {t.slug}
+        </label>
+        <input
+          id="slug"
+          name="slug"
+          type="text"
+          defaultValue={post.slug}
+          className="w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
+        />
+        <p className="mt-1 text-xs text-muted-foreground">{t.slugHelp}</p>
+      </div>
 
       <F name="title_en" label={t.titleEn} defaultValue={post.title_en} required />
       <F name="title_de" label={t.titleDe} defaultValue={post.title_de} />

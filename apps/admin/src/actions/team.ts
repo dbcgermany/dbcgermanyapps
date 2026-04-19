@@ -4,6 +4,7 @@ import { createServerClient, requireRole } from "@dbc/supabase/server";
 import { createClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { slugify, uniqueSlug } from "@/lib/slugify";
 
 function getServiceClient() {
   return createClient(
@@ -36,13 +37,6 @@ export interface TeamMember {
 
 const COLUMNS =
   "id, slug, name, role_en, role_de, role_fr, bio_en, bio_de, bio_fr, photo_url, email, linkedin_url, sort_order, visibility, profile_id, created_at, updated_at" as const;
-
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-}
 
 export async function getTeamMembers(): Promise<TeamMember[]> {
   await requireRole("manager");
@@ -121,8 +115,10 @@ export async function createTeamMember(formData: FormData) {
 
   const name = ((formData.get("name") as string) || "").trim();
   if (!name) return { error: "Name is required." };
-  const slugBase = slugify(name) || "member";
-  const slug = `${slugBase}-${Date.now().toString(36)}`;
+  const manualSlug = ((formData.get("slug") as string) ?? "").trim();
+  const base = manualSlug || slugify(name, "member");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const slug = await uniqueSlug(supabase as any, "team_members", base);
 
   const rawProfileId = ((formData.get("profile_id") as string) || "").trim();
   const record = {
@@ -174,7 +170,7 @@ export async function updateTeamMember(id: string, formData: FormData) {
   if (!name) return { error: "Name is required." };
 
   const rawProfileId = ((formData.get("profile_id") as string) || "").trim();
-  const record = {
+  const record: Record<string, unknown> = {
     name,
     role_en: ((formData.get("role_en") as string) || "").trim(),
     role_de: ((formData.get("role_de") as string) || "").trim() || null,
@@ -193,6 +189,13 @@ export async function updateTeamMember(id: string, formData: FormData) {
     profile_id: rawProfileId || null,
     updated_by: user.userId,
   };
+
+  // Optional: admin can rename the slug. If provided, sanitise + ensure uniqueness.
+  const rawSlug = ((formData.get("slug") as string) ?? "").trim();
+  if (rawSlug) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    record.slug = await uniqueSlug(supabase as any, "team_members", slugify(rawSlug, "member"), id);
+  }
 
   const { error } = await supabase
     .from("team_members")

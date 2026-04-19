@@ -3,16 +3,10 @@
 import { createServerClient, requireRole } from "@dbc/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { slugify, uniqueSlug } from "@/lib/slugify";
 
 const POST_COLUMNS =
   "id, slug, title_en, title_de, title_fr, excerpt_en, excerpt_de, excerpt_fr, body_en, body_de, body_fr, cover_image_url, author_name, is_published, published_at, created_at, updated_at" as const;
-
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-}
 
 export async function getNewsPosts() {
   await requireRole("manager");
@@ -43,7 +37,11 @@ export async function createNewsPost(formData: FormData) {
   const locale = formData.get("locale") as string;
 
   const titleEn = (formData.get("title_en") as string).trim();
-  const slug = slugify(titleEn) + "-" + Date.now().toString(36);
+  // Admin can pre-fill the slug; otherwise derive a clean one from the title.
+  const manualSlug = ((formData.get("slug") as string) ?? "").trim();
+  const base = manualSlug || slugify(titleEn, "post");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const slug = await uniqueSlug(supabase as any, "news_posts", base);
 
   const record = {
     slug,
@@ -87,7 +85,7 @@ export async function updateNewsPost(id: string, formData: FormData) {
   const supabase = await createServerClient();
   const locale = formData.get("locale") as string;
 
-  const record = {
+  const record: Record<string, unknown> = {
     title_en: formData.get("title_en") as string,
     title_de: formData.get("title_de") as string,
     title_fr: formData.get("title_fr") as string,
@@ -101,6 +99,13 @@ export async function updateNewsPost(id: string, formData: FormData) {
       ((formData.get("cover_image_url") as string) || "").trim() || null,
     author_name: (formData.get("author_name") as string) || null,
   };
+
+  // Optional: admin can rename the slug. If provided, sanitise + ensure uniqueness.
+  const rawSlug = ((formData.get("slug") as string) ?? "").trim();
+  if (rawSlug) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    record.slug = await uniqueSlug(supabase as any, "news_posts", slugify(rawSlug, "post"), id);
+  }
 
   const { error } = await supabase
     .from("news_posts")

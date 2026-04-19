@@ -8,6 +8,7 @@ import { CoverImageUpload } from "@/components/cover-image-upload";
 const T = {
   en: {
     eventType: "Event type", conference: "Conference", masterclass: "Masterclass",
+    slug: "URL slug", slugHelp: "Shown in public URLs. Leave unchanged to keep the current one.",
     title: "Title", description: "Description", trilingual: "(trilingual)",
     english: "English", deutsch: "Deutsch", francais: "Français",
     venueName: "Venue name", city: "City", venueAddress: "Venue address",
@@ -20,6 +21,7 @@ const T = {
   },
   de: {
     eventType: "Veranstaltungstyp", conference: "Konferenz", masterclass: "Masterclass",
+    slug: "URL-Kennung", slugHelp: "In öffentlichen URLs sichtbar. Unverändert lassen, um die aktuelle beizubehalten.",
     title: "Titel", description: "Beschreibung", trilingual: "(dreisprachig)",
     english: "English", deutsch: "Deutsch", francais: "Français",
     venueName: "Veranstaltungsort", city: "Stadt", venueAddress: "Adresse",
@@ -32,6 +34,7 @@ const T = {
   },
   fr: {
     eventType: "Type d’événement", conference: "Conférence", masterclass: "Masterclass",
+    slug: "Identifiant d’URL", slugHelp: "Visible dans les URL publiques. Laissez inchangé pour conserver l’actuel.",
     title: "Titre", description: "Description", trilingual: "(trilingue)",
     english: "English", deutsch: "Deutsch", francais: "Français",
     venueName: "Nom du lieu", city: "Ville", venueAddress: "Adresse",
@@ -46,6 +49,7 @@ const T = {
 
 type EventRow = {
   id: string;
+  slug: string;
   title_en: string;
   title_de: string | null;
   title_fr: string | null;
@@ -136,6 +140,21 @@ export function EditEventForm({
           </label>
         </div>
       </fieldset>
+
+      {/* URL slug */}
+      <div>
+        <label htmlFor="slug" className="block text-sm font-medium mb-1">
+          {t.slug}
+        </label>
+        <input
+          id="slug"
+          name="slug"
+          type="text"
+          defaultValue={event.slug}
+          className="w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
+        />
+        <p className="mt-1 text-xs text-muted-foreground">{t.slugHelp}</p>
+      </div>
 
       {/* Titles (trilingual) */}
       <div className="space-y-4">

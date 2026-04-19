@@ -4,6 +4,7 @@ import { createServerClient, requireRole } from "@dbc/supabase/server";
 import { createClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { slugify, uniqueSlug } from "@/lib/slugify";
 
 const COVER_BUCKET = "event-covers";
 
@@ -58,20 +59,16 @@ export async function getEvent(id: string) {
 // Mutations
 // ---------------------------------------------------------------------------
 
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-}
-
 export async function createEvent(formData: FormData) {
   const user = await requireRole("manager");
   const supabase = await createServerClient();
   const locale = formData.get("locale") as string;
 
-  const titleEn = formData.get("title_en") as string;
-  const slug = slugify(titleEn) + "-" + Date.now().toString(36);
+  const titleEn = (formData.get("title_en") as string).trim();
+  const manualSlug = ((formData.get("slug") as string) ?? "").trim();
+  const base = manualSlug || slugify(titleEn, "event");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const slug = await uniqueSlug(supabase as any, "events", base);
 
   const eventData = {
     slug,
@@ -191,7 +188,7 @@ export async function updateEvent(id: string, formData: FormData) {
   // Optimistic locking: check updated_at hasn't changed
   const expectedUpdatedAt = formData.get("updated_at") as string;
 
-  const eventData = {
+  const eventData: Record<string, unknown> = {
     title_en: formData.get("title_en") as string,
     title_de: formData.get("title_de") as string,
     title_fr: formData.get("title_fr") as string,
@@ -223,6 +220,13 @@ export async function updateEvent(id: string, formData: FormData) {
         )
       : null,
   };
+
+  // Optional: admin can rename the slug. If provided, sanitise + ensure uniqueness.
+  const rawSlug = ((formData.get("slug") as string) ?? "").trim();
+  if (rawSlug) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    eventData.slug = await uniqueSlug(supabase as any, "events", slugify(rawSlug, "event"), id);
+  }
 
   const { error } = await supabase
     .from("events")
@@ -339,7 +343,8 @@ export async function duplicateEvent(sourceId: string, locale: string) {
   };
 
   const titleEn = `(Copy) ${source.title_en}`;
-  const slug = slugify(titleEn) + "-" + Date.now().toString(36);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const slug = await uniqueSlug(supabase as any, "events", slugify(titleEn, "event"));
 
   const newEventData = {
     ...source,
