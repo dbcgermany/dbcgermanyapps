@@ -45,10 +45,11 @@ export async function generateMetadata({
       : brandName);
 
   return {
-    title: {
-      default: computedTitle,
-      template: `%s \u2014 ${brandName}`,
-    },
+    // Plain string — NOT a { default, template } object. Page-level
+    // generateMetadata() helpers (buildPageMetadata / seoFromI18n) emit
+    // fully-formed titles with the brand already baked in, so a template
+    // would double it to "… — DBC Germany — DBC Germany".
+    title: computedTitle,
     description: (company?.[descKey] as string | null) ?? undefined,
     alternates: {
       canonical: `${BASE}/${locale}`,

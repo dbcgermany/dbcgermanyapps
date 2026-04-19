@@ -213,7 +213,26 @@
       "totalRevenue": "Total Revenue",
       "ticketsSold": "Tickets Sold",
       "checkInRate": "Check-in Rate",
-      "activeEvents": "Active Events"
+      "activeEvents": "Active Events",
+      "dateRange": {
+        "today": "Today",
+        "last7Days": "Last 7 days",
+        "last30Days": "Last 30 days",
+        "last90Days": "Last 90 days",
+        "yearToDate": "Year to date",
+        "custom": "Custom",
+        "from": "From",
+        "to": "To",
+        "presetAria": "Date range preset"
+      },
+      "errorBoundary": {
+        "title": "Something went wrong",
+        "titleCompanyInfo": "Company info failed to load",
+        "generic": "An unexpected error occurred.",
+        "errorDigest": "Error digest",
+        "tryAgain": "Try again",
+        "back": "Go back"
+      }
     },
     "events": {
       "create": "Create Event",

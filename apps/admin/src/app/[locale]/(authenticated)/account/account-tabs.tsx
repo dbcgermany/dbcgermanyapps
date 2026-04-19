@@ -25,7 +25,7 @@ const T = {
   en: {
     profile: "Profile", preferences: "Preferences", security: "Security",
     changeAvatar: "Change avatar", uploading: "Uploading…",
-    avatarHint: "JPG, PNG, WebP, up to 2 MB.",
+    avatarHint: "JPG, PNG, WebP up to 50 MB — auto-converted to WebP.",
     firstName: "First name", lastName: "Last name",
     signInEmail: "Sign-in email", birthday: "Birthday", phone: "Phone",
     address: "Address", clearAddress: "Clear address",
@@ -39,7 +39,7 @@ const T = {
   de: {
     profile: "Profil", preferences: "Einstellungen", security: "Sicherheit",
     changeAvatar: "Profilbild ändern", uploading: "Wird hochgeladen…",
-    avatarHint: "JPG, PNG, WebP, bis 2 MB.",
+    avatarHint: "JPG, PNG, WebP bis 50 MB — wird automatisch in WebP umgewandelt.",
     firstName: "Vorname", lastName: "Nachname",
     signInEmail: "Anmelde-E-Mail", birthday: "Geburtstag", phone: "Telefon",
     address: "Adresse", clearAddress: "Adresse leeren",
@@ -53,7 +53,7 @@ const T = {
   fr: {
     profile: "Profil", preferences: "Préférences", security: "Sécurité",
     changeAvatar: "Changer d’avatar", uploading: "Téléversement…",
-    avatarHint: "JPG, PNG, WebP, jusqu’à 2 Mo.",
+    avatarHint: "JPG, PNG, WebP jusqu’à 50 Mo — converti automatiquement en WebP.",
     firstName: "Prénom", lastName: "Nom",
     signInEmail: "E-mail de connexion", birthday: "Date de naissance", phone: "Téléphone",
     address: "Adresse", clearAddress: "Effacer l’adresse",

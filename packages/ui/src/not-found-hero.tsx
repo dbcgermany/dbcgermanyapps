@@ -45,10 +45,14 @@ export function NotFoundHero({
   code = "404",
   className,
 }: NotFoundHeroProps) {
+  // Render as <section> (not <main>) so this composes inside a host
+  // layout that already owns <main>. Height uses dynamic viewport
+  // units minus typical site header+footer so the content visually
+  // centers in the available space on both site and admin shells.
   return (
-    <main
+    <section
       className={cn(
-        "relative flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center overflow-hidden bg-background px-4 py-16 sm:py-24",
+        "relative flex min-h-[calc(100dvh-14rem)] flex-col items-center justify-center overflow-hidden bg-background px-4 py-16 sm:min-h-[calc(100dvh-12rem)] sm:py-24",
         className
       )}
     >
@@ -107,6 +111,6 @@ export function NotFoundHero({
           </div>
         )}
       </div>
-    </main>
+    </section>
   );
 }

@@ -15,9 +15,11 @@ const nextConfig: NextConfig = {
     serverActions: {
       // Admin uploads photos (avatars, team, event covers, sponsor logos,
       // newsletter cover, news covers, media) via Server Actions. The
-      // default cap is 1 MB — bump to 10 MB so modern-phone photos pass
-      // the boundary before toWebp() compresses them.
-      bodySizeLimit: "10mb",
+      // default cap is 1 MB; bump to 50 MB so users can drop in raw
+      // phone photos or retina screenshots. The server re-encodes every
+      // raster input to WebP at quality 85 via @/lib/webp before it hits
+      // Supabase storage, so the stored file is typically < 500 KB.
+      bodySizeLimit: "50mb",
     },
   },
   // admin.dbc-germany.com is the operator dashboard — invisible to search.

@@ -38,14 +38,12 @@ export async function generateMetadata(): Promise<Metadata> {
     metadataBase: new URL(
       process.env.NEXT_PUBLIC_SITE_URL ?? "https://dbc-germany.com"
     ),
-    title: {
-      default:
-        company?.seo_title_en ??
-        (company?.brand_tagline_en
-          ? `${company?.brand_name ?? "DBC Germany"} — ${company.brand_tagline_en}`
-          : company?.brand_name ?? "DBC Germany"),
-      template: `%s — ${company?.brand_name ?? "DBC Germany"}`,
-    },
+    // Plain string — NOT a { default, template } object, because the
+    // template would then wrap every child's already-branded title and
+    // produce "… — DBC Germany — DBC Germany". Each page calls
+    // buildPageMetadata() which returns a fully-formed title with the
+    // brand baked in.
+    title: company?.brand_name ?? "DBC Germany",
     description:
       company?.seo_description_en ??
       company?.brand_tagline_en ??

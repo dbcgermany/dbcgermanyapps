@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Card } from "@dbc/ui";
 import {
   DateRangeSelect,
@@ -52,11 +53,12 @@ export function DashboardClient({
 }) {
   const router = useRouter();
   const search = useSearchParams();
+  const tRange = useTranslations("admin.dashboard.dateRange");
 
   const range: DateRange = {
     from: kpis.range.from,
     to: kpis.range.to,
-    label: search.get("label") ?? "Last 30 days",
+    label: search.get("label") ?? tRange("last30Days"),
   };
 
   function handleRangeChange(next: DateRange) {

@@ -213,7 +213,26 @@
       "totalRevenue": "Total Revenue",
       "ticketsSold": "Tickets Sold",
       "checkInRate": "Check-in Rate",
-      "activeEvents": "Active Events"
+      "activeEvents": "Active Events",
+      "dateRange": {
+        "today": "Heute",
+        "last7Days": "Letzte 7 Tage",
+        "last30Days": "Letzte 30 Tage",
+        "last90Days": "Letzte 90 Tage",
+        "yearToDate": "Seit Jahresbeginn",
+        "custom": "Benutzerdefiniert",
+        "from": "Von",
+        "to": "Bis",
+        "presetAria": "Zeitraum-Voreinstellung"
+      },
+      "errorBoundary": {
+        "title": "Ein Fehler ist aufgetreten",
+        "titleCompanyInfo": "Unternehmensdaten konnten nicht geladen werden",
+        "generic": "Ein unerwarteter Fehler ist aufgetreten.",
+        "errorDigest": "Fehler-Digest",
+        "tryAgain": "Erneut versuchen",
+        "back": "Zurück"
+      }
     },
     "events": {
       "create": "Create Event",

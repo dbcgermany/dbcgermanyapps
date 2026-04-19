@@ -444,8 +444,8 @@ export async function uploadEventCover(formData: FormData) {
   if (!file || typeof file === "string") {
     return { error: "No file provided" };
   }
-  if (file.size > 8 * 1024 * 1024) {
-    return { error: "File is larger than 8 MB" };
+  if (file.size > 50 * 1024 * 1024) {
+    return { error: "File is larger than 50 MB" };
   }
   if (!file.type.startsWith("image/")) {
     return { error: "Only image files are allowed" };

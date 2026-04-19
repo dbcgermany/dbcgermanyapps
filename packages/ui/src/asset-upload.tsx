@@ -26,7 +26,11 @@ export interface AssetUploadProps {
 }
 
 const DEFAULT_ACCEPT = "image/png,image/jpeg,image/webp,image/avif,image/svg+xml";
-const DEFAULT_MAX_SIZE = 5 * 1024 * 1024;
+// Generous client-side cap so users can drop in raw phone photos or
+// retina screenshots. The server action (toWebp) compresses every
+// raster input before storage, so the stored file is well under 500 KB
+// regardless of source size.
+const DEFAULT_MAX_SIZE = 50 * 1024 * 1024;
 
 /**
  * Drag-drop + click-to-browse uploader with live preview. The consumer owns
