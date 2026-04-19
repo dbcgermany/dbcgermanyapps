@@ -190,13 +190,71 @@ export function OrdersClient({
         </div>
       )}
 
-      {/* Table */}
+      {/* Table (desktop) + iOS-style cell list (mobile) */}
       {orders.length === 0 ? (
         <p className="mt-8 text-center text-sm text-muted-foreground">
           {t.noOrders}
         </p>
       ) : (
-        <div className="mt-6 overflow-hidden rounded-lg border border-border">
+        <>
+        {/* Mobile: grouped-list cells, each a tap target to the order detail */}
+        <ul className="mt-6 divide-y divide-border overflow-hidden rounded-xl border border-border bg-background md:hidden">
+          {orders.map((o) => {
+            const statusLabel = t[o.status as keyof typeof t] ?? o.status;
+            return (
+              <li key={o.id}>
+                <Link
+                  href={`/${locale}/orders/${o.id}`}
+                  className="flex items-start gap-3 px-4 py-3 transition-colors active:bg-muted"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-baseline gap-2">
+                      <p className="truncate font-medium">{o.recipientName}</p>
+                      <span className="ml-auto shrink-0 text-sm font-semibold">
+                        {o.totalCents === 0
+                          ? "\u2014"
+                          : `\u20AC${(o.totalCents / 100).toFixed(2)}`}
+                      </span>
+                    </div>
+                    <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                      {o.recipientEmail}
+                    </p>
+                    <p className="mt-1 truncate text-xs text-muted-foreground">
+                      {o.eventTitle}
+                    </p>
+                    <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+                      <Badge
+                        variant={
+                          o.status === "paid" || o.status === "comped"
+                            ? "success"
+                            : o.status === "pending"
+                              ? "warning"
+                              : "error"
+                        }
+                      >
+                        {statusLabel}
+                      </Badge>
+                      <span>
+                        {new Date(o.createdAt).toLocaleDateString(locale, {
+                          month: "short",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                    </div>
+                  </div>
+                  <span aria-hidden className="mt-1 text-muted-foreground">
+                    ›
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+
+        {/* Desktop: the table */}
+        <div className="mt-6 hidden overflow-hidden rounded-lg border border-border md:block">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/50">
@@ -301,6 +359,7 @@ export function OrdersClient({
             </tbody>
           </table>
         </div>
+        </>
       )}
     </div>
   );

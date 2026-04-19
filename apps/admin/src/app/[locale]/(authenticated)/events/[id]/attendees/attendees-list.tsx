@@ -179,7 +179,7 @@ export function AttendeesList({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t.search}
-          className="flex-1 min-w-60 rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          className="w-full flex-1 sm:min-w-60 rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
         />
         <div className="flex gap-1 rounded-md border border-border p-1">
           {(
@@ -210,13 +210,81 @@ export function AttendeesList({
         </button>
       </div>
 
-      {/* Table */}
+      {/* List (mobile) + table (desktop) */}
       {filtered.length === 0 ? (
         <p className="mt-8 text-center text-sm text-muted-foreground">
           {t.noResults}
         </p>
       ) : (
-        <div className="mt-6 overflow-hidden rounded-lg border border-border">
+        <>
+        {/* Mobile: iOS grouped-list cells — optimised for onsite check-in */}
+        <ul className="mt-6 divide-y divide-border overflow-hidden rounded-xl border border-border bg-background md:hidden">
+          {filtered.map((a) => (
+            <li key={a.id} className="px-4 py-3">
+              <div className="flex items-start gap-3">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-medium">{a.name}</p>
+                  <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                    {a.email}
+                  </p>
+                  <p className="mt-1 text-[11px] text-muted-foreground">
+                    {a.tierName} · {acqLabels[a.acquisitionType] ?? a.acquisitionType}
+                  </p>
+                </div>
+                <div className="shrink-0">
+                  {a.checkedInAt ? (
+                    <Badge variant="success">
+                      &#x2713;{" "}
+                      {new Date(a.checkedInAt).toLocaleTimeString(locale, {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </Badge>
+                  ) : (
+                    <Badge variant="default">{t.notScanned}</Badge>
+                  )}
+                </div>
+              </div>
+              <div className="mt-2">
+                {editingId === a.id ? (
+                  <div className="space-y-2">
+                    <textarea
+                      value={notesDraft}
+                      onChange={(e) => setNotesDraft(e.target.value)}
+                      rows={2}
+                      className="w-full rounded-md border border-input bg-background px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-ring"
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => saveNotes(a.id)}
+                        disabled={isPending}
+                        className="rounded bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground"
+                      >
+                        {t.save}
+                      </button>
+                      <button
+                        onClick={() => setEditingId(null)}
+                        className="text-xs text-muted-foreground"
+                      >
+                        {t.cancel}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => startEditing(a)}
+                    className="text-left text-xs text-muted-foreground hover:text-foreground"
+                  >
+                    {a.notes || <span className="italic">{t.addNote}</span>}
+                  </button>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+
+        {/* Desktop: table */}
+        <div className="mt-6 hidden overflow-hidden rounded-lg border border-border md:block">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/50">
@@ -296,6 +364,7 @@ export function AttendeesList({
             </tbody>
           </table>
         </div>
+        </>
       )}
     </div>
   );

@@ -289,8 +289,8 @@ export function AuditLogClient({
           {t.noRows}
         </p>
       ) : (
-        <div className="mt-6 overflow-hidden rounded-lg border border-border">
-          <table className="w-full text-sm">
+        <div className="mt-6 overflow-x-auto rounded-lg border border-border">
+          <table className="w-full min-w-160 text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/50">
                 <th className="px-4 py-3 text-left font-medium">

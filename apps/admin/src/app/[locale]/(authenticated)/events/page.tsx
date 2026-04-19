@@ -35,7 +35,54 @@ export default async function EventsPage({
           className="mt-12"
         />
       ) : (
-        <div className="mt-6 overflow-hidden rounded-lg border border-border">
+        <>
+        {/* Mobile: iOS grouped-list cells */}
+        <ul className="mt-6 divide-y divide-border overflow-hidden rounded-xl border border-border bg-background md:hidden">
+          {events.map((event) => {
+            const title =
+              locale === "de"
+                ? event.title_de
+                : locale === "fr"
+                  ? event.title_fr
+                  : event.title_en;
+            return (
+              <li key={event.id}>
+                <Link
+                  href={`/${locale}/events/${event.id}`}
+                  className="flex items-start gap-3 px-4 py-3 transition-colors active:bg-muted"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="truncate font-medium">{title}</p>
+                      <Badge
+                        variant={event.is_published ? "success" : "warning"}
+                      >
+                        {event.is_published ? t("published") : t("draft")}
+                      </Badge>
+                    </div>
+                    <p className="mt-1 truncate text-xs text-muted-foreground">
+                      {new Date(event.starts_at).toLocaleDateString(locale, {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                      {event.city && ` · ${event.city}`}
+                    </p>
+                    <p className="mt-0.5 text-[11px] capitalize text-muted-foreground">
+                      {event.event_type} · {event.capacity}
+                    </p>
+                  </div>
+                  <span aria-hidden className="mt-1 text-muted-foreground">
+                    ›
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+
+        {/* Desktop: table */}
+        <div className="mt-6 hidden overflow-hidden rounded-lg border border-border md:block">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/50">
@@ -107,6 +154,7 @@ export default async function EventsPage({
             </tbody>
           </table>
         </div>
+        </>
       )}
     </div>
   );
