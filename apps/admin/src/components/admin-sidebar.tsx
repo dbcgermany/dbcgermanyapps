@@ -16,6 +16,7 @@ import {
   Info,
   LayoutDashboard,
   LineChart,
+  Megaphone,
   Menu,
   Mail,
   Newspaper,
@@ -64,6 +65,7 @@ const NAV_ITEMS: NavItem[] = [
 
   { labelKey: "companyInfo", href: "/company-info", icon: Building2, minRole: "manager", dividerAbove: true },
   { labelKey: "settings", href: "/settings", icon: Settings, minRole: "admin" },
+  { labelKey: "ads", href: "/ads", icon: Megaphone, minRole: "super_admin" },
   { labelKey: "auditLog", href: "/audit-log", icon: ScrollText, minRole: "super_admin" },
   { labelKey: "devInfo", href: "/dev-info", icon: Info, minRole: "super_admin" },
 ];

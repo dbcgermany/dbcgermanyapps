@@ -182,6 +182,7 @@
   },
   "admin": {
     "nav": {
+      "ads": "Dashboard ads",
       "allContacts": "All contacts",
       "auditLog": "Audit Log",
       "applications": "Applications",

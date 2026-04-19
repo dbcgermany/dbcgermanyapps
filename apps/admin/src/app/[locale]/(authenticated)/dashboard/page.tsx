@@ -1,5 +1,7 @@
 import { createServerClient, requireRole } from "@dbc/supabase/server";
 import { getDashboardKpis } from "@/actions/dashboard";
+import { getActiveDashboardAds } from "@/actions/dashboard-ads";
+import { DashboardAdCarousel } from "@/components/dashboard-ad-carousel";
 import { DashboardClient } from "./dashboard-client";
 
 export default async function DashboardPage({
@@ -13,13 +15,14 @@ export default async function DashboardPage({
   const { from, to } = await searchParams;
   const user = await requireRole("team_member");
   const supabase = await createServerClient();
-  const [kpis, profileRes] = await Promise.all([
+  const [kpis, profileRes, ads] = await Promise.all([
     getDashboardKpis(locale, { from, to }),
     supabase
       .from("profiles")
       .select("display_name")
       .eq("id", user.userId)
       .maybeSingle(),
+    getActiveDashboardAds(),
   ]);
 
   // Prefer profile display_name first word, fall back to email local part
@@ -118,6 +121,7 @@ export default async function DashboardPage({
 
   return (
     <div>
+      <DashboardAdCarousel ads={ads} locale={locale} />
       <h1 className="font-heading text-2xl font-bold">
         {t.welcome}, {firstName}
       </h1>

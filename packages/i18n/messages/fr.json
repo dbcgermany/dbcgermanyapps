@@ -182,6 +182,7 @@
   },
   "admin": {
     "nav": {
+      "ads": "Annonces tableau de bord",
       "allContacts": "Tous les contacts",
       "auditLog": "Journal d’audit",
       "applications": "Candidatures",

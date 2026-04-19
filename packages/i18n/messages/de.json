@@ -182,6 +182,7 @@
   },
   "admin": {
     "nav": {
+      "ads": "Dashboard-Anzeigen",
       "allContacts": "Alle Kontakte",
       "auditLog": "Audit-Log",
       "applications": "Bewerbungen",
