@@ -9,6 +9,17 @@ const PUBLIC_PATHS = [
   "/mfa-challenge",
 ];
 
+// admin.dbc-germany.com must never appear in search results.
+// This header is the strongest signal: it reaches non-HTML responses
+// (JSON, PDFs, images) that a <meta robots> tag can't touch.
+const NO_INDEX_TAG =
+  "noindex, nofollow, noarchive, nosnippet, noimageindex";
+
+function withNoIndex<T extends NextResponse>(res: T): T {
+  res.headers.set("X-Robots-Tag", NO_INDEX_TAG);
+  return res;
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -31,7 +42,7 @@ export async function proxy(request: NextRequest) {
 
     const url = request.nextUrl.clone();
     url.pathname = `/${locale}${pathname}`;
-    return NextResponse.redirect(url);
+    return withNoIndex(NextResponse.redirect(url));
   }
 
   // Extract locale and path without locale prefix
@@ -56,7 +67,7 @@ export async function proxy(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = `/${locale}/login`;
     url.searchParams.set("redirect", pathname);
-    return NextResponse.redirect(url);
+    return withNoIndex(NextResponse.redirect(url));
   }
 
   const mustChangePassword =
@@ -66,7 +77,7 @@ export async function proxy(request: NextRequest) {
     // Temporary password in use — force the user to /set-password until they change it.
     const url = request.nextUrl.clone();
     url.pathname = `/${locale}/set-password`;
-    return NextResponse.redirect(url);
+    return withNoIndex(NextResponse.redirect(url));
   }
 
   // --- MFA (AAL2) gate ---
@@ -79,7 +90,7 @@ export async function proxy(request: NextRequest) {
       const url = request.nextUrl.clone();
       url.pathname = `/${locale}/mfa-challenge`;
       url.searchParams.set("redirect", pathname);
-      return NextResponse.redirect(url);
+      return withNoIndex(NextResponse.redirect(url));
     }
   }
 
@@ -91,12 +102,12 @@ export async function proxy(request: NextRequest) {
         await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
       if (aal?.currentLevel === "aal1" && aal?.nextLevel === "aal2") {
         // Let the page render so the user can complete the challenge.
-        return response;
+        return withNoIndex(response);
       }
     }
     const url = request.nextUrl.clone();
     url.pathname = `/${locale}/dashboard`;
-    return NextResponse.redirect(url);
+    return withNoIndex(NextResponse.redirect(url));
   }
 
   // Set locale cookie for consistency
@@ -106,7 +117,7 @@ export async function proxy(request: NextRequest) {
     sameSite: "lax",
   });
 
-  return response;
+  return withNoIndex(response);
 }
 
 export const config = {
