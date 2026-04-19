@@ -6,29 +6,44 @@ import { ChevronDown, ChevronUp, Pencil } from "lucide-react";
 import { Card } from "@dbc/ui";
 import { updatePosterConfig, type PosterConfig } from "@/actions/poster";
 
-const FIELDS: Array<{
-  key: "eyebrow" | "headline" | "instructions";
-  label: string;
-  help: string;
-  multiline?: boolean;
-}> = [
-  {
-    key: "eyebrow",
-    label: "Small tag (above the title)",
-    help: "Short label shown above the event title. E.g. 'Tickets at the door'.",
+const T = {
+  en: {
+    heading: "Customize poster text",
+    subheading: "Override the default copy per language. Leave blank to use the default.",
+    eyebrowLabel: "Small tag (above the title)",
+    eyebrowHelp: "Short label shown above the event title. E.g. 'Tickets at the door'.",
+    headlineLabel: "QR code headline",
+    headlineHelp: "Prominent call-to-action above the QR code. E.g. 'Scan to buy your ticket'.",
+    instructionsLabel: "QR instructions",
+    instructionsHelp: "Small helper text under the QR code explaining how to scan.",
+    saved: "Poster text saved. Refresh to see changes below.",
+    saving: "Saving…", save: "Save poster text", reset: "Reset to defaults", close: "Close",
   },
-  {
-    key: "headline",
-    label: "QR code headline",
-    help: "Prominent call-to-action above the QR code. E.g. 'Scan to buy your ticket'.",
+  de: {
+    heading: "Postertext anpassen",
+    subheading: "Überschreiben Sie den Standardtext pro Sprache. Leer lassen, um den Standard zu verwenden.",
+    eyebrowLabel: "Kleiner Tag (über dem Titel)",
+    eyebrowHelp: "Kurzes Label über dem Veranstaltungstitel. Z. B. 'Tickets an der Abendkasse'.",
+    headlineLabel: "QR-Code-Überschrift",
+    headlineHelp: "Prominenter Call-to-Action über dem QR-Code. Z. B. 'Ticket scannen'.",
+    instructionsLabel: "QR-Anweisungen",
+    instructionsHelp: "Kurzer Hinweistext unter dem QR-Code, wie gescannt wird.",
+    saved: "Postertext gespeichert. Aktualisieren Sie, um Änderungen unten zu sehen.",
+    saving: "Wird gespeichert…", save: "Postertext speichern", reset: "Auf Standard zurücksetzen", close: "Schließen",
   },
-  {
-    key: "instructions",
-    label: "QR instructions",
-    help: "Small helper text under the QR code explaining how to scan.",
-    multiline: true,
+  fr: {
+    heading: "Personnaliser le texte de l’affiche",
+    subheading: "Remplacez le texte par défaut par langue. Laissez vide pour utiliser la valeur par défaut.",
+    eyebrowLabel: "Petit tag (au-dessus du titre)",
+    eyebrowHelp: "Étiquette courte au-dessus du titre de l’événement. Ex. 'Billets sur place'.",
+    headlineLabel: "Titre du QR code",
+    headlineHelp: "Appel à l’action au-dessus du QR code. Ex. 'Scannez pour acheter votre billet'.",
+    instructionsLabel: "Instructions QR",
+    instructionsHelp: "Court texte sous le QR code expliquant comment scanner.",
+    saved: "Texte de l’affiche enregistré. Actualisez pour voir les modifications.",
+    saving: "Enregistrement…", save: "Enregistrer le texte", reset: "Réinitialiser aux valeurs par défaut", close: "Fermer",
   },
-];
+} as const;
 
 const LOCALES = [
   { code: "en" as const, label: "English", flag: "EN" },
@@ -56,6 +71,12 @@ export function PosterConfigEditor({
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<PosterConfig>(initial);
   const [isPending, startTransition] = useTransition();
+  const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
+  const fields = [
+    { key: "eyebrow" as const, label: t.eyebrowLabel, help: t.eyebrowHelp, multiline: false },
+    { key: "headline" as const, label: t.headlineLabel, help: t.headlineHelp, multiline: false },
+    { key: "instructions" as const, label: t.instructionsLabel, help: t.instructionsHelp, multiline: true },
+  ];
 
   function handleChange(key: string, value: string) {
     setDraft((prev) => ({ ...prev, [key]: value }));
@@ -67,7 +88,7 @@ export function PosterConfigEditor({
       if ("error" in result) {
         toast.error(result.error);
       } else {
-        toast.success("Poster text saved. Refresh to see changes below.");
+        toast.success(t.saved);
       }
     });
   }
@@ -89,10 +110,10 @@ export function PosterConfigEditor({
           </div>
           <div>
             <h2 className="font-heading text-base font-semibold">
-              Customize poster text
+              {t.heading}
             </h2>
             <p className="text-xs text-muted-foreground">
-              Override the default copy per language. Leave blank to use the default.
+              {t.subheading}
             </p>
           </div>
         </div>
@@ -106,7 +127,7 @@ export function PosterConfigEditor({
       {open && (
         <>
           <div className="mt-6 space-y-6">
-            {FIELDS.map((field) => (
+            {fields.map((field) => (
               <div key={field.key} className="rounded-lg border border-border bg-muted/20 p-4">
                 <div className="mb-1">
                   <p className="text-sm font-semibold">{field.label}</p>
@@ -160,21 +181,21 @@ export function PosterConfigEditor({
               disabled={isPending}
               className="rounded-md bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >
-              {isPending ? "Saving…" : "Save poster text"}
+              {isPending ? t.saving : t.save}
             </button>
             <button
               type="button"
               onClick={handleReset}
               className="rounded-md border border-border px-5 py-2 text-sm font-medium text-muted-foreground hover:bg-muted"
             >
-              Reset to defaults
+              {t.reset}
             </button>
             <button
               type="button"
               onClick={() => setOpen(false)}
               className="ml-auto rounded-md border border-border px-5 py-2 text-sm font-medium hover:bg-muted"
             >
-              Close
+              {t.close}
             </button>
           </div>
         </>
