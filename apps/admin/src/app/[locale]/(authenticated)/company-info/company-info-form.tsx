@@ -27,17 +27,47 @@ type Section =
   | "seo"
   | "banking";
 
-const TABS: Array<{ id: Section; label: string }> = [
-  { id: "legal", label: "Legal · Impressum" },
-  { id: "parent", label: "Parent org" },
-  { id: "france", label: "France entity" },
-  { id: "contact", label: "Contact" },
-  { id: "privacy", label: "Data protection" },
-  { id: "brand", label: "Brand assets" },
-  { id: "social", label: "Social links" },
-  { id: "seo", label: "SEO defaults" },
-  { id: "banking", label: "Banking" },
-];
+const TAB_LABELS = {
+  en: {
+    legal: "Legal · Impressum", parent: "Parent org", france: "France entity",
+    contact: "Contact", privacy: "Data protection", brand: "Brand assets",
+    social: "Social links", seo: "SEO defaults", banking: "Banking",
+  },
+  de: {
+    legal: "Rechtliches · Impressum", parent: "Mutterorganisation", france: "Entität Frankreich",
+    contact: "Kontakt", privacy: "Datenschutz", brand: "Markenassets",
+    social: "Soziale Links", seo: "SEO-Standards", banking: "Bankdaten",
+  },
+  fr: {
+    legal: "Mentions légales · Impressum", parent: "Société mère", france: "Entité France",
+    contact: "Contact", privacy: "Protection des données", brand: "Ressources de marque",
+    social: "Liens sociaux", seo: "SEO par défaut", banking: "Coordonnées bancaires",
+  },
+} as const;
+
+const SHARED = {
+  en: {
+    orPasteUrl: "Or paste a CDN URL",
+    urlHint:
+      "The uploader writes the URL here automatically. Click Save to commit a pasted URL.",
+    saved: "Saved.", assetUploaded: "Asset uploaded.",
+    saving: "Saving…", save: "Save",
+  },
+  de: {
+    orPasteUrl: "Oder CDN-URL einfügen",
+    urlHint:
+      "Der Uploader trägt die URL automatisch hier ein. Auf Speichern klicken, um eine eingefügte URL zu übernehmen.",
+    saved: "Gespeichert.", assetUploaded: "Asset hochgeladen.",
+    saving: "Wird gespeichert…", save: "Speichern",
+  },
+  fr: {
+    orPasteUrl: "Ou coller une URL CDN",
+    urlHint:
+      "Le téléverseur écrit l’URL ici automatiquement. Cliquez sur Enregistrer pour valider une URL collée.",
+    saved: "Enregistré.", assetUploaded: "Ressource téléversée.",
+    saving: "Enregistrement…", save: "Enregistrer",
+  },
+} as const;
 
 interface FieldDef {
   name: keyof CompanyInfo;
@@ -335,30 +365,38 @@ const FIELDS: Record<Section, FieldDef[]> = {
   ],
 };
 
-export function CompanyInfoForm({ info }: { info: CompanyInfo }) {
+export function CompanyInfoForm({
+  info,
+  locale = "en",
+}: {
+  info: CompanyInfo;
+  locale?: string;
+}) {
   const [tab, setTab] = useState<Section>("legal");
+  const tabLabels = TAB_LABELS[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof TAB_LABELS];
+  const tabs: Array<[Section, string]> = (Object.keys(tabLabels) as Section[]).map((k) => [k, tabLabels[k]]);
 
   return (
     <div className="mt-8">
       <div className="flex flex-wrap gap-1 border-b border-border">
-        {TABS.map((t) => (
+        {tabs.map(([id, label]) => (
           <button
-            key={t.id}
+            key={id}
             type="button"
-            onClick={() => setTab(t.id)}
+            onClick={() => setTab(id)}
             className={`rounded-t-md border-b-2 px-4 py-2 text-sm font-medium ${
-              tab === t.id
+              tab === id
                 ? "border-primary text-primary"
                 : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
-            {t.label}
+            {label}
           </button>
         ))}
       </div>
 
       <div className="mt-6">
-        <SectionForm section={tab} info={info} fields={FIELDS[tab]} />
+        <SectionForm section={tab} info={info} fields={FIELDS[tab]} locale={locale} />
       </div>
     </div>
   );
@@ -368,12 +406,15 @@ function SectionForm({
   section,
   info,
   fields,
+  locale,
 }: {
   section: Section;
   info: CompanyInfo;
   fields: FieldDef[];
+  locale: string;
 }) {
   const [isPending, startTransition] = useTransition();
+  const shared = SHARED[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof SHARED];
   const [assetValues, setAssetValues] = useState<Record<string, string>>(() => {
     const out: Record<string, string> = {};
     for (const f of fields) {
@@ -392,7 +433,7 @@ function SectionForm({
       if ("error" in result) {
         toast.error(result.error);
       } else {
-        toast.success("Saved.");
+        toast.success(shared.saved);
       }
     });
   }
@@ -404,7 +445,7 @@ function SectionForm({
     }
     if ("url" in result && result.url) {
       setAssetValues((prev) => ({ ...prev, [field]: result.url }));
-      toast.success("Asset uploaded.");
+      toast.success(shared.assetUploaded);
       return result.url;
     }
     throw new Error("Upload returned no URL.");
@@ -443,7 +484,7 @@ function SectionForm({
                 />
                 <label className="block">
                   <span className="mb-1 block text-xs font-medium text-muted-foreground">
-                    Or paste a CDN URL
+                    {shared.orPasteUrl}
                   </span>
                   <input
                     type="url"
@@ -459,8 +500,7 @@ function SectionForm({
                     className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm font-mono"
                   />
                   <p className="mt-1 text-[11px] text-muted-foreground">
-                    The uploader writes the URL here automatically. Click Save to
-                    commit a pasted URL.
+                    {shared.urlHint}
                   </p>
                 </label>
               </div>
@@ -562,7 +602,7 @@ function SectionForm({
           disabled={isPending}
           className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
         >
-          {isPending ? "Saving…" : "Save"}
+          {isPending ? shared.saving : shared.save}
         </button>
       </div>
     </form>
