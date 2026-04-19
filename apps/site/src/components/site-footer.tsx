@@ -2,7 +2,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { DBC } from "@/lib/dbc-assets";
-import { getCompanyInfo, getTagline } from "@/lib/company-info";
+import {
+  getCompanyInfo,
+  getTagline,
+  formatOfficeAddress,
+} from "@/lib/company-info";
 import { NewsletterFooterSignup } from "./newsletter-footer-signup";
 import { CookieSettingsButton } from "@dbc/ui";
 
@@ -66,6 +70,42 @@ export async function SiteFooter({ locale }: { locale: string }) {
                 ))}
               </ul>
             )}
+
+            {(() => {
+              const addr = formatOfficeAddress(info);
+              if (!addr && !info?.phone && !info?.primary_email) return null;
+              return (
+                <address className="mt-6 space-y-1 text-xs not-italic text-muted-foreground">
+                  {addr && (
+                    <p className="whitespace-pre-line">
+                      {brandName}
+                      {"\n"}
+                      {addr}
+                    </p>
+                  )}
+                  {info?.phone && (
+                    <p>
+                      <a
+                        href={`tel:${info.phone.replace(/\s/g, "")}`}
+                        className="hover:text-primary"
+                      >
+                        {info.phone}
+                      </a>
+                    </p>
+                  )}
+                  {info?.primary_email && (
+                    <p>
+                      <a
+                        href={`mailto:${info.primary_email}`}
+                        className="hover:text-primary"
+                      >
+                        {info.primary_email}
+                      </a>
+                    </p>
+                  )}
+                </address>
+              );
+            })()}
 
             <div className="mt-6 flex items-start gap-3 rounded-lg border border-border bg-background/60 p-3">
               <Image
