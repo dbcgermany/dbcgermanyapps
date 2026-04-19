@@ -68,12 +68,14 @@ export function OrderDetailClient({
 
   const t = {
     en: {
+      downloadInvoice: "Download invoice",
+      refundConfirm: "Refund order?",
       customer: "Customer",
       lineItems: "Tickets",
       payment: "Payment",
       timeline: "Timeline",
       refund: "Refund order",
-      refunding: "Refunding...",
+      refunding: "Refunding…",
       tier: "Tier",
       attendee: "Attendee",
       checkedIn: "Checked in",
@@ -93,12 +95,14 @@ export function OrderDetailClient({
       stripe: "Stripe",
     },
     de: {
-      customer: "Kunde",
+      downloadInvoice: "Rechnung herunterladen",
+      refundConfirm: "Bestellung erstatten?",
+      customer: "Kund:in",
       lineItems: "Tickets",
       payment: "Zahlung",
       timeline: "Verlauf",
       refund: "Bestellung erstatten",
-      refunding: "Wird erstattet...",
+      refunding: "Wird erstattet…",
       tier: "Kategorie",
       attendee: "Teilnehmer:in",
       checkedIn: "Eingecheckt",
@@ -118,12 +122,14 @@ export function OrderDetailClient({
       stripe: "Stripe",
     },
     fr: {
+      downloadInvoice: "Télécharger la facture",
+      refundConfirm: "Rembourser la commande ?",
       customer: "Client",
       lineItems: "Billets",
       payment: "Paiement",
       timeline: "Chronologie",
       refund: "Rembourser",
-      refunding: "Remboursement...",
+      refunding: "Remboursement…",
       tier: "Cat\u00E9gorie",
       attendee: "Participant\u00B7e",
       checkedIn: "Enregistr\u00E9",
@@ -143,8 +149,9 @@ export function OrderDetailClient({
       stripe: "Stripe",
     },
   }[locale] ?? {
+    downloadInvoice: "Download invoice", refundConfirm: "Refund?",
     customer: "Customer", lineItems: "Tickets", payment: "Payment", timeline: "Timeline",
-    refund: "Refund", refunding: "...", tier: "Tier", attendee: "Attendee",
+    refund: "Refund", refunding: "…", tier: "Tier", attendee: "Attendee",
     checkedIn: "Checked in", notCheckedIn: "Not checked in", method: "Method",
     subtotal: "Subtotal", discount: "Discount", total: "Total", couponCode: "Coupon",
     stripeLink: "Stripe", created: "Created", emailSent: "Email sent",
@@ -163,7 +170,7 @@ export function OrderDetailClient({
   }
 
   function handleRefund() {
-    if (!confirm(t.refund + "?")) return;
+    if (!confirm(t.refundConfirm)) return;
     startTransition(async () => {
       const res = await refundOrder(order.id, locale);
       if (res.error) alert(res.error);
@@ -194,7 +201,7 @@ export function OrderDetailClient({
           rel="noopener noreferrer"
           className="rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
         >
-          Download invoice
+          {t.downloadInvoice}
         </a>
         {canRefund && (
           <>
