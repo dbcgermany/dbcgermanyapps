@@ -14,6 +14,27 @@ const STATUS_VARIANT: Record<string, "default" | "success" | "warning" | "error"
   rejected: "error",
 };
 
+const T = {
+  en: {
+    back: "← Applications",
+    incubationFrom: "Incubation application from",
+    unknownPosition: "Unknown position",
+    applicationFor: "Application for",
+  },
+  de: {
+    back: "← Bewerbungen",
+    incubationFrom: "Inkubations-Bewerbung von",
+    unknownPosition: "Unbekannte Stelle",
+    applicationFor: "Bewerbung für",
+  },
+  fr: {
+    back: "← Candidatures",
+    incubationFrom: "Candidature incubation de",
+    unknownPosition: "Poste inconnu",
+    applicationFor: "Candidature pour",
+  },
+} as const;
+
 export default async function ApplicationDetailPage({
   params,
   searchParams,
@@ -22,6 +43,7 @@ export default async function ApplicationDetailPage({
   searchParams: Promise<{ type?: string }>;
 }) {
   const { locale, id } = await params;
+  const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
   const { type } = await searchParams;
   const appType = type === "job" ? "job" : "incubation";
 
@@ -39,12 +61,12 @@ export default async function ApplicationDetailPage({
           href={`/${locale}/applications`}
           className="text-sm text-muted-foreground hover:text-foreground"
         >
-          &larr; Applications
+          {t.back}
         </Link>
 
         <PageHeader
           title={data.company_name || data.founder_name}
-          description={`Incubation application from ${data.founder_name}`}
+          description={`${t.incubationFrom} ${data.founder_name}`}
           cta={
             <Badge variant={STATUS_VARIANT[data.status] ?? "default"}>
               {data.status}
@@ -72,8 +94,8 @@ export default async function ApplicationDetailPage({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const jobOffers = data.job_offers as any;
   const jobTitle = Array.isArray(jobOffers)
-    ? jobOffers[0]?.title_en ?? "Unknown position"
-    : jobOffers?.title_en ?? "Unknown position";
+    ? jobOffers[0]?.title_en ?? t.unknownPosition
+    : jobOffers?.title_en ?? t.unknownPosition;
 
   return (
     <div>
@@ -81,12 +103,12 @@ export default async function ApplicationDetailPage({
         href={`/${locale}/applications?tab=jobs`}
         className="text-sm text-muted-foreground hover:text-foreground"
       >
-        &larr; Applications
+        {t.back}
       </Link>
 
       <PageHeader
         title={data.applicant_name}
-        description={`Application for ${jobTitle}`}
+        description={`${t.applicationFor} ${jobTitle}`}
         cta={
           <Badge variant={STATUS_VARIANT[data.status] ?? "default"}>
             {data.status}
