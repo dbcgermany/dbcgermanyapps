@@ -901,7 +901,7 @@ function ReportSection({
         </p>
       ) : (
         <>
-          <div className="mt-4 overflow-hidden rounded-lg border border-border">
+          <div className="mt-4 overflow-x-auto rounded-lg border border-border">
             {children}
           </div>
           <p className="mt-2 text-xs text-muted-foreground">

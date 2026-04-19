@@ -124,7 +124,7 @@ export function ScanClient({
     };
   }, [eventId, status.kind, processToken]);
 
-  async function handleManualCheckIn(e: React.FormEvent) {
+  async function handleManualCheckIn(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!manualToken.trim()) return;
     await processToken(manualToken.trim());
@@ -203,8 +203,8 @@ export function ScanClient({
         </select>
       </div>
 
-      {/* Stats */}
-      <div className="rounded-lg border border-border p-4">
+      {/* Stats — sticky at the top on mobile so it's always visible while scanning */}
+      <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-10 -mx-4 rounded-none border-y border-border bg-surface/90 p-4 backdrop-blur-xl supports-backdrop-filter:bg-surface/75 sm:static sm:mx-0 sm:rounded-lg sm:border">
         <div className="flex items-end justify-between">
           <div>
             <p className="font-heading text-3xl font-bold">
@@ -222,7 +222,7 @@ export function ScanClient({
         </div>
         <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
           <div
-            className="h-full bg-primary transition-all"
+            className="h-full bg-primary transition-[width] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
             style={{ width: `${rate}%` }}
           />
         </div>
@@ -233,7 +233,7 @@ export function ScanClient({
         <button
           onClick={() => setStatus({ kind: "scanning" })}
           disabled={!eventId}
-          className="w-full rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 disabled:opacity-50"
+          className="w-full rounded-xl bg-primary px-6 py-4 text-base font-semibold text-primary-foreground shadow-sm transition-transform active:scale-[0.98] hover:bg-primary/90 disabled:opacity-50 disabled:active:scale-100"
         >
           {t.startScan}
         </button>
@@ -251,13 +251,13 @@ export function ScanClient({
         </div>
       )}
 
-      {/* Scan result banner */}
+      {/* Scan result banner — large so staff can read it across a loud room */}
       {status.kind === "success" && (
-        <div className="rounded-lg border-2 border-green-500 bg-green-50 p-4 dark:bg-green-900/20">
-          <p className="font-heading text-xl font-bold text-green-700 dark:text-green-400">
+        <div className="rounded-xl border-2 border-green-500 bg-green-50 p-5 dark:bg-green-900/20">
+          <p className="font-heading text-2xl font-bold text-green-700 dark:text-green-400 sm:text-xl">
             &#x2713; {t.checkedIn}
           </p>
-          <p className="mt-1 text-sm font-medium">
+          <p className="mt-2 text-base font-semibold sm:text-sm">
             {status.result.attendeeName}
           </p>
           <p className="text-xs text-muted-foreground">
@@ -267,8 +267,8 @@ export function ScanClient({
       )}
 
       {status.kind === "error" && (
-        <div className="rounded-lg border-2 border-red-500 bg-red-50 p-4 dark:bg-red-900/20">
-          <p className="font-heading text-xl font-bold text-red-700 dark:text-red-400">
+        <div className="rounded-xl border-2 border-red-500 bg-red-50 p-5 dark:bg-red-900/20">
+          <p className="font-heading text-2xl font-bold text-red-700 dark:text-red-400 sm:text-xl">
             &#x2715;{" "}
             {status.result.error
               ? t.invalid
@@ -277,7 +277,7 @@ export function ScanClient({
                 : t.invalid}
           </p>
           {status.result.attendeeName && (
-            <p className="mt-1 text-sm font-medium">
+            <p className="mt-2 text-base font-semibold sm:text-sm">
               {status.result.attendeeName}
             </p>
           )}
@@ -303,14 +303,19 @@ export function ScanClient({
         <div className="flex gap-2">
           <input
             type="text"
+            inputMode="text"
+            autoCapitalize="characters"
+            autoComplete="off"
+            autoCorrect="off"
+            spellCheck={false}
             value={manualToken}
             onChange={(e) => setManualToken(e.target.value)}
             placeholder={t.enterToken}
-            className="flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ring"
+            className="min-w-0 flex-1 rounded-md border border-input bg-background px-3 py-3 text-base font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-ring"
           />
           <button
             type="submit"
-            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            className="shrink-0 rounded-md bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-transform active:scale-[0.98] hover:bg-primary/90"
           >
             {t.submit}
           </button>

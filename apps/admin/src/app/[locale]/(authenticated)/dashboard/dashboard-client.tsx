@@ -85,7 +85,8 @@ export function DashboardClient({
     <>
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
         <DateRangeSelect value={range} onChange={handleRangeChange} />
-        <p className="text-xs text-muted-foreground">
+        {/* Mobile already shows the two date inputs; hide the redundant summary. */}
+        <p className="hidden text-xs text-muted-foreground sm:block">
           {range.from} → {range.to}
         </p>
       </div>
@@ -250,8 +251,8 @@ export function DashboardClient({
         {kpis.topEvents.length === 0 ? (
           <EmptyState message={t.noEvents} className="mt-6" />
         ) : (
-          <div className="mt-4 overflow-hidden rounded-lg border border-border">
-            <table className="w-full text-sm">
+          <div className="mt-4 overflow-x-auto rounded-lg border border-border">
+            <table className="w-full min-w-96 text-sm">
               <thead>
                 <tr className="border-b border-border bg-muted/50">
                   <th className="px-4 py-3 text-left font-medium">Event</th>
