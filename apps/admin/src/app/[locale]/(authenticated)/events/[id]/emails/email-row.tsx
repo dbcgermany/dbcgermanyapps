@@ -8,6 +8,36 @@ import {
   dispatchEmailSequence,
 } from "@/actions/email-sequences";
 
+const ER_T = {
+  en: {
+    delayPh: "Delay (days after event)", sort: "Sort",
+    subject: "Subject", body: "Body (use {name} and {event} tokens)",
+    saving: "Saving…", save: "Save", cancel: "Cancel",
+    sent: "Sent",
+    edit: "Edit", sendNow: "Send now",
+    sendConfirm: "Send this sequence to all attendees now?",
+    delete: "Delete", deleteConfirm: 'Delete sequence "{subject}"?',
+  },
+  de: {
+    delayPh: "Verzögerung (Tage nach Event)", sort: "Sort.",
+    subject: "Betreff", body: "Inhalt (Platzhalter {name} und {event})",
+    saving: "Wird gespeichert…", save: "Speichern", cancel: "Abbrechen",
+    sent: "Gesendet",
+    edit: "Bearbeiten", sendNow: "Jetzt senden",
+    sendConfirm: "Diese Sequenz jetzt an alle Teilnehmenden senden?",
+    delete: "Löschen", deleteConfirm: "Sequenz „{subject}“ löschen?",
+  },
+  fr: {
+    delayPh: "Délai (jours après l’événement)", sort: "Ordre",
+    subject: "Objet", body: "Corps (utilisez {name} et {event})",
+    saving: "Enregistrement…", save: "Enregistrer", cancel: "Annuler",
+    sent: "Envoyé",
+    edit: "Modifier", sendNow: "Envoyer maintenant",
+    sendConfirm: "Envoyer cette séquence à tous les participants maintenant ?",
+    delete: "Supprimer", deleteConfirm: "Supprimer la séquence « {subject} » ?",
+  },
+} as const;
+
 type Sequence = {
   id: string;
   delay_days: number;
@@ -32,6 +62,7 @@ export function EmailRow({
   locale: string;
 }) {
   const [mode, setMode] = useState<"view" | "edit">("view");
+  const t = ER_T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof ER_T];
 
   const [state, formAction, isPending] = useActionState(
     async (
@@ -65,20 +96,20 @@ export function EmailRow({
             min="0"
             defaultValue={seq.delay_days}
             required
-            placeholder="Delay (days after event)"
+            placeholder={t.delayPh}
             className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
           />
           <input
             name="sort_order"
             type="number"
             defaultValue={seq.sort_order}
-            placeholder="Sort"
+            placeholder={t.sort}
             className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
           />
         </div>
 
         <div className="space-y-2">
-          <p className="text-xs font-medium text-muted-foreground">Subject</p>
+          <p className="text-xs font-medium text-muted-foreground">{t.subject}</p>
           <div className="grid gap-2 sm:grid-cols-3">
             <input
               name="subject_en"
@@ -104,7 +135,7 @@ export function EmailRow({
 
         <div className="space-y-2">
           <p className="text-xs font-medium text-muted-foreground">
-            Body (use {"{name}"} and {"{event}"} tokens)
+            {t.body}
           </p>
           <div className="grid gap-2 sm:grid-cols-3">
             <textarea
@@ -138,14 +169,14 @@ export function EmailRow({
             disabled={isPending}
             className="rounded-md bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
           >
-            {isPending ? "Saving..." : "Save"}
+            {isPending ? t.saving : t.save}
           </button>
           <button
             type="button"
             onClick={() => setMode("view")}
             className="rounded-md border border-input px-4 py-1.5 text-xs font-medium hover:bg-accent"
           >
-            Cancel
+            {t.cancel}
           </button>
         </div>
       </form>
@@ -163,7 +194,7 @@ export function EmailRow({
             <p className="font-medium">{seq.subject_en}</p>
             {seq.sent_at && (
               <Badge variant="success">
-                Sent
+                {t.sent}
               </Badge>
             )}
           </div>
@@ -179,14 +210,13 @@ export function EmailRow({
               onClick={() => setMode("edit")}
               className="text-xs text-primary hover:text-primary/80"
             >
-              Edit
+              {t.edit}
             </button>
           )}
           {!seq.sent_at && (
             <form
               action={async () => {
-                if (!confirm("Send this sequence to all attendees now?"))
-                  return;
+                if (!confirm(t.sendConfirm)) return;
                 await dispatchEmailSequence(seq.id, eventId, locale);
               }}
             >
@@ -194,13 +224,13 @@ export function EmailRow({
                 type="submit"
                 className="text-xs text-primary hover:text-primary/80"
               >
-                Send now
+                {t.sendNow}
               </button>
             </form>
           )}
           <form
             action={async () => {
-              if (!confirm(`Delete sequence "${seq.subject_en}"?`)) return;
+              if (!confirm(t.deleteConfirm.replace("{subject}", seq.subject_en))) return;
               await deleteEmailSequence(seq.id, eventId, locale);
             }}
           >
@@ -208,7 +238,7 @@ export function EmailRow({
               type="submit"
               className="text-xs text-red-500 hover:text-red-700"
             >
-              Delete
+              {t.delete}
             </button>
           </form>
         </div>

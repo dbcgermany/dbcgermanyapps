@@ -20,19 +20,23 @@ export default async function EmailsPage({
           href={`/${locale}/events/${eventId}`}
           className="text-sm text-muted-foreground hover:text-foreground"
         >
-          &larr; Back to event
+          {locale === "de"
+            ? "← Zurück zur Veranstaltung"
+            : locale === "fr"
+              ? "← Retour à l’événement"
+              : "← Back to event"}
         </Link>
         <PageHeader
           title={locale === "de"
             ? "E-Mail-Sequenz"
             : locale === "fr"
-              ? "S\u00E9quence d\u2019e-mails"
+              ? "Séquence d’e-mails"
               : "Email Sequence"}
           description={locale === "de"
-            ? "Automatische Follow-up-E-Mails an alle Teilnehmer nach der Veranstaltung. Verwenden Sie {name} f\u00FCr den Namen des Teilnehmers."
+            ? "Automatische Follow-up-E-Mails an alle Teilnehmer nach der Veranstaltung. Verwenden Sie {name} für den Namen des Teilnehmers."
             : locale === "fr"
-              ? "E-mails de suivi automatiques envoy\u00E9s \u00E0 tous les participants apr\u00E8s l\u2019\u00E9v\u00E9nement. Utilisez {name} pour le nom du participant."
-              : "Automated follow-up emails sent to all attendees after the event. Use {name} for the attendee\u2019s name."}
+              ? "E-mails de suivi automatiques envoyés à tous les participants après l’événement. Utilisez {name} pour le nom du participant."
+              : "Automated follow-up emails sent to all attendees after the event. Use {name} for the attendee’s name."}
           className="mt-2"
         />
       </div>
@@ -53,7 +57,13 @@ export default async function EmailsPage({
 
       {/* Add new sequence */}
       <Card padding="md" className="mt-8">
-        <h2 className="font-heading text-lg font-semibold">Add Sequence</h2>
+        <h2 className="font-heading text-lg font-semibold">
+          {locale === "de"
+            ? "Sequenz hinzufügen"
+            : locale === "fr"
+              ? "Ajouter une séquence"
+              : "Add Sequence"}
+        </h2>
         <SequenceForm eventId={eventId} locale={locale} />
       </Card>
     </div>
