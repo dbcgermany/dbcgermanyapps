@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Montserrat, Ubuntu, DM_Sans } from "next/font/google";
 import { ThemeProvider, CookieConsent } from "@dbc/ui";
 import { Analytics } from "@vercel/analytics/react";
@@ -62,6 +62,11 @@ export async function generateMetadata(): Promise<Metadata> {
     twitter: {
       card: "summary_large_image",
     },
+    appleWebApp: {
+      capable: true,
+      title: company?.brand_name ?? "DBC Germany",
+      statusBarStyle: "default",
+    },
     verification,
     robots: {
       index: true,
@@ -70,6 +75,13 @@ export async function generateMetadata(): Promise<Metadata> {
     },
   };
 }
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+  ],
+};
 
 export default async function RootLayout({
   children,

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
 import { Montserrat, Ubuntu, DM_Sans } from "next/font/google";
 import { ThemeProvider, NO_FLASH_THEME_SCRIPT } from "@dbc/ui";
@@ -28,6 +28,18 @@ export const metadata: Metadata = {
   title: "DBC Germany Admin",
   description: "Admin dashboard for DBC Germany event management",
   robots: "noindex, nofollow",
+  appleWebApp: {
+    capable: true,
+    title: "DBC Admin",
+    statusBarStyle: "black-translucent",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+  ],
 };
 
 export default async function RootLayout({

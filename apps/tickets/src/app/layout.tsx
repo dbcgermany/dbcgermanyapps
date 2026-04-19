@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Montserrat, Ubuntu, DM_Sans } from "next/font/google";
 import { ThemeProvider, CookieConsent } from "@dbc/ui";
 import "./globals.css";
@@ -26,6 +26,18 @@ export const metadata: Metadata = {
   title: "DBC Germany Tickets",
   description:
     "Get your tickets for Richesses D'Afrique conferences and masterclasses by DBC Germany.",
+  appleWebApp: {
+    capable: true,
+    title: "DBC Tickets",
+    statusBarStyle: "default",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+  ],
 };
 
 export default function RootLayout({
