@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { getEventAttendees } from "@/actions/attendees";
 import { AttendeesList } from "./attendees-list";
 import { PageHeader } from "@/components/page-header";
@@ -10,24 +10,17 @@ export default async function AttendeesPage({
 }) {
   const { locale, id: eventId } = await params;
   const attendees = await getEventAttendees(eventId);
+  const tBack = await getTranslations({ locale, namespace: "admin.back" });
 
   const checkedIn = attendees.filter((a) => a.checked_in_at).length;
 
   return (
     <div>
-      <div>
-        <Link
-          href={`/${locale}/events/${eventId}`}
-          className="text-sm text-muted-foreground hover:text-foreground"
-        >
-          &larr; Back to event
-        </Link>
-        <PageHeader
-          title={locale === "de" ? "Teilnehmer" : locale === "fr" ? "Participants" : "Attendees"}
-          description={`${checkedIn} / ${attendees.length} ${locale === "de" ? "eingecheckt" : locale === "fr" ? "enregistr\u00E9s" : "checked in"}`}
-          className="mt-2"
-        />
-      </div>
+      <PageHeader
+        title={locale === "de" ? "Teilnehmer" : locale === "fr" ? "Participants" : "Attendees"}
+        description={`${checkedIn} / ${attendees.length} ${locale === "de" ? "eingecheckt" : locale === "fr" ? "enregistr\u00E9s" : "checked in"}`}
+        back={{ href: `/${locale}/events/${eventId}`, label: tBack("event") }}
+      />
 
       <AttendeesList
         locale={locale}

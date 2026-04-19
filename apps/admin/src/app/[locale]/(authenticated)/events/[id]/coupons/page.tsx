@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { getCoupons } from "@/actions/coupons";
 import { createServerClient } from "@dbc/supabase/server";
 import { CouponForm } from "./coupon-form";
@@ -7,9 +7,9 @@ import { Card } from "@dbc/ui";
 import { PageHeader } from "@/components/page-header";
 
 const T = {
-  en: { back: "← Back to event", title: "Coupon Codes", addCoupon: "Add Coupon" },
-  de: { back: "← Zurück zur Veranstaltung", title: "Rabattcodes", addCoupon: "Rabattcode hinzufügen" },
-  fr: { back: "← Retour à l’événement", title: "Codes promo", addCoupon: "Ajouter un code" },
+  en: { title: "Coupon Codes", addCoupon: "Add Coupon" },
+  de: { title: "Rabattcodes", addCoupon: "Rabattcode hinzufügen" },
+  fr: { title: "Codes promo", addCoupon: "Ajouter un code" },
 } as const;
 
 export default async function CouponsPage({
@@ -19,6 +19,7 @@ export default async function CouponsPage({
 }) {
   const { locale, id: eventId } = await params;
   const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
+  const tBack = await getTranslations({ locale, namespace: "admin.back" });
   const coupons = await getCoupons(eventId);
   const supabase = await createServerClient();
   const { data: tiersData } = await supabase
@@ -35,15 +36,10 @@ export default async function CouponsPage({
 
   return (
     <div>
-      <div>
-        <Link
-          href={`/${locale}/events/${eventId}`}
-          className="text-sm text-muted-foreground hover:text-foreground"
-        >
-          {t.back}
-        </Link>
-        <PageHeader title={t.title} className="mt-2" />
-      </div>
+      <PageHeader
+        title={t.title}
+        back={{ href: `/${locale}/events/${eventId}`, label: tBack("event") }}
+      />
 
       {/* Existing coupons */}
       {coupons.length > 0 && (

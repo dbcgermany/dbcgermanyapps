@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import {
   getNewsletter,
   listContactCategories,
@@ -12,7 +12,6 @@ import { NewsletterComposer } from "../composer";
 
 const T = {
   en: {
-    back: "← All newsletters",
     untitled: "(untitled)",
     statusLabel: "Status",
     analytics: "Delivery analytics",
@@ -22,7 +21,6 @@ const T = {
     unsubscribes: "unsubscribes since send",
   },
   de: {
-    back: "← Alle Newsletter",
     untitled: "(ohne Titel)",
     statusLabel: "Status",
     analytics: "Versand-Analytics",
@@ -32,7 +30,6 @@ const T = {
     unsubscribes: "Abmeldungen seit Versand",
   },
   fr: {
-    back: "← Toutes les newsletters",
     untitled: "(sans titre)",
     statusLabel: "Statut",
     analytics: "Analytique d’envoi",
@@ -50,6 +47,7 @@ export default async function NewsletterEditPage({
 }) {
   const { locale, id } = await params;
   const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
+  const tBack = await getTranslations({ locale, namespace: "admin.back" });
   const [nl, categories] = await Promise.all([
     getNewsletter(id),
     listContactCategories(),
@@ -63,16 +61,10 @@ export default async function NewsletterEditPage({
 
   return (
     <div>
-      <Link
-        href={`/${locale}/newsletters`}
-        className="text-sm text-muted-foreground hover:text-foreground"
-      >
-        {t.back}
-      </Link>
       <PageHeader
         title={nl.subject || t.untitled}
         description={`${t.statusLabel}: ${nl.status}`}
-        className="mt-3"
+        back={{ href: `/${locale}/newsletters`, label: tBack("newsletters") }}
       />
 
       {/* Delivery analytics */}

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { getEventExpenses } from "@/actions/expenses";
 import { getEventFinancialSummary } from "@/actions/reports";
 import { BudgetClient } from "./budget-client";
@@ -59,6 +59,7 @@ export default async function BudgetPage({
     | "de"
     | "fr";
   const t = T[l];
+  const tBack = await getTranslations({ locale, namespace: "admin.back" });
 
   const [{ expenses, totalCents, count }, financial] = await Promise.all([
     getEventExpenses(eventId),
@@ -87,15 +88,11 @@ export default async function BudgetPage({
 
   return (
     <div>
-      <div>
-        <Link
-          href={`/${locale}/events/${eventId}`}
-          className="text-sm text-muted-foreground hover:text-foreground"
-        >
-          &larr; {t.back}
-        </Link>
-        <PageHeader title={t.title} description={t.desc} className="mt-2" />
-      </div>
+      <PageHeader
+        title={t.title}
+        description={t.desc}
+        back={{ href: `/${locale}/events/${eventId}`, label: tBack("event") }}
+      />
 
       {/* Summary cards — 4 KPIs */}
       <div className="mt-6">

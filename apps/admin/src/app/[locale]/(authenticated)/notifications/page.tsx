@@ -11,6 +11,7 @@ import {
   Undo2,
   type LucideIcon,
 } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import {
   getAllNotifications,
   markReadAction,
@@ -39,6 +40,7 @@ export default async function NotificationsPage({
 }) {
   const { locale } = await params;
   const notifications = await getAllNotifications();
+  const tBack = await getTranslations({ locale, namespace: "admin.back" });
 
   const unreadCount = notifications.filter((n) => !n.read_at).length;
 
@@ -53,6 +55,7 @@ export default async function NotificationsPage({
       <PageHeader
         title={t.title}
         description={unreadCount > 0 ? `${unreadCount} ${t.unread}` : undefined}
+        back={{ href: `/${locale}/dashboard`, label: tBack("dashboard") }}
         cta={unreadCount > 0 ? (
           <form
             action={async () => {

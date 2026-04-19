@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { getEvent } from "@/actions/events";
 import { getEventChecklist } from "@/actions/checklist";
 import { getStaff } from "@/actions/staff";
@@ -7,9 +7,9 @@ import { PageHeader } from "@/components/page-header";
 import { ChecklistClient } from "./checklist-client";
 
 const PAGE_T = {
-  en: { back: "← Event", title: "Checklist", done: "done", overdue: "overdue" },
-  de: { back: "← Veranstaltung", title: "Checkliste", done: "erledigt", overdue: "überfällig" },
-  fr: { back: "← Événement", title: "Checklist", done: "terminé", overdue: "en retard" },
+  en: { title: "Checklist", done: "done", overdue: "overdue" },
+  de: { title: "Checkliste", done: "erledigt", overdue: "überfällig" },
+  fr: { title: "Checklist", done: "terminé", overdue: "en retard" },
 } as const;
 
 export default async function ChecklistPage({
@@ -19,6 +19,7 @@ export default async function ChecklistPage({
 }) {
   const { locale, id } = await params;
   const pt = PAGE_T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof PAGE_T];
+  const tBack = await getTranslations({ locale, namespace: "admin.back" });
 
   let event;
   try {
@@ -40,16 +41,10 @@ export default async function ChecklistPage({
 
   return (
     <div>
-      <Link
-        href={`/${locale}/events/${id}`}
-        className="text-sm text-muted-foreground hover:text-foreground"
-      >
-        {pt.back}
-      </Link>
-
       <PageHeader
         title={pt.title}
         description={`${progress.done}/${progress.total} ${pt.done} (${pct}%)${progress.overdue > 0 ? ` \u00B7 ${progress.overdue} ${pt.overdue}` : ""}`}
+        back={{ href: `/${locale}/events/${id}`, label: tBack("event") }}
       />
 
       <ChecklistClient

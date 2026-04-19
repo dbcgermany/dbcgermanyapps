@@ -1,6 +1,7 @@
 "use client";
 
 import { use, useActionState } from "react";
+import { useTranslations } from "next-intl";
 import { createNewsPost } from "@/actions/news";
 import { PageHeader } from "@/components/page-header";
 import { CoverImageUpload } from "@/components/cover-image-upload";
@@ -36,6 +37,7 @@ export default function NewNewsPostPage({
 }) {
   const { locale } = use(params);
   const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
+  const tBack = useTranslations("admin.back");
 
   const [state, formAction, isPending] = useActionState(
     async (_prev: { error: string } | null, formData: FormData) => {
@@ -47,7 +49,10 @@ export default function NewNewsPostPage({
 
   return (
     <div>
-      <PageHeader title={t.title} />
+      <PageHeader
+        title={t.title}
+        back={{ href: `/${locale}/news`, label: tBack("news") }}
+      />
 
       <form action={formAction} className="mt-8 max-w-3xl space-y-6">
         {state?.error && (

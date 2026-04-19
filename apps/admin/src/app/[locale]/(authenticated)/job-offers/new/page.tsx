@@ -1,6 +1,7 @@
 "use client";
 
 import { use, useActionState } from "react";
+import { useTranslations } from "next-intl";
 import { createJobOffer } from "@/actions/job-offers";
 import { PageHeader } from "@/components/page-header";
 
@@ -47,6 +48,7 @@ export default function NewJobOfferPage({
 }) {
   const { locale } = use(params);
   const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
+  const tBack = useTranslations("admin.back");
 
   const employmentTypes = [
     { value: "full_time", label: t.fullTime },
@@ -65,7 +67,10 @@ export default function NewJobOfferPage({
 
   return (
     <div>
-      <PageHeader title={t.title} />
+      <PageHeader
+        title={t.title}
+        back={{ href: `/${locale}/job-offers`, label: tBack("jobOffers") }}
+      />
 
       <form action={formAction} className="mt-8 max-w-3xl space-y-6">
         {state?.error && (

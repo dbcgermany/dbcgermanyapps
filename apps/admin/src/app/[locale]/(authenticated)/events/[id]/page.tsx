@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import {
   Calendar,
   ClipboardList,
@@ -28,7 +29,6 @@ import { DeleteEventButton } from "./delete-button";
 
 const T = {
   en: {
-    back: "← Back to events",
     publish: "Publish",
     unpublish: "Unpublish",
     duplicate: "Duplicate",
@@ -98,7 +98,6 @@ const T = {
       "Deleting an event is irreversible and removes all associated tickets, orders, and data.",
   },
   de: {
-    back: "← Zurück zu Veranstaltungen",
     publish: "Veröffentlichen",
     unpublish: "Zurückziehen",
     duplicate: "Duplizieren",
@@ -168,7 +167,6 @@ const T = {
       "Das Löschen einer Veranstaltung ist unwiderruflich und entfernt alle zugehörigen Tickets, Bestellungen und Daten.",
   },
   fr: {
-    back: "← Retour aux événements",
     publish: "Publier",
     unpublish: "Dépublier",
     duplicate: "Dupliquer",
@@ -252,6 +250,7 @@ export default async function EventDetailPage({
     | "de"
     | "fr";
   const t = T[l];
+  const tBack = await getTranslations({ locale, namespace: "admin.back" });
 
   let event;
   try {
@@ -302,15 +301,9 @@ export default async function EventDetailPage({
     <div>
       {/* Header */}
       <div>
-        <Link
-          href={`/${locale}/events`}
-          className="text-sm text-muted-foreground hover:text-foreground"
-        >
-          {t.back}
-        </Link>
         <PageHeader
           title={(event[titleKey] as string) || event.title_en}
-          className="mt-2"
+          back={{ href: `/${locale}/events`, label: tBack("events") }}
           cta={
             <div className="flex flex-wrap gap-2">
               <form

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { getStaffMember, getEventsForAssignment } from "@/actions/staff";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@dbc/ui";
@@ -38,24 +39,19 @@ export default async function StaffDetailPage({
   const displayName = data.profile.display_name || data.profile.email;
 
   const PT = {
-    en: { back: "← Staff", teamProfile: "Team profile →" },
-    de: { back: "← Team (intern)", teamProfile: "Öffentliches Profil →" },
-    fr: { back: "← Équipe (interne)", teamProfile: "Profil public →" },
+    en: { teamProfile: "Team profile →" },
+    de: { teamProfile: "Öffentliches Profil →" },
+    fr: { teamProfile: "Profil public →" },
   } as const;
   const pt = PT[l];
+  const tBack = await getTranslations({ locale, namespace: "admin.back" });
 
   return (
     <div>
-      <Link
-        href={`/${locale}/staff`}
-        className="text-sm text-muted-foreground hover:text-foreground"
-      >
-        {pt.back}
-      </Link>
-
       <PageHeader
         title={displayName}
         description={data.profile.email}
+        back={{ href: `/${locale}/staff`, label: tBack("staff") }}
         cta={
           <div className="flex items-center gap-3">
             {data.linkedTeamMember && (

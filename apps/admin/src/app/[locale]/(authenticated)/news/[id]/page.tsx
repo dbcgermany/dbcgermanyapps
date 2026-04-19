@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { getNewsPost, toggleNewsPublish, deleteNewsPost } from "@/actions/news";
 import { PageHeader } from "@/components/page-header";
 import { EditNewsForm } from "./edit-form";
@@ -15,12 +16,14 @@ export default async function EditNewsPage({
 }) {
   const { locale, id } = await params;
   const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
+  const tBack = await getTranslations({ locale, namespace: "admin.back" });
   const post = await getNewsPost(id);
 
   return (
     <div>
       <PageHeader
         title={t.title}
+        back={{ href: `/${locale}/news`, label: tBack("news") }}
         cta={
           <div className="flex items-center gap-3">
             <form

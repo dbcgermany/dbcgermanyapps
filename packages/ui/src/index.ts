@@ -54,3 +54,4 @@ export { NotFoundHero } from "./not-found-hero";
 export type { NotFoundHeroProps } from "./not-found-hero";
 export { Reveal, PageTransition } from "./motion";
 export type { RevealProps, RevealVariant, PageTransitionProps } from "./motion";
+export { PageBack } from "./page-back";

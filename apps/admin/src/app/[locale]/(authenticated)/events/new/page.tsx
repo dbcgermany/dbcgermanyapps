@@ -1,8 +1,8 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, use } from "react";
+import { useTranslations } from "next-intl";
 import { createEvent } from "@/actions/events";
-import { use } from "react";
 import { CoverImageUpload } from "@/components/cover-image-upload";
 import { PageHeader } from "@/components/page-header";
 
@@ -73,6 +73,7 @@ export default function NewEventPage({
 }) {
   const { locale } = use(params);
   const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
+  const tBack = useTranslations("admin.back");
 
   const [state, formAction, isPending] = useActionState(
     async (_prev: { error: string } | null, formData: FormData) => {
@@ -84,7 +85,10 @@ export default function NewEventPage({
 
   return (
     <div>
-      <PageHeader title={t.pageTitle} />
+      <PageHeader
+        title={t.pageTitle}
+        back={{ href: `/${locale}/events`, label: tBack("events") }}
+      />
 
       <form action={formAction} className="mt-8 max-w-2xl space-y-6">
         {state?.error && (

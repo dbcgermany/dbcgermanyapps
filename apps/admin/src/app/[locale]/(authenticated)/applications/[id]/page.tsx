@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { getIncubationApplication } from "@/actions/applications";
 import { getJobApplication } from "@/actions/job-applications";
 import { PageHeader } from "@/components/page-header";
@@ -16,19 +16,16 @@ const STATUS_VARIANT: Record<string, "default" | "success" | "warning" | "error"
 
 const T = {
   en: {
-    back: "← Applications",
     incubationFrom: "Incubation application from",
     unknownPosition: "Unknown position",
     applicationFor: "Application for",
   },
   de: {
-    back: "← Bewerbungen",
     incubationFrom: "Inkubations-Bewerbung von",
     unknownPosition: "Unbekannte Stelle",
     applicationFor: "Bewerbung für",
   },
   fr: {
-    back: "← Candidatures",
     incubationFrom: "Candidature incubation de",
     unknownPosition: "Poste inconnu",
     applicationFor: "Candidature pour",
@@ -44,6 +41,7 @@ export default async function ApplicationDetailPage({
 }) {
   const { locale, id } = await params;
   const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
+  const tBack = await getTranslations({ locale, namespace: "admin.back" });
   const { type } = await searchParams;
   const appType = type === "job" ? "job" : "incubation";
 
@@ -57,16 +55,10 @@ export default async function ApplicationDetailPage({
 
     return (
       <div>
-        <Link
-          href={`/${locale}/applications`}
-          className="text-sm text-muted-foreground hover:text-foreground"
-        >
-          {t.back}
-        </Link>
-
         <PageHeader
           title={data.company_name || data.founder_name}
           description={`${t.incubationFrom} ${data.founder_name}`}
+          back={{ href: `/${locale}/applications`, label: tBack("applications") }}
           cta={
             <Badge variant={STATUS_VARIANT[data.status] ?? "default"}>
               {data.status}
@@ -99,16 +91,10 @@ export default async function ApplicationDetailPage({
 
   return (
     <div>
-      <Link
-        href={`/${locale}/applications?tab=jobs`}
-        className="text-sm text-muted-foreground hover:text-foreground"
-      >
-        {t.back}
-      </Link>
-
       <PageHeader
         title={data.applicant_name}
         description={`${t.applicationFor} ${jobTitle}`}
+        back={{ href: `/${locale}/applications?tab=jobs`, label: tBack("applications") }}
         cta={
           <Badge variant={STATUS_VARIANT[data.status] ?? "default"}>
             {data.status}

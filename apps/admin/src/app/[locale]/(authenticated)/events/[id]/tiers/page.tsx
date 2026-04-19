@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { getTiers } from "@/actions/tiers";
 import { TierForm } from "./tier-form";
 import { TiersSortable } from "./tiers-sortable";
@@ -6,9 +6,9 @@ import { Card } from "@dbc/ui";
 import { PageHeader } from "@/components/page-header";
 
 const T = {
-  en: { back: "← Back to event", title: "Ticket Tiers", addTier: "Add Tier" },
-  de: { back: "← Zurück zur Veranstaltung", title: "Ticketkategorien", addTier: "Kategorie hinzufügen" },
-  fr: { back: "← Retour à l’événement", title: "Catégories de billets", addTier: "Ajouter une catégorie" },
+  en: { title: "Ticket Tiers", addTier: "Add Tier" },
+  de: { title: "Ticketkategorien", addTier: "Kategorie hinzufügen" },
+  fr: { title: "Catégories de billets", addTier: "Ajouter une catégorie" },
 } as const;
 
 export default async function TiersPage({
@@ -18,21 +18,15 @@ export default async function TiersPage({
 }) {
   const { locale, id: eventId } = await params;
   const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
+  const tBack = await getTranslations({ locale, namespace: "admin.back" });
   const tiers = await getTiers(eventId);
 
   return (
     <div>
-      <div className="flex items-center justify-between">
-        <div>
-          <Link
-            href={`/${locale}/events/${eventId}`}
-            className="text-sm text-muted-foreground hover:text-foreground"
-          >
-            {t.back}
-          </Link>
-          <PageHeader title={t.title} className="mt-2" />
-        </div>
-      </div>
+      <PageHeader
+        title={t.title}
+        back={{ href: `/${locale}/events/${eventId}`, label: tBack("event") }}
+      />
 
       {/* Existing tiers */}
       {tiers.length > 0 && (

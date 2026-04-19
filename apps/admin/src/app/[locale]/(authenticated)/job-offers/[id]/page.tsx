@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import {
   getJobOffer,
   toggleJobOfferPublished,
@@ -20,6 +21,7 @@ export default async function EditJobOfferPage({
 }) {
   const { locale, id } = await params;
   const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
+  const tBack = await getTranslations({ locale, namespace: "admin.back" });
   const job = await getJobOffer(id);
 
   // Count applications to decide whether to show delete
@@ -34,6 +36,7 @@ export default async function EditJobOfferPage({
     <div>
       <PageHeader
         title={t.title}
+        back={{ href: `/${locale}/job-offers`, label: tBack("jobOffers") }}
         cta={
           <div className="flex items-center gap-3">
             <form

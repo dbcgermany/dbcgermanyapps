@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { getEventMedia } from "@/actions/media";
 import { MediaForm } from "./media-form";
 import { MediaSortable } from "./media-sortable";
@@ -12,26 +12,19 @@ export default async function MediaPage({
 }) {
   const { locale, id: eventId } = await params;
   const media = await getEventMedia(eventId);
+  const tBack = await getTranslations({ locale, namespace: "admin.back" });
 
   return (
     <div>
-      <div>
-        <Link
-          href={`/${locale}/events/${eventId}`}
-          className="text-sm text-muted-foreground hover:text-foreground"
-        >
-          {locale === "de" ? "← Zurück zur Veranstaltung" : locale === "fr" ? "← Retour à l’événement" : "← Back to event"}
-        </Link>
-        <PageHeader
-          title={locale === "de" ? "Medien" : locale === "fr" ? "Médias" : "Media"}
-          description={locale === "de"
-            ? "Fügen Sie Fotos, Videos und Links nach der Veranstaltung hinzu."
-            : locale === "fr"
-              ? "Ajoutez des photos, vidéos et liens après l’événement."
-              : "Add post-event photos, videos, and links."}
-          className="mt-2"
-        />
-      </div>
+      <PageHeader
+        title={locale === "de" ? "Medien" : locale === "fr" ? "Médias" : "Media"}
+        description={locale === "de"
+          ? "Fügen Sie Fotos, Videos und Links nach der Veranstaltung hinzu."
+          : locale === "fr"
+            ? "Ajoutez des photos, vidéos et liens après l’événement."
+            : "Add post-event photos, videos, and links."}
+        back={{ href: `/${locale}/events/${eventId}`, label: tBack("event") }}
+      />
 
       {/* Existing media */}
       {media.length > 0 && (

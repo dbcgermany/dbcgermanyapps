@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { getEventTiers } from "@/actions/door-sale";
 import { BulkInviteClient } from "./bulk-invite-client";
 import { DownloadSampleCsv } from "./download-sample-csv";
@@ -11,16 +11,17 @@ export default async function BulkInvitationsPage({
 }) {
   const { locale, id } = await params;
   const tiers = await getEventTiers(id);
+  const tBack = await getTranslations({ locale, namespace: "admin.back" });
 
   return (
     <div>
-      <Link
-        href={`/${locale}/events/${id}/invitations`}
-        className="text-sm text-muted-foreground hover:text-foreground"
-      >
-        ← Invitations
-      </Link>
-      <PageHeader title="Bulk invite from CSV" className="mt-3" />
+      <PageHeader
+        title="Bulk invite from CSV"
+        back={{
+          href: `/${locale}/events/${id}/invitations`,
+          label: tBack("invitations"),
+        }}
+      />
       <p className="mt-1 text-sm text-muted-foreground">
         Upload a CSV with one guest per row. Header required; columns —{" "}
         <code className="rounded bg-muted px-1 py-0.5 text-xs">email</code>{" "}

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Check } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { listInvitationsForEvent } from "@/actions/invitations";
 import { getEventTiers } from "@/actions/door-sale";
 import { InviteForm } from "./invite-form";
@@ -8,7 +9,6 @@ import { PageHeader } from "@/components/page-header";
 
 const T = {
   en: {
-    back: "← Event",
     title: "Invitations",
     description:
       "Comped tickets — guests receive a branded PDF and are tagged invited_guests in Contacts.",
@@ -23,7 +23,6 @@ const T = {
     emailPending: "Email pending",
   },
   de: {
-    back: "← Veranstaltung",
     title: "Einladungen",
     description:
       "Freitickets — Gäste erhalten ein gebrandetes PDF und werden in Kontakten als eingeladene Gäste getaggt.",
@@ -38,7 +37,6 @@ const T = {
     emailPending: "E-Mail ausstehend",
   },
   fr: {
-    back: "← Événement",
     title: "Invitations",
     description:
       "Billets offerts — les invités reçoivent un PDF personnalisé et sont étiquetés invited_guests dans Contacts.",
@@ -61,6 +59,7 @@ export default async function EventInvitationsPage({
 }) {
   const { locale, id } = await params;
   const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
+  const tBack = await getTranslations({ locale, namespace: "admin.back" });
   const [invitations, tiers] = await Promise.all([
     listInvitationsForEvent(id),
     getEventTiers(id),
@@ -68,15 +67,10 @@ export default async function EventInvitationsPage({
 
   return (
     <div>
-      <Link
-        href={`/${locale}/events/${id}`}
-        className="text-sm text-muted-foreground hover:text-foreground"
-      >
-        {t.back}
-      </Link>
       <PageHeader
         title={t.title}
         description={t.description}
+        back={{ href: `/${locale}/events/${id}`, label: tBack("event") }}
         cta={
           <Link
             href={`/${locale}/events/${id}/invitations/bulk`}
@@ -85,7 +79,6 @@ export default async function EventInvitationsPage({
             {t.bulkImport}
           </Link>
         }
-        className="mt-3"
       />
       <p className="mt-1 text-sm text-muted-foreground">
         {t.filterNote}{" "}

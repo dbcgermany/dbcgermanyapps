@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { Card } from "@dbc/ui";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { PageHeader } from "@/components/page-header";
 import { getEvent } from "@/actions/events";
 import { getRunsheetItems, populateRunsheetFromTemplate } from "@/actions/runsheet";
@@ -54,6 +54,7 @@ export default async function RunsheetPage({
     | "de"
     | "fr";
   const t = T[l];
+  const tBack = await getTranslations({ locale, namespace: "admin.back" });
 
   const eventOrNull = await getEvent(eventId).catch(() => null);
   if (!eventOrNull) notFound();
@@ -77,16 +78,10 @@ export default async function RunsheetPage({
 
   return (
     <div>
-      <Link
-        href={`/${locale}/events/${eventId}`}
-        className="text-sm text-muted-foreground hover:text-foreground"
-      >
-        &larr; {t.back}
-      </Link>
-
       <PageHeader
         title={t.title}
         description={t.description}
+        back={{ href: `/${locale}/events/${eventId}`, label: tBack("event") }}
         cta={
           <a
             href={`/api/runsheet/${eventId}?locale=${locale}`}

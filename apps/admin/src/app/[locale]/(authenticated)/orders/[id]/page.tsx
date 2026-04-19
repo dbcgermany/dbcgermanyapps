@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { getOrder } from "@/actions/orders";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@dbc/ui";
@@ -37,24 +37,19 @@ export default async function OrderDetailPage({
         : "error";
 
   const PT = {
-    en: { back: "← Orders", order: "Order" },
-    de: { back: "← Bestellungen", order: "Bestellung" },
-    fr: { back: "← Commandes", order: "Commande" },
+    en: { order: "Order" },
+    de: { order: "Bestellung" },
+    fr: { order: "Commande" },
   } as const;
   const pt = PT[l];
+  const tBack = await getTranslations({ locale, namespace: "admin.back" });
 
   return (
     <div>
-      <Link
-        href={`/${locale}/orders`}
-        className="text-sm text-muted-foreground hover:text-foreground"
-      >
-        {pt.back}
-      </Link>
-
       <PageHeader
         title={`${pt.order} #${shortId}`}
         description={`${eventTitle} — ${new Date(data.order.created_at).toLocaleDateString(locale, { year: "numeric", month: "long", day: "numeric" })}`}
+        back={{ href: `/${locale}/orders`, label: tBack("orders") }}
         cta={<Badge variant={statusVariant}>{data.order.status}</Badge>}
       />
 

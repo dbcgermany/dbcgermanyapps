@@ -426,6 +426,21 @@
       "subscribed": "Abonniert",
       "unsubscribed": "Abgemeldet",
       "empty": "Keine Kontakte passen zu den Filtern."
+    },
+    "back": {
+      "dashboard": "Übersicht",
+      "events": "Veranstaltungen",
+      "event": "Veranstaltung",
+      "orders": "Bestellungen",
+      "news": "Aktuelles",
+      "newsletters": "Newsletter",
+      "jobOffers": "Stellenangebote",
+      "applications": "Bewerbungen",
+      "contacts": "Kontakte",
+      "team": "Team",
+      "staff": "Team (intern)",
+      "invitations": "Einladungen",
+      "settings": "Einstellungen"
     }
   },
   "gdpr": {

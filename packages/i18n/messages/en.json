@@ -426,6 +426,21 @@
       "subscribed": "Subscribed",
       "unsubscribed": "Unsubscribed",
       "empty": "No contacts match your filters."
+    },
+    "back": {
+      "dashboard": "Dashboard",
+      "events": "Events",
+      "event": "Event",
+      "orders": "Orders",
+      "news": "News",
+      "newsletters": "Newsletters",
+      "jobOffers": "Job offers",
+      "applications": "Applications",
+      "contacts": "Contacts",
+      "team": "Team",
+      "staff": "Staff",
+      "invitations": "Invitations",
+      "settings": "Settings"
     }
   },
   "gdpr": {

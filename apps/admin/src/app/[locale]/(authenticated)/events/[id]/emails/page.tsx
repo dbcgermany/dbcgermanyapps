@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { getEmailSequences } from "@/actions/email-sequences";
 import { SequenceForm } from "./sequence-form";
 import { EmailRow } from "./email-row";
@@ -12,34 +12,23 @@ export default async function EmailsPage({
 }) {
   const { locale, id: eventId } = await params;
   const sequences = await getEmailSequences(eventId);
+  const tBack = await getTranslations({ locale, namespace: "admin.back" });
 
   return (
     <div>
-      <div>
-        <Link
-          href={`/${locale}/events/${eventId}`}
-          className="text-sm text-muted-foreground hover:text-foreground"
-        >
-          {locale === "de"
-            ? "← Zurück zur Veranstaltung"
-            : locale === "fr"
-              ? "← Retour à l’événement"
-              : "← Back to event"}
-        </Link>
-        <PageHeader
-          title={locale === "de"
-            ? "E-Mail-Sequenz"
-            : locale === "fr"
-              ? "Séquence d’e-mails"
-              : "Email Sequence"}
-          description={locale === "de"
-            ? "Automatische Follow-up-E-Mails an alle Teilnehmer nach der Veranstaltung. Verwenden Sie {name} für den Namen des Teilnehmers."
-            : locale === "fr"
-              ? "E-mails de suivi automatiques envoyés à tous les participants après l’événement. Utilisez {name} pour le nom du participant."
-              : "Automated follow-up emails sent to all attendees after the event. Use {name} for the attendee’s name."}
-          className="mt-2"
-        />
-      </div>
+      <PageHeader
+        title={locale === "de"
+          ? "E-Mail-Sequenz"
+          : locale === "fr"
+            ? "Séquence d’e-mails"
+            : "Email Sequence"}
+        description={locale === "de"
+          ? "Automatische Follow-up-E-Mails an alle Teilnehmer nach der Veranstaltung. Verwenden Sie {name} für den Namen des Teilnehmers."
+          : locale === "fr"
+            ? "E-mails de suivi automatiques envoyés à tous les participants après l’événement. Utilisez {name} pour le nom du participant."
+            : "Automated follow-up emails sent to all attendees after the event. Use {name} for the attendee’s name."}
+        back={{ href: `/${locale}/events/${eventId}`, label: tBack("event") }}
+      />
 
       {/* Existing sequences */}
       {sequences.length > 0 && (

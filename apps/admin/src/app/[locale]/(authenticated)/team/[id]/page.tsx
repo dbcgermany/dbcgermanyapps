@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Badge } from "@dbc/ui";
+import { getTranslations } from "next-intl/server";
 import {
   getTeamMember,
   deleteTeamMember,
@@ -10,7 +11,6 @@ import { TeamMemberForm } from "../member-form";
 
 const T = {
   en: {
-    back: "← Team",
     linked: "Linked to staff account",
     notLinked: "No staff account linked",
     viewStaff: "View staff profile →",
@@ -20,7 +20,6 @@ const T = {
     } as Record<string, string>,
   },
   de: {
-    back: "← Team",
     linked: "Mit Mitarbeiterkonto verknüpft",
     notLinked: "Kein Mitarbeiterkonto verknüpft",
     viewStaff: "Mitarbeiterprofil ansehen →",
@@ -30,7 +29,6 @@ const T = {
     } as Record<string, string>,
   },
   fr: {
-    back: "← Équipe",
     linked: "Lié à un compte équipe",
     notLinked: "Aucun compte équipe lié",
     viewStaff: "Voir le profil équipe →",
@@ -48,6 +46,7 @@ export default async function EditTeamMemberPage({
 }) {
   const { locale, id } = await params;
   const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
+  const tBack = await getTranslations({ locale, namespace: "admin.back" });
   const [member, staffAccounts] = await Promise.all([
     getTeamMember(id),
     getStaffAccountsForLinking(id),
@@ -55,16 +54,10 @@ export default async function EditTeamMemberPage({
 
   return (
     <div>
-      <Link
-        href={`/${locale}/team`}
-        className="text-sm text-muted-foreground hover:text-foreground"
-      >
-        {t.back}
-      </Link>
-
       <PageHeader
         title={member.name}
         description={member.profile_id ? t.linked : t.notLinked}
+        back={{ href: `/${locale}/team`, label: tBack("team") }}
         cta={
           <div className="flex items-center gap-3">
             {member.profile_id && (

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { getScheduleItems } from "@/actions/schedule";
 import { ScheduleForm } from "./schedule-form";
 import { ScheduleSortable } from "./schedule-sortable";
@@ -6,9 +6,9 @@ import { Card } from "@dbc/ui";
 import { PageHeader } from "@/components/page-header";
 
 const T = {
-  en: { back: "← Back to event", title: "Schedule & Speakers", addItem: "Add Schedule Item" },
-  de: { back: "← Zurück zur Veranstaltung", title: "Programm & Sprecher:innen", addItem: "Programmpunkt hinzufügen" },
-  fr: { back: "← Retour à l’événement", title: "Programme & intervenants", addItem: "Ajouter un élément" },
+  en: { title: "Schedule & Speakers", addItem: "Add Schedule Item" },
+  de: { title: "Programm & Sprecher:innen", addItem: "Programmpunkt hinzufügen" },
+  fr: { title: "Programme & intervenants", addItem: "Ajouter un élément" },
 } as const;
 
 export default async function SchedulePage({
@@ -18,19 +18,15 @@ export default async function SchedulePage({
 }) {
   const { locale, id: eventId } = await params;
   const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
+  const tBack = await getTranslations({ locale, namespace: "admin.back" });
   const items = await getScheduleItems(eventId);
 
   return (
     <div>
-      <div>
-        <Link
-          href={`/${locale}/events/${eventId}`}
-          className="text-sm text-muted-foreground hover:text-foreground"
-        >
-          {t.back}
-        </Link>
-        <PageHeader title={t.title} className="mt-2" />
-      </div>
+      <PageHeader
+        title={t.title}
+        back={{ href: `/${locale}/events/${eventId}`, label: tBack("event") }}
+      />
 
       {/* Existing schedule items */}
       {items.length > 0 && (

@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
+import { PageBack } from "@dbc/ui";
 import { getContact } from "@/actions/contacts";
 import { listContactMessages } from "@/actions/contact-messages";
 import { ContactProfileTabs } from "./profile-tabs";
@@ -6,17 +7,14 @@ import { ComposeDialog } from "./compose-dialog";
 
 const T = {
   en: {
-    back: "← Contacts",
     invited: "Invited", door: "Door", buyer: "Buyer", subscriber: "Subscriber",
     messageHistory: "Message history",
   },
   de: {
-    back: "← Kontakte",
     invited: "Eingeladen", door: "Abendkasse", buyer: "Käufer:in", subscriber: "Abonnent:in",
     messageHistory: "Nachrichtenverlauf",
   },
   fr: {
-    back: "← Contacts",
     invited: "Invité", door: "Entrée", buyer: "Acheteur", subscriber: "Abonné",
     messageHistory: "Historique des messages",
   },
@@ -29,6 +27,7 @@ export default async function ContactDetailPage({
 }) {
   const { locale, id } = await params;
   const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
+  const tBack = await getTranslations({ locale, namespace: "admin.back" });
   const data = await getContact(id);
   const messages = await listContactMessages(id);
 
@@ -54,14 +53,9 @@ export default async function ContactDetailPage({
 
   return (
     <div>
-      <Link
-        href={`/${locale}/contacts`}
-        className="text-sm text-muted-foreground hover:text-foreground"
-      >
-        {t.back}
-      </Link>
+      <PageBack href={`/${locale}/contacts`} label={tBack("contacts")} />
 
-      <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="font-heading text-2xl font-bold">{displayName}</h1>
           <p className="mt-1 text-sm text-muted-foreground">

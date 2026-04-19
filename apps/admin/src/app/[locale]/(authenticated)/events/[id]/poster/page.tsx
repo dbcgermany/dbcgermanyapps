@@ -1,6 +1,7 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import QRCode from "qrcode";
+import { getTranslations } from "next-intl/server";
+import { PageBack } from "@dbc/ui";
 import { getEvent } from "@/actions/events";
 import { getEventTiers } from "@/actions/door-sale";
 import { getPosterConfig } from "@/actions/poster";
@@ -51,6 +52,7 @@ export default async function EventPosterPage({
     | "en"
     | "de"
     | "fr";
+  const tBack = await getTranslations({ locale, namespace: "admin.back" });
 
   let event;
   try {
@@ -127,12 +129,7 @@ export default async function EventPosterPage({
     <>
       {/* Admin toolbar — hidden on print */}
       <div className="no-print space-y-6 p-6 print:hidden">
-        <Link
-          href={`/${locale}/events/${id}`}
-          className="text-sm text-muted-foreground hover:text-foreground"
-        >
-          {d.back}
-        </Link>
+        <PageBack href={`/${locale}/events/${id}`} label={tBack("event")} />
 
         <PosterConfigEditor
           eventId={id}

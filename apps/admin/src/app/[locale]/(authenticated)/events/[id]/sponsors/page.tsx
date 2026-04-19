@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { getEvent } from "@/actions/events";
 import { getEventSponsors } from "@/actions/sponsors";
 import { PageHeader } from "@/components/page-header";
@@ -16,41 +16,36 @@ export default async function EventSponsorsPage({
   if (!eventOrNull) notFound();
 
   const sponsors = await getEventSponsors(eventId);
+  const tBack = await getTranslations({ locale, namespace: "admin.back" });
 
   const t = {
     en: {
-      back: "Event",
       title: "Sponsors",
       description:
         "Manage sponsorship deals and partners for this event. Track status, deal value, contact info, and deliverables.",
     },
     de: {
-      back: "Event",
       title: "Sponsoren",
       description:
         "Sponsoring-Deals und Partner f\u00FCr diese Veranstaltung verwalten.",
     },
     fr: {
-      back: "\u00C9v\u00E9nement",
       title: "Sponsors",
       description:
         "G\u00E9rer les accords de parrainage et les partenaires de cet \u00E9v\u00E9nement.",
     },
   }[locale] ?? {
-    back: "Event",
     title: "Sponsors",
     description: "Manage sponsorship deals and partners.",
   };
 
   return (
     <div>
-      <Link
-        href={`/${locale}/events/${eventId}`}
-        className="text-sm text-muted-foreground hover:text-foreground"
-      >
-        &larr; {t.back}
-      </Link>
-      <PageHeader title={t.title} description={t.description} className="mt-2" />
+      <PageHeader
+        title={t.title}
+        description={t.description}
+        back={{ href: `/${locale}/events/${eventId}`, label: tBack("event") }}
+      />
 
       <div className="mt-6">
         <SponsorsClient
