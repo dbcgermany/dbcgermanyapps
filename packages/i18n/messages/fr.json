@@ -656,6 +656,92 @@
       "readySub": "Que vous fondiez, investissiez ou mentoriez — il y a un pilier pour vous.",
       "primary": "Postuler à l'incubation",
       "secondary": "Nous contacter"
+    },
+    "seo": {
+      "about": {
+        "title": "À propos de DBC Germany — fondateur, mission, implantations",
+        "description": "DBC Germany est une communauté business aux racines africaines pour la diaspora en Europe. Siège à Düsseldorf, piloté par des opérateurs, adossé à DBC en Afrique et en France."
+      },
+      "services": {
+        "title": "Services — incubation, investissement, cours, mentorat",
+        "description": "DBC Germany propose incubation, préparation à l'investissement, cours, mentorat et événements pour les fondateurs aux racines africaines entre Europe et Afrique."
+      },
+      "servicesIncubation": {
+        "title": "Incubation DBC Germany — programme de 6 mois",
+        "description": "Candidatez au programme d'incubation de DBC Germany : six mois de mentorat d'opérateurs, préparation au capital et communauté pour fondateurs aux racines africaines."
+      },
+      "servicesCourses": {
+        "title": "Cours DBC Germany — compétences pointues pour fondateurs",
+        "description": "Cours de DBC Germany : finance, opérations, levée de fonds et go-to-market pour entrepreneurs aux racines africaines en Europe."
+      },
+      "servicesInvestments": {
+        "title": "Préparation à l'investissement — levez avec DBC Germany",
+        "description": "Data room, narratif et KPI prêts pour investisseurs — avec DBC Germany. Coaching par opérateurs, accès au capital européen et africain."
+      },
+      "servicesMentorship": {
+        "title": "Mentorat DBC Germany — 1:1 avec opérateurs seniors",
+        "description": "Séances régulières avec des opérateurs seniors du réseau DBC Germany. Mentorat concret et sans fioritures pour fondateurs en Europe et en Afrique."
+      },
+      "servicesElearning": {
+        "title": "E-learning — Académie Richesses d'Afrique",
+        "description": "Cours business en autonomie de l'Académie Richesses d'Afrique par DBC Germany. Apprenez à votre rythme, appliquez la semaine même."
+      },
+      "servicesApply": {
+        "title": "Postuler à l'incubation DBC Germany",
+        "description": "Déposez votre candidature au programme d'incubation de DBC Germany. Étude hebdomadaire, réponse sous 10 jours ouvrés."
+      },
+      "events": {
+        "title": "Événements DBC Germany — Richesses d'Afrique 2026, masterclasses",
+        "description": "Événements à venir de DBC Germany : Richesses d'Afrique Germany 2026 à Essen, masterclasses et networking pour fondateurs et investisseurs aux racines africaines."
+      },
+      "news": {
+        "title": "Actualités DBC Germany — économie diaspora, récits fondateurs",
+        "description": "Le journal DBC Germany : économie de la diaspora, récits de fondateurs, notes politiques et mises à jour pour la communauté business aux racines africaines."
+      },
+      "team": {
+        "title": "L'équipe DBC Germany — direction & opérateurs",
+        "description": "Les personnes derrière DBC Germany. Opérateurs seniors à Düsseldorf qui pilotent incubation, investissement, cours, mentorat et Richesses d'Afrique."
+      },
+      "teamMemberFallback": {
+        "title": "DBC Germany — profil équipe",
+        "description": "Découvrez un membre de l'équipe DBC Germany — opérateur senior en charge de programmes pour fondateurs aux racines africaines en Europe."
+      },
+      "careers": {
+        "title": "Carrières DBC Germany — postes opérateur à Düsseldorf",
+        "description": "Postes ouverts chez DBC Germany. Travail d'opérateur à Düsseldorf : incubation, investissement, opérations, contenu. Racines africaines privilégiées."
+      },
+      "jobOfferFallback": {
+        "title": "Poste ouvert chez DBC Germany",
+        "description": "Postulez à un poste d'opérateur ouvert chez DBC Germany. Basé à Düsseldorf, mains dans le cambouis, à l'intersection Europe–Afrique."
+      },
+      "faq": {
+        "title": "FAQ — DBC Germany, événements, programmes",
+        "description": "Questions fréquentes sur DBC Germany : billets, remboursements, éligibilité aux programmes, données et statut Handelsregister."
+      },
+      "contact": {
+        "title": "Contact DBC Germany — bureau Düsseldorf, presse, support",
+        "description": "Contacter DBC Germany : général, candidature incubation, presse, partenariats. Bureau Düsseldorf, téléphone, e-mail, desk presse."
+      },
+      "partners": {
+        "title": "Devenez partenaire — sponsorisez Richesses d'Afrique 2026",
+        "description": "Packages sponsoring et partenariat pour Richesses d'Afrique Germany 2026 à Essen. Touchez 950+ fondateurs, investisseurs et cadres."
+      },
+      "press": {
+        "title": "Presse & médias — DBC Germany",
+        "description": "Ressources presse de DBC Germany : faits clés, logo et visuels, bios dirigeants et contact presse. Réponse sous 24 h en semaine."
+      },
+      "newsletter": {
+        "title": "Newsletter DBC Germany — brief hebdomadaire",
+        "description": "Abonnez-vous à la newsletter DBC Germany. Un brief curé par semaine sur Richesses d'Afrique, les programmes et la communauté aux racines africaines."
+      },
+      "newsletterConfirm": {
+        "title": "Inscription confirmée — DBC Germany",
+        "description": "Votre inscription à la newsletter DBC Germany est confirmée."
+      },
+      "newsletterUnsubscribe": {
+        "title": "Désinscrit — DBC Germany",
+        "description": "Vous avez été désinscrit de la newsletter DBC Germany."
+      }
     }
   }
 }

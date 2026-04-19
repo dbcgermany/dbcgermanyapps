@@ -656,6 +656,92 @@
       "readySub": "Ob Sie gründen, investieren oder mentoren — es gibt eine Säule für Sie.",
       "primary": "Für Inkubation bewerben",
       "secondary": "Kontakt aufnehmen"
+    },
+    "seo": {
+      "about": {
+        "title": "Über DBC Germany — Gründer, Mission, Standorte",
+        "description": "DBC Germany ist eine afrikanisch verwurzelte Business-Community für die Diaspora in Europa. HQ in Düsseldorf, operator-geführt, Teil von DBC in Afrika und Frankreich."
+      },
+      "services": {
+        "title": "Leistungen — Inkubation, Investment, Kurse, Mentoring",
+        "description": "DBC Germany bietet Inkubation, Investment-Prep, Kurse, Mentoring und Veranstaltungen für afrikanisch verwurzelte Gründer:innen zwischen Europa und Afrika."
+      },
+      "servicesIncubation": {
+        "title": "Inkubation bei DBC Germany — 6-Monats-Programm",
+        "description": "Bewerben Sie sich für das Inkubationsprogramm von DBC Germany: sechs Monate Operator-Mentoring, Kapital-Vorbereitung und Community für afrikanisch verwurzelte Gründer:innen."
+      },
+      "servicesCourses": {
+        "title": "Kurse bei DBC Germany — scharfe Skills für Gründer:innen",
+        "description": "Kurse von DBC Germany: Finanzen, Operations, Fundraising und Go-to-Market für afrikanisch verwurzelte Unternehmer:innen in Europa."
+      },
+      "servicesInvestments": {
+        "title": "Investment-Prep — nächste Runde mit DBC Germany",
+        "description": "Datenraum, Story und Kennzahlen investor-ready machen — mit DBC Germany. Operator-geführtes Coaching, europäisches und afrikanisches Kapital."
+      },
+      "servicesMentorship": {
+        "title": "Mentoring bei DBC Germany — 1:1 mit Senior-Operator:innen",
+        "description": "Buchen Sie regelmäßige Sessions mit Senior-Operator:innen im DBC-Germany-Netzwerk. Praxisnahes Mentoring für Gründer:innen in Europa und Afrika."
+      },
+      "servicesElearning": {
+        "title": "E-Learning — Richesses d'Afrique Akademie",
+        "description": "Selbstgesteuerte Business-Kurse der Richesses d'Afrique Akademie von DBC Germany. Im eigenen Tempo lernen, direkt anwenden."
+      },
+      "servicesApply": {
+        "title": "Für die Inkubation bei DBC Germany bewerben",
+        "description": "Bewerbung für das Inkubationsprogramm von DBC Germany einreichen. Wöchentliche Sichtung, Rückmeldung innerhalb von 10 Werktagen."
+      },
+      "events": {
+        "title": "Veranstaltungen von DBC Germany — Richesses d'Afrique 2026, Masterclasses",
+        "description": "Kommende Events von DBC Germany: Richesses d'Afrique Germany 2026 in Essen, Masterclasses und Networking für afrikanisch verwurzelte Gründer:innen und Investor:innen."
+      },
+      "news": {
+        "title": "News von DBC Germany — Diaspora-Ökonomie, Gründer-Stories",
+        "description": "Das DBC-Germany-Journal: Diaspora-Ökonomie, Gründer-Stories, Policy-Notizen und Programm-Updates für die afrikanisch verwurzelte Business-Community."
+      },
+      "team": {
+        "title": "Das Team von DBC Germany — Leadership & Operator:innen",
+        "description": "Die Menschen hinter DBC Germany. Senior-Operator:innen in Düsseldorf, die Inkubation, Investment, Kurse, Mentoring und Richesses d'Afrique leiten."
+      },
+      "teamMemberFallback": {
+        "title": "DBC Germany — Teamprofil",
+        "description": "Lernen Sie ein Mitglied des DBC-Germany-Teams kennen — Senior-Operator:in für Programme für afrikanisch verwurzelte Gründer:innen in Europa."
+      },
+      "careers": {
+        "title": "Karriere bei DBC Germany — Operator-Rollen in Düsseldorf",
+        "description": "Offene Stellen bei DBC Germany. Operator-Arbeit in Düsseldorf: Inkubation, Investment, Operations, Content. Afrikanische Wurzeln bevorzugt."
+      },
+      "jobOfferFallback": {
+        "title": "Offene Stelle bei DBC Germany",
+        "description": "Für eine offene Operator-Rolle bei DBC Germany bewerben. Düsseldorf-basiert, hands-on, zweckgebunden — zwischen Europa und Afrika."
+      },
+      "faq": {
+        "title": "FAQ — DBC Germany, Events, Programme",
+        "description": "Häufige Fragen zu DBC Germany: Tickets, Erstattungen, Programm-Voraussetzungen, Datenverarbeitung und Handelsregister-Status."
+      },
+      "contact": {
+        "title": "Kontakt DBC Germany — Düsseldorfer Büro, Presse, Support",
+        "description": "DBC Germany kontaktieren: Allgemein, Inkubationsbewerbung, Presse und Partnerschaften. Büro Düsseldorf, Telefon, E-Mail, Presse-Desk."
+      },
+      "partners": {
+        "title": "Partner werden — Richesses d'Afrique 2026 sponsern",
+        "description": "Sponsoring- und Partnerpakete für Richesses d'Afrique Germany 2026 in Essen. 950+ Gründer:innen, Investor:innen und Führungskräfte erreichen."
+      },
+      "press": {
+        "title": "Presse & Medien — DBC Germany",
+        "description": "Presseressourcen von DBC Germany: Eckdaten, Logo und Visuals, Executive-Bios und Pressekontakt. Antwort werktags innerhalb von 24 Stunden."
+      },
+      "newsletter": {
+        "title": "DBC-Germany-Newsletter — wöchentlicher Brief",
+        "description": "Den DBC-Germany-Newsletter abonnieren. Ein kuratierter Brief pro Woche zu Richesses d'Afrique, Programmen und der afrikanisch verwurzelten Business-Community."
+      },
+      "newsletterConfirm": {
+        "title": "Anmeldung bestätigt — DBC Germany",
+        "description": "Ihre Anmeldung zum DBC-Germany-Newsletter ist bestätigt."
+      },
+      "newsletterUnsubscribe": {
+        "title": "Abgemeldet — DBC Germany",
+        "description": "Sie wurden vom DBC-Germany-Newsletter abgemeldet."
+      }
     }
   }
 }

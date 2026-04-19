@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Reveal } from "@dbc/ui";
+import { seoFromI18n } from "@/lib/seo";
 import { IncubationForm } from "./form";
 
 export async function generateMetadata({
@@ -8,14 +9,11 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  return {
-    title:
-      locale === "de"
-        ? "Bewerbung Inkubation"
-        : locale === "fr"
-          ? "Candidature incubation"
-          : "Incubation application",
-  };
+  return seoFromI18n({
+    locale,
+    pathSuffix: "/services/incubation/apply",
+    pageKey: "servicesApply",
+  });
 }
 
 export default async function IncubationApplyPage({

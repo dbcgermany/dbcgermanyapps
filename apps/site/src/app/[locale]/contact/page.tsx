@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 import { Reveal } from "@dbc/ui";
+import { seoFromI18n } from "@/lib/seo";
 import { ContactForm } from "./contact-form";
 import { getCompanyInfo, formatOfficeAddress } from "@dbc/legal";
 
@@ -10,8 +11,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "site.contact" });
-  return { title: t("title") };
+  return seoFromI18n({ locale, pathSuffix: "/contact", pageKey: "contact" });
 }
 
 export default async function ContactPage({

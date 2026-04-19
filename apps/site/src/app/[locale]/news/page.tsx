@@ -3,6 +3,7 @@ import Image from "next/image";
 import type { Metadata } from "next";
 import { Reveal } from "@dbc/ui";
 import { createServerClient } from "@dbc/supabase/server";
+import { seoFromI18n } from "@/lib/seo";
 import { DBC } from "@/lib/dbc-assets";
 
 export const revalidate = 60;
@@ -13,10 +14,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  return {
-    title:
-      locale === "de" ? "News" : locale === "fr" ? "Actualités" : "News",
-  };
+  return seoFromI18n({ locale, pathSuffix: "/news", pageKey: "news" });
 }
 
 async function getPosts() {
@@ -96,7 +94,7 @@ export default async function NewsIndexPage({
                 href={`/${locale}/news/${post.slug}`}
                 className="group block h-full overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-1 hover:shadow-lg"
               >
-                <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
+                <div className="relative aspect-video w-full overflow-hidden bg-muted">
                   <Image
                     src={cover}
                     alt={title}

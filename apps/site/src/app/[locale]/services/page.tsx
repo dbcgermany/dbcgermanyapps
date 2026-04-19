@@ -3,6 +3,7 @@ import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 import { Reveal } from "@dbc/ui";
+import { seoFromI18n } from "@/lib/seo";
 import { DBC } from "@/lib/dbc-assets";
 
 export async function generateMetadata({
@@ -11,8 +12,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "site.services" });
-  return { title: t("title") };
+  return seoFromI18n({ locale, pathSuffix: "/services", pageKey: "services" });
 }
 
 const SERVICES = [

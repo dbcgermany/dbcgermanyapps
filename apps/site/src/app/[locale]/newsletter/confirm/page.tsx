@@ -1,6 +1,21 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { Reveal } from "@dbc/ui";
+import { seoFromI18n } from "@/lib/seo";
 import { confirmNewsletterSubscription } from "@/actions/newsletter";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  return seoFromI18n({
+    locale,
+    pathSuffix: "/newsletter/confirm",
+    pageKey: "newsletterConfirm",
+  });
+}
 
 const COPY = {
   en: {

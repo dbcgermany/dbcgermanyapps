@@ -9,6 +9,7 @@ import {
   Reveal,
   Section,
 } from "@dbc/ui";
+import { seoFromI18n } from "@/lib/seo";
 
 export const revalidate = 60;
 
@@ -18,14 +19,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  return {
-    title:
-      locale === "de"
-        ? "Karriere"
-        : locale === "fr"
-          ? "Carri\u00e8res"
-          : "Careers",
-  };
+  return seoFromI18n({ locale, pathSuffix: "/careers", pageKey: "careers" });
 }
 
 type JobOffer = {

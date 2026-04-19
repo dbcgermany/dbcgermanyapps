@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Card, Container, Eyebrow, Heading, Reveal, Section } from "@dbc/ui";
 import { createServerClient } from "@dbc/supabase/server";
+import { buildPageMetadata } from "@/lib/seo";
 
 export const revalidate = 60;
 
@@ -40,10 +41,27 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: string; slug: string }>;
 }): Promise<Metadata> {
-  const { slug } = await params;
+  const { locale, slug } = await params;
   const m = await getMember(slug);
   if (!m) return {};
-  return { title: `${m.name} — ${m.role_en}` };
+  const l = locale === "de" || locale === "fr" ? locale : "en";
+  const role =
+    (m[`role_${l}` as "role_en" | "role_de" | "role_fr"] as string | null) ||
+    m.role_en;
+  const bio =
+    (m[`bio_${l}` as "bio_en" | "bio_de" | "bio_fr"] as string | null) ||
+    m.bio_en;
+  const description =
+    (bio && bio.length > 160 ? bio.slice(0, 157) + "…" : bio) ||
+    `${m.name} — ${role} at DBC Germany.`;
+  return buildPageMetadata({
+    locale,
+    pathSuffix: `/team/${slug}`,
+    title: `${m.name} — ${role}`,
+    description,
+    ogImageUrl: m.photo_url,
+    ogType: "profile",
+  });
 }
 
 function initialsOf(name: string) {

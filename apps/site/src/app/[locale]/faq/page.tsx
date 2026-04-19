@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Card, Container, Eyebrow, Heading, Reveal, Section } from "@dbc/ui";
+import { seoFromI18n } from "@/lib/seo";
 
 export async function generateMetadata({
   params,
@@ -7,9 +8,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  return {
-    title: locale === "de" ? "FAQ" : locale === "fr" ? "FAQ" : "FAQ",
-  };
+  return seoFromI18n({ locale, pathSuffix: "/faq", pageKey: "faq" });
 }
 
 type Qa = {

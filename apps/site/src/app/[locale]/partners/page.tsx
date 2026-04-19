@@ -8,6 +8,7 @@ import {
   Reveal,
   Section,
 } from "@dbc/ui";
+import { seoFromI18n } from "@/lib/seo";
 
 export async function generateMetadata({
   params,
@@ -15,14 +16,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  return {
-    title:
-      locale === "de"
-        ? "Partner & Sponsoring"
-        : locale === "fr"
-          ? "Partenaires & sponsoring"
-          : "Partners & sponsorship",
-  };
+  return seoFromI18n({ locale, pathSuffix: "/partners", pageKey: "partners" });
 }
 
 type Tier = {

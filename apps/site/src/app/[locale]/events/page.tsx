@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 import { Reveal } from "@dbc/ui";
+import { seoFromI18n } from "@/lib/seo";
 import { getUpcomingEvents } from "@/lib/queries";
 
 export const revalidate = 60;
@@ -11,21 +12,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "site" });
-  const BASE = "https://dbc-germany.com";
-  return {
-    title: t("events.title"),
-    description:
-      locale === "de"
-        ? "Entdecken Sie Veranstaltungen von DBC Germany \u2014 Konferenzen, Workshops und Networking f\u00FCr afrikanische Unternehmer in Europa."
-        : locale === "fr"
-          ? "D\u00E9couvrez les \u00E9v\u00E9nements de DBC Germany \u2014 conf\u00E9rences, ateliers et networking pour les entrepreneurs africains en Europe."
-          : "Discover upcoming events by DBC Germany \u2014 conferences, workshops, and networking for African entrepreneurs in Europe.",
-    alternates: {
-      canonical: `${BASE}/${locale}/events`,
-      languages: { en: `${BASE}/en/events`, de: `${BASE}/de/events`, fr: `${BASE}/fr/events`, "x-default": `${BASE}/en/events` },
-    },
-  };
+  return seoFromI18n({ locale, pathSuffix: "/events", pageKey: "events" });
 }
 
 export default async function EventsPage({

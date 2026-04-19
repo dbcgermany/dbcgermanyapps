@@ -1,5 +1,16 @@
+import type { Metadata } from "next";
 import { Reveal } from "@dbc/ui";
+import { seoFromI18n } from "@/lib/seo";
 import { NewsletterSignupForm } from "./signup-form";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  return seoFromI18n({ locale, pathSuffix: "/newsletter", pageKey: "newsletter" });
+}
 
 const COPY = {
   en: {

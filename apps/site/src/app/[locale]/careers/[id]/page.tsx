@@ -9,6 +9,7 @@ import {
   Reveal,
   Section,
 } from "@dbc/ui";
+import { buildPageMetadata } from "@/lib/seo";
 import { JobApplicationForm } from "./form";
 
 export const revalidate = 60;
@@ -45,15 +46,34 @@ export async function generateMetadata({
   const supabase = await createServerClient();
   const { data: job } = await supabase
     .from("job_offers")
-    .select("title_en, title_de, title_fr")
+    .select(
+      "title_en, title_de, title_fr, description_en, description_de, description_fr, location"
+    )
     .eq("id", id)
     .eq("is_published", true)
     .single();
 
   if (!job) return { title: "Not Found" };
 
-  const titleKey = `title_${locale === "de" || locale === "fr" ? locale : "en"}` as keyof typeof job;
-  return { title: job[titleKey] as string };
+  const l = (locale === "de" || locale === "fr" ? locale : "en") as
+    | "en"
+    | "de"
+    | "fr";
+  const title = (job[`title_${l}` as keyof typeof job] as string) || job.title_en;
+  const rawDesc =
+    (job[`description_${l}` as keyof typeof job] as string | null) ||
+    job.description_en ||
+    "";
+  const desc = rawDesc.replace(/\s+/g, " ").trim();
+  const description = desc.length > 160 ? desc.slice(0, 157) + "…" : desc;
+
+  return buildPageMetadata({
+    locale,
+    pathSuffix: `/careers/${id}`,
+    title,
+    description:
+      description || `Open role at DBC Germany${job.location ? ` — ${job.location}` : ""}.`,
+  });
 }
 
 export default async function JobDetailPage({

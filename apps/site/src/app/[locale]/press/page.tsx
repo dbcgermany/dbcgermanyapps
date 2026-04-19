@@ -1,6 +1,7 @@
 import Image from "next/image";
 import type { Metadata } from "next";
 import { Card, Container, Eyebrow, Heading, Reveal, Section } from "@dbc/ui";
+import { seoFromI18n } from "@/lib/seo";
 import { DBC } from "@/lib/dbc-assets";
 
 export async function generateMetadata({
@@ -9,14 +10,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  return {
-    title:
-      locale === "de"
-        ? "Presse & Medien"
-        : locale === "fr"
-          ? "Presse & médias"
-          : "Press & Media",
-  };
+  return seoFromI18n({ locale, pathSuffix: "/press", pageKey: "press" });
 }
 
 export default async function PressPage({

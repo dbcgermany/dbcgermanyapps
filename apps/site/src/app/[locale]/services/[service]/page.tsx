@@ -4,7 +4,16 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 import { Reveal } from "@dbc/ui";
+import { seoFromI18n } from "@/lib/seo";
 import { DBC } from "@/lib/dbc-assets";
+
+const SERVICE_PAGE_KEY: Record<string, string> = {
+  incubation: "servicesIncubation",
+  courses: "servicesCourses",
+  investments: "servicesInvestments",
+  mentorship: "servicesMentorship",
+  elearning: "servicesElearning",
+};
 
 const VALID_SERVICES = [
   "incubation",
@@ -38,11 +47,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale, service } = await params;
   if (!isValidService(service)) return {};
-  const t = await getTranslations({ locale, namespace: "site.services" });
-  return {
-    title: t(`${service}.title`),
-    description: t(`${service}.long`),
-  };
+  const pageKey = SERVICE_PAGE_KEY[service] ?? "services";
+  return seoFromI18n({
+    locale,
+    pathSuffix: `/services/${service}`,
+    pageKey,
+  });
 }
 
 export default async function ServiceDetailPage({

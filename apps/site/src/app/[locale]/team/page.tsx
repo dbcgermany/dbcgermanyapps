@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { Card, Container, Eyebrow, Heading, Reveal, Section } from "@dbc/ui";
 import { createServerClient } from "@dbc/supabase/server";
+import { seoFromI18n } from "@/lib/seo";
 
 export const revalidate = 60;
 
@@ -12,9 +13,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  return {
-    title: locale === "de" ? "Team" : locale === "fr" ? "Équipe" : "Team",
-  };
+  return seoFromI18n({ locale, pathSuffix: "/team", pageKey: "team" });
 }
 
 type PublicMember = {
