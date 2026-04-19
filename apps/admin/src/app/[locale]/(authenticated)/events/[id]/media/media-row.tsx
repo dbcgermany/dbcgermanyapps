@@ -18,6 +18,24 @@ const TYPE_ICONS: Record<string, LucideIcon> = {
   link: Link2,
 };
 
+const MR_T = {
+  en: {
+    titleCaption: "Title / caption", url: "URL", sort: "Sort order",
+    saving: "Saving…", save: "Save", cancel: "Cancel",
+    edit: "Edit", delete: "Delete", deleteConfirm: "Delete this media item?",
+  },
+  de: {
+    titleCaption: "Titel / Bildunterschrift", url: "URL", sort: "Sortierung",
+    saving: "Wird gespeichert…", save: "Speichern", cancel: "Abbrechen",
+    edit: "Bearbeiten", delete: "Löschen", deleteConfirm: "Dieses Medium löschen?",
+  },
+  fr: {
+    titleCaption: "Titre / légende", url: "URL", sort: "Ordre",
+    saving: "Enregistrement…", save: "Enregistrer", cancel: "Annuler",
+    edit: "Modifier", delete: "Supprimer", deleteConfirm: "Supprimer ce média ?",
+  },
+} as const;
+
 export function MediaRow({
   item,
   eventId,
@@ -28,6 +46,7 @@ export function MediaRow({
   locale: string;
 }) {
   const [mode, setMode] = useState<"view" | "edit">("view");
+  const t = MR_T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof MR_T];
 
   const [state, formAction, isPending] = useActionState(
     async (
@@ -57,21 +76,21 @@ export function MediaRow({
         <input
           name="title"
           defaultValue={item.title ?? ""}
-          placeholder="Title / caption"
+          placeholder={t.titleCaption}
           className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
         />
         <input
           name="url"
           type="url"
           defaultValue={item.url}
-          placeholder="URL"
+          placeholder={t.url}
           className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
         />
         <input
           name="sort_order"
           type="number"
           defaultValue={item.sort_order}
-          placeholder="Sort order"
+          placeholder={t.sort}
           className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
         />
         <div className="flex gap-2">
@@ -80,14 +99,14 @@ export function MediaRow({
             disabled={isPending}
             className="rounded-md bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
           >
-            {isPending ? "Saving..." : "Save"}
+            {isPending ? t.saving : t.save}
           </button>
           <button
             type="button"
             onClick={() => setMode("view")}
             className="rounded-md border border-input px-4 py-1.5 text-xs font-medium hover:bg-accent"
           >
-            Cancel
+            {t.cancel}
           </button>
         </div>
       </form>
@@ -114,11 +133,11 @@ export function MediaRow({
           onClick={() => setMode("edit")}
           className="text-xs text-primary hover:text-primary/80"
         >
-          Edit
+          {t.edit}
         </button>
         <form
           action={async () => {
-            if (!confirm("Delete this media item?")) return;
+            if (!confirm(t.deleteConfirm)) return;
             await deleteEventMedia(item.id, eventId, locale);
           }}
         >
@@ -126,7 +145,7 @@ export function MediaRow({
             type="submit"
             className="text-xs text-red-500 hover:text-red-700"
           >
-            Delete
+            {t.delete}
           </button>
         </form>
       </div>
