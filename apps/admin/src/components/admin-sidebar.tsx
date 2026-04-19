@@ -17,7 +17,6 @@ import {
   LayoutDashboard,
   LineChart,
   Megaphone,
-  Menu,
   Mail,
   Newspaper,
   ScanLine,
@@ -31,6 +30,7 @@ import {
 } from "lucide-react";
 import type { UserRole } from "@dbc/types";
 import { ROLE_HIERARCHY } from "@dbc/types";
+import { useAdminShell } from "./admin-shell-layout";
 
 interface NavItem {
   labelKey: string;
@@ -85,7 +85,7 @@ export function AdminSidebar({
   const searchParams = useSearchParams();
   const tNav = useTranslations("admin.nav");
   const tShell = useTranslations("admin.shell");
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const { mobileOpen, closeMobile } = useAdminShell();
   const [collapsed, setCollapsed] = useState(false);
   const userLevel = ROLE_HIERARCHY[userRole];
 
@@ -109,27 +109,9 @@ export function AdminSidebar({
     });
   }
 
-  // Lock body scroll while the mobile drawer is open.
-  useEffect(() => {
-    if (mobileOpen) {
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.overflow = "";
-      };
-    }
-  }, [mobileOpen]);
-
   return (
     <>
-      {/* ── Mobile burger ── */}
-      <button
-        type="button"
-        onClick={() => setMobileOpen(true)}
-        className="fixed left-3 top-3 z-40 inline-flex h-11 w-11 items-center justify-center rounded-md border border-border bg-background shadow-sm md:hidden"
-        aria-label={tShell("mobileMenu")}
-      >
-        <Menu className="h-5 w-5" strokeWidth={1.75} />
-      </button>
+      {/* Mobile burger + body-scroll lock are owned by AdminShellLayout. */}
 
       {/* ── Desktop sidebar ── */}
       <aside
@@ -263,33 +245,46 @@ export function AdminSidebar({
         </div>
       </aside>
 
-      {/* ── Mobile slide-in drawer (always expanded) ── */}
-      {mobileOpen && (
-        <div className="fixed inset-0 z-50 md:hidden">
-          <div
-            className="absolute inset-0 bg-black/40"
-            onClick={() => setMobileOpen(false)}
-            aria-hidden
-          />
-          <aside className="relative flex h-full w-72 max-w-[85vw] flex-col border-r border-border bg-surface shadow-xl">
+      {/* ── Mobile slide-in drawer ──
+          Always mounted so transforms animate cleanly on open/close.
+          iOS spring easing for a native-feel drawer push. */}
+      <div
+        className="fixed inset-0 z-50 md:hidden"
+        style={{ pointerEvents: mobileOpen ? "auto" : "none" }}
+        aria-hidden={!mobileOpen}
+      >
+        <div
+          onClick={closeMobile}
+          aria-hidden
+          className={`absolute inset-0 bg-black/40 transition-opacity duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] ${
+            mobileOpen ? "opacity-100" : "opacity-0"
+          }`}
+        />
+        <aside
+          className={`relative flex h-dvh w-72 max-w-[85vw] flex-col border-r border-border bg-surface shadow-2xl transition-transform duration-[360ms] ease-[cubic-bezier(0.32,0.72,0,1)] ${
+            mobileOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
+          style={{ paddingTop: "env(safe-area-inset-top)" }}
+        >
             <div className="flex h-16 items-center justify-between border-b border-border px-6">
               <Link
                 href={`/${locale}/dashboard`}
+                onClick={closeMobile}
                 className="font-heading text-lg font-bold tracking-tight"
               >
                 DBC Germany
               </Link>
               <button
                 type="button"
-                onClick={() => setMobileOpen(false)}
-                className="text-foreground hover:text-muted-foreground"
+                onClick={closeMobile}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full text-foreground transition-colors active:bg-muted"
                 aria-label={tShell("mobileMenuClose")}
               >
                 <X className="h-5 w-5" strokeWidth={1.75} />
               </button>
             </div>
 
-            <nav className="flex-1 overflow-y-auto px-3 py-4">
+            <nav className="flex-1 overflow-y-auto overscroll-contain px-3 py-4">
               <ul className="space-y-1">
                 {visibleItems.map((item, idx) => {
                   const [rawPath, rawQuery] = item.href.split("?");
@@ -321,7 +316,7 @@ export function AdminSidebar({
                       )}
                       <Link
                         href={fullHref}
-                        onClick={() => setMobileOpen(false)}
+                        onClick={closeMobile}
                         className={`flex items-center gap-3 rounded-md transition-colors ${
                           item.indent
                             ? "py-1.5 pl-9 pr-3 text-xs"
@@ -362,8 +357,7 @@ export function AdminSidebar({
               </p>
             </div>
           </aside>
-        </div>
-      )}
+      </div>
     </>
   );
 }

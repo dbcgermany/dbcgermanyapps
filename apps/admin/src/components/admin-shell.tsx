@@ -1,8 +1,6 @@
 import type { UserRole } from "@dbc/types";
 import { createServerClient } from "@dbc/supabase/server";
-import { AdminSidebar } from "./admin-sidebar";
-import { NotificationBell } from "./notification-bell";
-import { UserMenu } from "./user-menu";
+import { AdminShellLayout } from "./admin-shell-layout";
 
 export async function AdminShell({
   children,
@@ -17,7 +15,6 @@ export async function AdminShell({
   userRole: UserRole;
   userEmail: string;
 }) {
-  // Fetch initial notifications + unread count
   const supabase = await createServerClient();
 
   const [notifResult, unreadResult, profileResult] = await Promise.all([
@@ -40,30 +37,17 @@ export async function AdminShell({
   ]);
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <AdminSidebar locale={locale} userRole={userRole} userEmail={userEmail} />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Top bar — sticky on mobile so it stays pinned alongside the fixed hamburger.
-            Leave left padding on mobile so the burger (top-3 left-3) doesn't collide. */}
-        <header className="sticky top-0 z-30 flex h-14 items-center justify-end gap-3 border-b border-border bg-surface/95 pl-16 pr-4 backdrop-blur md:pl-4">
-          <NotificationBell
-            userId={userId}
-            locale={locale}
-            initialUnreadCount={unreadResult.count ?? 0}
-            initialNotifications={notifResult.data ?? []}
-          />
-          <UserMenu
-            locale={locale}
-            userEmail={userEmail}
-            displayName={profileResult.data?.display_name ?? null}
-            avatarUrl={profileResult.data?.avatar_url ?? null}
-            role={userRole}
-          />
-        </header>
-        <main className="flex-1 overflow-y-auto bg-muted/30">
-          <div className="mx-auto max-w-7xl p-6 md:p-8">{children}</div>
-        </main>
-      </div>
-    </div>
+    <AdminShellLayout
+      locale={locale}
+      userId={userId}
+      userRole={userRole}
+      userEmail={userEmail}
+      displayName={profileResult.data?.display_name ?? null}
+      avatarUrl={profileResult.data?.avatar_url ?? null}
+      initialUnreadCount={unreadResult.count ?? 0}
+      initialNotifications={notifResult.data ?? []}
+    >
+      {children}
+    </AdminShellLayout>
   );
 }

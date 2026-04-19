@@ -37,4 +37,22 @@ body {
   background-color: var(--dbc-color-bg);
   color: var(--dbc-color-text);
   font-family: var(--font-body);
+  /* iOS / mobile polish: no grey flash on tap, keep momentum scroll, don't
+     leak rubber-band scrolls from one scroll container to another. */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  overscroll-behavior-y: none;
+}
+
+/* Make native <select> and <input type="date"> use system-accent on iOS
+   Safari so they feel native rather than web-blue. */
+select,
+input {
+  accent-color: var(--dbc-color-primary);
+}
+
+/* Keep sticky headers crisp while the dbc-admin-main container scrolls. */
+.dbc-admin-main {
+  scroll-padding-top: 3.5rem;
 }
