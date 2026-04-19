@@ -370,7 +370,7 @@ export async function duplicateEvent(sourceId: string, locale: string) {
   const { data: srcTiers } = await supabase
     .from("ticket_tiers")
     .select(
-      "name_en, name_de, name_fr, description_en, description_de, description_fr, price_cents, currency, max_quantity, sales_start_at, sales_end_at, is_public, sort_order"
+      "slug, name_en, name_de, name_fr, description_en, description_de, description_fr, price_cents, currency, max_quantity, sales_start_at, sales_end_at, is_public, sort_order"
     )
     .eq("event_id", sourceId);
   if (srcTiers && srcTiers.length) {

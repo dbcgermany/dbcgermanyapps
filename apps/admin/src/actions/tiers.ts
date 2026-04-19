@@ -2,6 +2,7 @@
 
 import { createServerClient, requireRole } from "@dbc/supabase/server";
 import { revalidatePath } from "next/cache";
+import { slugify, uniqueSlug } from "@/lib/slugify";
 
 const TIER_COLUMNS =
   "id, event_id, name_en, name_de, name_fr, description_en, description_de, description_fr, price_cents, currency, max_quantity, quantity_sold, sales_start_at, sales_end_at, is_public, sort_order, created_at" as const;
@@ -28,8 +29,18 @@ export async function createTier(formData: FormData) {
   const locale = formData.get("locale") as string;
   const nameEn = formData.get("name_en") as string;
 
+  // ticket_tiers.slug is NOT NULL with UNIQUE(event_id, slug) for bulk-invite
+  // CSV imports; derive it from name_en and ensure it doesn't collide inside
+  // this event.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const slug = await uniqueSlug(supabase as any, "ticket_tiers", slugify(nameEn, "tier"), undefined, {
+    column: "event_id",
+    value: eventId,
+  });
+
   const tierData = {
     event_id: eventId,
+    slug,
     name_en: nameEn,
     name_de: (formData.get("name_de") as string) || nameEn,
     name_fr: (formData.get("name_fr") as string) || nameEn,
