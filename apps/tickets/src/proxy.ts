@@ -126,6 +126,11 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|icon-.*|apple-touch-icon|robots.txt|manifest|api/).*)",
+    // Exclude Next.js App Router convention files that live at the root
+    // (icon.png, apple-icon.png, opengraph-image.png, manifest.webmanifest,
+    // robots.txt, sitemap.xml, favicon.ico) + the numbered icon-XXX variants
+    // in /public, or middleware will 307-redirect them into /{locale}/…
+    // which breaks browser icon resolution and the PWA manifest.
+    "/((?!_next/static|_next/image|favicon.ico|icon\\.png|icon-.*|apple-icon\\.png|apple-touch-icon|opengraph-image|twitter-image|robots\\.txt|sitemap\\.xml|manifest|api/).*)",
   ],
 };
