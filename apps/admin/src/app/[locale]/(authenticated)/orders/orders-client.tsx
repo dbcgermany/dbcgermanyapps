@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Badge } from "@dbc/ui";
+import { ORDER_STATUS_VALUES } from "@dbc/types";
 import { refundOrder } from "@/actions/orders";
 import { CsvExportButton } from "@/components/csv-export-button";
 
@@ -22,14 +23,7 @@ interface Order {
   sellerName: string | null;
 }
 
-const STATUS_OPTIONS = [
-  "",
-  "pending",
-  "paid",
-  "comped",
-  "refunded",
-  "cancelled",
-] as const;
+const STATUS_OPTIONS = ["", ...ORDER_STATUS_VALUES] as const;
 
 export function OrdersClient({
   locale,

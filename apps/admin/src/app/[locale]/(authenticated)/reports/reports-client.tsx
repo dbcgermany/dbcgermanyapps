@@ -1,6 +1,7 @@
 "use client";
 
 import { Badge } from "@dbc/ui";
+import { ORDER_STATUS_VALUES } from "@dbc/types";
 import { useRouter } from "next/navigation";
 import {
   BarChart,
@@ -17,14 +18,7 @@ import type {
   EventFinancialSummary,
 } from "@/actions/reports";
 
-const STATUS_OPTIONS = [
-  "",
-  "pending",
-  "paid",
-  "comped",
-  "refunded",
-  "cancelled",
-] as const;
+const STATUS_OPTIONS = ["", ...ORDER_STATUS_VALUES] as const;
 
 interface FilterState {
   event: string;
