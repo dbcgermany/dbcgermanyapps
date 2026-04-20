@@ -1,15 +1,11 @@
 "use client";
 
 import { useTransition } from "react";
+import {
+  JOB_APPLICATION_STATUS_VALUES,
+  type JobApplicationStatus,
+} from "@dbc/types";
 import { updateJobApplicationStatus } from "@/actions/job-applications";
-
-const STATUSES = [
-  "new",
-  "reviewing",
-  "shortlisted",
-  "rejected",
-  "accepted",
-] as const;
 
 const LABELS = {
   en: { new: "New", reviewing: "Reviewing", shortlisted: "Shortlisted", rejected: "Rejected", accepted: "Accepted" },
@@ -30,7 +26,7 @@ export function JobApplicationStatusSelect({
   const labels = LABELS[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof LABELS];
 
   function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    const next = e.target.value as (typeof STATUSES)[number];
+    const next = e.target.value as JobApplicationStatus;
     startTransition(async () => {
       await updateJobApplicationStatus(id, next, undefined, locale);
     });
@@ -43,7 +39,7 @@ export function JobApplicationStatusSelect({
       disabled={isPending}
       className="rounded-md border border-input bg-background px-2 py-1 text-xs"
     >
-      {STATUSES.map((s) => (
+      {JOB_APPLICATION_STATUS_VALUES.map((s) => (
         <option key={s} value={s}>
           {labels[s]}
         </option>

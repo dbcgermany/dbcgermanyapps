@@ -96,6 +96,12 @@ export const INCUBATION_APPLICATION_STATUS_VALUES = [
 export type IncubationApplicationStatus =
   (typeof INCUBATION_APPLICATION_STATUS_VALUES)[number];
 
+// Job applications share the same triage lifecycle today. Aliased (not
+// duplicated) so a future divergence only requires redefining one tuple.
+export const JOB_APPLICATION_STATUS_VALUES =
+  INCUBATION_APPLICATION_STATUS_VALUES;
+export type JobApplicationStatus = IncubationApplicationStatus;
+
 /* -------------------------------------------------------------------------- */
 /*                                Sponsors                                    */
 /* -------------------------------------------------------------------------- */

@@ -2,10 +2,13 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { type IncubationApplicationStatus } from "@dbc/types";
 import { updateApplicationStatus } from "@/actions/applications";
 import { updateJobApplicationStatus } from "@/actions/job-applications";
 
-type Status = "new" | "reviewing" | "shortlisted" | "rejected" | "accepted";
+type Status = IncubationApplicationStatus;
+// Display order intentionally differs from enum order (accepted above
+// rejected in the UI). Type locks values to the SSOT union.
 const STATUS_OPTIONS: Status[] = [
   "new",
   "reviewing",

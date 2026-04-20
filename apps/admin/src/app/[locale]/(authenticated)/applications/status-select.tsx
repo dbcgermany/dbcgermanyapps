@@ -1,15 +1,11 @@
 "use client";
 
 import { useTransition } from "react";
+import {
+  INCUBATION_APPLICATION_STATUS_VALUES,
+  type IncubationApplicationStatus,
+} from "@dbc/types";
 import { updateApplicationStatus } from "@/actions/applications";
-
-const STATUSES = [
-  "new",
-  "reviewing",
-  "shortlisted",
-  "rejected",
-  "accepted",
-] as const;
 
 const LABELS = {
   en: {
@@ -33,13 +29,13 @@ export function StatusSelect({
 }: {
   id: string;
   locale: string;
-  current: (typeof STATUSES)[number];
+  current: IncubationApplicationStatus;
 }) {
   const [isPending, startTransition] = useTransition();
   const labels = LABELS[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof LABELS];
 
   function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    const next = e.target.value as (typeof STATUSES)[number];
+    const next = e.target.value as IncubationApplicationStatus;
     startTransition(async () => {
       await updateApplicationStatus(id, next, locale);
     });
@@ -52,7 +48,7 @@ export function StatusSelect({
       disabled={isPending}
       className="rounded-md border border-input bg-background px-2 py-1 text-xs"
     >
-      {STATUSES.map((s) => (
+      {INCUBATION_APPLICATION_STATUS_VALUES.map((s) => (
         <option key={s} value={s}>
           {labels[s]}
         </option>
