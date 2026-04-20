@@ -1,6 +1,7 @@
 "use server";
 
 import { createServerClient } from "@dbc/supabase/server";
+import { CONTACT_CATEGORY } from "@dbc/types";
 import {
   GENDER_VALUES,
   TITLE_VALUES,
@@ -73,7 +74,7 @@ export async function submitIncubationApplication(
       p_country: country?.toUpperCase() ?? null,
       p_gender: gender,
       p_occupation: null,
-      p_auto_category_slug: "founders",
+      p_auto_category_slug: CONTACT_CATEGORY.founders,
       p_extra_category_slugs: [] as string[],
     });
     contactId = (data as string | null) ?? null;

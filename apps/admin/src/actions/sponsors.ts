@@ -1,6 +1,7 @@
 "use server";
 
 import { createServerClient, requireRole } from "@dbc/supabase/server";
+import { CONTACT_CATEGORY } from "@dbc/types";
 import { revalidatePath } from "next/cache";
 
 const SPONSOR_COLUMNS =
@@ -37,7 +38,7 @@ async function upsertSponsorContact(
       p_country: null,
       p_gender: null,
       p_occupation: null,
-      p_auto_category_slug: "partners",
+      p_auto_category_slug: CONTACT_CATEGORY.partners,
       p_extra_category_slugs: [] as string[],
     }
   );

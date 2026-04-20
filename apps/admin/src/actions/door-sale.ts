@@ -1,6 +1,7 @@
 "use server";
 
 import { createServerClient, requireRole } from "@dbc/supabase/server";
+import { CONTACT_CATEGORY } from "@dbc/types";
 import { sendTicketEmail } from "@dbc/email";
 import { revalidatePath } from "next/cache";
 
@@ -58,7 +59,7 @@ export async function createDoorSale(formData: FormData) {
         p_email: attendeeEmail,
         p_first_name: firstName,
         p_last_name: lastName || null,
-        p_auto_category_slug: "event_attendees",
+        p_auto_category_slug: CONTACT_CATEGORY.event_attendees,
       }
     );
     contactId = (contactIdData as string | null) ?? null;

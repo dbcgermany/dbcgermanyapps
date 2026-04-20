@@ -3,6 +3,7 @@
 import { createServerClient, requireRole } from "@dbc/supabase/server";
 import { sendTicketEmail } from "@dbc/email";
 import { revalidatePath } from "next/cache";
+import { CONTACT_CATEGORY } from "@dbc/types";
 import {
   GENDER_VALUES,
   TITLE_VALUES,
@@ -106,7 +107,7 @@ export async function createInvitation(input: InvitationInput) {
     p_country: country,
     p_gender: gender,
     p_occupation: occupation,
-    p_auto_category_slug: "invited_guests",
+    p_auto_category_slug: CONTACT_CATEGORY.invited_guests,
     p_extra_category_slugs: extraTags,
   });
 

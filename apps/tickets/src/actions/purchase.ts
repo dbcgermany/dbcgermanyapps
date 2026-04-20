@@ -1,6 +1,7 @@
 "use server";
 
 import { createServerClient } from "@dbc/supabase/server";
+import { CONTACT_CATEGORY } from "@dbc/types";
 import { createClient } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import { after } from "next/server";
@@ -309,7 +310,7 @@ export async function createCheckoutSession(input: CheckoutInput) {
       p_first_name: buyerFirst,
       p_last_name: buyerLast,
       p_country: buyer.country || null,
-      p_auto_category_slug: "event_attendees",
+      p_auto_category_slug: CONTACT_CATEGORY.event_attendees,
     }
   );
 
@@ -368,7 +369,7 @@ export async function createCheckoutSession(input: CheckoutInput) {
             p_first_name: first,
             p_last_name: last,
             p_country: attendee.country || null,
-            p_auto_category_slug: "event_attendees",
+            p_auto_category_slug: CONTACT_CATEGORY.event_attendees,
           })
         ).data as string | null);
 

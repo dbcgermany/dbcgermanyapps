@@ -144,6 +144,18 @@ export const CONTACT_CATEGORY_SLUGS = [
 ] as const;
 export type ContactCategorySlug = (typeof CONTACT_CATEGORY_SLUGS)[number];
 
+/**
+ * Named-access object for contact category slugs. Prefer this over string
+ * literals in call sites so typos fail the compile (the underlying RPC
+ * accepts any text — a typo would be silently dropped at the DB level).
+ *
+ *   p_auto_category_slug: CONTACT_CATEGORY.founders  // ✓
+ *   p_auto_category_slug: "fonders"                  // ✗ silently ignored
+ */
+export const CONTACT_CATEGORY = Object.fromEntries(
+  CONTACT_CATEGORY_SLUGS.map((s) => [s, s])
+) as { [K in ContactCategorySlug]: K };
+
 /* -------------------------------------------------------------------------- */
 /*                                 Locales                                    */
 /* -------------------------------------------------------------------------- */
