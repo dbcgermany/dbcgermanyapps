@@ -3,6 +3,12 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@dbc/ui";
+import {
+  SPONSOR_STATUS_VALUES,
+  SPONSOR_TIER_VALUES,
+  type SponsorStatus,
+  type SponsorTier,
+} from "@dbc/types";
 import { createSponsor, deleteSponsor } from "@/actions/sponsors";
 
 interface Sponsor {
@@ -13,36 +19,18 @@ interface Sponsor {
   contact_last_name: string | null;
   contact_email: string | null;
   contact_phone: string | null;
-  tier: string;
+  tier: SponsorTier;
   deal_value_cents: number | null;
   currency: string;
-  status: string;
+  status: SponsorStatus;
   logo_url: string | null;
   website_url: string | null;
   deliverables: string | null;
   notes: string | null;
 }
 
-const TIERS = [
-  "title",
-  "platinum",
-  "gold",
-  "silver",
-  "bronze",
-  "partner",
-  "media",
-] as const;
-
-const STATUSES = [
-  "lead",
-  "proposal",
-  "confirmed",
-  "active",
-  "completed",
-] as const;
-
 const STATUS_VARIANT: Record<
-  string,
+  SponsorStatus,
   "default" | "info" | "warning" | "success" | "accent"
 > = {
   lead: "default",
@@ -52,7 +40,7 @@ const STATUS_VARIANT: Record<
   completed: "accent",
 };
 
-const TIER_VARIANT: Record<string, "default" | "accent" | "success" | "warning" | "info"> = {
+const TIER_VARIANT: Record<SponsorTier, "default" | "accent" | "success" | "warning" | "info"> = {
   title: "accent",
   platinum: "accent",
   gold: "warning",
@@ -315,7 +303,7 @@ export function SponsorsClient({
                 defaultValue="partner"
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               >
-                {TIERS.map((tier) => (
+                {SPONSOR_TIER_VALUES.map((tier) => (
                   <option key={tier} value={tier}>
                     {t.tiers[tier] ?? tier}
                   </option>
@@ -326,7 +314,7 @@ export function SponsorsClient({
                 defaultValue="lead"
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               >
-                {STATUSES.map((status) => (
+                {SPONSOR_STATUS_VALUES.map((status) => (
                   <option key={status} value={status}>
                     {t.statuses[status] ?? status}
                   </option>
