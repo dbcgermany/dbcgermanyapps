@@ -96,11 +96,50 @@ export const INCUBATION_APPLICATION_STATUS_VALUES = [
 export type IncubationApplicationStatus =
   (typeof INCUBATION_APPLICATION_STATUS_VALUES)[number];
 
-// Job applications share the same triage lifecycle today. Aliased (not
-// duplicated) so a future divergence only requires redefining one tuple.
+// Job applications share the same 5-state triage lifecycle but have their
+// own DB enum (job_application_status) so future divergence is local.
 export const JOB_APPLICATION_STATUS_VALUES =
   INCUBATION_APPLICATION_STATUS_VALUES;
 export type JobApplicationStatus = IncubationApplicationStatus;
+
+/* -------------------------------------------------------------------------- */
+/*                            Job offers                                      */
+/* -------------------------------------------------------------------------- */
+
+export const EMPLOYMENT_TYPE_VALUES = [
+  "full_time",
+  "part_time",
+  "freelance",
+  "internship",
+] as const;
+export type EmploymentType = (typeof EMPLOYMENT_TYPE_VALUES)[number];
+
+/* -------------------------------------------------------------------------- */
+/*                             Newsletters                                    */
+/* -------------------------------------------------------------------------- */
+
+export const NEWSLETTER_STATUS_VALUES = [
+  "draft",
+  "scheduled",
+  "queued",
+  "sending",
+  "sent",
+  "failed",
+] as const;
+export type NewsletterStatus = (typeof NEWSLETTER_STATUS_VALUES)[number];
+
+export const NEWSLETTER_SEND_STATUS_VALUES = [
+  "queued",
+  "sent",
+  "delivered",
+  "bounced",
+  "opened",
+  "clicked",
+  "unsubscribed",
+  "failed",
+] as const;
+export type NewsletterSendStatus =
+  (typeof NEWSLETTER_SEND_STATUS_VALUES)[number];
 
 /* -------------------------------------------------------------------------- */
 /*                                Sponsors                                    */

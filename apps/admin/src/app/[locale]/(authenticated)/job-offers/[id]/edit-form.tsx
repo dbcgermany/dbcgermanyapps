@@ -2,7 +2,15 @@
 
 import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { EMPLOYMENT_TYPE_VALUES, type EmploymentType } from "@dbc/types";
 import { updateJobOffer } from "@/actions/job-offers";
+
+const EMPLOYMENT_TYPE_LABEL_KEY: Record<EmploymentType, "fullTime" | "partTime" | "freelance" | "internship"> = {
+  full_time: "fullTime",
+  part_time: "partTime",
+  freelance: "freelance",
+  internship: "internship",
+};
 
 const T = {
   en: {
@@ -56,12 +64,10 @@ type Job = {
 export function EditJobOfferForm({ locale, job }: { locale: string; job: Job }) {
   const router = useRouter();
   const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
-  const employmentTypes = [
-    { value: "full_time", label: t.fullTime },
-    { value: "part_time", label: t.partTime },
-    { value: "freelance", label: t.freelance },
-    { value: "internship", label: t.internship },
-  ];
+  const employmentTypes = EMPLOYMENT_TYPE_VALUES.map((value) => ({
+    value,
+    label: t[EMPLOYMENT_TYPE_LABEL_KEY[value]],
+  }));
 
   const [state, formAction, isPending] = useActionState(
     async (

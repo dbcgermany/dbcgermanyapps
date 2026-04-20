@@ -2,8 +2,16 @@
 
 import { use, useActionState } from "react";
 import { useTranslations } from "next-intl";
+import { EMPLOYMENT_TYPE_VALUES, type EmploymentType } from "@dbc/types";
 import { createJobOffer } from "@/actions/job-offers";
 import { PageHeader } from "@/components/page-header";
+
+const EMPLOYMENT_TYPE_LABEL_KEY: Record<EmploymentType, "fullTime" | "partTime" | "freelance" | "internship"> = {
+  full_time: "fullTime",
+  part_time: "partTime",
+  freelance: "freelance",
+  internship: "internship",
+};
 
 const T = {
   en: {
@@ -50,12 +58,10 @@ export default function NewJobOfferPage({
   const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
   const tBack = useTranslations("admin.back");
 
-  const employmentTypes = [
-    { value: "full_time", label: t.fullTime },
-    { value: "part_time", label: t.partTime },
-    { value: "freelance", label: t.freelance },
-    { value: "internship", label: t.internship },
-  ];
+  const employmentTypes = EMPLOYMENT_TYPE_VALUES.map((value) => ({
+    value,
+    label: t[EMPLOYMENT_TYPE_LABEL_KEY[value]],
+  }));
 
   const [state, formAction, isPending] = useActionState(
     async (_prev: { error: string } | null, formData: FormData) => {
