@@ -4,6 +4,7 @@ import { createServerClient, requireRole } from "@dbc/supabase/server";
 import { createClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import type { TeamMemberVisibility } from "@dbc/types";
 import { slugify, uniqueSlug } from "@/lib/slugify";
 
 function getServiceClient() {
@@ -12,8 +13,6 @@ function getServiceClient() {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 }
-
-export type TeamMemberVisibility = "public" | "internal" | "hidden";
 
 export interface TeamMember {
   id: string;

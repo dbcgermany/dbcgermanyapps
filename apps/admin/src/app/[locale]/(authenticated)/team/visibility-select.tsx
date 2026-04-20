@@ -2,11 +2,10 @@
 
 import { useTransition } from "react";
 import {
-  setTeamMemberVisibility,
+  TEAM_MEMBER_VISIBILITY_VALUES,
   type TeamMemberVisibility,
-} from "@/actions/team";
-
-const OPTIONS: TeamMemberVisibility[] = ["public", "internal", "hidden"];
+} from "@dbc/types";
+import { setTeamMemberVisibility } from "@/actions/team";
 
 export function VisibilitySelect({
   id,
@@ -33,7 +32,7 @@ export function VisibilitySelect({
       disabled={isPending}
       className="rounded-md border border-input bg-background px-2 py-1 text-xs"
     >
-      {OPTIONS.map((o) => (
+      {TEAM_MEMBER_VISIBILITY_VALUES.map((o) => (
         <option key={o} value={o}>
           {o}
         </option>
