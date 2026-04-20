@@ -52,6 +52,11 @@ export { AssetUpload } from "./asset-upload";
 export type { AssetUploadProps } from "./asset-upload";
 export { NotFoundHero } from "./not-found-hero";
 export type { NotFoundHeroProps } from "./not-found-hero";
+export { BrandedError, BrandedErrorFallback } from "./branded-error";
+export type {
+  BrandedErrorProps,
+  BrandedErrorFallbackProps,
+} from "./branded-error";
 export { Reveal, PageTransition } from "./motion";
 export type { RevealProps, RevealVariant, PageTransitionProps } from "./motion";
 export { PageBack } from "./page-back";

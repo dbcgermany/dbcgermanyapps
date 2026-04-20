@@ -527,6 +527,14 @@
     "refundIssued": "Refund: {amount} refunded for order #{orderId}",
     "checkInMilestone": "Check-in milestone: {rate}% of attendees checked in for {event}"
   },
+  "errors": {
+    "eyebrow": "Erreur",
+    "title": "Une erreur est survenue",
+    "description": "Une erreur inattendue est survenue lors du chargement de cette page. Notre équipe a été informée.",
+    "errorDigest": "Identifiant d’erreur",
+    "tryAgain": "Réessayer",
+    "backToSafety": "Retour à l’accueil"
+  },
   "waitlist": {
     "join": "Join waitlist",
     "joined": "You're on the waitlist! We'll email you when tickets become available.",
