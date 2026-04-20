@@ -169,3 +169,19 @@ export const CONTACT_CATEGORY = Object.fromEntries(
 export const LOCALES = ["en", "de", "fr"] as const;
 export type Locale = (typeof LOCALES)[number];
 export const DEFAULT_LOCALE: Locale = "en";
+
+/* -------------------------------------------------------------------------- */
+/*                            Business-rule defaults                          */
+/* -------------------------------------------------------------------------- */
+// Defaults are authoritative when the matching env var is unset. Each app
+// reads the env var with these as the fallback so the TS fallback never
+// drifts from the displayed / enforced limit.
+
+export const DEFAULTS = {
+  /** Max completed orders from the same email for a single event. */
+  MAX_ORDERS_PER_EMAIL_PER_EVENT: 3,
+  /** How long a checkout reservation holds inventory before the sweeper releases it. */
+  RESERVATION_TTL_MINUTES: 15,
+  /** Max tickets in a single checkout order (admin-configurable per event). */
+  MAX_TICKETS_PER_ORDER: 10,
+} as const;

@@ -2,7 +2,7 @@
 
 import { useActionState, use } from "react";
 import { useTranslations } from "next-intl";
-import { EVENT_TYPE_VALUES, type EventType } from "@dbc/types";
+import { DEFAULTS, EVENT_TYPE_VALUES, type EventType } from "@dbc/types";
 import { createEvent } from "@/actions/events";
 import { CoverImageUpload } from "@/components/cover-image-upload";
 import { PageHeader } from "@/components/page-header";
@@ -261,7 +261,7 @@ export default function NewEventPage({
               name="max_tickets_per_order"
               type="number"
               min="1"
-              defaultValue="10"
+              defaultValue={String(DEFAULTS.MAX_TICKETS_PER_ORDER)}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
             />
           </div>

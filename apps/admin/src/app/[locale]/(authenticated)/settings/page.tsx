@@ -1,4 +1,5 @@
 import { requireRole } from "@dbc/supabase/server";
+import { DEFAULTS } from "@dbc/types";
 import { getRecentWebhooks, getSiteSettings } from "@/actions/settings";
 import { listAppSecrets } from "@/actions/app-secrets";
 import { PageHeader } from "@/components/page-header";
@@ -42,7 +43,8 @@ export default async function SettingsPage({
         role={user.role}
         webhooks={webhooks}
         ratePerEmail={parseInt(
-          process.env.MAX_ORDERS_PER_EMAIL_PER_EVENT ?? "3",
+          process.env.MAX_ORDERS_PER_EMAIL_PER_EVENT ??
+            String(DEFAULTS.MAX_ORDERS_PER_EMAIL_PER_EVENT),
           10
         )}
         turnstileEnabled={Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY)}

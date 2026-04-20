@@ -1,7 +1,7 @@
 "use server";
 
 import { createServerClient } from "@dbc/supabase/server";
-import { CONTACT_CATEGORY } from "@dbc/types";
+import { CONTACT_CATEGORY, DEFAULTS } from "@dbc/types";
 import { createClient } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import { after } from "next/server";
@@ -29,9 +29,11 @@ const PAYMENT_METHOD_MAP: Record<string, string> = {
 };
 
 // SSOT rule 65: max orders per email per event. Configurable via env,
-// default 3. A completed order is any order that is not `cancelled`.
+// default from @dbc/types DEFAULTS. A completed order is any order that is
+// not `cancelled`.
 const MAX_ORDERS_PER_EMAIL_PER_EVENT = parseInt(
-  process.env.MAX_ORDERS_PER_EMAIL_PER_EVENT ?? "3",
+  process.env.MAX_ORDERS_PER_EMAIL_PER_EVENT ??
+    String(DEFAULTS.MAX_ORDERS_PER_EMAIL_PER_EVENT),
   10
 );
 
@@ -39,7 +41,8 @@ const MAX_ORDERS_PER_EMAIL_PER_EVENT = parseInt(
 // Stripe Checkout sessions expire after 24h by default but we want a tighter
 // window so abandoned carts don't block other buyers from the last seats.
 const RESERVATION_TTL_MINUTES = parseInt(
-  process.env.RESERVATION_TTL_MINUTES ?? "15",
+  process.env.RESERVATION_TTL_MINUTES ??
+    String(DEFAULTS.RESERVATION_TTL_MINUTES),
   10
 );
 
