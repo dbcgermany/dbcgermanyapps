@@ -13,12 +13,18 @@ import {
 import type { ReactNode } from "react";
 
 // Brand banner cropped to the DBC + attendees area of the 2025 event
-// photo used on admin/login. JPEG (not WebP) because Outlook desktop
-// renders WebP inconsistently. Hosted on Supabase public storage so
-// URLs stay stable across email clients' image proxies (Gmail, Apple
-// Mail, Outlook.com all proxy inline images through their own CDN).
+// photo used on admin/login. Centered crop (avoids the original's
+// corner watermark) with a subtle DBC Germany watermark composited on
+// so any saved copy is obviously branded. JPEG (not WebP) because
+// Outlook desktop renders WebP inconsistently. Hosted on Supabase
+// public storage so URLs stay stable across Gmail / Apple Mail /
+// Outlook.com image proxies.
+//
+// Versioned filename (-v3) cache-busts each client's image proxy when
+// we re-crop — bumping the version is the cheapest way to force a
+// refresh without changing the delivery path.
 export const EMAIL_HERO_URL =
-  "https://rcqgsexfuaoiiuqcqeka.supabase.co/storage/v1/object/public/brand-assets/email-hero.jpg";
+  "https://rcqgsexfuaoiiuqcqeka.supabase.co/storage/v1/object/public/brand-assets/email-hero-v3.jpg";
 
 // Shared brand chrome for every transactional email. Templates compose this
 // and only supply their own content Sections.
