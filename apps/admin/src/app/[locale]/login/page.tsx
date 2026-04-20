@@ -45,15 +45,21 @@ export default function LoginPage({
 
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden px-4">
-      {/* Hero background — same image as the marketing home page */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="https://diambilaybusinesscenter.org/images/2025_03_29_13_47_IMG_3075-copy.jpg"
-        alt=""
-        aria-hidden
-        className="absolute inset-0 h-full w-full object-cover"
-        referrerPolicy="no-referrer"
-      />
+      {/* Hero background — DBC Germany event photo, brand-hosted on
+           Supabase public storage for stability. WebP first via <picture>
+           so modern browsers get the smaller variant, JPEG as fallback. */}
+      <picture>
+        <source
+          srcSet="https://rcqgsexfuaoiiuqcqeka.supabase.co/storage/v1/object/public/brand-assets/dbc-bg.webp"
+          type="image/webp"
+        />
+        <img
+          src="https://rcqgsexfuaoiiuqcqeka.supabase.co/storage/v1/object/public/brand-assets/dbc-bg.jpg"
+          alt=""
+          aria-hidden
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      </picture>
       {/* Darken overlay for legibility */}
       <div
         aria-hidden

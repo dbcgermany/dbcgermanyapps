@@ -12,19 +12,13 @@ import {
 } from "@react-email/components";
 import type { ReactNode } from "react";
 
-// Brand banner cropped to the DBC + attendees area of the 2025 event
-// photo used on admin/login. Centered crop (avoids the original's
-// corner watermark) with a subtle DBC Germany watermark composited on
-// so any saved copy is obviously branded. JPEG (not WebP) because
-// Outlook desktop renders WebP inconsistently. Hosted on Supabase
-// public storage so URLs stay stable across Gmail / Apple Mail /
-// Outlook.com image proxies.
-//
-// Versioned filename (-v3) cache-busts each client's image proxy when
-// we re-crop — bumping the version is the cheapest way to force a
-// refresh without changing the delivery path.
+// Brand banner supplied by DBC Germany — pre-cropped stage + audience
+// framing (4378×1313 source, served as 1200×360 retina JPEG). JPEG
+// over WebP because Outlook desktop renders WebP inconsistently.
+// Hosted on Supabase public storage so URLs stay stable across Gmail
+// / Apple Mail / Outlook.com image proxies.
 export const EMAIL_HERO_URL =
-  "https://rcqgsexfuaoiiuqcqeka.supabase.co/storage/v1/object/public/brand-assets/email-hero-v3.jpg";
+  "https://rcqgsexfuaoiiuqcqeka.supabase.co/storage/v1/object/public/brand-assets/dbc-mail-banner.jpg";
 
 // Shared brand chrome for every transactional email. Templates compose this
 // and only supply their own content Sections.
@@ -48,21 +42,18 @@ export function EmailLayout({
       <Tailwind>
         <Body className="bg-neutral-50 font-sans">
           <Container className="mx-auto my-8 max-w-xl overflow-hidden rounded-lg bg-white shadow-sm">
-            {/* Brand hero — 600×200 crop of the DBC event photo. Full-
-                bleed (zero padding) so the image reaches container edges.
-                object-fit covers the crop; Outlook desktop ignores it but
-                still shows the image at its natural 3:1 aspect. */}
+            {/* Brand hero — 600×180 (10:3 aspect, matches the supplied
+                 4378×1313 source). Full-bleed so the image reaches
+                 container edges. Natural aspect, no object-fit trickery. */}
             <Img
               src={EMAIL_HERO_URL}
-              alt="DBC Germany"
+              alt="DBC Germany · Richesses d'Afrique"
               width="600"
-              height="200"
+              height="180"
               style={{
                 display: "block",
                 width: "100%",
                 height: "auto",
-                maxHeight: "200px",
-                objectFit: "cover",
               }}
             />
 
