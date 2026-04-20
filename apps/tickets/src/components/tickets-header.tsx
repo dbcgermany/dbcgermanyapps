@@ -39,6 +39,7 @@ export function TicketsHeader({ locale }: { locale: string }) {
             height={30}
             className="h-7 w-auto"
             priority
+            unoptimized
           />
           <span>Germany</span>
           <span className="sr-only">DBC</span>

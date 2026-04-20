@@ -54,6 +54,7 @@ export function SiteHeader({ locale }: { locale: string }) {
             height={30}
             className="h-7 w-auto"
             priority
+            unoptimized
           />
           <span>Germany</span>
           {/* sr-only mirror so crawlers that flatten <img alt=""> still
