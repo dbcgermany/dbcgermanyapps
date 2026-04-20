@@ -2,31 +2,11 @@
 
 import { createServerClient, requireRole } from "@dbc/supabase/server";
 import { revalidatePath } from "next/cache";
-
-export const INVOLVEMENT_ROLES = [
-  "attendee",
-  "invited_guest",
-  "sponsor",
-  "partner",
-  "contractor",
-  "speaker",
-  "moderator",
-  "volunteer",
-  "staff",
-  "press",
-  "vip",
-] as const;
-export type InvolvementRole = (typeof INVOLVEMENT_ROLES)[number];
-
-export interface InvolvementRow {
-  id: string;
-  contact_id: string;
-  event_id: string;
-  role: InvolvementRole;
-  notes: string | null;
-  created_at: string;
-  event?: { id: string; title_en: string; starts_at: string } | null;
-}
+import {
+  INVOLVEMENT_ROLES,
+  type InvolvementRole,
+  type InvolvementRow,
+} from "@/lib/involvements";
 
 export interface Contact {
   id: string;

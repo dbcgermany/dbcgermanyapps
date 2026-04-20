@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import {
-  INVOLVEMENT_ROLES,
   listContacts,
   listEventsForContactFilter,
-  type InvolvementRole,
 } from "@/actions/contacts";
+import {
+  INVOLVEMENT_ROLES,
+  type InvolvementRole,
+} from "@/lib/involvements";
 import { PageHeader } from "@/components/page-header";
 
 export default async function ContactsListPage({

@@ -4,11 +4,11 @@ import { useActionState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { CountrySelect, NameFields } from "@dbc/ui";
+import { createContact } from "@/actions/contacts";
 import {
-  createContact,
   INVOLVEMENT_ROLES,
   type InvolvementRole,
-} from "@/actions/contacts";
+} from "@/lib/involvements";
 
 type EventRow = { id: string; title_en: string; starts_at: string };
 

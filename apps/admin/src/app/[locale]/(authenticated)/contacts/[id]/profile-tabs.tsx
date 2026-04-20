@@ -21,12 +21,14 @@ import {
   removeInvolvement,
   updateContactProfile,
   toggleContactCategory,
-  INVOLVEMENT_ROLES,
   type Contact,
   type ContactCategory,
+} from "@/actions/contacts";
+import {
+  INVOLVEMENT_ROLES,
   type InvolvementRole,
   type InvolvementRow,
-} from "@/actions/contacts";
+} from "@/lib/involvements";
 import { resendTicketPdf, manualCheckIn } from "@/actions/tickets";
 import { useTranslations } from "next-intl";
 
