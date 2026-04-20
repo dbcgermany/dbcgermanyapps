@@ -3,8 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { LocaleSwitch } from "@dbc/ui";
-import { DBC } from "@/lib/dbc-assets";
+import { BRAND, LocaleSwitch } from "@dbc/ui";
 
 // Minimal funnel topbar. No nav links, no CTAs other than the logo.
 // The logo links to the marketing home in a new tab so a social-ad
@@ -32,21 +31,19 @@ export function FunnelTopBar({ locale }: { locale: string }) {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
         <Link
           href={`/${locale}`}
-          target="_blank"
-          rel="noopener"
           className="flex items-center gap-2 font-heading text-base font-bold tracking-tight"
-          aria-label="DBC Germany"
+          aria-label={BRAND.wordmarkAlt}
         >
           <Image
-            src={DBC.logo}
-            alt="DBC Germany"
-            width={32}
-            height={32}
-            className="h-8 w-8 object-contain"
-            referrerPolicy="no-referrer"
+            src={BRAND.logoSrc}
+            alt=""
+            width={88}
+            height={28}
+            className="h-7 w-auto"
             priority
           />
-          <span className="hidden sm:inline">DBC Germany</span>
+          <span className="hidden sm:inline">Germany</span>
+          <span className="sr-only">DBC</span>
         </Link>
         <LocaleSwitch currentLocale={locale} />
       </div>

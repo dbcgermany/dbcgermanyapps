@@ -5,8 +5,7 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Menu, X } from "lucide-react";
-import { LocaleSwitch, ThemeToggle } from "@dbc/ui";
-import { DBC } from "@/lib/dbc-assets";
+import { BRAND, LocaleSwitch, ThemeToggle } from "@dbc/ui";
 
 export function SiteHeader({ locale }: { locale: string }) {
   const t = useTranslations("site.nav");
@@ -46,18 +45,20 @@ export function SiteHeader({ locale }: { locale: string }) {
         <Link
           href={`/${locale}`}
           className="flex items-center gap-2 font-heading text-lg font-bold tracking-tight"
-          aria-label="DBC Germany"
+          aria-label={BRAND.wordmarkAlt}
         >
           <Image
-            src={DBC.logo}
-            alt="DBC Germany"
-            width={32}
-            height={32}
-            className="h-8 w-8 object-contain"
-            referrerPolicy="no-referrer"
+            src={BRAND.logoSrc}
+            alt=""
+            width={96}
+            height={30}
+            className="h-7 w-auto"
             priority
           />
-          <span>DBC Germany</span>
+          <span>Germany</span>
+          {/* sr-only mirror so crawlers that flatten <img alt=""> still
+              see the full "DBC Germany" phrase in the DOM. */}
+          <span className="sr-only">DBC</span>
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">
@@ -82,9 +83,13 @@ export function SiteHeader({ locale }: { locale: string }) {
           <LocaleSwitch currentLocale={locale} />
           <Link
             href={`/${locale}/services/incubation/apply`}
-            className="rounded-full border border-primary/70 px-5 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary/10"
+            className="group relative inline-flex items-center overflow-hidden rounded-full bg-linear-to-r from-primary to-accent px-5 py-2 text-sm font-semibold text-white shadow-[0_0_0_0_rgba(212,160,23,0)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_-6px_rgba(212,160,23,0.55)] active:translate-y-0"
           >
-            {t("apply")}
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-y-0 -left-1/3 w-1/3 skew-x-12 bg-linear-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover:translate-x-[400%]"
+            />
+            <span className="relative">{t("apply")}</span>
           </Link>
           <a
             href={ticketsUrl}
@@ -125,9 +130,13 @@ export function SiteHeader({ locale }: { locale: string }) {
             <Link
               href={`/${locale}/services/incubation/apply`}
               onClick={() => setOpen(false)}
-              className="mt-2 inline-flex items-center justify-center rounded-full border border-primary/70 px-5 py-3 text-sm font-semibold text-primary"
+              className="group relative mt-2 inline-flex items-center justify-center overflow-hidden rounded-full bg-linear-to-r from-primary to-accent px-5 py-3 text-sm font-semibold text-white shadow-[0_6px_20px_-8px_rgba(212,160,23,0.55)]"
             >
-              {t("apply")}
+              <span
+                aria-hidden
+                className="pointer-events-none absolute inset-y-0 -left-1/3 w-1/3 skew-x-12 bg-linear-to-r from-transparent via-white/30 to-transparent transition-transform duration-700 group-hover:translate-x-[400%]"
+              />
+              <span className="relative">{t("apply")}</span>
             </Link>
             <a
               href={ticketsUrl}

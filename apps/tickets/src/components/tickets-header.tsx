@@ -2,11 +2,9 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { LocaleSwitch, ThemeToggle } from "@dbc/ui";
+import { BRAND, LocaleSwitch, ThemeToggle } from "@dbc/ui";
 
 const MARKETING_SITE_URL = "https://dbc-germany.com";
-const LOGO_URL =
-  "https://diambilaybusinesscenter.org/images/Logo_DB.png";
 
 export function TicketsHeader({ locale }: { locale: string }) {
   const [scrolled, setScrolled] = useState(false);
@@ -32,18 +30,18 @@ export function TicketsHeader({ locale }: { locale: string }) {
         <a
           href={MARKETING_SITE_URL}
           className="flex items-center gap-2 font-heading text-lg font-bold tracking-tight"
-          aria-label="DBC Germany"
+          aria-label={BRAND.wordmarkAlt}
         >
           <Image
-            src={LOGO_URL}
+            src={BRAND.logoSrc}
             alt=""
-            width={32}
-            height={32}
-            className="h-8 w-8 object-contain"
-            referrerPolicy="no-referrer"
+            width={96}
+            height={30}
+            className="h-7 w-auto"
             priority
           />
-          <span>DBC Germany</span>
+          <span>Germany</span>
+          <span className="sr-only">DBC</span>
         </a>
 
         <div className="flex items-center gap-2">

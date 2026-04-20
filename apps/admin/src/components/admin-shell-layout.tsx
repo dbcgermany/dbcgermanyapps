@@ -2,10 +2,12 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { UserRole } from "@dbc/types";
+import { BRAND } from "@dbc/ui";
 import { AdminSidebar } from "./admin-sidebar";
 import { NotificationBell } from "./notification-bell";
 import { UserMenu } from "./user-menu";
@@ -120,9 +122,18 @@ export function AdminShellLayout({
               </button>
               <Link
                 href={`/${locale}/dashboard`}
-                className="font-heading text-base font-bold tracking-tight md:hidden"
+                className="flex items-center gap-2 font-heading text-base font-bold tracking-tight md:hidden"
+                aria-label={BRAND.wordmarkAlt}
               >
-                DBC Germany
+                <Image
+                  src={BRAND.logoSrc}
+                  alt=""
+                  width={72}
+                  height={24}
+                  className="h-5 w-auto"
+                />
+                <span>Germany</span>
+                <span className="sr-only">DBC</span>
               </Link>
             </div>
             <div className="flex h-14 items-center gap-2">

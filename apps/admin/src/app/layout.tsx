@@ -33,6 +33,16 @@ export const metadata: Metadata = {
     title: "DBC Admin",
     statusBarStyle: "black-translucent",
   },
+  // Explicit icon list (see site/admin/tickets layouts) — guarantees
+  // the right <link rel="icon"> tags and beats stale browser caches.
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/icon.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-icon.png", sizes: "180x180" }],
+    shortcut: "/favicon.ico",
+  },
 };
 
 export const viewport: Viewport = {

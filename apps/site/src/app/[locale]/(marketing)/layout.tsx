@@ -15,7 +15,7 @@ export default async function MarketingLayout({
   return (
     <>
       <SiteHeader locale={locale} />
-      <main className="flex-1">{children}</main>
+      <main>{children}</main>
       <SiteFooter locale={locale} />
     </>
   );

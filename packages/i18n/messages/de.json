@@ -563,7 +563,7 @@
       "cookies": "Cookies",
       "contact": "Kontakt",
       "tickets": "Tickets sichern",
-      "apply": "Für Inkubator bewerben",
+      "apply": "Projekt einreichen",
       "menu": "Menü",
       "close": "Schließen"
     },
@@ -867,8 +867,8 @@
       "selectAtLeastOne": "Bitte wähle mindestens eine Option."
     },
     "landing": {
-      "eyebrow": "Bewerben · DBC DACH",
-      "title": "Bau dein Unternehmen mit DBC — aus Düsseldorf.",
+      "eyebrow": "Bewerben · DBC Germany",
+      "title": "Bau dein Unternehmen mit DBC.",
       "subtitle": "Inkubation, Kapital, Mentoring, Masterclasses, Events und E-Learning für afrikanisch geprägte Gründer:innen in Europa. Eine Bewerbung — das gesamte Angebot.",
       "primaryCta": "Bewerbung starten",
       "scrollAnchor": "apply",
@@ -923,7 +923,7 @@
           },
           {
             "q": "Ist das nur für Gründer:innen in Deutschland?",
-            "a": "Nein. DBC DACH sitzt in Düsseldorf, nimmt aber Bewerbungen aus der afrikanischen Diaspora in Europa und darüber hinaus an."
+            "a": "Nein. DBC Germany — das DACH-Kapitel — nimmt Bewerbungen aus der afrikanischen Diaspora in Europa und darüber hinaus an."
           },
           {
             "q": "Kostet die Bewerbung etwas?",
@@ -1097,10 +1097,10 @@
     },
     "thankYou": {
       "title": "Danke — deine Bewerbung ist bei uns.",
-      "body": "Unser DBC DACH Team in Düsseldorf liest jede Bewerbung. Du hörst von einer:einem benannten Person:Ansprechperson innerhalb von 10 Werktagen.",
+      "body": "Das DBC Germany Team liest jede Bewerbung. Du hörst von einer benannten Ansprechperson innerhalb von 10 Werktagen.",
       "nextSteps": [
         "Wir lesen deine Bewerbung sorgfältig.",
-        "Du hörst von einer benannten Ansprechperson bei DBC DACH innerhalb von 10 Werktagen.",
+        "Du hörst von einer benannten Ansprechperson bei DBC Germany innerhalb von 10 Werktagen.",
         "Wenn es passt, laden wir dich zu einem 30-minütigen Call ein."
       ],
       "ctaHome": "Zurück zu DBC Germany",

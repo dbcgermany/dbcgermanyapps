@@ -15,20 +15,20 @@ const T = {
     preview: "We received your DBC application",
     greeting: "Hi {name},",
     body1:
-      "Thank you for applying to work with DBC DACH. Our team in D\u00fcsseldorf reads every submission.",
+      "Thank you for applying to work with DBC Germany. Our team reads every submission.",
     nextSteps: "What happens next:",
     step1: "We review your application carefully.",
     step2: "You hear back from a named person within 10 business days.",
     step3: "If we are a fit, we invite you to a 30-minute call.",
     cta: "Visit dbc-germany.com",
     closing: "Best regards,",
-    team: "The DBC DACH Team",
+    team: "The DBC Germany Team",
   },
   de: {
     preview: "Wir haben deine DBC-Bewerbung erhalten",
     greeting: "Hallo {name},",
     body1:
-      "vielen Dank f\u00fcr deine Bewerbung bei DBC DACH. Unser Team in D\u00fcsseldorf liest jede Bewerbung.",
+      "vielen Dank f\u00fcr deine Bewerbung bei DBC Germany. Unser Team liest jede Bewerbung.",
     nextSteps: "So geht es weiter:",
     step1: "Wir pr\u00fcfen deine Bewerbung sorgf\u00e4ltig.",
     step2:
@@ -36,13 +36,13 @@ const T = {
     step3: "Wenn es passt, laden wir dich zu einem 30-min\u00fctigen Call ein.",
     cta: "dbc-germany.com besuchen",
     closing: "Viele Gr\u00fc\u00dfe,",
-    team: "Das DBC DACH Team",
+    team: "Das DBC Germany Team",
   },
   fr: {
     preview: "Nous avons bien re\u00e7u ta candidature DBC",
     greeting: "Bonjour {name},",
     body1:
-      "Merci pour ta candidature aupr\u00e8s de DBC DACH. Notre \u00e9quipe \u00e0 D\u00fcsseldorf lit chaque candidature.",
+      "Merci pour ta candidature aupr\u00e8s de DBC Germany. Notre \u00e9quipe lit chaque candidature.",
     nextSteps: "La suite :",
     step1: "Nous \u00e9tudions attentivement ta candidature.",
     step2:
@@ -51,7 +51,7 @@ const T = {
       "Si c'est un match, nous t'invitons \u00e0 un appel de 30 minutes.",
     cta: "Visiter dbc-germany.com",
     closing: "Cordialement,",
-    team: "L'\u00e9quipe DBC DACH",
+    team: "L'\u00e9quipe DBC Germany",
   },
 };
 

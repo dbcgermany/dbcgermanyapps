@@ -563,7 +563,7 @@
       "cookies": "Cookies",
       "contact": "Contact",
       "tickets": "Obtenir des billets",
-      "apply": "Candidater à l'incubateur",
+      "apply": "Soumettre un projet",
       "menu": "Menu",
       "close": "Fermer"
     },
@@ -867,8 +867,8 @@
       "selectAtLeastOne": "Merci de sélectionner au moins une option."
     },
     "landing": {
-      "eyebrow": "Candidature · DBC DACH",
-      "title": "Construis ton entreprise avec DBC — depuis Düsseldorf.",
+      "eyebrow": "Candidature · DBC Germany",
+      "title": "Construis ton entreprise avec DBC.",
       "subtitle": "Incubation, capital, mentorat, masterclasses, événements et e-learning pour les entrepreneur·e·s de la diaspora africaine en Europe. Une candidature — toute l'offre.",
       "primaryCta": "Commencer ma candidature",
       "scrollAnchor": "apply",
@@ -923,7 +923,7 @@
           },
           {
             "q": "Est-ce réservé aux fondateurs basés en Allemagne ?",
-            "a": "Non. DBC DACH est basé à Düsseldorf mais accueille des candidatures de la diaspora africaine en Europe et au-delà."
+            "a": "Non. DBC Germany — le chapitre DACH — accueille des candidatures de la diaspora africaine en Europe et au-delà."
           },
           {
             "q": "La candidature est-elle payante ?",
@@ -1097,10 +1097,10 @@
     },
     "thankYou": {
       "title": "Merci — ta candidature est enregistrée.",
-      "body": "Notre équipe DBC DACH à Düsseldorf lit chaque candidature. Tu recevras un retour d'une personne identifiée sous 10 jours ouvrés.",
+      "body": "L'équipe DBC Germany lit chaque candidature. Tu recevras un retour d'une personne identifiée sous 10 jours ouvrés.",
       "nextSteps": [
         "Nous lisons ta candidature attentivement.",
-        "Tu reçois un retour d'une personne identifiée chez DBC DACH sous 10 jours ouvrés.",
+        "Tu reçois un retour d'une personne identifiée chez DBC Germany sous 10 jours ouvrés.",
         "Si c'est un match, nous t'invitons à un appel de 30 minutes."
       ],
       "ctaHome": "Retour à DBC Germany",

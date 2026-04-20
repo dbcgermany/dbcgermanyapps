@@ -65,6 +65,18 @@ export async function generateMetadata(): Promise<Metadata> {
       title: company?.brand_name ?? "DBC Germany",
       statusBarStyle: "default",
     },
+    // Explicit icon list — Next's convention-based detection should pick
+    // up app/icon.{svg,png}, but stating it here guarantees the right
+    // <link rel="icon"> tags in the HTML head and beats any browser
+    // cache that's holding on to the default globe.
+    icons: {
+      icon: [
+        { url: "/icon.svg", type: "image/svg+xml" },
+        { url: "/icon.png", sizes: "32x32", type: "image/png" },
+      ],
+      apple: [{ url: "/apple-icon.png", sizes: "180x180" }],
+      shortcut: "/favicon.ico",
+    },
     verification,
     robots: {
       index: true,

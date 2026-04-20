@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { BRAND } from "@dbc/ui";
 import {
   Briefcase,
   Building2,
@@ -128,9 +130,19 @@ export function AdminSidebar({
           {!collapsed && (
             <Link
               href={`/${locale}/dashboard`}
-              className="font-heading text-lg font-bold tracking-tight"
+              className="flex items-center gap-2 font-heading text-lg font-bold tracking-tight"
+              aria-label={BRAND.wordmarkAlt}
             >
-              DBC Germany
+              <Image
+                src={BRAND.logoSrc}
+                alt=""
+                width={88}
+                height={28}
+                className="h-6 w-auto"
+                priority
+              />
+              <span>Germany</span>
+              <span className="sr-only">DBC</span>
             </Link>
           )}
           <button
@@ -270,9 +282,18 @@ export function AdminSidebar({
               <Link
                 href={`/${locale}/dashboard`}
                 onClick={closeMobile}
-                className="font-heading text-lg font-bold tracking-tight"
+                className="flex items-center gap-2 font-heading text-lg font-bold tracking-tight"
+                aria-label={BRAND.wordmarkAlt}
               >
-                DBC Germany
+                <Image
+                  src={BRAND.logoSrc}
+                  alt=""
+                  width={88}
+                  height={28}
+                  className="h-6 w-auto"
+                />
+                <span>Germany</span>
+                <span className="sr-only">DBC</span>
               </Link>
               <button
                 type="button"

@@ -8,7 +8,7 @@ import {
   formatOfficeAddress,
 } from "@/lib/company-info";
 import { NewsletterFooterSignup } from "./newsletter-footer-signup";
-import { CookieSettingsButton } from "@dbc/ui";
+import { BRAND, CookieSettingsButton } from "@dbc/ui";
 
 export async function SiteFooter({ locale }: { locale: string }) {
   const t = await getTranslations({ locale, namespace: "site.footer" });
@@ -19,8 +19,10 @@ export async function SiteFooter({ locale }: { locale: string }) {
   const ticketsUrl =
     process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://tickets.dbc-germany.com";
 
-  const logoUrl = info?.logo_light_url || DBC.logo;
-  const brandName = info?.brand_name || "DBC Germany";
+  const brandName = info?.brand_name || BRAND.wordmarkAlt;
+  // Parent-org (Diambilay) logo for the footer affiliation chip only.
+  // The main brand crown at the top of the footer uses BRAND.logoSrc.
+  const parentLogoUrl = info?.logo_light_url || DBC.logo;
   const tagline = getTagline(info, locale) || t("tagline");
   const socials: Array<{ label: string; url: string }> = [
     { label: "LinkedIn", url: info?.linkedin_url || "" },
@@ -37,16 +39,19 @@ export async function SiteFooter({ locale }: { locale: string }) {
         <div className="grid gap-12 md:grid-cols-5">
           {/* Brand column */}
           <div className="md:col-span-2">
-            <div className="flex items-center gap-2 font-heading text-lg font-bold">
+            <div
+              className="flex items-center gap-2 font-heading text-lg font-bold"
+              aria-label={brandName}
+            >
               <Image
-                src={logoUrl}
-                alt={brandName}
-                width={32}
-                height={32}
-                className="h-8 w-8 object-contain"
-                referrerPolicy="no-referrer"
+                src={BRAND.logoSrc}
+                alt=""
+                width={120}
+                height={36}
+                className="h-8 w-auto"
               />
-              {brandName}
+              <span>Germany</span>
+              <span className="sr-only">DBC</span>
             </div>
             <p className="mt-3 max-w-sm text-sm text-muted-foreground">
               {tagline}
@@ -109,7 +114,7 @@ export async function SiteFooter({ locale }: { locale: string }) {
 
             <div className="mt-6 flex items-start gap-3 rounded-lg border border-border bg-background/60 p-3">
               <Image
-                src={logoUrl}
+                src={parentLogoUrl}
                 alt="Diambilay Business Center"
                 width={40}
                 height={40}

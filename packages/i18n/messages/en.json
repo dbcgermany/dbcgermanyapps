@@ -563,7 +563,7 @@
       "cookies": "Cookies",
       "contact": "Contact",
       "tickets": "Get Tickets",
-      "apply": "Apply to Incubator",
+      "apply": "Submit your project",
       "menu": "Menu",
       "close": "Close"
     },
@@ -867,8 +867,8 @@
       "selectAtLeastOne": "Please select at least one option."
     },
     "landing": {
-      "eyebrow": "Apply · DBC DACH",
-      "title": "Build your business with DBC — from Düsseldorf.",
+      "eyebrow": "Apply · DBC Germany",
+      "title": "Build your business with DBC.",
       "subtitle": "Incubation, capital, mentorship, masterclasses, events and e-learning for African-rooted founders in Europe. One application, the full stack.",
       "primaryCta": "Start your application",
       "scrollAnchor": "apply",
@@ -923,7 +923,7 @@
           },
           {
             "q": "Is this only for founders in Germany?",
-            "a": "No. DBC DACH is headquartered in Düsseldorf but accepts applicants from the wider African diaspora in Europe and beyond."
+            "a": "No. DBC Germany — the DACH chapter — welcomes applicants from the wider African diaspora across Europe and beyond."
           },
           {
             "q": "Is there a cost to apply?",
@@ -1097,10 +1097,10 @@
     },
     "thankYou": {
       "title": "Thank you — your application is in.",
-      "body": "Our DBC DACH team in Düsseldorf reads every submission. You'll hear back from a named person within 10 business days.",
+      "body": "The DBC Germany team reads every submission. You'll hear back from a named person within 10 business days.",
       "nextSteps": [
         "We read your submission carefully.",
-        "You hear back from a named person at DBC DACH within 10 business days.",
+        "You hear back from a named person at DBC Germany within 10 business days.",
         "If we're a fit, we invite you to a 30-minute call."
       ],
       "ctaHome": "Back to DBC Germany",

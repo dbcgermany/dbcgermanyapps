@@ -1,4 +1,5 @@
 export { cn } from "./utils";
+export { BRAND } from "./brand";
 export {
   ThemeProvider,
   useTheme,

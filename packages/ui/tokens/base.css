@@ -253,6 +253,21 @@
 }
 
 /* =========================================================================
+   FORM CONTROLS — native <select> baseline sizing
+   Many raw <select>s in the repo were written without an explicit height
+   class and browser-defaulted to ~24–28 px, so they sat short next to
+   Input (h-11 / 44 px) and Button (h-11). Setting the element-selector
+   baseline here normalises every unstyled select to input height. Tailwind
+   utility classes (h-9, h-8) are (0,1,0) specificity and still win, so the
+   deliberately-compact selects in admin tables keep their smaller size.
+   ========================================================================= */
+select {
+  height: 2.75rem; /* matches Tailwind h-11 + Input default */
+  padding-inline: 0.75rem 2rem; /* room on the right for the native chevron */
+  padding-block: 0.5rem;
+}
+
+/* =========================================================================
    RESPONSIVE SPACING OVERRIDES
    ========================================================================= */
 @media (min-width: 640px) {
