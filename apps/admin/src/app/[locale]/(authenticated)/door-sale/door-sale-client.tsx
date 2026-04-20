@@ -31,7 +31,12 @@ export function DoorSaleClient({
   const [attendeeName, setAttendeeName] = useState("");
   const [attendeeEmail, setAttendeeEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<"cash" | "bank_transfer" | "comp">("cash");
+  // "cash" + "sepa" are DB payment_method enum values. "comp" is a UX-only
+  // pseudo-value the action translates to a NULL payment_method (for comped
+  // tickets). Prior bug: this state used "bank_transfer", which isn't in
+  // the DB enum — any submission with that value failed the insert.
+  const [paymentMethod, setPaymentMethod] =
+    useState<"cash" | "sepa" | "comp">("cash");
   const [result, setResult] = useState<{
     error?: string;
     success?: boolean;
@@ -278,7 +283,7 @@ export function DoorSaleClient({
           <label className="block text-sm font-medium mb-1.5">{t.payment}</label>
           <input type="hidden" name="payment_method" value={paymentMethod} />
           <div className="flex gap-2">
-            {(["cash", "bank_transfer", "comp"] as const).map((m) => (
+            {(["cash", "sepa", "comp"] as const).map((m) => (
               <button
                 key={m}
                 type="button"
@@ -289,7 +294,7 @@ export function DoorSaleClient({
                     : "border-border text-muted-foreground hover:text-foreground"
                 }`}
               >
-                {m === "cash" ? t.cash : m === "bank_transfer" ? t.bankTransfer : t.comp}
+                {m === "cash" ? t.cash : m === "sepa" ? t.bankTransfer : t.comp}
               </button>
             ))}
           </div>
