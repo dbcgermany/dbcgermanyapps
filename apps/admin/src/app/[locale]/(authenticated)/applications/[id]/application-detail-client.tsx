@@ -126,53 +126,6 @@ export function ApplicationDetailClient({
   if (type === "incubation") {
     return (
       <div className="mt-8 space-y-8">
-        {/* Full pitch */}
-        <section className="rounded-lg border border-border p-5">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            {t.pitch}
-          </h2>
-          <p className="mt-3 whitespace-pre-wrap text-sm leading-6">
-            {data.pitch}
-          </p>
-        </section>
-
-        {/* Company details */}
-        <section className="rounded-lg border border-border p-5">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            {t.companyDetails}
-          </h2>
-          <dl className="mt-3 space-y-2 text-sm">
-            {data.company_name && (
-              <Row label={t.companyDetails} value={data.company_name} />
-            )}
-            {data.company_stage && (
-              <Row label={t.stage} value={data.company_stage} />
-            )}
-            {data.company_website && (
-              <div className="flex justify-between">
-                <dt className="text-muted-foreground">{t.website}</dt>
-                <dd>
-                  <a
-                    href={data.company_website}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary hover:text-primary/80"
-                  >
-                    {data.company_website.replace(/^https?:\/\//, "")}
-                  </a>
-                </dd>
-              </div>
-            )}
-            {data.country && <Row label={t.country} value={data.country} />}
-            {data.funding_needed_cents != null && (
-              <Row
-                label={t.funding}
-                value={`\u20AC${(data.funding_needed_cents / 100).toLocaleString()}`}
-              />
-            )}
-          </dl>
-        </section>
-
         {/* Contact */}
         <section className="rounded-lg border border-border p-5">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
@@ -180,8 +133,16 @@ export function ApplicationDetailClient({
           </h2>
           <dl className="mt-3 space-y-2 text-sm">
             <Row label={t.email} value={data.founder_email} />
-            {data.founder_phone && (
-              <Row label={t.phone} value={data.founder_phone} />
+            {data.founder_phone && <Row label={t.phone} value={data.founder_phone} />}
+            {data.country && <Row label={t.country} value={data.country} />}
+            {data.founder_age != null && (
+              <Row label="Age" value={String(data.founder_age)} />
+            )}
+            {data.founder_gender && (
+              <Row label="Gender" value={String(data.founder_gender)} />
+            )}
+            {data.founder_birthday && (
+              <Row label="Birthday" value={String(data.founder_birthday)} />
             )}
             <Row
               label={t.received}
@@ -193,6 +154,188 @@ export function ApplicationDetailClient({
             />
           </dl>
         </section>
+
+        {/* Profile */}
+        {(data.profile_type || data.has_idea != null) && (
+          <section className="rounded-lg border border-border p-5">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+              Profile
+            </h2>
+            <dl className="mt-3 space-y-2 text-sm">
+              {data.profile_type && (
+                <Row
+                  label="Profile"
+                  value={
+                    data.profile_type === "other" && data.profile_type_other
+                      ? data.profile_type_other
+                      : humanize(data.profile_type)
+                  }
+                />
+              )}
+              {data.has_idea != null && (
+                <Row label="Has idea" value={data.has_idea ? "Yes" : "No"} />
+              )}
+            </dl>
+          </section>
+        )}
+
+        {/* Idea */}
+        {data.has_idea && (
+          <section className="rounded-lg border border-border p-5">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+              Idea
+            </h2>
+            <div className="mt-3 space-y-4 text-sm">
+              {data.idea_problem && (
+                <Block label="Problem" value={data.idea_problem} />
+              )}
+              {data.idea_audience && (
+                <Block label="Audience" value={data.idea_audience} />
+              )}
+              {data.idea_development_stage && (
+                <Block label="Stage" value={data.idea_development_stage} />
+              )}
+              {data.idea_ambitions && (
+                <Block label="Ambitions" value={data.idea_ambitions} />
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* Sectors */}
+        {((data.industry_sectors?.length ?? 0) > 0 ||
+          data.has_prior_accompaniment != null) && (
+          <section className="rounded-lg border border-border p-5">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+              Sectors
+            </h2>
+            <dl className="mt-3 space-y-2 text-sm">
+              {(data.industry_sectors?.length ?? 0) > 0 && (
+                <Row
+                  label="Industries"
+                  value={(data.industry_sectors as string[])
+                    .map((s) =>
+                      s === "other" && data.industry_sectors_other
+                        ? data.industry_sectors_other
+                        : humanize(s)
+                    )
+                    .join(" \u00B7 ")}
+                />
+              )}
+              {data.has_prior_accompaniment != null && (
+                <Row
+                  label="Prior accompaniment"
+                  value={data.has_prior_accompaniment ? "Yes" : "No"}
+                />
+              )}
+            </dl>
+          </section>
+        )}
+
+        {/* Services wanted + why */}
+        {((data.services_wanted?.length ?? 0) > 0 || data.why_join) && (
+          <section className="rounded-lg border border-border p-5">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+              Expectations
+            </h2>
+            <div className="mt-3 space-y-4 text-sm">
+              {(data.services_wanted?.length ?? 0) > 0 && (
+                <Row
+                  label="Services wanted"
+                  value={(data.services_wanted as string[])
+                    .map((s) =>
+                      s === "other" && data.services_wanted_other
+                        ? data.services_wanted_other
+                        : humanize(s)
+                    )
+                    .join(" \u00B7 ")}
+                />
+              )}
+              {data.why_join && <Block label="Why join" value={data.why_join} />}
+              {data.diaspora_link != null && (
+                <Row
+                  label="Diaspora link"
+                  value={data.diaspora_link ? "Yes" : "No"}
+                />
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* Diaspora origin */}
+        {data.diaspora_link && data.diaspora_origin_country && (
+          <section className="rounded-lg border border-border p-5">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+              Diaspora origin
+            </h2>
+            <dl className="mt-3 space-y-2 text-sm">
+              <Row label="Country" value={data.diaspora_origin_country} />
+            </dl>
+          </section>
+        )}
+
+        {/* Discovery */}
+        {data.heard_about_us && (
+          <section className="rounded-lg border border-border p-5">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+              Discovery
+            </h2>
+            <dl className="mt-3 space-y-2 text-sm">
+              <Row
+                label="Heard about us"
+                value={
+                  data.heard_about_us === "other" && data.heard_about_us_other
+                    ? data.heard_about_us_other
+                    : humanize(data.heard_about_us)
+                }
+              />
+            </dl>
+          </section>
+        )}
+
+        {/* Legacy / pitch fallback — only shown if something remains */}
+        {(data.pitch || data.company_name || data.company_stage) && (
+          <section className="rounded-lg border border-border p-5">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+              {t.companyDetails}
+            </h2>
+            <dl className="mt-3 space-y-2 text-sm">
+              {data.company_name && <Row label="Company" value={data.company_name} />}
+              {data.company_stage && <Row label={t.stage} value={data.company_stage} />}
+              {data.company_website && (
+                <div className="flex justify-between">
+                  <dt className="text-muted-foreground">{t.website}</dt>
+                  <dd>
+                    <a
+                      href={data.company_website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:text-primary/80"
+                    >
+                      {data.company_website.replace(/^https?:\/\//, "")}
+                    </a>
+                  </dd>
+                </div>
+              )}
+              {data.funding_needed_cents != null && (
+                <Row
+                  label={t.funding}
+                  value={`\u20AC${(data.funding_needed_cents / 100).toLocaleString()}`}
+                />
+              )}
+            </dl>
+            {data.pitch && (
+              <div className="mt-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  {t.pitch}
+                </p>
+                <p className="mt-2 whitespace-pre-wrap text-sm leading-6">
+                  {data.pitch}
+                </p>
+              </div>
+            )}
+          </section>
+        )}
 
         {/* Reviewer */}
         <ReviewSection
@@ -295,11 +438,26 @@ export function ApplicationDetailClient({
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between">
+    <div className="flex justify-between gap-4">
       <dt className="text-muted-foreground">{label}</dt>
-      <dd className="font-medium">{value}</dd>
+      <dd className="font-medium text-right">{value}</dd>
     </div>
   );
+}
+
+function Block({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        {label}
+      </p>
+      <p className="mt-1 whitespace-pre-wrap text-sm leading-6">{value}</p>
+    </div>
+  );
+}
+
+function humanize(raw: string): string {
+  return raw.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function ReviewSection({

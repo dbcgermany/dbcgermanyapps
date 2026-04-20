@@ -4,7 +4,7 @@ import { createServerClient, requireRole } from "@dbc/supabase/server";
 import { revalidatePath } from "next/cache";
 
 const APP_COLUMNS =
-  "id, founder_name, founder_email, founder_phone, company_name, company_stage, company_website, country, locale, pitch, funding_needed_cents, status, reviewer_id, reviewer_notes, created_at, updated_at" as const;
+  "id, founder_name, founder_first_name, founder_last_name, founder_email, founder_phone, founder_gender, founder_birthday, founder_age, company_name, company_stage, company_website, country, locale, pitch, funding_needed_cents, status, reviewer_id, reviewer_notes, created_at, updated_at, profile_type, profile_type_other, has_idea, idea_problem, idea_audience, idea_development_stage, idea_ambitions, industry_sectors, industry_sectors_other, has_prior_accompaniment, services_wanted, services_wanted_other, why_join, diaspora_link, diaspora_origin_country, heard_about_us, heard_about_us_other" as const;
 
 export async function getIncubationApplications(filter?: {
   status?: string;

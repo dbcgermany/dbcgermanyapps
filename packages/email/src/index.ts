@@ -31,6 +31,7 @@ export {
   sendAftercareSequence,
   sendAdminAlert,
   sendJobApplicationConfirm,
+  sendIncubationApplicationConfirm,
   sendRefundConfirmation,
   sendContactFormConfirm,
   sendPreEventReminder,
@@ -44,6 +45,7 @@ export type {
   SendAftercareSequenceInput,
   SendAdminAlertInput,
   SendJobApplicationConfirmInput,
+  SendIncubationApplicationConfirmInput,
   SendRefundConfirmationInput,
   SendContactFormConfirmInput,
   SendPreEventReminderInput,
@@ -66,6 +68,8 @@ export { NewsletterConfirmEmail } from "./templates/newsletter-confirm";
 export { StaffMessageEmail } from "./templates/staff-message";
 export { JobApplicationConfirmEmail } from "./templates/job-application-confirm";
 export type { JobApplicationConfirmEmailProps } from "./templates/job-application-confirm";
+export { IncubationApplicationConfirmEmail } from "./templates/incubation-confirm";
+export type { IncubationApplicationConfirmEmailProps } from "./templates/incubation-confirm";
 export { RefundConfirmationEmail } from "./templates/refund-confirmation";
 export type { RefundConfirmationEmailProps } from "./templates/refund-confirmation";
 export { ContactFormConfirmEmail } from "./templates/contact-form-confirm";

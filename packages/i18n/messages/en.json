@@ -849,5 +849,263 @@
       "team": "Meet the operators behind DBC Germany. The Düsseldorf office runs incubation, investment prep, courses, mentorship, and the annual Richesses d'Afrique conference. The names below are the people you'll actually work with if you apply to a programme, pitch a partnership, or come to an event. Each profile links to the person's professional background and the programmes they lead. If you don't see the role you need, contact us — we hire for operator-grade generalists more often than titles suggest.",
       "contact": "Reach DBC Germany via whichever channel matches your query. Press and media enquiries go to the press desk; we respond within 24 hours on weekdays. Incubation and programme applications live on /services/incubation/apply and land directly in our review queue. Partnership and sponsorship conversations — including Richesses d'Afrique Germany 2026 packages — go through the form below or to jay@dbc-germany.com. For everything else (general questions, speaker suggestions, non-urgent media queries) the form below reaches the right person the same day."
     }
+  },
+  "incubationApply": {
+    "progress": "Step {current} of {total}",
+    "nav": {
+      "back": "Back",
+      "next": "Continue",
+      "submit": "Submit application",
+      "editAnswer": "Edit"
+    },
+    "errors": {
+      "required": "This field is required.",
+      "invalidEmail": "Please enter a valid email address.",
+      "invalidAge": "Please enter a valid age (14–120).",
+      "minLength": "Please write at least {min} characters.",
+      "selectAtLeastOne": "Please select at least one option."
+    },
+    "landing": {
+      "eyebrow": "Apply · DBC DACH",
+      "title": "Build your business with DBC — from Düsseldorf.",
+      "subtitle": "Incubation, capital, mentorship, masterclasses, events and e-learning for African-rooted founders in Europe. One application, the full stack.",
+      "primaryCta": "Start your application",
+      "scrollAnchor": "apply",
+      "pillars": {
+        "eyebrow": "What you get access to",
+        "title": "Everything DBC does, in one intake.",
+        "items": {
+          "incubation": {
+            "title": "Incubation",
+            "desc": "90-day sprints that turn early ideas into venture-ready businesses."
+          },
+          "courses": {
+            "title": "Courses",
+            "desc": "Cohort and on-demand programs led by senior operators."
+          },
+          "investments": {
+            "title": "Investments",
+            "desc": "Pre-seed to Series A checks for African-rooted ventures."
+          },
+          "mentorship": {
+            "title": "Mentorship",
+            "desc": "1-on-1 matching with operators who have built what you're building."
+          },
+          "events": {
+            "title": "Events",
+            "desc": "Richesses d'Afrique Germany, masterclasses, founder dinners."
+          },
+          "elearning": {
+            "title": "E-learning",
+            "desc": "The DBC academy on your schedule, in EN · DE · FR."
+          },
+          "consulting": {
+            "title": "Consulting",
+            "desc": "Advisory engagements for scale-ups, partners, and investors."
+          }
+        }
+      },
+      "socialProof": {
+        "quote": "",
+        "author": ""
+      },
+      "faq": {
+        "title": "Frequently asked",
+        "items": [
+          {
+            "q": "Do I need a finished idea to apply?",
+            "a": "No. If you don't have an idea yet, we'll skip the idea questions and help you find one through our courses and mentorship network."
+          },
+          {
+            "q": "Which languages can I apply in?",
+            "a": "English, German, or French. The office responds in your language within 10 business days."
+          },
+          {
+            "q": "Is this only for founders in Germany?",
+            "a": "No. DBC DACH is headquartered in Düsseldorf but accepts applicants from the wider African diaspora in Europe and beyond."
+          },
+          {
+            "q": "Is there a cost to apply?",
+            "a": "The application is free. Fees only apply to specific paid programs (courses, masterclasses, events) once you are matched to one."
+          }
+        ]
+      },
+      "footerCta": {
+        "text": "Still have questions? Write to",
+        "email": "incubation@dbc-germany.com"
+      }
+    },
+    "page1": {
+      "title": "Let's start with who you are.",
+      "subtitle": "We use this to address you and to reach you about your application.",
+      "fields": {
+        "firstName": "First name",
+        "lastName": "Last name",
+        "email": "Email",
+        "phone": "Phone (optional)",
+        "country": "Country of residence",
+        "age": "Age",
+        "birthday": "Date of birth (optional)",
+        "title": "Title (optional)",
+        "gender": "Gender (optional)"
+      }
+    },
+    "page2": {
+      "title": "Which profile fits you best?",
+      "subtitle": "Pick the one that describes you today. You can change direction later.",
+      "profileType": {
+        "label": "Your profile",
+        "projectHolder": "Project holder",
+        "projectHolderDesc": "I have an early-stage project I want to build.",
+        "entrepreneur": "Entrepreneur",
+        "entrepreneurDesc": "I already run a business and want to grow it.",
+        "student": "Student",
+        "studentDesc": "I'm in education and exploring entrepreneurship.",
+        "investor": "Investor",
+        "investorDesc": "I want to back African-rooted ventures.",
+        "other": "Other",
+        "otherDesc": "Something else — tell us below.",
+        "otherPlaceholder": "Briefly describe your profile"
+      },
+      "hasIdea": {
+        "label": "Do you already have a business idea?",
+        "subtitle": "Either answer is fine — we have tracks for both.",
+        "yes": "Yes, I have an idea",
+        "no": "Not yet"
+      }
+    },
+    "page3": {
+      "title": "Tell us about your idea.",
+      "subtitle": "Short and specific beats long and polished. 2–3 sentences each.",
+      "fields": {
+        "problem": {
+          "label": "What problem are you solving?",
+          "placeholder": "The specific pain point you've noticed, and who has it."
+        },
+        "audience": {
+          "label": "Who is your user or customer?",
+          "placeholder": "Who benefits? Describe them in one or two sentences."
+        },
+        "stage": {
+          "label": "Where are you today?",
+          "placeholder": "Idea · talking to users · building MVP · first revenue · scaling"
+        },
+        "ambitions": {
+          "label": "What do you want to build in the next 12–24 months?",
+          "placeholder": "Your near-term ambition: traction, markets, team, funding."
+        }
+      }
+    },
+    "page4": {
+      "title": "Which sectors are you in?",
+      "subtitle": "Pick one or more. We route applications to the right operators.",
+      "sectors": {
+        "label": "Industries",
+        "tech_digital": "Tech / digital",
+        "agri_food": "Agriculture / food",
+        "retail_commerce": "Retail / commerce",
+        "creative_media": "Creative / media",
+        "health_wellness": "Health / wellness",
+        "education": "Education",
+        "finance": "Finance",
+        "energy_sustainability": "Energy / sustainability",
+        "manufacturing": "Manufacturing",
+        "services": "Services",
+        "other": "Other",
+        "otherPlaceholder": "Which sector?"
+      },
+      "prior": {
+        "label": "Have you been supported by an incubator, accelerator or mentor before?",
+        "subtitle": "Optional context — it helps us calibrate your application.",
+        "yes": "Yes",
+        "no": "No"
+      }
+    },
+    "page5": {
+      "title": "What do you want from DBC?",
+      "subtitle": "Pick every service that fits. You'll discuss specifics with our team after review.",
+      "services": {
+        "label": "Services you're interested in",
+        "incubation": {
+          "title": "Incubation program",
+          "desc": "90-day sprint to move from idea to investable business."
+        },
+        "courses": {
+          "title": "Courses",
+          "desc": "Cohort programs and on-demand masterclasses."
+        },
+        "investments": {
+          "title": "Investment",
+          "desc": "Capital from the DBC fund and co-investors."
+        },
+        "mentorship": {
+          "title": "Mentorship",
+          "desc": "1-on-1 match with senior operators."
+        },
+        "events": {
+          "title": "Events",
+          "desc": "Richesses d'Afrique, masterclasses, founder dinners."
+        },
+        "elearning": {
+          "title": "E-learning",
+          "desc": "Self-paced academy in EN / DE / FR."
+        },
+        "consulting": {
+          "title": "Consulting / advisory",
+          "desc": "Strategic advisory engagements."
+        },
+        "other": {
+          "title": "Other",
+          "desc": "Something we haven't listed."
+        },
+        "otherPlaceholder": "Which service?"
+      },
+      "whyJoin": {
+        "label": "Why do you want to work with DBC?",
+        "placeholder": "2–3 sentences on what you expect from us and what you'd bring."
+      },
+      "diaspora": {
+        "label": "Do you have a personal or family link to the African diaspora?",
+        "subtitle": "Optional — it helps us connect you with the right network.",
+        "yes": "Yes",
+        "no": "No / prefer not to say"
+      }
+    },
+    "page6": {
+      "title": "Where is your family from?",
+      "subtitle": "Your country of origin or family heritage.",
+      "label": "Country of origin"
+    },
+    "page7": {
+      "title": "One last question — and a quick review.",
+      "subtitle": "How you found us helps us focus our outreach.",
+      "heardAbout": {
+        "label": "How did you hear about DBC?",
+        "social_media": "Social media",
+        "event": "At a DBC event",
+        "word_of_mouth": "Word of mouth",
+        "media": "Press / media",
+        "other": "Other",
+        "otherPlaceholder": "Tell us how"
+      },
+      "review": {
+        "title": "Review your answers",
+        "subtitle": "Everything correct? Submit below.",
+        "editLabel": "Edit"
+      }
+    },
+    "thankYou": {
+      "title": "Thank you — your application is in.",
+      "body": "Our DBC DACH team in Düsseldorf reads every submission. You'll hear back from a named person within 10 business days.",
+      "nextSteps": [
+        "We read your submission carefully.",
+        "You hear back from a named person at DBC DACH within 10 business days.",
+        "If we're a fit, we invite you to a 30-minute call."
+      ],
+      "ctaHome": "Back to DBC Germany",
+      "ctaHomeHref": "/",
+      "ctaFollow": "Follow us",
+      "ctaFollowHref": "https://www.linkedin.com/company/dbcgermany"
+    }
   }
 }

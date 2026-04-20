@@ -7,6 +7,7 @@ import { OrderReceiptEmail } from "./templates/order-receipt";
 import { AftercareSequenceEmail } from "./templates/aftercare-sequence";
 import { AdminAlertEmail } from "./templates/admin-alert";
 import { JobApplicationConfirmEmail } from "./templates/job-application-confirm";
+import { IncubationApplicationConfirmEmail } from "./templates/incubation-confirm";
 import { RefundConfirmationEmail } from "./templates/refund-confirmation";
 import { ContactFormConfirmEmail } from "./templates/contact-form-confirm";
 import { PreEventReminderEmail } from "./templates/pre-event-reminder";
@@ -274,6 +275,42 @@ export async function sendJobApplicationConfirm(
     from: transactionalFrom(),
     to: input.to,
     subject: JOB_APP_SUBJECT[input.locale],
+    html,
+  });
+  if (res.error) throw new Error(`Resend: ${res.error.message}`);
+  return { id: res.data?.id ?? "" };
+}
+
+// ---------------------------------------------------------------------------
+// Incubation Application Confirmation
+// ---------------------------------------------------------------------------
+
+export interface SendIncubationApplicationConfirmInput {
+  to: string;
+  applicantName: string;
+  locale: Locale;
+}
+
+const INCUBATION_APP_SUBJECT = {
+  en: "We received your DBC application",
+  de: "Wir haben deine DBC-Bewerbung erhalten",
+  fr: "Nous avons bien re\u00e7u ta candidature DBC",
+};
+
+export async function sendIncubationApplicationConfirm(
+  input: SendIncubationApplicationConfirmInput
+) {
+  const html = await render(
+    React.createElement(IncubationApplicationConfirmEmail, {
+      applicantName: input.applicantName,
+      locale: input.locale,
+    })
+  );
+  const resend = createEmailClient();
+  const res = await resend.emails.send({
+    from: transactionalFrom(),
+    to: input.to,
+    subject: INCUBATION_APP_SUBJECT[input.locale],
     html,
   });
   if (res.error) throw new Error(`Resend: ${res.error.message}`);

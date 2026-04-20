@@ -118,6 +118,65 @@ export const JOB_APPLICATION_STATUS_VALUES =
 export type JobApplicationStatus = IncubationApplicationStatus;
 
 /* -------------------------------------------------------------------------- */
+/*                      Incubation wizard answer enums                        */
+/* -------------------------------------------------------------------------- */
+// Mirrors of the CHECK-constrained text columns + text[] option sets on
+// public.incubation_applications. See
+// supabase/migrations/20260428000001_incubation_wizard_fields.sql.
+
+export const INCUBATION_PROFILE_TYPES = [
+  "project_holder",
+  "entrepreneur",
+  "student",
+  "investor",
+  "other",
+] as const;
+export type IncubationProfileType = (typeof INCUBATION_PROFILE_TYPES)[number];
+
+// Broad sector taxonomy — deliberately kept short; "other" + free-text
+// fallback captures long-tail. Keep in sync with
+// packages/i18n/messages/*.json incubationApply.page4.sectors.*.
+export const INCUBATION_INDUSTRY_SECTORS = [
+  "tech_digital",
+  "agri_food",
+  "retail_commerce",
+  "creative_media",
+  "health_wellness",
+  "education",
+  "finance",
+  "energy_sustainability",
+  "manufacturing",
+  "services",
+  "other",
+] as const;
+export type IncubationIndustrySector =
+  (typeof INCUBATION_INDUSTRY_SECTORS)[number];
+
+// Mirrors the six DBC pillars + consulting/advisory. Applicants can request
+// several on page 5 (stored as text[]).
+export const INCUBATION_SERVICES = [
+  "incubation",
+  "courses",
+  "investments",
+  "mentorship",
+  "events",
+  "elearning",
+  "consulting",
+  "other",
+] as const;
+export type IncubationService = (typeof INCUBATION_SERVICES)[number];
+
+export const INCUBATION_DISCOVERY_CHANNELS = [
+  "social_media",
+  "event",
+  "word_of_mouth",
+  "media",
+  "other",
+] as const;
+export type IncubationDiscoveryChannel =
+  (typeof INCUBATION_DISCOVERY_CHANNELS)[number];
+
+/* -------------------------------------------------------------------------- */
 /*                            Job offers                                      */
 /* -------------------------------------------------------------------------- */
 

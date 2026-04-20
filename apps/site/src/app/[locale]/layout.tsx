@@ -6,8 +6,6 @@ import { NextIntlClientProvider } from "next-intl";
 import { notFound } from "next/navigation";
 import { createServerClient } from "@dbc/supabase/server";
 import { getCompanyInfo } from "@/lib/company-info";
-import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
 
 const BASE = "https://dbc-germany.com";
 
@@ -126,11 +124,13 @@ export default async function LocaleLayout({
     );
   }
 
+  // NOTE: site chrome (header + footer) lives in the child route groups,
+  // not here. `(marketing)/layout.tsx` renders the full nav + footer for
+  // the bulk of the site; `(funnels)/layout.tsx` renders a stripped-down
+  // topbar + legal footer for ad-landing pages.
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
-      <SiteHeader locale={locale} />
-      <main className="flex-1">{children}</main>
-      <SiteFooter locale={locale} />
+      {children}
     </NextIntlClientProvider>
   );
 }
