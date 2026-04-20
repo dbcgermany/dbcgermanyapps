@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { EVENT_TYPE_VALUES, type EventType } from "@dbc/types";
 import { updateEvent } from "@/actions/events";
 import { CoverImageUpload } from "@/components/cover-image-upload";
 
@@ -118,26 +119,21 @@ export function EditEventForm({
       <fieldset>
         <legend className="text-sm font-medium mb-2">{t.eventType}</legend>
         <div className="flex gap-4">
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="radio"
-              name="event_type"
-              value="conference"
-              defaultChecked={event.event_type === "conference"}
-              className="accent-primary"
-            />
-            {t.conference}
-          </label>
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="radio"
-              name="event_type"
-              value="masterclass"
-              defaultChecked={event.event_type === "masterclass"}
-              className="accent-primary"
-            />
-            {t.masterclass}
-          </label>
+          {EVENT_TYPE_VALUES.map((value) => (
+            <label
+              key={value}
+              className="flex items-center gap-2 text-sm"
+            >
+              <input
+                type="radio"
+                name="event_type"
+                value={value}
+                defaultChecked={event.event_type === value}
+                className="accent-primary"
+              />
+              {t[value as EventType]}
+            </label>
+          ))}
         </div>
       </fieldset>
 

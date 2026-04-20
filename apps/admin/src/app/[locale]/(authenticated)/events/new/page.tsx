@@ -2,6 +2,7 @@
 
 import { useActionState, use } from "react";
 import { useTranslations } from "next-intl";
+import { EVENT_TYPE_VALUES, type EventType } from "@dbc/types";
 import { createEvent } from "@/actions/events";
 import { CoverImageUpload } from "@/components/cover-image-upload";
 import { PageHeader } from "@/components/page-header";
@@ -101,25 +102,21 @@ export default function NewEventPage({
         <fieldset>
           <legend className="text-sm font-medium mb-2">{t.eventType}</legend>
           <div className="flex gap-4">
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="radio"
-                name="event_type"
-                value="conference"
-                defaultChecked
-                className="accent-primary"
-              />
-              {t.conference}
-            </label>
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="radio"
-                name="event_type"
-                value="masterclass"
-                className="accent-primary"
-              />
-              {t.masterclass}
-            </label>
+            {EVENT_TYPE_VALUES.map((value, i) => (
+              <label
+                key={value}
+                className="flex items-center gap-2 text-sm"
+              >
+                <input
+                  type="radio"
+                  name="event_type"
+                  value={value}
+                  defaultChecked={i === 0}
+                  className="accent-primary"
+                />
+                {t[value as EventType]}
+              </label>
+            ))}
           </div>
         </fieldset>
 
