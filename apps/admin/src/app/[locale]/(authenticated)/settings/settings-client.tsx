@@ -226,7 +226,7 @@ export function SettingsClient({
               onSubmit={handleLookup}
               className="mt-4 flex flex-wrap items-end gap-3"
             >
-              <label className="flex-1 min-w-[240px]">
+              <label className="flex-1 min-w-60">
                 <span className="block text-xs text-muted-foreground mb-1">
                   {t.lookupEmail}
                 </span>
