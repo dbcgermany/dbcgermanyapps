@@ -91,6 +91,8 @@ export default async function ContactDetailPage({
         sponsorships={data.sponsorships as any[]}
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         applications={data.applications as any[]}
+        involvements={data.involvements}
+        eventsList={data.eventsList}
         locale={locale}
       />
 

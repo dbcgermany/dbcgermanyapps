@@ -17,16 +17,23 @@ const GENDER_LABELS: Record<Gender, string> = {
   prefer_not_to_say: "Prefer not to say",
 };
 import {
+  addInvolvement,
+  removeInvolvement,
   updateContactProfile,
   toggleContactCategory,
+  INVOLVEMENT_ROLES,
   type Contact,
   type ContactCategory,
+  type InvolvementRole,
+  type InvolvementRow,
 } from "@/actions/contacts";
 import { resendTicketPdf, manualCheckIn } from "@/actions/tickets";
+import { useTranslations } from "next-intl";
 
 type Tab =
   | "profile"
   | "categories"
+  | "involvements"
   | "orders"
   | "tickets"
   | "sponsorships"
@@ -85,6 +92,8 @@ export function ContactProfileTabs({
   tickets,
   sponsorships = [],
   applications = [],
+  involvements = [],
+  eventsList = [],
   locale,
 }: {
   contact: Contact;
@@ -94,13 +103,17 @@ export function ContactProfileTabs({
   tickets: TicketRow[];
   sponsorships?: SponsorshipRow[];
   applications?: ApplicationRow[];
+  involvements?: InvolvementRow[];
+  eventsList?: Array<{ id: string; title_en: string; starts_at: string }>;
   locale: string;
 }) {
   const [tab, setTab] = useState<Tab>("profile");
+  const tInv = useTranslations("admin.contacts");
 
   const tabs: Array<[Tab, string]> = [
     ["profile", "Profile"],
     ["categories", `Categories (${linkedCategories.length})`],
+    ["involvements", `${tInv("involvementsTitle")} (${involvements.length})`],
     ["orders", `Orders (${orders.length})`],
     ["tickets", `Tickets (${tickets.length})`],
   ];
@@ -135,6 +148,13 @@ export function ContactProfileTabs({
             contactId={contact.id}
             linked={linkedCategories}
             all={allCategories}
+          />
+        )}
+        {tab === "involvements" && (
+          <InvolvementsList
+            contactId={contact.id}
+            involvements={involvements}
+            eventsList={eventsList}
           />
         )}
         {tab === "orders" && <OrdersList orders={orders} />}
@@ -193,6 +213,133 @@ function SponsorshipsList({
           ))}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+function InvolvementsList({
+  contactId,
+  involvements,
+  eventsList,
+}: {
+  contactId: string;
+  involvements: InvolvementRow[];
+  eventsList: Array<{ id: string; title_en: string; starts_at: string }>;
+}) {
+  const tInv = useTranslations("admin.contacts");
+  const tRole = useTranslations("admin.contacts.roles");
+  const [isPending, startTransition] = useTransition();
+  const [selectedEventId, setSelectedEventId] = useState<string>("");
+  const [selectedRole, setSelectedRole] = useState<InvolvementRole>("sponsor");
+
+  function handleAdd() {
+    if (!selectedEventId) return;
+    startTransition(async () => {
+      const result = await addInvolvement({
+        contactId,
+        eventId: selectedEventId,
+        role: selectedRole,
+      });
+      if ("error" in result) toast.error(result.error);
+      else {
+        toast.success(tInv("addInvolvement"));
+        setSelectedEventId("");
+      }
+    });
+  }
+
+  function handleRemove(id: string) {
+    startTransition(async () => {
+      const result = await removeInvolvement(id, contactId);
+      if ("error" in result) toast.error(result.error);
+    });
+  }
+
+  const input =
+    "rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring";
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-end gap-2">
+        <label className="min-w-50 flex-1">
+          <span className="mb-1 block text-xs font-medium text-muted-foreground">
+            {tInv("eventFilter")}
+          </span>
+          <select
+            value={selectedEventId}
+            onChange={(e) => setSelectedEventId(e.target.value)}
+            className={`${input} w-full`}
+          >
+            <option value="">{tInv("selectEvent")}</option>
+            {eventsList.map((ev) => (
+              <option key={ev.id} value={ev.id}>
+                {ev.title_en}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          <span className="mb-1 block text-xs font-medium text-muted-foreground">
+            {tInv("roleFilter")}
+          </span>
+          <select
+            value={selectedRole}
+            onChange={(e) =>
+              setSelectedRole(e.target.value as InvolvementRole)
+            }
+            className={input}
+          >
+            {(INVOLVEMENT_ROLES as readonly InvolvementRole[]).map((r) => (
+              <option key={r} value={r}>
+                {tRole(r)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button
+          type="button"
+          disabled={!selectedEventId || isPending}
+          onClick={handleAdd}
+          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+        >
+          {tInv("addInvolvement")}
+        </button>
+      </div>
+
+      {involvements.length === 0 ? (
+        <p className="text-sm text-muted-foreground">
+          {tInv("involvementsEmpty")}
+        </p>
+      ) : (
+        <ul className="divide-y divide-border rounded-lg border border-border">
+          {involvements.map((i) => (
+            <li
+              key={i.id}
+              className="flex items-center justify-between gap-3 px-4 py-3 text-sm"
+            >
+              <div>
+                <p className="font-medium">
+                  {i.event?.title_en ?? "—"}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {tRole(i.role)}
+                  {i.event?.starts_at
+                    ? ` · ${new Date(i.event.starts_at).toLocaleDateString()}`
+                    : ""}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleRemove(i.id)}
+                disabled={isPending}
+                className="text-xs text-red-600 hover:text-red-700 disabled:opacity-50"
+              >
+                {tInv("remove")}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
@@ -559,7 +706,7 @@ function TicketRowView({ ticket }: { ticket: TicketRow }) {
           value={overrideEmail}
           onChange={(e) => setOverrideEmail(e.target.value)}
           placeholder="Send to a different email (optional)"
-          className="flex-1 min-w-[200px] rounded-md border border-border bg-background px-3 py-1.5 text-xs"
+          className="flex-1 min-w-50 rounded-md border border-border bg-background px-3 py-1.5 text-xs"
         />
         {!ticket.checked_in_at && (
           <button

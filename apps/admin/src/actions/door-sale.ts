@@ -114,6 +114,20 @@ export async function createDoorSale(formData: FormData) {
     return { error: "Failed to create ticket." };
   }
 
+  if (contactId) {
+    await supabase
+      .from("contact_event_involvements")
+      .upsert(
+        {
+          contact_id: contactId,
+          event_id: eventId,
+          role: "attendee",
+          added_by: user.userId,
+        },
+        { onConflict: "contact_id,event_id,role", ignoreDuplicates: false }
+      );
+  }
+
   // Email the PDF immediately (only if we have a real inbox to send to)
   if (hasRealEmail) {
     try {

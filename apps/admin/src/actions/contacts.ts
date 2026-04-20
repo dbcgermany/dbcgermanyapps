@@ -3,6 +3,31 @@
 import { createServerClient, requireRole } from "@dbc/supabase/server";
 import { revalidatePath } from "next/cache";
 
+export const INVOLVEMENT_ROLES = [
+  "attendee",
+  "invited_guest",
+  "sponsor",
+  "partner",
+  "contractor",
+  "speaker",
+  "moderator",
+  "volunteer",
+  "staff",
+  "press",
+  "vip",
+] as const;
+export type InvolvementRole = (typeof INVOLVEMENT_ROLES)[number];
+
+export interface InvolvementRow {
+  id: string;
+  contact_id: string;
+  event_id: string;
+  role: InvolvementRole;
+  notes: string | null;
+  created_at: string;
+  event?: { id: string; title_en: string; starts_at: string } | null;
+}
+
 export interface Contact {
   id: string;
   email: string;
@@ -43,10 +68,27 @@ export async function listContacts(filters: {
   search?: string;
   categorySlug?: string;
   marketingOnly?: boolean;
+  eventId?: string;
+  role?: InvolvementRole;
   limit?: number;
 } = {}): Promise<ContactListRow[]> {
   await requireRole("manager");
   const supabase = await createServerClient();
+
+  // If filtering by event (and optionally role), resolve matching contact IDs first.
+  let involvementContactIds: string[] | null = null;
+  if (filters.eventId) {
+    let invQuery = supabase
+      .from("contact_event_involvements")
+      .select("contact_id")
+      .eq("event_id", filters.eventId);
+    if (filters.role) invQuery = invQuery.eq("role", filters.role);
+    const { data: involvements } = await invQuery;
+    involvementContactIds = Array.from(
+      new Set((involvements ?? []).map((i) => i.contact_id as string))
+    );
+    if (involvementContactIds.length === 0) return [];
+  }
 
   let query = supabase
     .from("contacts")
@@ -63,6 +105,9 @@ export async function listContacts(filters: {
     .order("created_at", { ascending: false })
     .limit(filters.limit ?? 100);
 
+  if (involvementContactIds) {
+    query = query.in("id", involvementContactIds);
+  }
   if (filters.search && filters.search.trim().length > 0) {
     const q = filters.search.trim();
     query = query.or(
@@ -96,6 +141,171 @@ export async function listContacts(filters: {
   return rows;
 }
 
+/**
+ * Used to populate the event filter dropdown on the contacts list page.
+ * Returns events sorted by start date descending (most recent / upcoming first).
+ */
+export async function listEventsForContactFilter(): Promise<
+  Array<{ id: string; title_en: string; starts_at: string }>
+> {
+  await requireRole("manager");
+  const supabase = await createServerClient();
+  const { data } = await supabase
+    .from("events")
+    .select("id, title_en, starts_at")
+    .order("starts_at", { ascending: false })
+    .limit(200);
+  return (data as Array<{ id: string; title_en: string; starts_at: string }>) ?? [];
+}
+
+/**
+ * Add a contact <-> event involvement (sponsor / partner / contractor / …).
+ * Safe to call from anywhere — deduped by the (contact_id, event_id, role)
+ * UNIQUE constraint via upsert.
+ */
+export async function addInvolvement(params: {
+  contactId: string;
+  eventId: string;
+  role: InvolvementRole;
+  notes?: string | null;
+}) {
+  const user = await requireRole("manager");
+  const supabase = await createServerClient();
+  const { error } = await supabase
+    .from("contact_event_involvements")
+    .upsert(
+      {
+        contact_id: params.contactId,
+        event_id: params.eventId,
+        role: params.role,
+        notes: params.notes ?? null,
+        added_by: user.userId,
+      },
+      { onConflict: "contact_id,event_id,role", ignoreDuplicates: false }
+    );
+  if (error) return { error: error.message };
+  revalidatePath(`/[locale]/contacts/${params.contactId}`, "layout");
+  revalidatePath(`/[locale]/contacts`, "layout");
+  return { success: true as const };
+}
+
+export async function removeInvolvement(id: string, contactId: string) {
+  await requireRole("manager");
+  const supabase = await createServerClient();
+  const { error } = await supabase
+    .from("contact_event_involvements")
+    .delete()
+    .eq("id", id);
+  if (error) return { error: error.message };
+  revalidatePath(`/[locale]/contacts/${contactId}`, "layout");
+  revalidatePath(`/[locale]/contacts`, "layout");
+  return { success: true as const };
+}
+
+export async function listContactInvolvements(
+  contactId: string
+): Promise<InvolvementRow[]> {
+  await requireRole("manager");
+  const supabase = await createServerClient();
+  const { data } = await supabase
+    .from("contact_event_involvements")
+    .select(
+      "id, contact_id, event_id, role, notes, created_at, event:events(id, title_en, starts_at)"
+    )
+    .eq("contact_id", contactId)
+    .order("created_at", { ascending: false });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return ((data ?? []) as any[]) as InvolvementRow[];
+}
+
+/**
+ * Manually create a contact from the admin "New contact" form.
+ * Dedupes by email: if a contact already exists with that email, updates
+ * first/last/country/phone/etc. and reuses the row. Optionally adds an
+ * event involvement at the same time.
+ */
+export async function createContact(formData: FormData): Promise<
+  { success: true; id: string } | { error: string }
+> {
+  const user = await requireRole("manager");
+  const supabase = await createServerClient();
+
+  const firstName = ((formData.get("first_name") as string) || "").trim();
+  const lastName = ((formData.get("last_name") as string) || "").trim();
+  const email = ((formData.get("email") as string) || "").trim().toLowerCase();
+  const phone = ((formData.get("phone") as string) || "").trim() || null;
+  const country = ((formData.get("country") as string) || "").trim() || null;
+  const occupation =
+    ((formData.get("occupation") as string) || "").trim() || null;
+  const notes = ((formData.get("admin_notes") as string) || "").trim() || null;
+  const categorySlug =
+    ((formData.get("category_slug") as string) || "").trim() || null;
+  const eventId =
+    ((formData.get("event_id") as string) || "").trim() || null;
+  const roleRaw = ((formData.get("role") as string) || "").trim();
+  const role = (INVOLVEMENT_ROLES as readonly string[]).includes(roleRaw)
+    ? (roleRaw as InvolvementRole)
+    : null;
+
+  if (!firstName || !lastName) {
+    return { error: "First and last name are required." };
+  }
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return { error: "A valid email is required." };
+  }
+
+  const { data: upsertedId, error: rpcError } = await supabase.rpc(
+    "upsert_contact_from_checkout",
+    {
+      p_email: email,
+      p_first_name: firstName,
+      p_last_name: lastName,
+      p_country: country?.toUpperCase() ?? null,
+      p_gender: null,
+      p_occupation: occupation,
+      p_auto_category_slug: categorySlug,
+      p_extra_category_slugs: [] as string[],
+    }
+  );
+  if (rpcError || !upsertedId) {
+    return { error: rpcError?.message ?? "Failed to create contact." };
+  }
+  const contactId = upsertedId as string;
+
+  // Persist fields the RPC doesn't accept (phone, admin_notes).
+  if (phone || notes) {
+    const patch: Record<string, unknown> = {};
+    if (phone) patch.phone = phone;
+    if (notes) patch.admin_notes = notes;
+    await supabase.from("contacts").update(patch).eq("id", contactId);
+  }
+
+  if (eventId && role) {
+    await supabase
+      .from("contact_event_involvements")
+      .upsert(
+        {
+          contact_id: contactId,
+          event_id: eventId,
+          role,
+          added_by: user.userId,
+        },
+        { onConflict: "contact_id,event_id,role", ignoreDuplicates: false }
+      );
+  }
+
+  await supabase.from("audit_log").insert({
+    user_id: user.userId,
+    action: "create_contact_manual",
+    entity_type: "contacts",
+    entity_id: contactId,
+    details: { email, eventId, role },
+  });
+
+  revalidatePath(`/[locale]/contacts`, "layout");
+  return { success: true as const, id: contactId };
+}
+
 export async function getContact(id: string) {
   await requireRole("manager");
   const supabase = await createServerClient();
@@ -113,6 +323,8 @@ export async function getContact(id: string) {
     { data: tickets },
     { data: sponsorships },
     { data: applications },
+    involvements,
+    eventsList,
   ] = await Promise.all([
     supabase
       .from("contact_category_links")
@@ -154,6 +366,8 @@ export async function getContact(id: string) {
       )
       .eq("contact_id", id)
       .order("created_at", { ascending: false }),
+    listContactInvolvements(id),
+    listEventsForContactFilter(),
   ]);
 
   return {
@@ -165,6 +379,8 @@ export async function getContact(id: string) {
     tickets: tickets ?? [],
     sponsorships: sponsorships ?? [],
     applications: applications ?? [],
+    involvements,
+    eventsList,
   };
 }
 

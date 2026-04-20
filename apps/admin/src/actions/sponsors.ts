@@ -118,6 +118,20 @@ export async function createSponsor(eventId: string, formData: FormData) {
 
   if (error) return { error: error.message };
 
+  if (contactId) {
+    await supabase
+      .from("contact_event_involvements")
+      .upsert(
+        {
+          contact_id: contactId,
+          event_id: eventId,
+          role: "sponsor",
+          added_by: user.userId,
+        },
+        { onConflict: "contact_id,event_id,role", ignoreDuplicates: false }
+      );
+  }
+
   await supabase.from("audit_log").insert({
     user_id: user.userId,
     action: "create_sponsor",
@@ -176,6 +190,20 @@ export async function updateSponsor(id: string, formData: FormData) {
     .eq("id", id);
 
   if (error) return { error: error.message };
+
+  if (contactId) {
+    await supabase
+      .from("contact_event_involvements")
+      .upsert(
+        {
+          contact_id: contactId,
+          event_id: eventId,
+          role: "sponsor",
+          added_by: user.userId,
+        },
+        { onConflict: "contact_id,event_id,role", ignoreDuplicates: false }
+      );
+  }
 
   await supabase.from("audit_log").insert({
     user_id: user.userId,

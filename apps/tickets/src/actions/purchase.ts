@@ -390,6 +390,27 @@ export async function createCheckoutSession(input: CheckoutInput) {
 
   await supabase.from("tickets").insert(ticketRows);
 
+  // 10a. Record event involvement rows (one per distinct contact) so this
+  // contact shows up when filtering Contacts by the event. Deduped by the
+  // UNIQUE (contact_id, event_id, role) constraint.
+  const attendeeContactIds = Array.from(
+    new Set(
+      ticketRows
+        .map((r) => r.contact_id as string | null)
+        .filter((id): id is string => Boolean(id))
+    )
+  );
+  if (attendeeContactIds.length > 0) {
+    await supabase.from("contact_event_involvements").upsert(
+      attendeeContactIds.map((id) => ({
+        contact_id: id,
+        event_id: event.id,
+        role: "attendee" as const,
+      })),
+      { onConflict: "contact_id,event_id,role", ignoreDuplicates: false }
+    );
+  }
+
   // 11. If free order, skip Stripe — mark as comped and redirect.
   if (totalCents === 0) {
     if (couponId) {

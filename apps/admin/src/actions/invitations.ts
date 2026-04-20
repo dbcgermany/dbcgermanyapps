@@ -175,6 +175,22 @@ export async function createInvitation(input: InvitationInput) {
     return { error: "Failed to create ticket." };
   }
 
+  // Record the event involvement (invited_guest) so the person shows up when
+  // filtering Contacts by this event.
+  if (contactId) {
+    await supabase
+      .from("contact_event_involvements")
+      .upsert(
+        {
+          contact_id: contactId as string,
+          event_id: input.eventId,
+          role: acquisitionType === "invited" ? "invited_guest" : "attendee",
+          added_by: user.userId,
+        },
+        { onConflict: "contact_id,event_id,role", ignoreDuplicates: false }
+      );
+  }
+
   // Email the PDF
   const { data: companyInfo } = await supabase
     .from("company_info")

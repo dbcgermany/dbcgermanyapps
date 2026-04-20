@@ -1,6 +1,11 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { listContacts } from "@/actions/contacts";
+import {
+  INVOLVEMENT_ROLES,
+  listContacts,
+  listEventsForContactFilter,
+  type InvolvementRole,
+} from "@/actions/contacts";
 import { PageHeader } from "@/components/page-header";
 
 export default async function ContactsListPage({
@@ -8,23 +13,52 @@ export default async function ContactsListPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ q?: string; category?: string; marketing?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    category?: string;
+    event?: string;
+    role?: string;
+    marketing?: string;
+  }>;
 }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "admin.contacts" });
+  const tRole = await getTranslations({
+    locale,
+    namespace: "admin.contacts.roles",
+  });
   const tCommon = await getTranslations({ locale, namespace: "admin.common" });
   const sp = await searchParams;
-  const contacts = await listContacts({
-    search: sp.q,
-    categorySlug: sp.category,
-    marketingOnly: sp.marketing === "1",
-  });
+  const [contacts, events] = await Promise.all([
+    listContacts({
+      search: sp.q,
+      categorySlug: sp.category,
+      eventId: sp.event || undefined,
+      role:
+        sp.role && (INVOLVEMENT_ROLES as readonly string[]).includes(sp.role)
+          ? (sp.role as InvolvementRole)
+          : undefined,
+      marketingOnly: sp.marketing === "1",
+    }),
+    listEventsForContactFilter(),
+  ]);
+
+  const filterInput =
+    "rounded-md border border-border bg-background px-3 py-2 text-sm";
 
   return (
     <div>
       <PageHeader
         title={t("title")}
         description=""
+        cta={
+          <Link
+            href={`/${locale}/contacts/new`}
+            className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+          >
+            {t("createContact")}
+          </Link>
+        }
       />
 
       <form className="mt-6 flex flex-wrap gap-2" method="get">
@@ -33,8 +67,32 @@ export default async function ContactsListPage({
           name="q"
           defaultValue={sp.q ?? ""}
           placeholder={t("search")}
-          className="w-64 rounded-md border border-border bg-background px-3 py-2 text-sm"
+          className={`${filterInput} w-64`}
         />
+        <select
+          name="event"
+          defaultValue={sp.event ?? ""}
+          className={filterInput}
+        >
+          <option value="">{t("allEvents")}</option>
+          {events.map((e) => (
+            <option key={e.id} value={e.id}>
+              {e.title_en}
+            </option>
+          ))}
+        </select>
+        <select
+          name="role"
+          defaultValue={sp.role ?? ""}
+          className={filterInput}
+        >
+          <option value="">{t("allRoles")}</option>
+          {(INVOLVEMENT_ROLES as readonly InvolvementRole[]).map((r) => (
+            <option key={r} value={r}>
+              {tRole(r)}
+            </option>
+          ))}
+        </select>
         <label className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm">
           <input
             type="checkbox"
@@ -50,7 +108,7 @@ export default async function ContactsListPage({
         >
           {tCommon("filter")}
         </button>
-        {(sp.q || sp.marketing) && (
+        {(sp.q || sp.marketing || sp.event || sp.role) && (
           <Link
             href="?"
             className="rounded-md px-4 py-2 text-sm text-muted-foreground hover:bg-muted"
