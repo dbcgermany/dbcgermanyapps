@@ -1,10 +1,15 @@
 "use server";
 
 import { createServerClient, requireRole } from "@dbc/supabase/server";
-import { sendNewsletterEmail } from "@dbc/email";
+import {
+  DEFAULT_FROM,
+  getResendDomainStatus,
+  sendNewsletterEmail,
+} from "@dbc/email";
 import { revalidatePath } from "next/cache";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://dbc-germany.com";
+const RESEND_ACCOUNT_OWNER_EMAIL = "dbcgermany@gmail.com";
 
 type Locale = "en" | "de" | "fr";
 
@@ -100,6 +105,11 @@ export async function previewNewsletterRecipientCount(
   return (data as number) ?? 0;
 }
 
+export async function getNewsletterSenderDomainStatus() {
+  await requireRole("manager");
+  return getResendDomainStatus();
+}
+
 export async function listContactCategories() {
   await requireRole("manager");
   const supabase = await createServerClient();
@@ -176,19 +186,44 @@ export async function sendTestNewsletter(id: string, toEmail: string) {
     .single();
   if (!nl) return { error: "Newsletter not found." };
 
+  // If the Resend domain isn't verified yet, Resend rejects any send from a
+  // @dbc-germany.com address. Fall back to the account-owner-only
+  // `onboarding@resend.dev` sender so the template is still previewable —
+  // Resend permits that sender, but only delivers it to the Resend account
+  // owner's inbox. For any other recipient we have to block and tell them.
+  const domain = await getResendDomainStatus();
+  let fromName = nl.from_name;
+  let fromEmail = nl.from_email;
+  let subject = `[TEST] ${nl.subject}`;
+  if (!domain.verified) {
+    if (toEmail.trim().toLowerCase() !== RESEND_ACCOUNT_OWNER_EMAIL) {
+      return {
+        error: `${domain.message} Test sends to other recipients are blocked until the domain is verified. You can still test-send to ${RESEND_ACCOUNT_OWNER_EMAIL}.`,
+      };
+    }
+    // Strip the explicit from so sendNewsletterEmail() uses DEFAULT_FROM.
+    fromName = undefined as unknown as string;
+    fromEmail = undefined as unknown as string;
+    subject = `[TEST · unverified domain] ${nl.subject}`;
+  }
+
   try {
     await sendNewsletterEmail({
       to: toEmail,
-      subject: `[TEST] ${nl.subject}`,
+      subject,
       preheader: nl.preheader ?? undefined,
       body: nl.body_mdx,
       unsubscribeUrl: `${SITE_URL}/${normalizeLocale(nl.locale)}/newsletter/unsubscribe?token=preview`,
-      fromName: nl.from_name,
-      fromEmail: nl.from_email,
+      fromName,
+      fromEmail,
       replyTo: nl.reply_to ?? undefined,
       locale: normalizeLocale(nl.locale),
     });
-    return { success: true };
+    return {
+      success: true,
+      usedFallbackSender: !domain.verified,
+      fallbackSender: !domain.verified ? DEFAULT_FROM : undefined,
+    };
   } catch (err) {
     return { error: (err as Error).message };
   }
@@ -206,6 +241,14 @@ export async function sendNewsletter(id: string) {
   if (!nl) return { error: "Newsletter not found." };
   if (nl.status !== "draft") {
     return { error: `Cannot send from status "${nl.status}".` };
+  }
+
+  // Pre-flight: no point reserving + creating rows if Resend can't deliver.
+  const domain = await getResendDomainStatus();
+  if (!domain.verified) {
+    return {
+      error: `Cannot send broadcast: ${domain.message}`,
+    };
   }
 
   // Claim: only flip to sending if still draft (prevents double-send)
@@ -228,7 +271,13 @@ export async function sendNewsletter(id: string) {
   let sent = 0;
   let failed = 0;
 
-  // Pre-create all sends as queued so we can track mid-run failures.
+  // Pre-create all sends as `queued` AND return their ids so we can embed the
+  // real newsletter_sends UUID in each recipient's unsubscribe URL. Without
+  // this, the per-send unsubscribe parameter was a literal "{SEND_ID}" string
+  // (Resend does not substitute template vars in URLs), so the site's
+  // unsubscribe action could only unsub the contact but never mark the
+  // specific send row — the unsubscribes_count never incremented per campaign.
+  const sendIdByContact = new Map<string, string>();
   if (recipients.length > 0) {
     const sendRows = recipients.map((r) => ({
       newsletter_id: id,
@@ -236,7 +285,13 @@ export async function sendNewsletter(id: string) {
       email: r.email,
       status: "queued" as const,
     }));
-    await supabase.from("newsletter_sends").insert(sendRows);
+    const { data: insertedRows } = await supabase
+      .from("newsletter_sends")
+      .insert(sendRows)
+      .select("id, contact_id");
+    for (const row of insertedRows ?? []) {
+      if (row.contact_id) sendIdByContact.set(row.contact_id, row.id);
+    }
   }
 
   // Batch of 20 parallel sends with a tiny delay to be polite to Resend's rate
@@ -246,13 +301,14 @@ export async function sendNewsletter(id: string) {
     const slice = recipients.slice(i, i + BATCH);
     const results = await Promise.allSettled(
       slice.map(async (r) => {
-        const unsubscribeUrl = `${SITE_URL}/${locale}/newsletter/unsubscribe?token=${r.unsubscribe_token}`;
+        const sendId = sendIdByContact.get(r.id);
+        const unsubscribeUrl = `${SITE_URL}/${locale}/newsletter/unsubscribe?token=${r.unsubscribe_token}${sendId ? `&send=${sendId}` : ""}`;
         const { id: resendId } = await sendNewsletterEmail({
           to: r.email,
           subject: nl.subject,
           preheader: nl.preheader ?? undefined,
           body: nl.body_mdx,
-          unsubscribeUrl: `${unsubscribeUrl}&send={SEND_ID}`,
+          unsubscribeUrl,
           fromName: nl.from_name,
           fromEmail: nl.from_email,
           replyTo: nl.reply_to ?? undefined,

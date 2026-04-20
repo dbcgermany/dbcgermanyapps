@@ -1,5 +1,8 @@
 import { getTranslations } from "next-intl/server";
-import { listContactCategories } from "@/actions/newsletters";
+import {
+  getNewsletterSenderDomainStatus,
+  listContactCategories,
+} from "@/actions/newsletters";
 import { PageHeader } from "@/components/page-header";
 import { NewsletterComposer } from "../composer";
 
@@ -29,7 +32,10 @@ export default async function NewNewsletterPage({
   const { locale } = await params;
   const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
   const tBack = await getTranslations({ locale, namespace: "admin.back" });
-  const categories = await listContactCategories();
+  const [categories, domainStatus] = await Promise.all([
+    listContactCategories(),
+    getNewsletterSenderDomainStatus(),
+  ]);
   return (
     <div>
       <PageHeader
@@ -43,6 +49,7 @@ export default async function NewNewsletterPage({
           slug: c.slug,
           name: c.name_en,
         }))}
+        domainStatus={domainStatus}
       />
     </div>
   );

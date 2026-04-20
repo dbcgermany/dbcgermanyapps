@@ -1,5 +1,10 @@
 export { render } from "@react-email/components";
-export { createEmailClient, fromAddressFor } from "./client";
+export { createEmailClient, fromAddressFor, DEFAULT_FROM } from "./client";
+export {
+  getResendDomainStatus,
+  clearDomainCheckCache,
+} from "./domain-check";
+export type { DomainStatus, DomainCheckResult } from "./domain-check";
 export { sendTicketEmail } from "./send-ticket";
 export type { SendTicketEmailInput } from "./send-ticket";
 export { generateTicketPdf } from "./pdf/generate-ticket";

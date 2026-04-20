@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import {
   getNewsletter,
+  getNewsletterSenderDomainStatus,
   listContactCategories,
   getNewsletterStats,
 } from "@/actions/newsletters";
@@ -48,9 +49,10 @@ export default async function NewsletterEditPage({
   const { locale, id } = await params;
   const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
   const tBack = await getTranslations({ locale, namespace: "admin.back" });
-  const [nl, categories] = await Promise.all([
+  const [nl, categories, domainStatus] = await Promise.all([
     getNewsletter(id),
     listContactCategories(),
+    getNewsletterSenderDomainStatus(),
   ]);
   if (!nl) notFound();
 
@@ -117,6 +119,7 @@ export default async function NewsletterEditPage({
           exclude_category_slugs: nl.exclude_category_slugs ?? [],
         }}
         readOnly={nl.status !== "draft"}
+        domainStatus={domainStatus}
       />
     </div>
   );

@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import type { DomainCheckResult } from "@dbc/email";
 import {
   saveNewsletter,
   previewNewsletterRecipientCount,
@@ -65,6 +66,9 @@ const T = {
     sendBroadcastHint:
       "One-way. Saves the draft first, then dispatches to the resolved recipient list.",
     sendNow: "Send now",
+    domainUnverifiedTitle: "Sender domain is not verified",
+    domainUnverifiedBody:
+      "Resend hasn't verified dbc-germany.com yet, so real broadcasts are blocked. Add the 3 DNS records listed in cred/dns-email-setup.md at Strato and wait 5-30 min. Test sends to the Resend account owner still work (from onboarding@resend.dev).",
   },
   de: {
     saved: "Gespeichert.",
@@ -91,6 +95,9 @@ const T = {
     sendBroadcastHint:
       "Einseitig. Speichert den Entwurf zuerst und versendet dann an die aufgelöste Empfängerliste.",
     sendNow: "Jetzt senden",
+    domainUnverifiedTitle: "Absender-Domain nicht verifiziert",
+    domainUnverifiedBody:
+      "Resend hat dbc-germany.com noch nicht verifiziert — echte Broadcasts sind deshalb blockiert. Fügen Sie bei Strato die 3 DNS-Einträge aus cred/dns-email-setup.md hinzu und warten Sie 5-30 Min. Tests an den Resend-Inhaber funktionieren weiterhin (von onboarding@resend.dev).",
   },
   fr: {
     saved: "Enregistré.",
@@ -117,6 +124,9 @@ const T = {
     sendBroadcastHint:
       "Action unidirectionnelle. Enregistre d’abord le brouillon puis diffuse à la liste résolue.",
     sendNow: "Envoyer maintenant",
+    domainUnverifiedTitle: "Domaine d’expéditeur non vérifié",
+    domainUnverifiedBody:
+      "Resend n’a pas encore vérifié dbc-germany.com — l’envoi en masse est bloqué. Ajoutez les 3 enregistrements DNS listés dans cred/dns-email-setup.md chez Strato et attendez 5 à 30 min. Les envois test vers le titulaire du compte Resend fonctionnent toujours (depuis onboarding@resend.dev).",
   },
 } as const;
 
@@ -125,11 +135,13 @@ export function NewsletterComposer({
   categories,
   initial,
   readOnly = false,
+  domainStatus,
 }: {
   uiLocale?: string;
   categories: Category[];
   initial?: ComposerState;
   readOnly?: boolean;
+  domainStatus?: DomainCheckResult;
 }) {
   const router = useRouter();
   const t = T[(uiLocale === "de" || uiLocale === "fr" ? uiLocale : "en") as keyof typeof T];
@@ -218,8 +230,24 @@ export function NewsletterComposer({
     });
   }
 
+  const domainUnverified = Boolean(domainStatus && !domainStatus.verified);
+
   return (
     <div className="mt-8 grid gap-8 lg:grid-cols-[2fr_1fr]">
+      {domainUnverified && (
+        <div
+          role="alert"
+          className="lg:col-span-2 rounded-lg border border-amber-400/50 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-500/40 dark:bg-amber-950/30 dark:text-amber-200"
+        >
+          <p className="font-semibold">{t.domainUnverifiedTitle}</p>
+          <p className="mt-1 leading-relaxed">{t.domainUnverifiedBody}</p>
+          {domainStatus?.message && (
+            <p className="mt-2 font-mono text-xs opacity-80">
+              Resend: {domainStatus.message}
+            </p>
+          )}
+        </div>
+      )}
       <div className="space-y-4">
         <fieldset disabled={readOnly} className="space-y-4">
           <Field label={t.subject} required>
@@ -391,7 +419,7 @@ export function NewsletterComposer({
             <button
               type="button"
               onClick={handleSendReal}
-              disabled={isPending || !state.id}
+              disabled={isPending || !state.id || domainUnverified}
               className="mt-2 w-full rounded-md bg-red-600 px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
             >
               {t.sendNow}
