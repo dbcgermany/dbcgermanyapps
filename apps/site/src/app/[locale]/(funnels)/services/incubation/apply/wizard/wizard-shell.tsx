@@ -206,7 +206,7 @@ export function WizardShell({ locale }: { locale: WizardLocale }) {
         total={totalVisible}
         label={progressLabel}
       />
-      <div className="mx-auto max-w-3xl px-4 pt-8 sm:px-6 lg:px-8">
+      <div key={step} className="dbc-page-enter mx-auto max-w-3xl px-4 pt-8 sm:px-6 lg:px-8">
         {step === 0 && (
           <Page1Identity locale={locale} answers={answers} update={update} t={t} error={error} />
         )}

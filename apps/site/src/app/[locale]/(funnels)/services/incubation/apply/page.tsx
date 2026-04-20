@@ -1,18 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { getResendDomainStatus } from "@dbc/email";
 import { seoFromI18n } from "@/lib/seo";
-import { FunnelHero } from "@/components/funnel/funnel-hero";
-import { FunnelBenefits } from "@/components/funnel/funnel-benefits";
-import { FunnelFaq } from "@/components/funnel/funnel-faq";
-import { FunnelFooterCta } from "@/components/funnel/funnel-footer-cta";
 import { WizardShell } from "./wizard/wizard-shell";
-
-// Same hero photo as the auth background — pre-processed JPEG on the
-// Supabase brand-assets bucket. Keeps this component framework-agnostic
-// (no next/image required, works inside the pure CSS backdrop).
-const HERO_IMAGE =
-  "https://rcqgsexfuaoiiuqcqeka.supabase.co/storage/v1/object/public/brand-assets/dbc-bg.jpg";
 
 type PageLocale = "en" | "de" | "fr";
 
@@ -39,54 +28,21 @@ export default async function IncubationApplyFunnelPage({
     locale === "de" || locale === "fr" ? (locale as PageLocale) : "en";
   const t = await getTranslations({ locale: l, namespace: "incubationApply" });
 
-  const pillarKeys = [
-    "incubation",
-    "courses",
-    "investments",
-    "mentorship",
-    "events",
-    "elearning",
-    "consulting",
-  ] as const;
-  const pillars = pillarKeys.map((k) => ({
-    key: k,
-    title: t(`landing.pillars.items.${k}.title`),
-    desc: t(`landing.pillars.items.${k}.desc`),
-  }));
-
-  const faqCount = 4;
-  const faqItems = Array.from({ length: faqCount }, (_, i) => ({
-    q: t(`landing.faq.items.${i}.q`),
-    a: t(`landing.faq.items.${i}.a`),
-  }));
-
-  const { verified } = await getResendDomainStatus();
-
   return (
-    <>
-      <FunnelHero
-        eyebrow={t("landing.eyebrow")}
-        title={t("landing.title")}
-        subtitle={t("landing.subtitle")}
-        primaryCta={t("landing.primaryCta")}
-        primaryCtaHref={`#${t("landing.scrollAnchor")}`}
-        imageUrl={HERO_IMAGE}
+    <section className="relative min-h-[calc(100vh-56px)]">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-primary/5 via-transparent to-transparent"
       />
-      <FunnelBenefits
-        eyebrow={t("landing.pillars.eyebrow")}
-        title={t("landing.pillars.title")}
-        items={pillars}
-      />
-      <section id={t("landing.scrollAnchor")} className="scroll-mt-24">
-        <WizardShell locale={l} />
-      </section>
-      <FunnelFaq title={t("landing.faq.title")} items={faqItems} />
-      {verified ? (
-        <FunnelFooterCta
-          text={t("landing.footerCta.text")}
-          email={t("landing.footerCta.email")}
-        />
-      ) : null}
-    </>
+      <div className="mx-auto max-w-3xl px-4 pt-8 sm:px-6 sm:pt-12 lg:px-8">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+          {t("landing.eyebrow")}
+        </p>
+        <h1 className="mt-2 font-heading text-3xl font-bold leading-tight sm:text-4xl">
+          {t("landing.title")}
+        </h1>
+      </div>
+      <WizardShell locale={l} />
+    </section>
   );
 }

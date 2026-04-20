@@ -26,10 +26,10 @@ export function OptionCard({
       type={type}
       onClick={onSelect}
       aria-pressed={selected}
-      className={`group relative flex w-full items-start gap-3 rounded-2xl border p-4 text-left transition-all sm:p-5 ${
+      className={`group relative flex w-full items-start gap-3 rounded-2xl border p-4 text-left transition-all duration-200 ease-out sm:p-5 ${
         selected
-          ? "border-primary bg-primary/5 shadow-sm ring-1 ring-primary"
-          : "border-border bg-card hover:border-primary/40 hover:bg-muted/40"
+          ? "scale-[1.01] border-primary bg-primary/5 shadow-md ring-1 ring-primary"
+          : "border-border bg-card hover:-translate-y-0.5 hover:border-primary/40 hover:bg-muted/40 hover:shadow-sm"
       }`}
     >
       <span
