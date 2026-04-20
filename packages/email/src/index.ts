@@ -59,6 +59,7 @@ export type {
   SendNewsletterInput,
   SendNewsletterConfirmInput,
   SendStaffMessageInput,
+  UpcomingEvent,
 } from "./send-newsletter";
 export { NewsletterEmail } from "./templates/newsletter";
 export { NewsletterConfirmEmail } from "./templates/newsletter-confirm";

@@ -5,16 +5,58 @@ import {
   DEFAULT_FROM,
   getResendDomainStatus,
   sendNewsletterEmail,
+  type UpcomingEvent,
 } from "@dbc/email";
 import { revalidatePath } from "next/cache";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://dbc-germany.com";
+const TICKETS_URL =
+  process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://tickets.dbc-germany.com";
 const RESEND_ACCOUNT_OWNER_EMAIL = "dbcgermany@gmail.com";
 
 type Locale = "en" | "de" | "fr";
 
 function normalizeLocale(v: string | null | undefined): Locale {
   return v === "de" || v === "fr" ? v : "en";
+}
+
+/**
+ * Fetches the next upcoming published event for the given locale so every
+ * newsletter carries a branded announcement of the next show. Returns
+ * undefined if nothing is scheduled — the template renders no hero in
+ * that case.
+ */
+async function getUpcomingEventForNewsletter(
+  supabase: Awaited<ReturnType<typeof createServerClient>>,
+  locale: Locale
+): Promise<UpcomingEvent | undefined> {
+  const { data } = await supabase
+    .from("events")
+    .select(
+      "slug, title_en, title_de, title_fr, starts_at, venue_name, city"
+    )
+    .eq("is_published", true)
+    .gt("starts_at", new Date().toISOString())
+    .order("starts_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  if (!data) return undefined;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const row = data as any;
+  const title =
+    (locale === "de" && row.title_de) ||
+    (locale === "fr" && row.title_fr) ||
+    row.title_en;
+
+  return {
+    title,
+    startsAtIso: row.starts_at,
+    venueName: row.venue_name ?? "",
+    city: row.city ?? undefined,
+    ticketUrl: `${TICKETS_URL}/${locale}/events/${row.slug}`,
+  };
 }
 
 export interface NewsletterDraft {
@@ -207,17 +249,21 @@ export async function sendTestNewsletter(id: string, toEmail: string) {
     subject = `[TEST · unverified domain] ${nl.subject}`;
   }
 
+  const locale = normalizeLocale(nl.locale);
+  const upcomingEvent = await getUpcomingEventForNewsletter(supabase, locale);
+
   try {
     await sendNewsletterEmail({
       to: toEmail,
       subject,
       preheader: nl.preheader ?? undefined,
       body: nl.body_mdx,
-      unsubscribeUrl: `${SITE_URL}/${normalizeLocale(nl.locale)}/newsletter/unsubscribe?token=preview`,
+      unsubscribeUrl: `${SITE_URL}/${locale}/newsletter/unsubscribe?token=preview`,
       fromName,
       fromEmail,
       replyTo: nl.reply_to ?? undefined,
-      locale: normalizeLocale(nl.locale),
+      locale,
+      upcomingEvent,
     });
     return {
       success: true,
@@ -267,6 +313,7 @@ export async function sendNewsletter(id: string) {
     nl.exclude_category_slugs ?? []
   );
   const locale = normalizeLocale(nl.locale);
+  const upcomingEvent = await getUpcomingEventForNewsletter(supabase, locale);
 
   let sent = 0;
   let failed = 0;
@@ -313,6 +360,7 @@ export async function sendNewsletter(id: string) {
           fromEmail: nl.from_email,
           replyTo: nl.reply_to ?? undefined,
           locale,
+          upcomingEvent,
         });
         return { contactId: r.id, resendId };
       })

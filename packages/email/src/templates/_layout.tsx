@@ -4,12 +4,21 @@ import {
   Head,
   Hr,
   Html,
+  Img,
   Preview,
   Section,
   Tailwind,
   Text,
 } from "@react-email/components";
 import type { ReactNode } from "react";
+
+// Brand banner cropped to the DBC + attendees area of the 2025 event
+// photo used on admin/login. JPEG (not WebP) because Outlook desktop
+// renders WebP inconsistently. Hosted on Supabase public storage so
+// URLs stay stable across email clients' image proxies (Gmail, Apple
+// Mail, Outlook.com all proxy inline images through their own CDN).
+export const EMAIL_HERO_URL =
+  "https://rcqgsexfuaoiiuqcqeka.supabase.co/storage/v1/object/public/brand-assets/email-hero.jpg";
 
 // Shared brand chrome for every transactional email. Templates compose this
 // and only supply their own content Sections.
@@ -32,8 +41,26 @@ export function EmailLayout({
       <Preview>{preview}</Preview>
       <Tailwind>
         <Body className="bg-neutral-50 font-sans">
-          <Container className="mx-auto my-8 max-w-xl rounded-lg bg-white p-8 shadow-sm">
-            <Section className="border-b-2 border-[#c8102e] pb-4">
+          <Container className="mx-auto my-8 max-w-xl overflow-hidden rounded-lg bg-white shadow-sm">
+            {/* Brand hero — 600×200 crop of the DBC event photo. Full-
+                bleed (zero padding) so the image reaches container edges.
+                object-fit covers the crop; Outlook desktop ignores it but
+                still shows the image at its natural 3:1 aspect. */}
+            <Img
+              src={EMAIL_HERO_URL}
+              alt="DBC Germany"
+              width="600"
+              height="200"
+              style={{
+                display: "block",
+                width: "100%",
+                height: "auto",
+                maxHeight: "200px",
+                objectFit: "cover",
+              }}
+            />
+
+            <Section className="border-b-2 border-[#c8102e] px-8 pb-4 pt-6">
               <Text className="m-0 text-xl font-bold tracking-wider text-[#c8102e]">
                 DBC GERMANY
               </Text>
@@ -42,18 +69,20 @@ export function EmailLayout({
               </Text>
             </Section>
 
-            {children}
+            <div className="px-8 pb-8">
+              {children}
 
-            <Hr className="my-8 border-neutral-200" />
+              <Hr className="my-8 border-neutral-200" />
 
-            <Section>
-              <Text className="m-0 text-xs text-neutral-500">
-                {footerQuestions}
-              </Text>
-              <Text className="mt-3 text-xs text-neutral-400">
-                {footerSignature}
-              </Text>
-            </Section>
+              <Section>
+                <Text className="m-0 text-xs text-neutral-500">
+                  {footerQuestions}
+                </Text>
+                <Text className="mt-3 text-xs text-neutral-400">
+                  {footerSignature}
+                </Text>
+              </Section>
+            </div>
           </Container>
         </Body>
       </Tailwind>

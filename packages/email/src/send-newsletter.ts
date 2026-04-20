@@ -1,7 +1,7 @@
 import { render } from "@react-email/components";
 import React from "react";
 import { createEmailClient, fromAddressFor, DEFAULT_FROM } from "./client";
-import { NewsletterEmail } from "./templates/newsletter";
+import { NewsletterEmail, type UpcomingEvent } from "./templates/newsletter";
 import {
   NewsletterConfirmEmail,
   NEWSLETTER_CONFIRM_SUBJECT,
@@ -9,6 +9,8 @@ import {
 import { StaffMessageEmail } from "./templates/staff-message";
 
 type Locale = "en" | "de" | "fr";
+
+export type { UpcomingEvent };
 
 export interface SendNewsletterInput {
   to: string;
@@ -20,6 +22,8 @@ export interface SendNewsletterInput {
   fromEmail?: string;
   replyTo?: string;
   locale: Locale;
+  /** When set, renders the branded event announcement card at the top. */
+  upcomingEvent?: UpcomingEvent;
 }
 
 export async function sendNewsletterEmail(input: SendNewsletterInput) {
@@ -30,6 +34,7 @@ export async function sendNewsletterEmail(input: SendNewsletterInput) {
       body: input.body,
       unsubscribeUrl: input.unsubscribeUrl,
       locale: input.locale,
+      upcomingEvent: input.upcomingEvent,
     })
   );
 
