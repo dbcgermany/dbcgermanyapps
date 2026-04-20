@@ -19,6 +19,21 @@ export const USER_ROLE_VALUES = [
 ] as const;
 export type UserRole = (typeof USER_ROLE_VALUES)[number];
 
+/**
+ * Every role with dashboard access — i.e. everyone except "buyer".
+ * Used by queries that need "all staff" (e.g. link-to-staff-account
+ * dropdowns, notification fan-out, admin directories). Typed as
+ * `readonly UserRole[]` (not `StaffRole[]`) so call sites can pass
+ * a general UserRole to `.includes(role)` without a cast.
+ */
+export const STAFF_ROLES: readonly UserRole[] = [
+  "team_member",
+  "manager",
+  "admin",
+  "super_admin",
+];
+export type StaffRole = Exclude<UserRole, "buyer">;
+
 /** Role hierarchy — higher number = more permissions */
 export const ROLE_HIERARCHY: Record<UserRole, number> = {
   buyer: 0,
@@ -167,6 +182,25 @@ export const SPONSOR_STATUS_VALUES = [
   "completed",
 ] as const;
 export type SponsorStatus = (typeof SPONSOR_STATUS_VALUES)[number];
+
+/* -------------------------------------------------------------------------- */
+/*                          Contact event involvements                        */
+/* -------------------------------------------------------------------------- */
+
+export const INVOLVEMENT_ROLES = [
+  "attendee",
+  "invited_guest",
+  "sponsor",
+  "partner",
+  "contractor",
+  "speaker",
+  "moderator",
+  "volunteer",
+  "staff",
+  "press",
+  "vip",
+] as const;
+export type InvolvementRole = (typeof INVOLVEMENT_ROLES)[number];
 
 /* -------------------------------------------------------------------------- */
 /*                           Contact categories                               */

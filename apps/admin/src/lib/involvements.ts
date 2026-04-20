@@ -1,25 +1,17 @@
 /**
- * Shared enum + types for contact <-> event involvements.
- *
- * Kept outside actions/contacts.ts because that file is "use server",
- * which forbids exporting non-async values (runtime rejects const arrays
- * and types marked as exports in server action files).
+ * Contact <-> event involvement enums are the SSOT in @dbc/types. This
+ * file stays as the admin-app barrel so consumers can keep their
+ * existing `@/lib/involvements` imports, and exposes one admin-scoped
+ * projected row shape (InvolvementRow) that's used by the contact
+ * detail / list pages.
  */
 
-export const INVOLVEMENT_ROLES = [
-  "attendee",
-  "invited_guest",
-  "sponsor",
-  "partner",
-  "contractor",
-  "speaker",
-  "moderator",
-  "volunteer",
-  "staff",
-  "press",
-  "vip",
-] as const;
-export type InvolvementRole = (typeof INVOLVEMENT_ROLES)[number];
+export {
+  INVOLVEMENT_ROLES,
+  type InvolvementRole,
+} from "@dbc/types";
+
+import type { InvolvementRole } from "@dbc/types";
 
 export interface InvolvementRow {
   id: string;

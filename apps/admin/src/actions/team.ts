@@ -4,7 +4,7 @@ import { createServerClient, requireRole } from "@dbc/supabase/server";
 import { createClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import type { TeamMemberVisibility } from "@dbc/types";
+import { STAFF_ROLES, type TeamMemberVisibility } from "@dbc/types";
 import { slugify, uniqueSlug } from "@/lib/slugify";
 
 function getServiceClient() {
@@ -75,7 +75,6 @@ export async function getStaffAccountsForLinking(excludeTeamMemberId?: string) {
   const supabase = await createServerClient();
   const service = getServiceClient();
 
-  const STAFF_ROLES = ["team_member", "manager", "admin", "super_admin"];
   const { data: profiles } = await supabase
     .from("profiles")
     .select("id, role, display_name")

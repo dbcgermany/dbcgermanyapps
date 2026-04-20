@@ -3,14 +3,8 @@
 import { createServerClient, requireRole } from "@dbc/supabase/server";
 import { createClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
+import { STAFF_ROLES } from "@dbc/types";
 import type { UserRole } from "@dbc/types";
-
-const STAFF_ROLES: UserRole[] = [
-  "team_member",
-  "manager",
-  "admin",
-  "super_admin",
-];
 
 function getServiceClient() {
   return createClient(
