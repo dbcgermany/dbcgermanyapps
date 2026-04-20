@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+import { LOCALES, type Locale } from "@dbc/types";
 import { getCompanyInfo } from "@/lib/company-info";
 
 /**
@@ -14,8 +15,6 @@ import { getCompanyInfo } from "@/lib/company-info";
  */
 
 const BASE_URL = "https://dbc-germany.com";
-const LOCALES = ["en", "de", "fr"] as const;
-type Locale = (typeof LOCALES)[number];
 
 const OG_LOCALE: Record<Locale, string> = {
   en: "en_US",
