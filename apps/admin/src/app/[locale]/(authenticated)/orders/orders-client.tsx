@@ -192,7 +192,7 @@ export function OrdersClient({
       ) : (
         <>
         {/* Mobile: grouped-list cells, each a tap target to the order detail */}
-        <ul className="mt-6 divide-y divide-border overflow-hidden rounded-xl border border-border bg-background md:hidden">
+        <ul className="mt-6 divide-y divide-border overflow-hidden rounded-xl border border-border bg-card md:hidden">
           {orders.map((o) => {
             const statusLabel = t[o.status as keyof typeof t] ?? o.status;
             return (

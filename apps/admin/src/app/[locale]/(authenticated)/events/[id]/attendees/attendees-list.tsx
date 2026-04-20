@@ -218,7 +218,7 @@ export function AttendeesList({
       ) : (
         <>
         {/* Mobile: iOS grouped-list cells — optimised for onsite check-in */}
-        <ul className="mt-6 divide-y divide-border overflow-hidden rounded-xl border border-border bg-background md:hidden">
+        <ul className="mt-6 divide-y divide-border overflow-hidden rounded-xl border border-border bg-card md:hidden">
           {filtered.map((a) => (
             <li key={a.id} className="px-4 py-3">
               <div className="flex items-start gap-3">

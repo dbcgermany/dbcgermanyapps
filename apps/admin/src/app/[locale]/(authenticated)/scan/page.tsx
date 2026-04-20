@@ -23,7 +23,7 @@ export default async function ScanPage({
     : { total: 0, checkedIn: 0 };
 
   return (
-    <div className="min-h-full bg-background">
+    <div>
       <div className="mx-auto max-w-2xl">
         <PageHeader
           title={locale === "de" ? "Tickets scannen" : locale === "fr" ? "Scanner les billets" : "Scan Tickets"}

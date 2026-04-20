@@ -61,7 +61,7 @@ export default async function NewslettersIndexPage({
       />
 
       {/* Mobile: iOS grouped-list cells */}
-      <ul className="mt-6 divide-y divide-border overflow-hidden rounded-xl border border-border bg-background md:hidden">
+      <ul className="mt-6 divide-y divide-border overflow-hidden rounded-xl border border-border bg-card md:hidden">
         {newsletters.length === 0 ? (
           <li className="px-4 py-10 text-center text-sm text-muted-foreground">
             {t.empty}
