@@ -80,6 +80,12 @@ export function SiteHeader({ locale }: { locale: string }) {
             }}
           />
           <LocaleSwitch currentLocale={locale} />
+          <Link
+            href={`/${locale}/services/incubation/apply`}
+            className="rounded-full border border-primary/70 px-5 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary/10"
+          >
+            {t("apply")}
+          </Link>
           <a
             href={ticketsUrl}
             className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
@@ -116,6 +122,13 @@ export function SiteHeader({ locale }: { locale: string }) {
                 {item.label}
               </Link>
             ))}
+            <Link
+              href={`/${locale}/services/incubation/apply`}
+              onClick={() => setOpen(false)}
+              className="mt-2 inline-flex items-center justify-center rounded-full border border-primary/70 px-5 py-3 text-sm font-semibold text-primary"
+            >
+              {t("apply")}
+            </Link>
             <a
               href={ticketsUrl}
               onClick={() => setOpen(false)}
