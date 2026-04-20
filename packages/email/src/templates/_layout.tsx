@@ -5,6 +5,7 @@ import {
   Hr,
   Html,
   Img,
+  Link,
   Preview,
   Section,
   Tailwind,
@@ -19,6 +20,13 @@ import type { ReactNode } from "react";
 // / Apple Mail / Outlook.com image proxies.
 export const EMAIL_HERO_URL =
   "https://rcqgsexfuaoiiuqcqeka.supabase.co/storage/v1/object/public/brand-assets/dbc-mail-banner.jpg";
+
+// The banner image is wrapped in a link pointing here, so recipients can
+// click the hero and land on the marketing site. Falls back to the public
+// brand domain if NEXT_PUBLIC_SITE_URL isn't set (this module is imported
+// by cron routes + server actions where the env may be partial).
+const HERO_LINK_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://dbc-germany.com";
 
 // Shared brand chrome for every transactional email. Templates compose this
 // and only supply their own content Sections.
@@ -43,19 +51,26 @@ export function EmailLayout({
         <Body className="bg-neutral-50 font-sans">
           <Container className="mx-auto my-8 max-w-xl overflow-hidden rounded-lg bg-white shadow-sm">
             {/* Brand hero — 600×180 (10:3 aspect, matches the supplied
-                 4378×1313 source). Full-bleed so the image reaches
-                 container edges. Natural aspect, no object-fit trickery. */}
-            <Img
-              src={EMAIL_HERO_URL}
-              alt="DBC Germany · Richesses d'Afrique"
-              width="600"
-              height="180"
-              style={{
-                display: "block",
-                width: "100%",
-                height: "auto",
-              }}
-            />
+                 4378×1313 source). Full-bleed, natural aspect. Wrapped
+                 in a link so clicking the hero opens the marketing site. */}
+            <Link
+              href={HERO_LINK_URL}
+              style={{ display: "block", textDecoration: "none" }}
+            >
+              <Img
+                src={EMAIL_HERO_URL}
+                alt="DBC Germany · Richesses d'Afrique"
+                width="600"
+                height="180"
+                style={{
+                  display: "block",
+                  width: "100%",
+                  height: "auto",
+                  border: 0,
+                  outline: "none",
+                }}
+              />
+            </Link>
 
             <Section className="border-b-2 border-[#c8102e] px-8 pb-4 pt-6">
               <Text className="m-0 text-xl font-bold tracking-wider text-[#c8102e]">
