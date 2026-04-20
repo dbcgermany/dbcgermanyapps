@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Card } from "@dbc/ui";
+import { Card, formatEurCompact } from "@dbc/ui";
 import {
   DateRangeSelect,
   type DateRange,
@@ -78,8 +78,7 @@ export function DashboardClient({
     count: d.count,
   }));
 
-  const fmtEur = (cents: number) =>
-    `\u20AC${(cents / 100).toLocaleString(locale, { maximumFractionDigits: 0 })}`;
+  const fmtEur = (cents: number) => formatEurCompact(cents, locale);
 
   return (
     <>

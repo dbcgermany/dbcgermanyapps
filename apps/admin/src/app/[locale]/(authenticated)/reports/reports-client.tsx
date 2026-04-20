@@ -1,6 +1,6 @@
 "use client";
 
-import { Badge } from "@dbc/ui";
+import { Badge, formatMoney } from "@dbc/ui";
 import { ORDER_STATUS_VALUES } from "@dbc/types";
 import { useRouter } from "next/navigation";
 import {
@@ -45,17 +45,6 @@ function downloadCsv(filename: string, headers: string[], rows: unknown[][]) {
   link.download = filename;
   link.click();
   URL.revokeObjectURL(url);
-}
-
-function formatMoney(cents: number, currency: string, locale: string): string {
-  try {
-    return (cents / 100).toLocaleString(locale, {
-      style: "currency",
-      currency,
-    });
-  } catch {
-    return `${(cents / 100).toFixed(2)} ${currency}`;
-  }
 }
 
 function formatDateTime(iso: string, locale: string): string {
@@ -589,7 +578,7 @@ export function ReportsClient({
                     <td className="px-4 py-3 text-right font-medium">
                       {o.totalCents === 0
                         ? "\u2014"
-                        : formatMoney(o.totalCents, o.currency, locale)}
+                        : formatMoney(o.totalCents, { currency: o.currency, locale })}
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">
                       {formatDateTime(o.createdAt, locale)}
@@ -719,7 +708,7 @@ export function ReportsClient({
                   <td className="px-4 py-3 text-right">{r.ordersPaid}</td>
                   <td className="px-4 py-3 text-right">{r.ticketsSold}</td>
                   <td className="px-4 py-3 text-right font-medium">
-                    {formatMoney(r.revenueCents, r.currency, locale)}
+                    {formatMoney(r.revenueCents, { currency: r.currency, locale })}
                   </td>
                 </tr>
               ))}
@@ -793,10 +782,10 @@ export function ReportsClient({
                   <td className="px-4 py-3 font-mono font-medium">{c.code}</td>
                   <td className="px-4 py-3 text-right">{c.uses}</td>
                   <td className="px-4 py-3 text-right text-green-600">
-                    -{formatMoney(c.totalDiscountCents, "EUR", locale)}
+                    -{formatMoney(c.totalDiscountCents, { locale })}
                   </td>
                   <td className="px-4 py-3 text-right font-medium">
-                    {formatMoney(c.totalRevenueCents, "EUR", locale)}
+                    {formatMoney(c.totalRevenueCents, { locale })}
                   </td>
                 </tr>
               ))}
@@ -817,7 +806,7 @@ export function ReportsClient({
                 {t.finRevenue}
               </p>
               <p className="mt-2 font-heading text-2xl font-bold">
-                {formatMoney(financial.revenueCents, "EUR", locale)}
+                {formatMoney(financial.revenueCents, { locale })}
               </p>
             </div>
             <div className="rounded-lg border border-border p-5">
@@ -825,7 +814,7 @@ export function ReportsClient({
                 {t.finExpenses}
               </p>
               <p className="mt-2 font-heading text-2xl font-bold text-red-600">
-                -{formatMoney(financial.expensesCents, "EUR", locale)}
+                -{formatMoney(financial.expensesCents, { locale })}
               </p>
             </div>
             <div className="rounded-lg border border-border p-5">
@@ -835,7 +824,7 @@ export function ReportsClient({
               <p
                 className={`mt-2 font-heading text-2xl font-bold ${financial.profitCents >= 0 ? "text-green-600" : "text-red-600"}`}
               >
-                {formatMoney(financial.profitCents, "EUR", locale)}
+                {formatMoney(financial.profitCents, { locale })}
               </p>
             </div>
             <div className="rounded-lg border border-border p-5">
@@ -843,7 +832,7 @@ export function ReportsClient({
                 {t.finTax}
               </p>
               <p className="mt-2 font-heading text-2xl font-bold text-muted-foreground">
-                {formatMoney(financial.taxEstimateCents, "EUR", locale)}
+                {formatMoney(financial.taxEstimateCents, { locale })}
               </p>
             </div>
           </div>

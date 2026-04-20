@@ -61,6 +61,8 @@ export {
   impliedGenderFromTitle,
 } from "./person-fields";
 export type { Gender, Title } from "./person-fields";
+export { formatMoney, formatEurCompact } from "./money";
+export type { FormatMoneyOptions } from "./money";
 export {
   NameFields,
   TitleGenderFields,

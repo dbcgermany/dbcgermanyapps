@@ -84,6 +84,8 @@ const styles = StyleSheet.create({
   footerText: { fontSize: 7, color: COLORS.textMuted },
 });
 
+// react-pdf specific: skip Intl + euro glyph for font-subset safety.
+// For screen/web use, import formatMoney from @dbc/ui instead.
 function formatMoney(cents: number, currency: string) {
   return `${(cents / 100).toFixed(2)} ${currency}`;
 }
