@@ -9,8 +9,13 @@ export const BRAND = {
    *  header + footer brand mark. WebP (1200×376 @92%) — rendered from
    *  icons/dbc-logo-red-gold-vector.svg so next/image can serve it
    *  through its standard raster pipeline (next/image silently
-   *  refuses to optimise SVGs by default). */
-  logoSrc: "/brand/dbc-logo.webp",
+   *  refuses to optimise SVGs by default).
+   *
+   *  The `?v=N` suffix busts any browser cache of the 404 that the
+   *  URL returned before the locale middleware was taught to let
+   *  /brand/* through (commit 04d7565). Bump the number if the
+   *  wordmark ever changes. */
+  logoSrc: "/brand/dbc-logo.webp?v=2",
   /** Square D-mark. Used for app icons and in-page contexts where
    *  the wordmark would be too wide. */
   iconSrc: "/brand/dbc-icon.svg",

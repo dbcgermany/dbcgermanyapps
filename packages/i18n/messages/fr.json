@@ -862,9 +862,9 @@
     "errors": {
       "required": "Ce champ est requis.",
       "invalidEmail": "Merci d'entrer une adresse e-mail valide.",
-      "invalidAge": "Merci d'entrer un âge valide (14–120).",
       "minLength": "Merci d'écrire au moins {min} caractères.",
-      "selectAtLeastOne": "Merci de sélectionner au moins une option."
+      "selectAtLeastOne": "Merci de sélectionner au moins une option.",
+      "invalidDate": "Merci d'entrer une date de naissance valide (âge 14–120)."
     },
     "landing": {
       "eyebrow": "Candidature · DBC Germany",
@@ -945,8 +945,7 @@
         "email": "E-mail",
         "phone": "Téléphone (optionnel)",
         "country": "Pays de résidence",
-        "age": "Âge",
-        "birthday": "Date de naissance (optionnel)",
+        "birthday": "Date de naissance",
         "title": "Civilité (optionnel)",
         "gender": "Genre (optionnel)"
       }

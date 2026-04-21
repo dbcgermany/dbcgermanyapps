@@ -1,6 +1,6 @@
 "use client";
 
-import { CountrySelect, FormField, Input, NameFields } from "@dbc/ui";
+import { BirthdayField, CountrySelect, FormField, Input, NameFields } from "@dbc/ui";
 import type { WizardLocale, AnswersState } from "./types";
 
 // Page 1 — identity. The only screen that groups multiple fields under
@@ -77,17 +77,12 @@ export function Page1Identity({
             onChange={(e) => update({ country: e.target.value })}
           />
         </div>
-        <FormField label={t("page1.fields.age")} required>
-          <Input
-            type="number"
-            min={14}
-            max={120}
-            inputMode="numeric"
-            required
-            value={answers.founder_age}
-            onChange={(e) => update({ founder_age: e.target.value })}
-          />
-        </FormField>
+        <BirthdayField
+          label={t("page1.fields.birthday")}
+          value={answers.founder_birthday}
+          onChange={(iso) => update({ founder_birthday: iso ?? "" })}
+          required
+        />
       </div>
     </div>
   );

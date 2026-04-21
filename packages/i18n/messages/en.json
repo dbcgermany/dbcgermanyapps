@@ -862,9 +862,9 @@
     "errors": {
       "required": "This field is required.",
       "invalidEmail": "Please enter a valid email address.",
-      "invalidAge": "Please enter a valid age (14–120).",
       "minLength": "Please write at least {min} characters.",
-      "selectAtLeastOne": "Please select at least one option."
+      "selectAtLeastOne": "Please select at least one option.",
+      "invalidDate": "Please enter a valid date of birth (age 14–120)."
     },
     "landing": {
       "eyebrow": "Apply · DBC Germany",
@@ -945,8 +945,7 @@
         "email": "Email",
         "phone": "Phone (optional)",
         "country": "Country of residence",
-        "age": "Age",
-        "birthday": "Date of birth (optional)",
+        "birthday": "Date of birth",
         "title": "Title (optional)",
         "gender": "Gender (optional)"
       }

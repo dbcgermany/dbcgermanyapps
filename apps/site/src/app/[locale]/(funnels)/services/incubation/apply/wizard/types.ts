@@ -19,7 +19,6 @@ export type AnswersState = {
   founder_email: string;
   founder_phone: string;
   country: string;
-  founder_age: string;
   title: string;
   gender: string;
   founder_birthday: string;
@@ -60,7 +59,6 @@ export const INITIAL_ANSWERS: AnswersState = {
   founder_email: "",
   founder_phone: "",
   country: "",
-  founder_age: "",
   title: "",
   gender: "",
   founder_birthday: "",

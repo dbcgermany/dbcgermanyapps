@@ -26,7 +26,7 @@ export function ReviewPanel({
   if (answers.founder_email) rows.push({ label: t("page1.fields.email"), value: answers.founder_email, step: 0 });
   if (answers.founder_phone) rows.push({ label: t("page1.fields.phone"), value: answers.founder_phone, step: 0 });
   if (answers.country) rows.push({ label: t("page1.fields.country"), value: answers.country, step: 0 });
-  if (answers.founder_age) rows.push({ label: t("page1.fields.age"), value: answers.founder_age, step: 0 });
+  if (answers.founder_birthday) rows.push({ label: t("page1.fields.birthday"), value: answers.founder_birthday, step: 0 });
 
   if (answers.profile_type) {
     const label = answers.profile_type === "other" && answers.profile_type_other
@@ -101,7 +101,7 @@ export function ReviewPanel({
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 {row.label}
               </p>
-              <p className="mt-0.5 whitespace-pre-wrap break-words text-sm text-foreground">
+              <p className="mt-0.5 whitespace-pre-wrap wrap-break-word text-sm text-foreground">
                 {row.value}
               </p>
             </div>

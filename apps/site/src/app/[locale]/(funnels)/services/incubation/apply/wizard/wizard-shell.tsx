@@ -85,8 +85,13 @@ export function WizardShell({ locale }: { locale: WizardLocale }) {
       if (!answers.founder_first_name.trim() || !answers.founder_last_name.trim()) return t("errors.required");
       if (!EMAIL_RE.test(answers.founder_email.trim())) return t("errors.invalidEmail");
       if (!answers.country) return t("errors.required");
-      const age = Number(answers.founder_age);
-      if (!Number.isFinite(age) || age < 14 || age > 120) return t("errors.invalidAge");
+      if (!answers.founder_birthday) return t("errors.required");
+      // Sanity-check the birthdate: must parse, and imply an age in 14–120.
+      const dob = new Date(answers.founder_birthday);
+      if (Number.isNaN(dob.getTime())) return t("errors.invalidDate");
+      const ageYears =
+        (Date.now() - dob.getTime()) / (365.2425 * 24 * 60 * 60 * 1000);
+      if (ageYears < 14 || ageYears > 120) return t("errors.invalidDate");
       return null;
     }
     if (step === 1) {
@@ -259,21 +264,34 @@ export function WizardShell({ locale }: { locale: WizardLocale }) {
           </div>
         ) : null}
 
-        <div className="mt-10 flex items-center justify-between gap-3">
+        <div className="mt-10 flex flex-col-reverse items-stretch justify-between gap-3 sm:flex-row sm:items-center">
           <Button
             type="button"
-            variant="ghost"
+            variant="secondary"
+            size="lg"
             onClick={goBack}
             disabled={effectiveIndex === 0 || pending}
+            className="sm:min-w-[140px]"
           >
             {t("nav.back")}
           </Button>
           {isLast ? (
-            <Button type="submit" disabled={pending}>
+            <Button
+              type="submit"
+              size="lg"
+              disabled={pending}
+              className="sm:min-w-[220px]"
+            >
               {pending ? "…" : t("nav.submit")}
             </Button>
           ) : (
-            <Button type="button" onClick={goNext} disabled={pending}>
+            <Button
+              type="button"
+              size="lg"
+              onClick={goNext}
+              disabled={pending}
+              className="sm:min-w-[180px]"
+            >
               {t("nav.next")}
             </Button>
           )}
@@ -291,7 +309,6 @@ function buildFormData(answers: AnswersState, locale: WizardLocale): FormData {
   fd.set("founder_email", answers.founder_email);
   fd.set("founder_phone", answers.founder_phone);
   fd.set("country", answers.country);
-  fd.set("founder_age", answers.founder_age);
   fd.set("title", answers.title);
   fd.set("gender", answers.gender);
   fd.set("birthday", answers.founder_birthday);

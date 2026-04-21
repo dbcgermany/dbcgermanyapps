@@ -81,9 +81,17 @@ export async function submitIncubationApplication(
   const rawGender = sanitizeGender((formData.get("gender") as string) || null);
   const gender = impliedGenderFromTitle(title) ?? rawGender;
   const birthday = ((formData.get("birthday") as string) || "").trim() || null;
-  const ageRaw = ((formData.get("founder_age") as string) || "").trim();
-  const age = ageRaw ? Number.parseInt(ageRaw, 10) : null;
-  const founderAge = age && Number.isFinite(age) && age >= 14 && age <= 120 ? age : null;
+  // Derive age from the birthday so legacy readers of the age column still
+  // see something sensible without the applicant ever typing a number. The
+  // wizard only asks for the date; DB `founder_age` stays populated for
+  // analytics continuity.
+  const founderAge: number | null = (() => {
+    if (!birthday) return null;
+    const d = new Date(birthday);
+    if (Number.isNaN(d.getTime())) return null;
+    const years = (Date.now() - d.getTime()) / (365.2425 * 24 * 60 * 60 * 1000);
+    return years >= 14 && years <= 120 ? Math.floor(years) : null;
+  })();
   const founderName = [firstName, lastName].filter(Boolean).join(" ");
 
   const profileType = sanitizeEnum(
