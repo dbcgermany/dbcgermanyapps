@@ -11,6 +11,26 @@ const nextConfig: NextConfig = {
     "@dbc/ui",
     "@dbc/email",
   ],
+  images: {
+    // Admin needs to render next/image tags pointing at Supabase Storage
+    // (avatars, team photos, event covers, sponsor logos, newsletter covers,
+    // news covers, media) and the Diambilay parent-org CDN. Without these
+    // remotePatterns next/image returns a hard error ("this website could
+    // not be found") when the uploader hands back the public URL and the
+    // UI tries to preview it.
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "rcqgsexfuaoiiuqcqeka.supabase.co",
+        pathname: "/storage/v1/object/public/**",
+      },
+      {
+        protocol: "https",
+        hostname: "diambilaybusinesscenter.org",
+        pathname: "/images/**",
+      },
+    ],
+  },
   experimental: {
     serverActions: {
       // Admin uploads photos (avatars, team, event covers, sponsor logos,
