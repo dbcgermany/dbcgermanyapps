@@ -34,7 +34,7 @@ export function LocaleSwitch({
     <div
       role="group"
       aria-label="Language"
-      className={`inline-flex items-center gap-1 rounded-full border border-border bg-background/60 p-1 text-xs font-medium ${className}`}
+      className={`inline-flex items-center gap-2 ${className}`}
     >
       {locales.map((l) => {
         const active = l === currentLocale;
@@ -45,15 +45,11 @@ export function LocaleSwitch({
             aria-label={`Switch language to ${l.toUpperCase()}`}
             aria-current={active ? "page" : undefined}
             title={l.toUpperCase()}
-            className={`inline-flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
-              active
-                ? "ring-2 ring-foreground"
-                : "opacity-70 hover:opacity-100"
+            className={`inline-flex items-center justify-center text-base leading-none transition-opacity ${
+              active ? "opacity-100" : "opacity-50 hover:opacity-100"
             }`}
           >
-            <span aria-hidden className="text-base leading-none">
-              {FLAGS[l] ?? l.toUpperCase()}
-            </span>
+            <span aria-hidden>{FLAGS[l] ?? l.toUpperCase()}</span>
           </Link>
         );
       })}
