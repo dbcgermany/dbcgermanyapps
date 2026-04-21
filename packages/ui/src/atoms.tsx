@@ -13,23 +13,26 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
+        // No shadow on filled variants — on dark surfaces the 1 px shadow
+        // halos out and reads as a rendering glitch. The bg-primary fill
+        // carries enough weight on its own.
         primary:
-          "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90",
+          "bg-primary text-primary-foreground hover:bg-primary/90",
         secondary:
           "border border-border bg-background text-foreground hover:bg-muted",
         ghost: "text-foreground hover:bg-muted",
         destructive:
           "border border-red-300 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20",
         accent:
-          "bg-accent text-accent-foreground shadow-sm hover:bg-accent/90",
+          "bg-accent text-accent-foreground hover:bg-accent/90",
       },
       size: {
-        // Bumped one step up across the board — the old h-11 pill felt
-        // narrow next to h-11 inputs when used as a primary CTA. md now
-        // sits one step above form-field height so CTAs read as CTAs.
-        sm: "h-10 px-4 text-xs",
-        md: "h-12 px-7 text-sm",
-        lg: "h-14 px-8 text-base",
+        // Tuned to match the original "good" pill — clean, tighter, no
+        // shadow halo. md is 40 px (h-10 + px-5), reads as a primary CTA
+        // without dominating the row.
+        sm: "h-9  px-4 text-xs",
+        md: "h-10 px-5 text-sm",
+        lg: "h-12 px-7 text-base",
       },
     },
     defaultVariants: { variant: "primary", size: "md" },
