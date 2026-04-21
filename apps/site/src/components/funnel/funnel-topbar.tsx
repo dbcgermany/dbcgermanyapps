@@ -39,7 +39,7 @@ export function FunnelTopBar({ locale }: { locale: string }) {
             alt=""
             width={88}
             height={28}
-            className="h-7 w-auto"
+            className="h-4 w-auto"
             priority
           />
           <span className="hidden sm:inline">Germany</span>

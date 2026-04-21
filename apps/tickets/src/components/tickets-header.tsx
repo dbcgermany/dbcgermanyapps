@@ -37,7 +37,7 @@ export function TicketsHeader({ locale }: { locale: string }) {
             alt=""
             width={96}
             height={30}
-            className="h-7 w-auto"
+            className="h-5 w-auto"
             priority
           />
           <span>Germany</span>

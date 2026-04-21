@@ -130,7 +130,7 @@ export function AdminShellLayout({
                   alt=""
                   width={72}
                   height={24}
-                  className="h-5 w-auto"
+                  className="h-4 w-auto"
                 />
                 <span>Germany</span>
                 <span className="sr-only">DBC</span>

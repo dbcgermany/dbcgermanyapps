@@ -48,7 +48,7 @@ export async function SiteFooter({ locale }: { locale: string }) {
                 alt=""
                 width={120}
                 height={36}
-                className="h-8 w-auto"
+                className="h-6 w-auto"
               />
               <span>Germany</span>
               <span className="sr-only">DBC</span>

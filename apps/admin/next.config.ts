@@ -20,6 +20,12 @@ const nextConfig: NextConfig = {
       // raster input to WebP at quality 85 via @/lib/webp before it hits
       // Supabase storage, so the stored file is typically < 500 KB.
       bodySizeLimit: "50mb",
+      // Server-action IDs are pinned via the NEXT_SERVER_ACTIONS_ENCRYPTION_KEY
+      // env var (set on Vercel for Production / Preview / Development on
+      // every app in the ecosystem). Without it, Next regenerates a fresh
+      // key per build and any browser still holding an older bundle dies on
+      // submit with "Server Action … was not found on the server". Nothing
+      // to wire here — Next reads the env var directly at runtime.
     },
   },
   // admin.dbc-germany.com is the operator dashboard — invisible to search.
