@@ -3,6 +3,7 @@
 import { useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Badge } from "@dbc/ui";
 import { refundOrder } from "@/actions/orders";
 
@@ -173,8 +174,12 @@ export function OrderDetailClient({
     if (!confirm(t.refundConfirm)) return;
     startTransition(async () => {
       const res = await refundOrder(order.id, locale);
-      if (res.error) alert(res.error);
-      else router.refresh();
+      if (res.error) {
+        toast.error(res.error);
+      } else {
+        toast.success(t.refund);
+        router.refresh();
+      }
     });
   }
 

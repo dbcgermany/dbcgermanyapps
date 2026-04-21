@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { Badge } from "@dbc/ui";
 import type { UserRole } from "@dbc/types";
 import {
@@ -127,7 +128,7 @@ export function StaffDetailClient({
   function handleRoleChange(role: UserRole) {
     startTransition(async () => {
       const res = await updateStaffRole(profile.id, role, locale);
-      if (res.error) alert(res.error);
+      if (res.error) toast.error(res.error);
       else router.refresh();
     });
   }

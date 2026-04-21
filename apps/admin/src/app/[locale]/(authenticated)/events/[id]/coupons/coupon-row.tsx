@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { toast } from "sonner";
 import { Badge } from "@dbc/ui";
 import {
   updateCoupon,
@@ -251,7 +252,8 @@ export function CouponRow({
           action={async () => {
             if (!confirm(cr.deleteConfirm.replace("{code}", coupon.code))) return;
             const r = await deleteCoupon(coupon.id, eventId, locale);
-            if (r?.error) alert(r.error);
+            if (r?.error) toast.error(r.error);
+            else toast.success(cr.delete);
           }}
         >
           <button

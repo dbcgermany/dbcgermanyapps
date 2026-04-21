@@ -2,6 +2,7 @@
 
 import { Fragment, useState, useTransition } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
 import type { UserRole } from "@dbc/types";
 import { Card } from "@dbc/ui";
 import {
@@ -96,7 +97,8 @@ export function StaffClient({
   function handleResendInvite(staffId: string) {
     startTransition(async () => {
       const res = await resendStaffInvite(staffId, locale);
-      if (res.error) alert(res.error);
+      if (res.error) toast.error(res.error);
+      else toast.success(t.resendInvite);
     });
   }
 
@@ -104,7 +106,8 @@ export function StaffClient({
     if (!confirm(t.revokeConfirm)) return;
     startTransition(async () => {
       const res = await revokeStaffInvite(staffId, locale);
-      if (res.error) alert(res.error);
+      if (res.error) toast.error(res.error);
+      else toast.success(t.revoke);
     });
   }
 

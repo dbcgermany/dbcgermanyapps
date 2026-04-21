@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { type IncubationApplicationStatus } from "@dbc/types";
 import { updateApplicationStatus } from "@/actions/applications";
 import { updateJobApplicationStatus } from "@/actions/job-applications";
@@ -111,14 +112,14 @@ export function ApplicationDetailClient({
 
   function handleSave(newStatus: Status) {
     startTransition(async () => {
-      if (type === "incubation") {
-        const res = await updateApplicationStatus(data.id, newStatus, locale, notes);
-        if (res.error) alert(res.error);
-        else router.refresh();
+      const res = type === "incubation"
+        ? await updateApplicationStatus(data.id, newStatus, locale, notes)
+        : await updateJobApplicationStatus(data.id, newStatus, notes, locale);
+      if (res.error) {
+        toast.error(res.error);
       } else {
-        const res = await updateJobApplicationStatus(data.id, newStatus, notes, locale);
-        if (res.error) alert(res.error);
-        else router.refresh();
+        toast.success(t.save);
+        router.refresh();
       }
     });
   }
