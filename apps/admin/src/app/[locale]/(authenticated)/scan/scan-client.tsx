@@ -204,8 +204,12 @@ export function ScanClient({
         </select>
       </div>
 
-      {/* Stats — sticky at the top on mobile so it's always visible while scanning */}
-      <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-10 -mx-4 rounded-none border-y border-border bg-surface/90 p-4 backdrop-blur-xl supports-backdrop-filter:bg-surface/75 sm:static sm:mx-0 sm:rounded-lg sm:border">
+      {/* Stats — scrolls with the page on mobile so the camera viewport
+          below always has full visibility. On tablet/desktop (sm+) it's
+          a normal card inside the page flow. Previously sticky on mobile,
+          which caused the translucent bar to obscure the scanner corner
+          markers when the scanner viewport scrolled under it. */}
+      <div className="rounded-lg border border-border bg-surface p-4">
         <div className="flex items-end justify-between">
           <div>
             <p className="font-heading text-3xl font-bold">
