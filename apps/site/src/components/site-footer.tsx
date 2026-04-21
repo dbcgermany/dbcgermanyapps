@@ -43,12 +43,16 @@ export async function SiteFooter({ locale }: { locale: string }) {
               className="flex items-center gap-2 font-heading text-lg font-bold"
               aria-label={brandName}
             >
+              {/* Same shape as the header lockup in site-header.tsx so
+                   cache keys + srcset widths stay identical — if the
+                   header renders, the footer renders. */}
               <Image
                 src={BRAND.logoSrc}
                 alt=""
-                width={120}
-                height={36}
-                className="h-6 w-auto"
+                width={96}
+                height={30}
+                className="h-5 w-auto"
+                priority
               />
               <span>Germany</span>
               <span className="sr-only">DBC</span>
