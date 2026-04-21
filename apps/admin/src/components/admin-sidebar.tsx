@@ -140,7 +140,6 @@ export function AdminSidebar({
                 height={28}
                 className="h-6 w-auto"
                 priority
-                unoptimized
               />
               <span>Germany</span>
               <span className="sr-only">DBC</span>
@@ -292,7 +291,6 @@ export function AdminSidebar({
                   width={88}
                   height={28}
                   className="h-6 w-auto"
-                  unoptimized
                 />
                 <span>Germany</span>
                 <span className="sr-only">DBC</span>

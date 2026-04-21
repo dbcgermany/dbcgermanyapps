@@ -6,8 +6,11 @@
 
 export const BRAND = {
   /** Wide DBC wordmark with the gold swoosh. Used as the visible
-   *  header + footer brand mark. */
-  logoSrc: "/brand/dbc-logo.svg",
+   *  header + footer brand mark. WebP (1200×376 @92%) — rendered from
+   *  icons/dbc-logo-red-gold-vector.svg so next/image can serve it
+   *  through its standard raster pipeline (next/image silently
+   *  refuses to optimise SVGs by default). */
+  logoSrc: "/brand/dbc-logo.webp",
   /** Square D-mark. Used for app icons and in-page contexts where
    *  the wordmark would be too wide. */
   iconSrc: "/brand/dbc-icon.svg",
