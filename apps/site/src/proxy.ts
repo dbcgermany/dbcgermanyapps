@@ -53,6 +53,13 @@ function geoLocale(request: NextRequest): Locale | null {
   return country ? COUNTRY_LOCALE[country.toUpperCase()] ?? null : null;
 }
 
+// Legacy → dynamic funnel redirects. The old hand-coded incubation page
+// was replaced by the dynamic /f/[slug] route on 2026-04-20; keep the
+// old URL working for existing ad links and social shares.
+const LEGACY_FUNNEL_REDIRECTS: Record<string, string> = {
+  "/services/incubation/apply": "/f/incubation",
+};
+
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -61,8 +68,15 @@ export function proxy(request: NextRequest) {
   );
 
   if (pathnameHasLocale) {
+    const locale = pathname.split("/")[1] ?? DEFAULT_LOCALE;
+    const localeless = pathname.replace(/^\/[^/]+/, "");
+    const legacyTarget = LEGACY_FUNNEL_REDIRECTS[localeless];
+    if (legacyTarget) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = `/${locale}${legacyTarget}`;
+      return NextResponse.redirect(redirectUrl, 308);
+    }
     const response = NextResponse.next();
-    const locale = pathname.split("/")[1];
     response.cookies.set("locale", locale, {
       path: "/",
       maxAge: 60 * 60 * 24 * 365,

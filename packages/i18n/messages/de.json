@@ -219,6 +219,7 @@
       "doorSale": "Direktverkauf",
       "events": "Veranstaltungen",
       "founders": "Gründer:innen",
+      "funnels": "Funnels",
       "investors": "Investor:innen",
       "jobOffers": "Stellenangebote",
       "news": "Aktuelles",
@@ -500,6 +501,7 @@
       "orders": "Bestellungen",
       "news": "Aktuelles",
       "newsletters": "Newsletter",
+      "funnels": "Funnels",
       "jobOffers": "Stellenangebote",
       "applications": "Bewerbungen",
       "contacts": "Kontakte",
@@ -859,7 +861,7 @@
       "contact": "DBC Germany erreichen Sie über den Kanal, der zu Ihrem Anliegen passt. Presse- und Medienanfragen gehen an die Presse-Adresse; wir antworten werktags innerhalb von 24 Stunden. Bewerbungen für die Inkubation und unsere Programme liegen unter /services/incubation/apply und landen direkt in der Sichtungsliste. Partnerschaften und Sponsoring — auch die Pakete für Richesses d'Afrique Germany 2026 — gehen über das Formular unten oder an jay@dbc-germany.com. Für alles andere (allgemeine Fragen, Speaker-Vorschläge, nicht zeitkritische Medienanfragen) erreicht das Formular unten die richtige Person noch am selben Tag."
     }
   },
-  "incubationApply": {
+  "funnelWizard": {
     "progress": "Schritt {current} von {total}",
     "nav": {
       "back": "Zurück",

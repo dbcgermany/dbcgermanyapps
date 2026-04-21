@@ -23,7 +23,7 @@ export default async function IncubationApplyThankYouPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "incubationApply" });
+  const t = await getTranslations({ locale, namespace: "funnelWizard" });
 
   const steps = Array.from({ length: 3 }, (_, i) => t(`thankYou.nextSteps.${i}`));
 

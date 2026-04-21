@@ -219,6 +219,7 @@
       "doorSale": "Ventes manuelles",
       "events": "Événements",
       "founders": "Fondateurs",
+      "funnels": "Funnels",
       "investors": "Investisseurs",
       "jobOffers": "Offres d’emploi",
       "news": "Actualités",
@@ -500,6 +501,7 @@
       "orders": "Commandes",
       "news": "Actualités",
       "newsletters": "Newsletters",
+      "funnels": "Funnels",
       "jobOffers": "Offres d'emploi",
       "applications": "Candidatures",
       "contacts": "Contacts",
@@ -859,7 +861,7 @@
       "contact": "Contactez DBC Germany via le canal adapté à votre demande. La presse passe par la messagerie presse ; nous répondons en 24 h ouvrées. Les candidatures à l'incubation et aux programmes se font sur /services/incubation/apply et arrivent directement dans notre file de revue. Partenariats et sponsoring — y compris les packages Richesses d'Afrique Germany 2026 — via le formulaire ci-dessous ou à jay@dbc-germany.com. Pour le reste (questions générales, suggestions d'intervenants, sollicitations médias non urgentes), le formulaire ci-dessous atteint la bonne personne le jour même."
     }
   },
-  "incubationApply": {
+  "funnelWizard": {
     "progress": "Étape {current} sur {total}",
     "nav": {
       "back": "Retour",

@@ -28,6 +28,7 @@ import {
   UserSquare,
   Users,
   X,
+  Zap,
   type LucideIcon,
 } from "lucide-react";
 import type { UserRole } from "@dbc/types";
@@ -54,6 +55,7 @@ const NAV_ITEMS: NavItem[] = [
 
   { labelKey: "news", href: "/news", icon: Newspaper, minRole: "manager", dividerAbove: true },
   { labelKey: "newsletters", href: "/newsletters", icon: Mail, minRole: "manager" },
+  { labelKey: "funnels", href: "/funnels", icon: Zap, minRole: "manager" },
   { labelKey: "applications", href: "/applications", icon: FileText, minRole: "manager" },
   { labelKey: "jobOffers", href: "/job-offers", icon: Briefcase, minRole: "manager" },
 

@@ -177,6 +177,60 @@ export type IncubationDiscoveryChannel =
   (typeof INCUBATION_DISCOVERY_CHANNELS)[number];
 
 /* -------------------------------------------------------------------------- */
+/*                             Funnel system                                  */
+/* -------------------------------------------------------------------------- */
+// Mirrors public.funnels + public.funnel_events. See
+// supabase/migrations/20260429000001_funnel_system.sql.
+//
+// One dynamic funnel system — every ad landing page is a row in public.funnels,
+// rendered by apps/site/src/app/[locale]/(funnels)/f/[slug]/page.tsx. Content
+// blobs are stored per-locale and conform to FunnelContent below.
+
+export const FUNNEL_STATUS_VALUES = [
+  "draft",
+  "published",
+  "archived",
+] as const;
+export type FunnelStatus = (typeof FUNNEL_STATUS_VALUES)[number];
+
+export const FUNNEL_CTA_TYPES = [
+  "external_link",
+  "incubation_wizard",
+  "contact_form",
+] as const;
+export type FunnelCtaType = (typeof FUNNEL_CTA_TYPES)[number];
+
+export const FUNNEL_EVENT_TYPES = [
+  "view",
+  "cta_click",
+  "conversion",
+] as const;
+export type FunnelEventType = (typeof FUNNEL_EVENT_TYPES)[number];
+
+/** Shape admins edit in the funnel form and the dynamic renderer consumes. */
+export interface FunnelContent {
+  hero: {
+    eyebrow?: string;
+    title: string;
+    subtitle?: string;
+    primaryCta: string;
+  };
+  benefits?: {
+    eyebrow?: string;
+    title?: string;
+    items: { key: string; title: string; desc: string }[];
+  };
+  faq?: {
+    title: string;
+    items: { q: string; a: string }[];
+  };
+  footerCta?: {
+    text: string;
+    email: string;
+  };
+}
+
+/* -------------------------------------------------------------------------- */
 /*                            Job offers                                      */
 /* -------------------------------------------------------------------------- */
 

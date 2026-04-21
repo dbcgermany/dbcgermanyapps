@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Button } from "@dbc/ui";
 import { FunnelStepper } from "@/components/funnel/funnel-stepper";
+import { fireFunnelConversion } from "@/components/funnel/funnel-analytics";
 import { submitIncubationApplication } from "@/actions/incubation";
 import { INITIAL_ANSWERS } from "./types";
 import type { AnswersState, WizardLocale } from "./types";
@@ -32,8 +33,14 @@ function visibleSteps(answers: AnswersState): number[] {
 const STORAGE_KEY = "dbc:incubation-wizard:v1";
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export function WizardShell({ locale }: { locale: WizardLocale }) {
-  const t = useTranslations("incubationApply");
+export function WizardShell({
+  locale,
+  funnelId,
+}: {
+  locale: WizardLocale;
+  funnelId?: string;
+}) {
+  const t = useTranslations("funnelWizard");
   const router = useRouter();
   const [answers, setAnswers] = useState<AnswersState>(INITIAL_ANSWERS);
   const [step, setStep] = useState(0);
@@ -191,6 +198,7 @@ export function WizardShell({ locale }: { locale: WizardLocale }) {
         } catch {
           /* ignore */
         }
+        if (funnelId) fireFunnelConversion(funnelId, locale);
         router.push(`/${locale}/services/incubation/apply/thank-you`);
       } else {
         setServerError(result.error ?? t("errors.required"));
