@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LinkButton } from "@dbc/ui";
 import { getTranslations } from "next-intl/server";
 import {
   listContacts,
@@ -54,12 +55,9 @@ export default async function ContactsListPage({
         title={t("title")}
         description=""
         cta={
-          <Link
-            href={`/${locale}/contacts/new`}
-            className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
-          >
+          <LinkButton href={`/${locale}/contacts/new`}>
             {t("createContact")}
-          </Link>
+          </LinkButton>
         }
       />
 

@@ -20,7 +20,7 @@ export default async function NewContactPage({
         description={t("newDescription")}
         back={{ href: `/${locale}/contacts`, label: tBack("contacts") }}
       />
-      <div className="mt-8 max-w-2xl">
+      <div className="mt-8 max-w-3xl">
         <NewContactForm locale={locale} events={events} />
       </div>
     </div>

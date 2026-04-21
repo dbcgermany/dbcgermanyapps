@@ -3,6 +3,7 @@
 import { useActionState, use } from "react";
 import { useTranslations } from "next-intl";
 import { DEFAULTS, EVENT_TYPE_VALUES, type EventType } from "@dbc/types";
+import { Button } from "@dbc/ui";
 import { createEvent } from "@/actions/events";
 import { CoverImageUpload } from "@/components/cover-image-upload";
 import { PageHeader } from "@/components/page-header";
@@ -91,7 +92,7 @@ export default function NewEventPage({
         back={{ href: `/${locale}/events`, label: tBack("events") }}
       />
 
-      <form action={formAction} className="mt-8 max-w-2xl space-y-6">
+      <form action={formAction} className="mt-8 max-w-3xl space-y-6">
         {state?.error && (
           <div className="rounded-md bg-red-50 p-4 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
             {state.error}
@@ -272,13 +273,9 @@ export default function NewEventPage({
         <input type="hidden" name="timezone" value="Europe/Berlin" />
 
         <div className="flex gap-3 pt-4">
-          <button
-            type="submit"
-            disabled={isPending}
-            className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 disabled:opacity-50"
-          >
+          <Button type="submit" disabled={isPending}>
             {isPending ? t.creating : t.createEvent}
-          </button>
+          </Button>
         </div>
       </form>
     </div>

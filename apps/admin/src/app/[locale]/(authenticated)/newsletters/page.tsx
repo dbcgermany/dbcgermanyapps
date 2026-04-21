@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Badge } from "@dbc/ui";
+import { Badge, LinkButton } from "@dbc/ui";
 import { listNewsletters } from "@/actions/newsletters";
 import { PageHeader } from "@/components/page-header";
 
@@ -51,12 +51,9 @@ export default async function NewslettersIndexPage({
         title={t.title}
         description={t.description}
         cta={
-          <Link
-            href={`/${locale}/newsletters/new`}
-            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
-          >
+          <LinkButton href={`/${locale}/newsletters/new`}>
             {t.newNewsletter}
-          </Link>
+          </LinkButton>
         }
       />
 

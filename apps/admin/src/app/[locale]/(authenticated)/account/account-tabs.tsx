@@ -131,7 +131,7 @@ export function AccountTabs({
         ))}
       </div>
 
-      <div className="mt-6 max-w-2xl">
+      <div className="mt-6 max-w-3xl">
         {tab === "profile" && <ProfileTab profile={profile} locale={locale} />}
         {tab === "preferences" && <PreferencesTab profile={profile} />}
         {tab === "security" && <SecurityTab />}

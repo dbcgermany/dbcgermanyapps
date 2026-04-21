@@ -3,6 +3,7 @@
 import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { EVENT_TYPE_VALUES, type EventType } from "@dbc/types";
+import { Button, LinkButton } from "@dbc/ui";
 import { updateEvent } from "@/actions/events";
 import { CoverImageUpload } from "@/components/cover-image-upload";
 
@@ -368,19 +369,15 @@ export function EditEventForm({
       />
 
       <div className="flex gap-3 pt-4">
-        <button
-          type="submit"
-          disabled={isPending}
-          className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 disabled:opacity-50"
-        >
+        <Button type="submit" disabled={isPending}>
           {isPending ? t.saving : t.saveChanges}
-        </button>
-        <a
+        </Button>
+        <LinkButton
           href={`/${locale}/events/${event.id}`}
-          className="rounded-md border border-input px-6 py-2 text-sm font-medium hover:bg-accent"
+          variant="secondary"
         >
           {t.cancel}
-        </a>
+        </LinkButton>
       </div>
     </form>
   );

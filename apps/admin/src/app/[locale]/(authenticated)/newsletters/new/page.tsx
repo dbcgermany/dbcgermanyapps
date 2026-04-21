@@ -43,14 +43,16 @@ export default async function NewNewsletterPage({
         description={t.description}
         back={{ href: `/${locale}/newsletters`, label: tBack("newsletters") }}
       />
-      <NewsletterComposer
-        uiLocale={locale}
-        categories={categories.map((c) => ({
-          slug: c.slug,
-          name: c.name_en,
-        }))}
-        domainStatus={domainStatus}
-      />
+      <div className="mt-8 max-w-3xl">
+        <NewsletterComposer
+          uiLocale={locale}
+          categories={categories.map((c) => ({
+            slug: c.slug,
+            name: c.name_en,
+          }))}
+          domainStatus={domainStatus}
+        />
+      </div>
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { use, useActionState } from "react";
 import { useTranslations } from "next-intl";
 import { EMPLOYMENT_TYPE_VALUES, type EmploymentType } from "@dbc/types";
+import { Button } from "@dbc/ui";
 import { createJobOffer } from "@/actions/job-offers";
 import { PageHeader } from "@/components/page-header";
 
@@ -119,13 +120,9 @@ export default function NewJobOfferPage({
 
         <Field name="department" label={t.department} />
 
-        <button
-          type="submit"
-          disabled={isPending}
-          className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-        >
+        <Button type="submit" disabled={isPending}>
           {isPending ? t.saving : t.saveDraft}
-        </button>
+        </Button>
       </form>
     </div>
   );

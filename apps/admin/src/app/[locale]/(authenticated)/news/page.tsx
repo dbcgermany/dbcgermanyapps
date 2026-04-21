@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Badge, Card } from "@dbc/ui";
+import { Badge, Card, LinkButton } from "@dbc/ui";
 import { getNewsPosts, toggleNewsPublish } from "@/actions/news";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
@@ -39,12 +39,9 @@ export default async function NewsIndexPage({
       <PageHeader
         title={t.title}
         cta={
-          <Link
-            href={`/${locale}/news/new`}
-            className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
-          >
+          <LinkButton href={`/${locale}/news/new`}>
             {t.newPost}
-          </Link>
+          </LinkButton>
         }
       />
 

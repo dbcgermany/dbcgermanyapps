@@ -483,7 +483,15 @@
         "staff": "Team",
         "press": "Presse",
         "vip": "VIP"
-      }
+      },
+      "organization": "Organisation",
+      "linkedinUrl": "LinkedIn-URL",
+      "sectionIdentity": "Identität",
+      "sectionContact": "Kontakt",
+      "sectionProfessional": "Beruflich",
+      "sectionAddress": "Adresse",
+      "sectionInvolvement": "Event-Beteiligung",
+      "sectionInternal": "Intern"
     },
     "back": {
       "dashboard": "Übersicht",

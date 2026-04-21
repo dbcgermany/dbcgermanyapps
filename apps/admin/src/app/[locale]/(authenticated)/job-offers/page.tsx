@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Badge } from "@dbc/ui";
+import { Badge, LinkButton } from "@dbc/ui";
 import { getJobOffers, toggleJobOfferPublished } from "@/actions/job-offers";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
@@ -49,12 +49,9 @@ export default async function JobOffersPage({
       <PageHeader
         title={t.title}
         cta={
-          <Link
-            href={`/${locale}/job-offers/new`}
-            className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
-          >
+          <LinkButton href={`/${locale}/job-offers/new`}>
             {t.newJob}
-          </Link>
+          </LinkButton>
         }
       />
 

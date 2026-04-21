@@ -2,6 +2,7 @@
 
 import { use, useActionState } from "react";
 import { useTranslations } from "next-intl";
+import { Button } from "@dbc/ui";
 import { createNewsPost } from "@/actions/news";
 import { PageHeader } from "@/components/page-header";
 import { CoverImageUpload } from "@/components/cover-image-upload";
@@ -77,13 +78,9 @@ export default function NewNewsPostPage({
 
         <CoverImageUpload />
 
-        <button
-          type="submit"
-          disabled={isPending}
-          className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-        >
+        <Button type="submit" disabled={isPending}>
           {isPending ? t.saving : t.saveDraft}
-        </button>
+        </Button>
       </form>
     </div>
   );

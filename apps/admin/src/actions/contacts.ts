@@ -1,6 +1,13 @@
 "use server";
 
 import { createServerClient, requireRole } from "@dbc/supabase/server";
+import {
+  GENDER_VALUES,
+  TITLE_VALUES,
+  impliedGenderFromTitle,
+  type Gender,
+  type Title,
+} from "@dbc/ui";
 import { revalidatePath } from "next/cache";
 import {
   INVOLVEMENT_ROLES,
@@ -227,6 +234,32 @@ export async function createContact(formData: FormData): Promise<
     ? (roleRaw as InvolvementRole)
     : null;
 
+  // New SSOT person fields — mirror the incubation action's sanitization.
+  const titleRaw = ((formData.get("title") as string) || "").trim();
+  const title = (TITLE_VALUES as readonly string[]).includes(titleRaw)
+    ? (titleRaw as Title)
+    : null;
+  const genderRaw = ((formData.get("gender") as string) || "").trim();
+  const rawGender = (GENDER_VALUES as readonly string[]).includes(genderRaw)
+    ? (genderRaw as Gender)
+    : null;
+  const gender = impliedGenderFromTitle(title) ?? rawGender;
+  const birthday =
+    ((formData.get("birthday") as string) || "").trim() || null;
+  const organization =
+    ((formData.get("organization") as string) || "").trim() || null;
+  const linkedinUrl =
+    ((formData.get("linkedin_url") as string) || "").trim() || null;
+  const addressLine1 =
+    ((formData.get("address_line_1") as string) || "").trim() || null;
+  const addressLine2 =
+    ((formData.get("address_line_2") as string) || "").trim() || null;
+  const postalCode =
+    ((formData.get("postal_code") as string) || "").trim() || null;
+  const city = ((formData.get("city") as string) || "").trim() || null;
+  const stateRegion =
+    ((formData.get("state_region") as string) || "").trim() || null;
+
   if (!firstName || !lastName) {
     return { error: "First and last name are required." };
   }
@@ -241,7 +274,7 @@ export async function createContact(formData: FormData): Promise<
       p_first_name: firstName,
       p_last_name: lastName,
       p_country: country?.toUpperCase() ?? null,
-      p_gender: null,
+      p_gender: gender,
       p_occupation: occupation,
       p_auto_category_slug: categorySlug,
       p_extra_category_slugs: [] as string[],
@@ -252,11 +285,21 @@ export async function createContact(formData: FormData): Promise<
   }
   const contactId = upsertedId as string;
 
-  // Persist fields the RPC doesn't accept (phone, admin_notes).
-  if (phone || notes) {
-    const patch: Record<string, unknown> = {};
-    if (phone) patch.phone = phone;
-    if (notes) patch.admin_notes = notes;
+  // Persist every field the RPC doesn't accept. All columns are nullable,
+  // so we only set keys that have a value and leave the rest untouched.
+  const patch: Record<string, unknown> = {};
+  if (phone) patch.phone = phone;
+  if (notes) patch.admin_notes = notes;
+  if (title) patch.title = title;
+  if (birthday) patch.birthday = birthday;
+  if (organization) patch.organization = organization;
+  if (linkedinUrl) patch.linkedin_url = linkedinUrl;
+  if (addressLine1) patch.address_line_1 = addressLine1;
+  if (addressLine2) patch.address_line_2 = addressLine2;
+  if (postalCode) patch.postal_code = postalCode;
+  if (city) patch.city = city;
+  if (stateRegion) patch.state_region = stateRegion;
+  if (Object.keys(patch).length > 0) {
     await supabase.from("contacts").update(patch).eq("id", contactId);
   }
 

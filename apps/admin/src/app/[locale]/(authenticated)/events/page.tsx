@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Badge } from "@dbc/ui";
+import { Badge, LinkButton } from "@dbc/ui";
 import { getTranslations } from "next-intl/server";
 import { getEvents, togglePublish } from "@/actions/events";
 import { PageHeader } from "@/components/page-header";
@@ -19,12 +19,9 @@ export default async function EventsPage({
       <PageHeader
         title={t("title")}
         cta={
-          <Link
-            href={`/${locale}/events/new`}
-            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-          >
+          <LinkButton href={`/${locale}/events/new`}>
             {t("createEvent")}
-          </Link>
+          </LinkButton>
         }
       />
 
