@@ -24,9 +24,12 @@ const buttonVariants = cva(
           "bg-accent text-accent-foreground shadow-sm hover:bg-accent/90",
       },
       size: {
-        sm: "h-9 px-4 text-xs",
-        md: "h-11 px-6 text-sm",
-        lg: "h-12 px-7 text-sm",
+        // Bumped one step up across the board — the old h-11 pill felt
+        // narrow next to h-11 inputs when used as a primary CTA. md now
+        // sits one step above form-field height so CTAs read as CTAs.
+        sm: "h-10 px-4 text-xs",
+        md: "h-12 px-7 text-sm",
+        lg: "h-14 px-8 text-base",
       },
     },
     defaultVariants: { variant: "primary", size: "md" },
@@ -171,6 +174,64 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
       <textarea
         ref={ref}
         className={cn(textareaVariants({ state }), className)}
+        {...props}
+      />
+    );
+  }
+);
+
+/* -------------------------------------------------------------------------- */
+/*                                  Select                                    */
+/* -------------------------------------------------------------------------- */
+// Native <select> in the same visual language as Input. Every admin page
+// that used to hand-roll `<select className="rounded-md border…">` should
+// import this instead so the focus ring, height, and chevron stay in sync
+// across the dashboard.
+
+const selectVariants = cva(
+  "w-full appearance-none rounded-md border bg-background pl-3 pr-9 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed",
+  {
+    variants: {
+      size: {
+        sm: "h-9 text-xs",
+        md: "h-11",
+        lg: "h-12 text-base",
+      },
+      state: {
+        default: "border-input",
+        error: "border-red-400 focus:ring-red-400",
+        disabled: "border-input bg-muted",
+      },
+    },
+    defaultVariants: { size: "md", state: "default" },
+  }
+);
+
+/** Compact inline SVG chevron, baked into the select via `background-image`
+ *  so the native OS dropdown arrow stays suppressed (appearance: none) and
+ *  we get the same glyph in light and dark mode. */
+const SELECT_CHEVRON =
+  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%23737373' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E\")";
+
+export type SelectProps = Omit<
+  React.SelectHTMLAttributes<HTMLSelectElement>,
+  "size"
+> &
+  VariantProps<typeof selectVariants>;
+
+export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
+  function Select({ className, size, state, style, ...props }, ref) {
+    return (
+      <select
+        ref={ref}
+        className={cn(selectVariants({ size, state }), className)}
+        style={{
+          backgroundImage: SELECT_CHEVRON,
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "right 0.75rem center",
+          backgroundSize: "1rem 1rem",
+          ...style,
+        }}
         {...props}
       />
     );

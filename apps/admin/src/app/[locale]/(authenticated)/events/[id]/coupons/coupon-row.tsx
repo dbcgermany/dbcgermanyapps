@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { toast } from "sonner";
-import { Badge } from "@dbc/ui";
+import { Badge, ConfirmDialog } from "@dbc/ui";
 import {
   updateCoupon,
   deleteCoupon,
@@ -248,21 +248,25 @@ export function CouponRow({
             {coupon.is_active ? cr.deactivate : cr.activate}
           </button>
         </form>
-        <form
-          action={async () => {
-            if (!confirm(cr.deleteConfirm.replace("{code}", coupon.code))) return;
+        <ConfirmDialog
+          trigger={
+            <button
+              type="button"
+              className="text-xs text-red-500 hover:text-red-700"
+            >
+              {cr.delete}
+            </button>
+          }
+          title={cr.delete}
+          description={cr.deleteConfirm.replace("{code}", coupon.code)}
+          variant="danger"
+          confirmLabel={cr.delete}
+          onConfirm={async () => {
             const r = await deleteCoupon(coupon.id, eventId, locale);
             if (r?.error) toast.error(r.error);
             else toast.success(cr.delete);
           }}
-        >
-          <button
-            type="submit"
-            className="text-xs text-red-500 hover:text-red-700"
-          >
-            {cr.delete}
-          </button>
-        </form>
+        />
       </div>
     </div>
   );

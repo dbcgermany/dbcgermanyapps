@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import {
+  Badge,
   ConfirmDialog,
   PhoneInput,
   CountrySelect,
@@ -375,9 +376,7 @@ function ApplicationsList({
                 {new Date(a.created_at).toLocaleDateString(locale)}
               </p>
             </div>
-            <span className="rounded-full bg-muted px-2 py-0.5 text-xs capitalize">
-              {a.status}
-            </span>
+            <Badge className="capitalize">{a.status}</Badge>
           </div>
           <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
             {a.pitch.length > 240 ? `${a.pitch.slice(0, 240)}…` : a.pitch}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { Card } from "@dbc/ui";
 import type { UserRole } from "@dbc/types";
 import {
   lookupBuyer,
@@ -262,7 +263,7 @@ export function SettingsClient({
             )}
 
             {lookup && (
-              <div className="mt-4 rounded-lg border border-border p-4">
+              <Card padding="sm" className="mt-4">
                 <p className="text-sm">
                   <strong>{lookup.email}</strong>
                   {lookup.displayName && (
@@ -283,7 +284,7 @@ export function SettingsClient({
                 >
                   {t.deleteBtn}
                 </button>
-              </div>
+              </Card>
             )}
           </>
         )}
@@ -302,7 +303,7 @@ function InfoRow({
   status?: "ok" | "warn";
 }) {
   return (
-    <div className="rounded-lg border border-border p-4">
+    <Card padding="sm">
       <dt className="text-xs uppercase tracking-wider text-muted-foreground">
         {label}
       </dt>
@@ -317,6 +318,6 @@ function InfoRow({
       >
         {value}
       </dd>
-    </div>
+    </Card>
   );
 }

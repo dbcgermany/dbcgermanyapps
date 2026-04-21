@@ -4,7 +4,7 @@ import { Fragment, useState, useTransition } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import type { UserRole } from "@dbc/types";
-import { Card } from "@dbc/ui";
+import { Card, ConfirmDialog } from "@dbc/ui";
 import {
   inviteStaff,
   updateStaffRole,
@@ -87,11 +87,8 @@ export function StaffClient({
     });
   }
 
-  function handleRemove(staffId: string) {
-    if (!confirm(t.removeConfirm)) return;
-    startTransition(async () => {
-      await removeStaff(staffId, locale);
-    });
+  async function runRemove(staffId: string) {
+    await removeStaff(staffId, locale);
   }
 
   function handleResendInvite(staffId: string) {
@@ -102,13 +99,10 @@ export function StaffClient({
     });
   }
 
-  function handleRevokeInvite(staffId: string) {
-    if (!confirm(t.revokeConfirm)) return;
-    startTransition(async () => {
-      const res = await revokeStaffInvite(staffId, locale);
-      if (res.error) toast.error(res.error);
-      else toast.success(t.revoke);
-    });
+  async function runRevokeInvite(staffId: string) {
+    const res = await revokeStaffInvite(staffId, locale);
+    if (res.error) toast.error(res.error);
+    else toast.success(t.revoke);
   }
 
   const t = {
@@ -383,22 +377,44 @@ export function StaffClient({
                             >
                               {t.resendInvite}
                             </button>
-                            <button
-                              onClick={() => handleRevokeInvite(s.id)}
-                              disabled={isPending}
-                              className="text-xs text-red-500 hover:text-red-700"
-                            >
-                              {t.revoke}
-                            </button>
+                            <ConfirmDialog
+                              trigger={
+                                <button
+                                  type="button"
+                                  disabled={isPending}
+                                  className="text-xs text-red-500 hover:text-red-700"
+                                >
+                                  {t.revoke}
+                                </button>
+                              }
+                              title={t.revoke}
+                              description={t.revokeConfirm}
+                              variant="danger"
+                              confirmLabel={t.revoke}
+                              onConfirm={() =>
+                                startTransition(() => runRevokeInvite(s.id))
+                              }
+                            />
                           </>
                         ) : (
-                          <button
-                            onClick={() => handleRemove(s.id)}
-                            disabled={isPending}
-                            className="text-xs text-red-500 hover:text-red-700"
-                          >
-                            {t.remove}
-                          </button>
+                          <ConfirmDialog
+                            trigger={
+                              <button
+                                type="button"
+                                disabled={isPending}
+                                className="text-xs text-red-500 hover:text-red-700"
+                              >
+                                {t.remove}
+                              </button>
+                            }
+                            title={t.remove}
+                            description={t.removeConfirm}
+                            variant="danger"
+                            confirmLabel={t.remove}
+                            onConfirm={() =>
+                              startTransition(() => runRemove(s.id))
+                            }
+                          />
                         )}
                       </td>
                     </tr>

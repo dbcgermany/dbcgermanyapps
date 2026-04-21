@@ -15,6 +15,7 @@ export {
   Card,
   Input,
   Textarea,
+  Select,
   Label,
   Badge,
   Heading,
@@ -29,6 +30,7 @@ export type {
   CardProps,
   InputProps,
   TextareaProps,
+  SelectProps,
   BadgeProps,
 } from "./atoms";
 export {

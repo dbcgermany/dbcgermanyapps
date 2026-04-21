@@ -174,9 +174,7 @@ function SecretRow({
           )}
           {!secret && !allowKeyEdit && (
             <p className="mt-2 text-xs">
-              <span className="rounded-full bg-muted px-2 py-0.5 font-medium text-muted-foreground">
-                Not set (falls back to env var if defined)
-              </span>
+              <Badge>Not set (falls back to env var if defined)</Badge>
             </p>
           )}
         </div>

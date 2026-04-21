@@ -3,7 +3,8 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Badge } from "@dbc/ui";
+import { Badge, ConfirmDialog } from "@dbc/ui";
+import { toast } from "sonner";
 import { ORDER_STATUS_VALUES } from "@dbc/types";
 import { refundOrder } from "@/actions/orders";
 import { CsvExportButton } from "@/components/csv-export-button";
@@ -52,17 +53,17 @@ export function OrdersClient({
     router.push(`?${params.toString()}`);
   }
 
-  function handleRefund(orderId: string) {
-    if (!confirm(t.refundConfirm)) return;
+  async function runRefund(orderId: string) {
     setError(null);
     setRefundingId(orderId);
-    startTransition(async () => {
-      const res = await refundOrder(orderId, locale);
-      setRefundingId(null);
-      if (res.error) {
-        setError(res.error);
-      }
-    });
+    const res = await refundOrder(orderId, locale);
+    setRefundingId(null);
+    if (res.error) {
+      setError(res.error);
+      toast.error(res.error);
+    } else {
+      toast.success(t.refund);
+    }
   }
 
   const t = {
@@ -335,15 +336,24 @@ export function OrdersClient({
                           </a>
                         )}
                         {canRefund && (
-                          <button
-                            onClick={() => handleRefund(o.id)}
-                            disabled={isPending && refundingId === o.id}
-                            className="text-xs text-red-500 hover:text-red-700 disabled:opacity-50"
-                          >
-                            {isPending && refundingId === o.id
-                              ? t.refunding
-                              : t.refund}
-                          </button>
+                          <ConfirmDialog
+                            trigger={
+                              <button
+                                type="button"
+                                disabled={isPending && refundingId === o.id}
+                                className="text-xs text-red-500 hover:text-red-700 disabled:opacity-50"
+                              >
+                                {isPending && refundingId === o.id
+                                  ? t.refunding
+                                  : t.refund}
+                              </button>
+                            }
+                            title={t.refund}
+                            description={t.refundConfirm}
+                            variant="danger"
+                            confirmLabel={t.refund}
+                            onConfirm={() => startTransition(() => runRefund(o.id))}
+                          />
                         )}
                       </div>
                     </td>

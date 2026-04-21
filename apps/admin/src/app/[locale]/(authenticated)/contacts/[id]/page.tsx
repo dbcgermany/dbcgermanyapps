@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import { PageBack } from "@dbc/ui";
+import { Badge, PageBack } from "@dbc/ui";
 import { getContact } from "@/actions/contacts";
 import { listContactMessages } from "@/actions/contact-messages";
 import { ContactProfileTabs } from "./profile-tabs";
@@ -63,12 +63,9 @@ export default async function ContactDetailPage({
           </p>
           <div className="mt-2 flex flex-wrap gap-1">
             {[...acquisitionBadges].map((b) => (
-              <span
-                key={b}
-                className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary"
-              >
+              <Badge key={b} variant="accent">
                 {b}
-              </span>
+              </Badge>
             ))}
           </div>
         </div>

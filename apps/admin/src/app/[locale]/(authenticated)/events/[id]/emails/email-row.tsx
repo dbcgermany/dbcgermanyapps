@@ -188,9 +188,7 @@ export function EmailRow({
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-              +{seq.delay_days}d
-            </span>
+            <Badge variant="accent">+{seq.delay_days}d</Badge>
             <p className="font-medium">{seq.subject_en}</p>
             {seq.sent_at && (
               <Badge variant="success">

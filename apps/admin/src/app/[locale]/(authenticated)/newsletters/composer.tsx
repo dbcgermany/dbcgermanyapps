@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { Card } from "@dbc/ui";
 import type { DomainCheckResult } from "@dbc/email";
 import {
   saveNewsletter,
@@ -324,7 +325,7 @@ export function NewsletterComposer({
       </div>
 
       <aside className="space-y-4">
-        <div className="rounded-lg border border-border p-4">
+        <Card padding="sm">
           <p className="text-sm font-semibold">{t.targeting}</p>
           <p className="mt-1 text-xs text-muted-foreground">
             {t.targetingHint}
@@ -385,10 +386,10 @@ export function NewsletterComposer({
               {recipientCount === 1 ? t.willReceive1 : t.willReceiveMany}
             </p>
           )}
-        </div>
+        </Card>
 
         {!readOnly && (
-          <div className="rounded-lg border border-border p-4">
+          <Card padding="sm">
             <p className="text-sm font-semibold">{t.sendTest}</p>
             <input
               type="email"
@@ -405,7 +406,7 @@ export function NewsletterComposer({
             >
               {t.sendTestBtn}
             </button>
-          </div>
+          </Card>
         )}
 
         {!readOnly && (
