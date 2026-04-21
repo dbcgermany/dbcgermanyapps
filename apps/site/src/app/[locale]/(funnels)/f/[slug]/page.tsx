@@ -105,18 +105,44 @@ export default async function FunnelBySlugPage({
       ? row.cta_href
       : `#${scrollAnchor}`;
 
+  // On funnels where the form lives on the same page (wizard / contact),
+  // the full photo-hero + scroll-to-self CTA is visual noise — the form is
+  // already there. Render a compact header instead and let the form own
+  // the page. The big hero only makes sense when the CTA navigates away
+  // (external_link), where there's nothing else to see.
+  const isEmbeddedFunnel =
+    row.cta_type === "incubation_wizard" || row.cta_type === "contact_form";
+
   return (
     <>
       <FunnelAnalyticsBoot funnelId={row.id} locale={l} />
 
-      <FunnelHero
-        eyebrow={hero.eyebrow ?? ""}
-        title={hero.title}
-        subtitle={hero.subtitle ?? ""}
-        primaryCta={hero.primaryCta}
-        primaryCtaHref={primaryCtaHref}
-        imageUrl={row.hero_image_url ?? undefined}
-      />
+      {isEmbeddedFunnel ? (
+        <header className="mx-auto max-w-3xl px-4 pt-8 sm:px-6 sm:pt-12 lg:px-8">
+          {hero.eyebrow ? (
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+              {hero.eyebrow}
+            </p>
+          ) : null}
+          <h1 className="mt-2 font-heading text-3xl font-bold leading-tight sm:text-4xl">
+            {hero.title}
+          </h1>
+          {hero.subtitle ? (
+            <p className="mt-3 text-base text-muted-foreground sm:text-lg">
+              {hero.subtitle}
+            </p>
+          ) : null}
+        </header>
+      ) : (
+        <FunnelHero
+          eyebrow={hero.eyebrow ?? ""}
+          title={hero.title}
+          subtitle={hero.subtitle ?? ""}
+          primaryCta={hero.primaryCta}
+          primaryCtaHref={primaryCtaHref}
+          imageUrl={row.hero_image_url ?? undefined}
+        />
+      )}
 
       {content.benefits && content.benefits.items.length > 0 && (
         <FunnelBenefits
