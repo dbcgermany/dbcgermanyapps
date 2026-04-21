@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { updateSiteSettings, type SiteSettings } from "@/actions/settings";
+import { Button } from "@dbc/ui";
 
 export function SiteSettingsForm({
   locale,
@@ -195,13 +196,10 @@ export function SiteSettingsForm({
         <p className="text-xs text-muted-foreground">
           {t.lastUpdated}: {new Date(initial.updated_at).toLocaleString(locale)}
         </p>
-        <button
-          type="submit"
-          disabled={isPending}
-          className="rounded-full bg-primary px-6 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-        >
+        <Button type="submit"
+          disabled={isPending}>
           {isPending ? t.saving : t.save}
-        </button>
+        </Button>
       </div>
     </form>
   );

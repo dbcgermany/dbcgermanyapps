@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { Camera, Film, Link2, type LucideIcon } from "lucide-react";
 import { updateEventMedia, deleteEventMedia } from "@/actions/media";
+import { Button } from "@dbc/ui";
 
 type Media = {
   id: string;
@@ -94,13 +95,10 @@ export function MediaRow({
           className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
         />
         <div className="flex gap-2">
-          <button
-            type="submit"
-            disabled={isPending}
-            className="rounded-md bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-          >
+          <Button type="submit"
+            disabled={isPending}>
             {isPending ? t.saving : t.save}
-          </button>
+          </Button>
           <button
             type="button"
             onClick={() => setMode("view")}

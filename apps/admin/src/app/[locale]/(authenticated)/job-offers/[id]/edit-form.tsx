@@ -4,6 +4,7 @@ import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { EMPLOYMENT_TYPE_VALUES, type EmploymentType } from "@dbc/types";
 import { updateJobOffer } from "@/actions/job-offers";
+import { Button } from "@dbc/ui";
 
 const EMPLOYMENT_TYPE_LABEL_KEY: Record<EmploymentType, "fullTime" | "partTime" | "freelance" | "internship"> = {
   full_time: "fullTime",
@@ -134,13 +135,10 @@ export function EditJobOfferForm({ locale, job }: { locale: string; job: Job }) 
 
       <F name="department" label={t.department} defaultValue={job.department ?? ""} />
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-      >
+      <Button type="submit"
+        disabled={isPending}>
         {isPending ? t.saving : t.save}
-      </button>
+      </Button>
     </form>
   );
 }

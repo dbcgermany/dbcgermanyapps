@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { ChevronDown, ChevronUp, Pencil } from "lucide-react";
-import { Card } from "@dbc/ui";
+import { Button, Card } from "@dbc/ui";
 import { updatePosterConfig, type PosterConfig } from "@/actions/poster";
 
 const T = {
@@ -175,14 +175,11 @@ export function PosterConfigEditor({
           </div>
 
           <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-border pt-4">
-            <button
-              type="button"
+            <Button type="button"
               onClick={handleSave}
-              disabled={isPending}
-              className="rounded-md bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-            >
+              disabled={isPending}>
               {isPending ? t.saving : t.save}
-            </button>
+            </Button>
             <button
               type="button"
               onClick={handleReset}

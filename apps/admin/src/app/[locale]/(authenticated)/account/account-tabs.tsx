@@ -3,14 +3,7 @@
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
-import {
-  Toggle,
-  DatePicker,
-  AddressFields,
-  PhoneInput,
-  EMPTY_ADDRESS,
-  type Address,
-} from "@dbc/ui";
+import { AddressFields, Button, DatePicker, EMPTY_ADDRESS, PhoneInput, Toggle, type Address } from "@dbc/ui";
 import {
   updateAccountProfile,
   updateAccountPreferences,
@@ -297,13 +290,10 @@ function ProfileTab({
       </div>
 
       <div className="flex justify-end">
-        <button
-          type="submit"
-          disabled={isPending}
-          className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
-        >
+        <Button type="submit"
+          disabled={isPending}>
           {isPending ? t.saving : t.saveProfile}
-        </button>
+        </Button>
       </div>
     </form>
   );
@@ -404,13 +394,10 @@ function PreferencesTab({ profile }: { profile: AccountProfile }) {
       />
 
       <div className="flex justify-end">
-        <button
-          type="submit"
-          disabled={isPending}
-          className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
-        >
+        <Button type="submit"
+          disabled={isPending}>
           {isPending ? t.saving : t.savePrefs}
-        </button>
+        </Button>
       </div>
     </form>
   );

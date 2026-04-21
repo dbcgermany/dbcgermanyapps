@@ -4,7 +4,7 @@ import { Fragment, useState, useTransition } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import type { UserRole } from "@dbc/types";
-import { Card, ConfirmDialog } from "@dbc/ui";
+import { Button, Card, ConfirmDialog } from "@dbc/ui";
 import {
   inviteStaff,
   updateStaffRole,
@@ -218,12 +218,9 @@ export function StaffClient({
         <p className="text-sm text-muted-foreground">
           {staff.length} {staff.length === 1 ? t.member : t.members}
         </p>
-        <button
-          onClick={() => setInviteOpen((o) => !o)}
-          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-        >
+        <Button onClick={() => setInviteOpen((o) => !o)}>
           {t.invite}
-        </button>
+        </Button>
       </div>
 
       {inviteSuccess && (
@@ -283,13 +280,10 @@ export function StaffClient({
           </div>
 
           <div className="flex gap-2">
-            <button
-              type="submit"
-              disabled={isPending}
-              className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-            >
+            <Button type="submit"
+              disabled={isPending}>
               {isPending ? t.sending : t.sendInvite}
-            </button>
+            </Button>
             <button
               type="button"
               onClick={() => setInviteOpen(false)}

@@ -4,16 +4,7 @@ import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import {
-  AssetUpload,
-  BirthdayField,
-  CountrySelect,
-  NameFields,
-  TITLE_VALUES,
-  TitleGenderFields,
-  type Gender,
-  type Title,
-} from "@dbc/ui";
+import { AssetUpload, BirthdayField, Button, CountrySelect, NameFields, TITLE_VALUES, TitleGenderFields, type Gender, type Title } from "@dbc/ui";
 import {
   createTeamMember,
   updateTeamMember,
@@ -338,13 +329,10 @@ export function TeamMemberForm({
         </div>
       </div>
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-      >
+      <Button type="submit"
+        disabled={isPending}>
         {isPending ? t.saving : mode === "create" ? t.create : t.save}
-      </button>
+      </Button>
     </form>
   );
 }

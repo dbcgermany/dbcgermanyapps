@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { AssetUpload } from "@dbc/ui";
+import { AssetUpload, Button } from "@dbc/ui";
 import {
   updateCompanyInfoSection,
   uploadBrandAsset,
@@ -597,13 +597,10 @@ function SectionForm({
         })}
       </div>
       <div className="flex justify-end">
-        <button
-          type="submit"
-          disabled={isPending}
-          className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
-        >
+        <Button type="submit"
+          disabled={isPending}>
           {isPending ? shared.saving : shared.save}
-        </button>
+        </Button>
       </div>
     </form>
   );

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Badge } from "@dbc/ui";
+import { Badge, Button } from "@dbc/ui";
 import {
   SPONSOR_STATUS_VALUES,
   SPONSOR_TIER_VALUES,
@@ -278,13 +278,9 @@ export function SponsorsClient({
 
       {/* Add button / form */}
       {!showAddForm ? (
-        <button
-          type="button"
-          onClick={() => setShowAddForm(true)}
-          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-        >
+        <Button type="button" onClick={() => setShowAddForm(true)}>
           {t.addSponsor}
-        </button>
+        </Button>
       ) : (
         <form
           action={handleAdd}
@@ -375,13 +371,10 @@ export function SponsorsClient({
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
           />
           <div className="flex gap-2">
-            <button
-              type="submit"
-              disabled={isPending}
-              className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-            >
+            <Button type="submit"
+              disabled={isPending}>
               {isPending ? "Adding..." : "Add"}
-            </button>
+            </Button>
             <button
               type="button"
               onClick={() => setShowAddForm(false)}

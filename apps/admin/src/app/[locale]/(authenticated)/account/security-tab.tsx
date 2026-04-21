@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { Badge } from "@dbc/ui";
+import { Badge, Button } from "@dbc/ui";
 import { toast } from "sonner";
 import { createBrowserClient } from "@dbc/supabase";
 import {
@@ -316,14 +316,11 @@ export function SecurityTab() {
           </div>
           <div className="flex flex-wrap gap-2">
             {!mfaEnabled && enrollment.kind === "idle" && (
-              <button
-                type="button"
+              <Button type="button"
                 onClick={startEnrolment}
-                disabled={mfaPending}
-                className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground disabled:opacity-50"
-              >
+                disabled={mfaPending}>
                 {mfaPending ? "Starting…" : "Enable 2FA"}
-              </button>
+              </Button>
             )}
             {mfaEnabled && (
               <>
@@ -383,14 +380,13 @@ export function SecurityTab() {
                 placeholder="123456"
                 className="w-32 rounded-md border border-input bg-background px-3 py-2 text-center font-mono text-base tracking-widest focus:outline-none focus:ring-2 focus:ring-ring"
               />
-              <button
+              <Button
                 type="button"
                 onClick={confirmEnrolment}
                 disabled={mfaPending || verifyCode.length < 6}
-                className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
               >
                 {mfaPending ? "Verifying…" : "Verify & enable"}
-              </button>
+              </Button>
               <button
                 type="button"
                 onClick={() => {
@@ -440,13 +436,13 @@ export function SecurityTab() {
               >
                 Copy all
               </button>
-              <button
+              <Button
                 type="button"
+                size="sm"
                 onClick={() => setEnrollment({ kind: "idle" })}
-                className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground"
               >
                 I’ve saved them
-              </button>
+              </Button>
             </div>
           </div>
         )}

@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { updateTier, toggleTierPublic, deleteTier } from "@/actions/tiers";
+import { Button } from "@dbc/ui";
 
 const TR_T = {
   en: {
@@ -177,13 +178,10 @@ export function TierRow({
           />
         </div>
         <div className="flex gap-2">
-          <button
-            type="submit"
-            disabled={isPending}
-            className="rounded-md bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-          >
+          <Button type="submit"
+            disabled={isPending}>
             {isPending ? t.saving : t.save}
-          </button>
+          </Button>
           <button
             type="button"
             onClick={() => setMode("view")}

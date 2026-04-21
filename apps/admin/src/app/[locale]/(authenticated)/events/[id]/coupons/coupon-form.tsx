@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { createCoupon } from "@/actions/coupons";
+import { Button } from "@dbc/ui";
 
 const CP_T = {
   en: {
@@ -192,13 +193,10 @@ export function CouponForm({
         </div>
       )}
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 disabled:opacity-50"
-      >
+      <Button type="submit"
+        disabled={isPending}>
         {isPending ? t.creating : t.create}
-      </button>
+      </Button>
     </form>
   );
 }

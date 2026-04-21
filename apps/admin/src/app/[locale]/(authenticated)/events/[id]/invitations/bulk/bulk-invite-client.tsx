@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { Button } from "@dbc/ui";
 import {
   parseInvitationsCsv,
   bulkCreateInvitations,
@@ -343,16 +344,13 @@ export function BulkInviteClient({
           />
           {t.sendNow}
         </label>
-        <button
-          type="button"
+        <Button type="button"
           disabled={isPending || rows.length === 0 || !defaultTierId}
-          onClick={submit}
-          className="rounded-md bg-primary px-5 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
-        >
+          onClick={submit}>
           {isPending
             ? t.processing
             : `${sendEmails ? t.inviteAndEmail : t.createWithoutEmail} ${rows.length} ${rows.length === 1 ? t.guest : t.guests}`}
-        </button>
+        </Button>
         {!tierCapacityOk && (
           <p className="text-xs text-destructive">
             {t.notEnough}

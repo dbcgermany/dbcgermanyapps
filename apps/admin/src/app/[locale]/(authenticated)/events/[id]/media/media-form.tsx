@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { toast } from "sonner";
-import { AssetUpload } from "@dbc/ui";
+import { AssetUpload, Button } from "@dbc/ui";
 import { addEventMedia, uploadEventMediaFile } from "@/actions/media";
 
 const MF_T = {
@@ -171,13 +171,10 @@ export function MediaForm({
         </p>
       </div>
 
-      <button
-        type="submit"
-        disabled={isPending || !url}
-        className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 disabled:opacity-50"
-      >
+      <Button type="submit"
+        disabled={isPending || !url}>
         {isPending ? t.adding : t.add}
-      </button>
+      </Button>
     </form>
   );
 }

@@ -1,4 +1,4 @@
-import { Card } from "@dbc/ui";
+import { Button, Card } from "@dbc/ui";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { PageHeader } from "@/components/page-header";
@@ -99,12 +99,9 @@ export default async function RunsheetPage({
         <div className="mt-6 space-y-3 rounded-lg border border-dashed border-border p-6 text-center">
           <p className="text-sm text-muted-foreground">{t.noItems}</p>
           <form action={handlePopulate}>
-            <button
-              type="submit"
-              className="rounded-md border border-primary px-4 py-2 text-sm font-medium text-primary hover:bg-primary/5"
-            >
+            <Button type="submit">
               {t.populate}
-            </button>
+            </Button>
           </form>
         </div>
       ) : (

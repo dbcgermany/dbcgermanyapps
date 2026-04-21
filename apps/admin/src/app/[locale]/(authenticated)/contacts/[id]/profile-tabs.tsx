@@ -2,14 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import {
-  Badge,
-  ConfirmDialog,
-  PhoneInput,
-  CountrySelect,
-  GENDER_VALUES,
-  type Gender,
-} from "@dbc/ui";
+import { Badge, Button, ConfirmDialog, CountrySelect, GENDER_VALUES, PhoneInput, type Gender } from "@dbc/ui";
 
 const GENDER_LABELS: Record<Gender, string> = {
   female: "Female",
@@ -299,14 +292,11 @@ function InvolvementsList({
             ))}
           </select>
         </label>
-        <button
-          type="button"
+        <Button type="button"
           disabled={!selectedEventId || isPending}
-          onClick={handleAdd}
-          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-        >
+          onClick={handleAdd}>
           {tInv("addInvolvement")}
-        </button>
+        </Button>
       </div>
 
       {involvements.length === 0 ? (
@@ -498,13 +488,10 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
         />
       </label>
       <div className="flex justify-end">
-        <button
-          type="submit"
-          disabled={isPending}
-          className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60"
-        >
+        <Button type="submit"
+          disabled={isPending}>
           {isPending ? "Saving…" : "Save"}
-        </button>
+        </Button>
       </div>
     </form>
   );
@@ -710,14 +697,11 @@ function TicketRowView({ ticket }: { ticket: TicketRow }) {
           className="flex-1 min-w-50 rounded-md border border-border bg-background px-3 py-1.5 text-xs"
         />
         {!ticket.checked_in_at && (
-          <button
-            type="button"
+          <Button type="button"
             onClick={handleCheckIn}
-            disabled={checkInPending}
-            className="rounded-md bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-          >
+            disabled={checkInPending}>
             {checkInPending ? "Checking in…" : "Manual check-in"}
-          </button>
+          </Button>
         )}
       </div>
     </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Button, LinkButton } from "@dbc/ui";
 
 const T = {
   en: {
@@ -90,20 +91,14 @@ export function EventPdfPanel({
       </div>
       <div className="mt-4">
         {anySelected ? (
-          <a
-            href={url}
-            className="inline-flex rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
-          >
+          <LinkButton href={url}>
             {t.download}
-          </a>
+          </LinkButton>
         ) : (
-          <button
-            type="button"
-            disabled
-            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground opacity-50"
-          >
+          <Button type="button"
+            disabled>
             {t.selectAtLeast}
-          </button>
+          </Button>
         )}
       </div>
     </section>

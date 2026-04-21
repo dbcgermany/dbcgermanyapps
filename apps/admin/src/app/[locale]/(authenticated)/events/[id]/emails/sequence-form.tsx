@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { createEmailSequence } from "@/actions/email-sequences";
+import { Button } from "@dbc/ui";
 
 const T = {
   en: {
@@ -144,13 +145,10 @@ export function SequenceForm({
         ))}
       </div>
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 disabled:opacity-50"
-      >
+      <Button type="submit"
+        disabled={isPending}>
         {isPending ? t.adding : t.addSequence}
-      </button>
+      </Button>
     </form>
   );
 }

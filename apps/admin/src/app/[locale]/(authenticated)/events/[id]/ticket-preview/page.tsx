@@ -6,7 +6,7 @@ import { renderEmailPreview } from "@/actions/email-preview";
 import { requireRole } from "@dbc/supabase/server";
 import { createServerClient } from "@dbc/supabase/server";
 import { PageHeader } from "@/components/page-header";
-import { Card } from "@dbc/ui";
+import { Card, LinkButton } from "@dbc/ui";
 import { EmailPreviewClient } from "./preview-client";
 
 /**
@@ -127,14 +127,11 @@ export default async function TicketPreviewPage({
         description="Visual mock of the PDF ticket using real event data. No ticket is created."
         cta={
           <div className="flex gap-2">
-            <a
-              href={`/api/ticket-preview/${id}?locale=${locale}`}
+            <LinkButton href={`/api/ticket-preview/${id}?locale=${locale}`}
               target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90"
-            >
+              rel="noopener noreferrer">
               Download sample PDF
-            </a>
+            </LinkButton>
             <Link
               href={`/${locale}/events/${id}`}
               className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-2 text-sm font-medium hover:bg-muted"

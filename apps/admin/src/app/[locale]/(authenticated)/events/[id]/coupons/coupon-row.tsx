@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { toast } from "sonner";
-import { Badge, ConfirmDialog } from "@dbc/ui";
+import { Badge, Button, ConfirmDialog } from "@dbc/ui";
 import {
   updateCoupon,
   deleteCoupon,
@@ -178,13 +178,10 @@ export function CouponRow({
           </div>
         )}
         <div className="flex gap-2">
-          <button
-            type="submit"
-            disabled={isPending}
-            className="rounded-md bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-          >
+          <Button type="submit"
+            disabled={isPending}>
             {isPending ? cr.saving : cr.save}
-          </button>
+          </Button>
           <button
             type="button"
             onClick={() => setMode("view")}

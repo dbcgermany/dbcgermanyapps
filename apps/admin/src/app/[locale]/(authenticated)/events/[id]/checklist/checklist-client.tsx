@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Badge } from "@dbc/ui";
+import { Badge, Button } from "@dbc/ui";
 import {
   createChecklistItem,
   toggleChecklistStatus,
@@ -351,13 +351,9 @@ export function ChecklistClient({
 
       {/* Actions */}
       <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={() => setShowAddForm((o) => !o)}
-          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-        >
+        <Button type="button" onClick={() => setShowAddForm((o) => !o)}>
           {t.addItem}
-        </button>
+        </Button>
         {items.length === 0 && (
           <button
             type="button"
@@ -422,13 +418,10 @@ export function ChecklistClient({
             </select>
           </div>
           <div className="flex gap-2">
-            <button
-              type="submit"
-              disabled={isPending}
-              className="rounded-md bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-            >
+            <Button type="submit"
+              disabled={isPending}>
               {isPending ? t.adding : t.add}
-            </button>
+            </Button>
             <button
               type="button"
               onClick={() => setShowAddForm(false)}

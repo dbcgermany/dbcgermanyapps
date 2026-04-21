@@ -3,6 +3,7 @@
 import { Suspense, use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createBrowserClient } from "@dbc/supabase";
+import { Button } from "@dbc/ui";
 
 export default function SetPasswordPage({
   params,
@@ -220,13 +221,10 @@ function SetPasswordForm({ locale }: { locale: string }) {
                 {error}
               </p>
             )}
-            <button
-              type="submit"
-              disabled={stage === "saving"}
-              className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 disabled:opacity-50"
-            >
+            <Button type="submit"
+              disabled={stage === "saving"}>
               {stage === "saving" ? t.saving : t.submit}
-            </button>
+            </Button>
           </form>
         )}
 

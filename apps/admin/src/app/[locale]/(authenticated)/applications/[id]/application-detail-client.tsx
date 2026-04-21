@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { Button } from "@dbc/ui";
 import { type IncubationApplicationStatus } from "@dbc/types";
 import { updateApplicationStatus } from "@/actions/applications";
 import { updateJobApplicationStatus } from "@/actions/job-applications";
@@ -516,13 +517,9 @@ function ReviewSection({
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
-        <button
-          onClick={() => onSave(selectedStatus)}
-          disabled={isPending}
-          className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-        >
+        <Button onClick={() => onSave(selectedStatus)} disabled={isPending}>
           {isPending ? t.saving : t.save}
-        </button>
+        </Button>
       </div>
     </section>
   );

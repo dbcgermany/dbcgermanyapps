@@ -18,7 +18,7 @@ import {
   Users,
   Wallet,
 } from "lucide-react";
-import { Badge, Card } from "@dbc/ui";
+import { Badge, Button, Card, LinkButton } from "@dbc/ui";
 import { getEvent, togglePublish, duplicateEvent } from "@/actions/events";
 import { getEventChecklist } from "@/actions/checklist";
 import { getLiveEventStats } from "@/actions/live-event";
@@ -312,12 +312,9 @@ export default async function EventDetailPage({
                   await togglePublish(id, locale);
                 }}
               >
-                <button
-                  type="submit"
-                  className="rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
-                >
+                <Button type="submit" variant="secondary">
                   {event.is_published ? t.unpublish : t.publish}
-                </button>
+                </Button>
               </form>
               <form
                 action={async () => {
@@ -325,20 +322,17 @@ export default async function EventDetailPage({
                   await duplicateEvent(id, locale);
                 }}
               >
-                <button
+                <Button
                   type="submit"
-                  className="rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
+                  variant="secondary"
                   title={t.duplicateTitle}
                 >
                   {t.duplicate}
-                </button>
+                </Button>
               </form>
-              <Link
-                href={`/${locale}/events/${id}/edit`}
-                className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-              >
+              <LinkButton href={`/${locale}/events/${id}/edit`}>
                 {t.edit}
-              </Link>
+              </LinkButton>
             </div>
           }
         />
@@ -593,9 +587,15 @@ function HubLink({
   title: string;
   desc: string;
 }) {
+  // h-full on both the Link and the Card so every card in a grid row
+  // stretches to the height of the tallest sibling — otherwise rows
+  // with longer descriptions tower over their neighbours.
   return (
-    <Link href={href}>
-      <Card padding="sm" className="group rounded-lg transition-colors hover:border-primary/30 hover:bg-muted/50">
+    <Link href={href} className="block h-full">
+      <Card
+        padding="sm"
+        className="group h-full rounded-lg transition-colors hover:border-primary/30 hover:bg-muted/50"
+      >
         <div className="flex items-start gap-3">
           <Icon className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground group-hover:text-primary" strokeWidth={1.75} />
           <div>

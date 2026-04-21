@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { sendContactMessage } from "@/actions/contact-messages";
+import { Button } from "@dbc/ui";
 
 export function ComposeDialog({
   contactId,
@@ -117,14 +118,11 @@ export function ComposeDialog({
             >
               Cancel
             </button>
-            <button
-              type="button"
+            <Button type="button"
               disabled={isPending || !subject.trim() || !body.trim()}
-              onClick={submit}
-              className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground disabled:opacity-50"
-            >
+              onClick={submit}>
               {isPending ? "Sending…" : "Send"}
-            </button>
+            </Button>
           </div>
         </div>
       </div>

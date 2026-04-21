@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Badge } from "@dbc/ui";
+import { Badge, Button } from "@dbc/ui";
 import {
   createDashboardAd,
   updateDashboardAd,
@@ -200,13 +200,9 @@ export function AdsClient({
       {/* Create form (collapsed by default) */}
       <section>
         {!creating ? (
-          <button
-            type="button"
-            onClick={() => setCreating(true)}
-            className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
-          >
+          <Button type="button" onClick={() => setCreating(true)}>
             + {t.newAd}
-          </button>
+          </Button>
         ) : (
           <AdForm
             mode="create"
@@ -427,11 +423,8 @@ function AdForm({
       </div>
 
       <div className="flex gap-2 pt-2">
-        <button
-          type="submit"
-          disabled={isPending}
-          className="rounded-md bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-        >
+        <Button type="submit"
+          disabled={isPending}>
           {isPending
             ? mode === "create"
               ? t.creating
@@ -439,7 +432,7 @@ function AdForm({
             : mode === "create"
               ? t.create
               : t.save}
-        </button>
+        </Button>
         <button
           type="button"
           onClick={onCancel}

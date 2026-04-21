@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { createScheduleItem } from "@/actions/schedule";
+import { Button } from "@dbc/ui";
 
 const T = {
   en: {
@@ -205,13 +206,10 @@ export function ScheduleForm({
         />
       </div>
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 disabled:opacity-50"
-      >
+      <Button type="submit"
+        disabled={isPending}>
         {isPending ? t.adding : t.add}
-      </button>
+      </Button>
     </form>
   );
 }

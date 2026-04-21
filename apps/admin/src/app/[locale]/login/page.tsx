@@ -4,6 +4,7 @@ import { Suspense, use, useActionState, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { loginWithPassword, requestPasswordResetForEmail } from "@/actions/auth";
 import { createBrowserClient } from "@dbc/supabase";
+import { Button } from "@dbc/ui";
 
 export default function LoginPage({
   params,
@@ -204,17 +205,14 @@ function LoginForm({ locale }: { locale: string }) {
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="w-full rounded-md bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/30 transition-all hover:bg-primary/90 hover:shadow-xl hover:shadow-primary/40 disabled:cursor-not-allowed disabled:opacity-50"
-      >
+      <Button type="submit"
+        disabled={isPending}>
         {isPending
           ? "Signing in..."
           : forgotStage === "sending"
             ? "Sending reset email..."
             : "Sign in"}
-      </button>
+      </Button>
     </form>
   );
 }

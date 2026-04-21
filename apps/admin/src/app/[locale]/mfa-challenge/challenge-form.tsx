@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { Button } from "@dbc/ui";
 import { createBrowserClient } from "@dbc/supabase";
 import { redeemBackupCode } from "@/actions/mfa";
 
@@ -134,17 +135,17 @@ export function MfaChallengeForm({
         />
       )}
 
-      <button
+      <Button
         type="button"
         onClick={submit}
         disabled={
           isPending ||
           (mode === "totp" ? code.length < 6 : code.trim().length < 4)
         }
-        className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground disabled:opacity-50"
+        className="w-full"
       >
         {isPending ? "Verifying…" : "Verify"}
-      </button>
+      </Button>
 
       <button
         type="button"

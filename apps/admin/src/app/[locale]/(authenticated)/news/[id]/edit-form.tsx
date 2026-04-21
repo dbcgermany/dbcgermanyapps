@@ -4,6 +4,7 @@ import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { updateNewsPost } from "@/actions/news";
 import { CoverImageUpload } from "@/components/cover-image-upload";
+import { Button } from "@dbc/ui";
 
 const T = {
   en: {
@@ -112,13 +113,10 @@ export function EditNewsForm({ locale, post }: { locale: string; post: Post }) {
 
       <CoverImageUpload initialUrl={post.cover_image_url} />
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-      >
+      <Button type="submit"
+        disabled={isPending}>
         {isPending ? t.saving : t.save}
-      </button>
+      </Button>
     </form>
   );
 }

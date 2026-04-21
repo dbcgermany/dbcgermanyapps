@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Key, Plus, Trash2 } from "lucide-react";
 import type { AppSecret } from "@/actions/app-secrets";
-import { Badge } from "@dbc/ui";
+import { Badge, Button } from "@dbc/ui";
 import { upsertAppSecret } from "@/actions/app-secrets";
 
 const KNOWN_KEYS: Array<{ key: string; note: string }> = [
@@ -223,13 +223,10 @@ function SecretRow({
             className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
           />
           <div className="flex gap-2">
-            <button
-              type="submit"
-              disabled={isPending || !valueDraft.trim()}
-              className="rounded-md bg-primary px-4 py-1.5 text-sm font-semibold text-primary-foreground disabled:opacity-50"
-            >
+            <Button type="submit"
+              disabled={isPending || !valueDraft.trim()}>
               {isPending ? "Saving\u2026" : "Save"}
-            </button>
+            </Button>
             <button
               type="button"
               onClick={() => {

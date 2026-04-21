@@ -1,6 +1,6 @@
-import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import { Inbox } from "lucide-react";
+import { LinkButton } from "@dbc/ui";
 
 /**
  * SSOT empty-state placeholder for lists, tables, and grids.
@@ -30,13 +30,10 @@ export function EmptyState({
       />
       <p className="mt-4 text-sm text-muted-foreground">{message}</p>
       {cta && (
-        <Link
-          href={cta.href}
-          className="mt-5 inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90"
-        >
+        <LinkButton href={cta.href}>
           {cta.label}
           <span aria-hidden>&rarr;</span>
-        </Link>
+        </LinkButton>
       )}
     </div>
   );

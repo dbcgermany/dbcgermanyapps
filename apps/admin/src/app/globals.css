@@ -2,6 +2,13 @@
 @plugin "@tailwindcss/typography";
 @import "@dbc/ui/tokens/base.css";
 
+/* Tailwind v4 auto-scans the app dir but doesn't reach into workspace
+   packages — without this, classes only used inside @dbc/ui (h-11 on
+   PhoneInput / DatePicker / CountrySelect, the badge variants etc.)
+   never get compiled and form fields render at browser-default heights
+   instead of the SSOT 44 px. */
+@source "../../../../packages/ui/src/**/*.{ts,tsx}";
+
 @theme inline {
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));

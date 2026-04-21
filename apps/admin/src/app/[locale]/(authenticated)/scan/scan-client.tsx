@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback, useTransition } from "react";
 import { toast } from "sonner";
 import { checkInTicket, getScanStats, type ScanResult } from "@/actions/scan";
 import { searchAttendees, manualCheckIn, resendTicketPdf, type AttendeeSearchResult } from "@/actions/tickets";
+import { Button } from "@dbc/ui";
 
 type Status =
   | { kind: "idle" }
@@ -230,13 +231,14 @@ export function ScanClient({
 
       {/* Scan viewport */}
       {status.kind === "idle" ? (
-        <button
+        <Button
+          size="lg"
           onClick={() => setStatus({ kind: "scanning" })}
           disabled={!eventId}
-          className="w-full rounded-xl bg-primary px-6 py-4 text-base font-semibold text-primary-foreground shadow-sm transition-transform active:scale-[0.98] hover:bg-primary/90 disabled:opacity-50 disabled:active:scale-100"
+          className="w-full"
         >
           {t.startScan}
-        </button>
+        </Button>
       ) : (
         <div>
           <div
@@ -313,12 +315,9 @@ export function ScanClient({
             placeholder={t.enterToken}
             className="min-w-0 flex-1 rounded-md border border-input bg-background px-3 py-3 text-base font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-ring"
           />
-          <button
-            type="submit"
-            className="shrink-0 rounded-md bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-transform active:scale-[0.98] hover:bg-primary/90"
-          >
+          <Button type="submit">
             {t.submit}
-          </button>
+          </Button>
         </div>
       </form>
 
@@ -474,23 +473,24 @@ function NameFindPanel({
                     {ft.checkedInTag}
                   </span>
                 ) : (
-                  <button
+                  <Button
+                    size="sm"
                     type="button"
                     onClick={() => handleCheckIn(r)}
                     disabled={actionPending}
-                    className="rounded-md bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
                   >
                     {ft.checkIn}
-                  </button>
+                  </Button>
                 )}
-                <button
+                <Button
+                  variant="secondary"
+                  size="sm"
                   type="button"
                   onClick={() => handleResend(r)}
                   disabled={actionPending}
-                  className="rounded-md border border-border px-3 py-1 text-xs font-medium hover:bg-muted disabled:opacity-50"
                 >
                   {ft.resendPdf}
-                </button>
+                </Button>
               </div>
             </li>
           ))}

@@ -2,6 +2,13 @@
 @plugin "@tailwindcss/typography";
 @import "@dbc/ui/tokens/base.css";
 
+/* Pull in workspace package class names so the SSOT atom heights
+   (h-11 on PhoneInput / DatePicker / CountrySelect, badge variants,
+   button sizes) compile in this app. Without this, classes that
+   only appear inside @dbc/ui get stripped and form fields render
+   at browser-default heights. */
+@source "../../../../packages/ui/src/**/*.{ts,tsx}";
+
 @theme inline {
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));

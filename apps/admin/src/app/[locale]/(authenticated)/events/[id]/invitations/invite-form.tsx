@@ -3,14 +3,7 @@
 import { useState, useTransition, useEffect } from "react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import {
-  BirthdayField,
-  CountrySelect,
-  TITLE_VALUES,
-  TitleGenderFields,
-  type Gender,
-  type Title,
-} from "@dbc/ui";
+import { BirthdayField, Button, CountrySelect, TITLE_VALUES, TitleGenderFields, type Gender, type Title } from "@dbc/ui";
 import { createInvitation } from "@/actions/invitations";
 
 const DEFAULT_INVITATION_BODY: Record<string, string> = {
@@ -422,13 +415,10 @@ export function InviteForm({
         </div>
       )}
 
-      <button
-        type="submit"
-        disabled={isPending || !tierId}
-        className="w-full rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60"
-      >
+      <Button type="submit"
+        disabled={isPending || !tierId}>
         {isPending ? t.sending : t.sendInvitation}
-      </button>
+      </Button>
     </form>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useTranslations } from "next-intl";
+import { Button } from "@dbc/ui";
 
 export default function CompanyInfoError({
   error,
@@ -51,13 +52,10 @@ export default function CompanyInfoError({
             </p>
           )}
         </div>
-        <button
-          type="button"
-          onClick={reset}
-          className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
+        <Button type="button"
+          onClick={reset}>
           {t("tryAgain")}
-        </button>
+        </Button>
       </div>
     </section>
   );

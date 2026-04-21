@@ -2,7 +2,7 @@
 
 import { useActionState, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Badge } from "@dbc/ui";
+import { Badge, Button } from "@dbc/ui";
 import {
   updateRunsheetItem,
   deleteRunsheetItem,
@@ -166,13 +166,10 @@ export function RunsheetRow({
           className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
         />
         <div className="flex gap-2">
-          <button
-            type="submit"
-            disabled={isSaving}
-            className="rounded-md bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-          >
+          <Button type="submit"
+            disabled={isSaving}>
             {isSaving ? t.saving : t.save}
-          </button>
+          </Button>
           <button
             type="button"
             onClick={() => setMode("view")}

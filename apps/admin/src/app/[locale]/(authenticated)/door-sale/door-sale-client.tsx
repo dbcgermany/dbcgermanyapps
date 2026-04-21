@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { PhoneInput } from "@dbc/ui";
+import { Button, PhoneInput } from "@dbc/ui";
 import { createDoorSale, voidDoorSale } from "@/actions/door-sale";
 
 interface Tier {
@@ -307,13 +307,10 @@ export function DoorSaleClient({
         </div>
       )}
 
-      <button
-        type="submit"
-        disabled={isPending || !tierId || !attendeeName.trim()}
-        className="w-full rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 disabled:opacity-50"
-      >
+      <Button type="submit"
+        disabled={isPending || !tierId || !attendeeName.trim()}>
         {isPending ? t.creating : t.create}
-      </button>
+      </Button>
     </form>
   );
 }

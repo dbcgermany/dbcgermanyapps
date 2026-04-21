@@ -3,6 +3,7 @@
 import { useActionState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createRunsheetItem } from "@/actions/runsheet";
+import { Button } from "@dbc/ui";
 
 const RF_T = {
   en: { title: "Task title", unassigned: "Unassigned", location: "Location", notes: "Notes / description", adding: "Adding…", addItem: "Add item" },
@@ -97,13 +98,10 @@ export function RunsheetForm({
         rows={2}
         className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
       />
-      <button
-        type="submit"
-        disabled={isPending}
-        className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-      >
+      <Button type="submit"
+        disabled={isPending}>
         {isPending ? t.adding : t.addItem}
-      </button>
+      </Button>
     </form>
   );
 }
