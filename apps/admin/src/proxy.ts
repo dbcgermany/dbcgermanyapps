@@ -129,6 +129,6 @@ export const config = {
      * - favicon.ico, icons, images
      * - api routes (handled separately)
      */
-    "/((?!_next/static|_next/image|favicon.ico|icon-.*|apple-touch-icon|robots.txt|manifest|api/).*)",
+    "/((?!_next/static|_next/image|favicon\\.ico|icon\\.png|icon\\.svg|icon-.*|apple-icon\\.png|apple-touch-icon|robots\\.txt|manifest|brand/|api/).*)",
   ],
 };

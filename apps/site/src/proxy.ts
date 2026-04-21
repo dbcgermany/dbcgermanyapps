@@ -88,9 +88,11 @@ export function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     // Exclude Next.js App Router convention files (icon.png, apple-icon.png,
-    // opengraph-image.png, manifest.webmanifest) + the numbered icon-XXX
-    // variants in /public, or this middleware would 307-redirect them into
-    // /{locale}/… and break browser icon resolution and the PWA manifest.
-    "/((?!_next/static|_next/image|favicon.ico|icon\\.png|icon-.*|apple-icon\\.png|apple-touch-icon|opengraph-image|twitter-image|robots\\.txt|sitemap\\.xml|manifest|api/).*)",
+    // opengraph-image.png, manifest.webmanifest, favicon.ico, icon.svg) +
+    // the numbered icon-XXX variants in /public, or this middleware would
+    // 307-redirect them into /{locale}/… and break browser icon resolution
+    // and the PWA manifest. `brand/` is the self-hosted DBC brand mark
+    // folder (SVG + WebP lockups) — also must pass through untouched.
+    "/((?!_next/static|_next/image|favicon\\.ico|icon\\.png|icon\\.svg|icon-.*|apple-icon\\.png|apple-touch-icon|opengraph-image|twitter-image|robots\\.txt|sitemap\\.xml|manifest|brand/|api/).*)",
   ],
 };
