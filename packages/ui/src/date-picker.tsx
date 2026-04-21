@@ -29,7 +29,11 @@ export const DatePicker = React.forwardRef<HTMLInputElement, DatePickerProps>(
         min={min}
         max={max}
         className={cn(
-          "w-full rounded-md border border-input bg-background px-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50",
+          // min-w-0 stops the native calendar-icon widget (iOS Safari in
+          // particular) from giving the input an intrinsic width bigger
+          // than its flex/grid cell, which was pushing the field past
+          // the container edge on mobile.
+          "w-full min-w-0 rounded-md border border-input bg-background px-3 shadow-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50",
           sizeClass,
           className
         )}

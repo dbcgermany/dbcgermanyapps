@@ -204,11 +204,13 @@ export function AuditLogClient({
             ]}
           />
         </div>
-        <div className="flex flex-wrap items-center gap-3">
+        {/* Mobile: each filter gets its own row; search+apply share a row,
+            from+to share a row. Desktop (lg+): everything inlines left-to-right. */}
+        <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center">
           <select
             value={currentActionFilter}
             onChange={(e) => pushFilters({ action: e.target.value, page: 1 })}
-            className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring lg:w-auto"
           >
             <option value="">{t.allActions}</option>
             {actions.map((a) => (
@@ -221,7 +223,7 @@ export function AuditLogClient({
           <select
             value={currentEntityFilter}
             onChange={(e) => pushFilters({ entity: e.target.value, page: 1 })}
-            className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring lg:w-auto"
           >
             <option value="">{t.allEntities}</option>
             {entityTypes.map((e) => (
@@ -243,40 +245,42 @@ export function AuditLogClient({
               value={userInput}
               onChange={(e) => setUserInput(e.target.value)}
               placeholder={t.userPlaceholder}
-              className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              className="min-w-0 flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring lg:flex-none"
             />
             <button
               type="submit"
-              className="rounded-md border border-border px-3 py-2 text-sm hover:bg-muted"
+              className="shrink-0 rounded-md border border-border px-3 py-2 text-sm hover:bg-muted"
             >
               {t.apply}
             </button>
           </form>
 
-          <label className="flex items-center gap-2 text-xs text-muted-foreground">
-            {t.from}
-            <input
-              type="date"
-              value={currentFromFilter}
-              onChange={(e) =>
-                pushFilters({ from: e.target.value, page: 1 })
-              }
-              className="rounded-md border border-input bg-background px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-          </label>
-          <label className="flex items-center gap-2 text-xs text-muted-foreground">
-            {t.to}
-            <input
-              type="date"
-              value={currentToFilter}
-              onChange={(e) => pushFilters({ to: e.target.value, page: 1 })}
-              className="rounded-md border border-input bg-background px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-          </label>
+          <div className="flex items-center gap-2">
+            <label className="flex min-w-0 flex-1 items-center gap-2 text-xs text-muted-foreground lg:flex-none">
+              {t.from}
+              <input
+                type="date"
+                value={currentFromFilter}
+                onChange={(e) =>
+                  pushFilters({ from: e.target.value, page: 1 })
+                }
+                className="w-full min-w-0 rounded-md border border-input bg-background px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-ring lg:w-auto"
+              />
+            </label>
+            <label className="flex min-w-0 flex-1 items-center gap-2 text-xs text-muted-foreground lg:flex-none">
+              {t.to}
+              <input
+                type="date"
+                value={currentToFilter}
+                onChange={(e) => pushFilters({ to: e.target.value, page: 1 })}
+                className="w-full min-w-0 rounded-md border border-input bg-background px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-ring lg:w-auto"
+              />
+            </label>
+          </div>
 
           <button
             onClick={clearFilters}
-            className="ml-auto rounded-md border border-border px-3 py-2 text-sm text-muted-foreground hover:bg-muted"
+            className="rounded-md border border-border px-3 py-2 text-sm text-muted-foreground hover:bg-muted lg:ml-auto"
           >
             {t.clear}
           </button>

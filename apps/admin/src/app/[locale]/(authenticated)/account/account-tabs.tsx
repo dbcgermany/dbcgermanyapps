@@ -199,7 +199,7 @@ function ProfileTab({
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       <div className="flex items-center gap-4">
-        <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border border-border bg-primary/10 text-xl font-semibold text-primary">
+        <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-primary/10 text-xl font-semibold text-primary">
           {avatar ? (
             /* eslint-disable-next-line @next/next/no-img-element */
             <img src={avatar} alt="" className="h-full w-full object-cover" />

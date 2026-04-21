@@ -27,6 +27,20 @@ function visibilityVariant(
       : "default";
 }
 
+const VIS_LABELS = {
+  en: { public: "Public", internal: "Internal", hidden: "Hidden" },
+  de: { public: "\u00d6ffentlich", internal: "Intern", hidden: "Versteckt" },
+  fr: { public: "Public", internal: "Interne", hidden: "Masqu\u00e9" },
+} as const;
+
+function visibilityLabel(
+  visibility: TeamMember["visibility"],
+  locale: string
+): string {
+  const l = (locale === "de" || locale === "fr" ? locale : "en") as "en" | "de" | "fr";
+  return VIS_LABELS[l][visibility as keyof typeof VIS_LABELS.en] ?? visibility;
+}
+
 export function TeamSortableList({
   initial,
   locale,
@@ -79,7 +93,7 @@ export function TeamSortableList({
                   {member.name}
                 </Link>
                 <Badge variant={visibilityVariant(member.visibility)}>
-                  {member.visibility}
+                  {visibilityLabel(member.visibility, locale)}
                 </Badge>
               </div>
               <p className="mt-0.5 text-sm text-muted-foreground">
