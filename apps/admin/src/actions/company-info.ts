@@ -2,6 +2,7 @@
 
 import { createServerClient, requireRole } from "@dbc/supabase/server";
 import { revalidatePath } from "next/cache";
+import type { AboutSections } from "@dbc/types";
 
 export interface CompanyInfo {
   id: number;
@@ -100,6 +101,12 @@ export interface CompanyInfo {
   account_holder: string | null;
   iban: string | null;
   bic: string | null;
+  // About-page content (JSONB per locale). Shape validated client-side
+  // against AboutSections in @dbc/types; server uses Partial so empty
+  // objects are fine.
+  about_sections_en: Record<string, unknown>;
+  about_sections_de: Record<string, unknown>;
+  about_sections_fr: Record<string, unknown>;
   updated_at: string;
 }
 
@@ -125,7 +132,8 @@ const COLUMNS = `
   instagram_url, facebook_url, whatsapp_url, youtube_url, twitter_url,
   seo_title_en, seo_title_de, seo_title_fr, seo_description_en,
   seo_description_de, seo_description_fr, google_site_verification,
-  bing_site_verification, bank_name, account_holder, iban, bic, updated_at
+  bing_site_verification, bank_name, account_holder, iban, bic,
+  about_sections_en, about_sections_de, about_sections_fr, updated_at
 `;
 
 export async function getCompanyInfo(): Promise<CompanyInfo | null> {
@@ -441,4 +449,64 @@ export async function uploadBrandAsset(
   revalidatePath("/", "layout");
   await pingSiteRevalidate("company-info");
   return { success: true, url: publicUrl };
+}
+
+/**
+ * Updates the /about page's per-locale content sections in one call.
+ * Shape is validated structurally on the client (AboutSections) + here
+ * we just persist the three JSONB blobs. Empty {} removes all sections
+ * for that locale; missing keys on a locale fall back to EN at render
+ * time.
+ */
+export async function updateCompanyInfoAboutSections(input: {
+  en: Partial<AboutSections>;
+  de: Partial<AboutSections>;
+  fr: Partial<AboutSections>;
+}): Promise<{ error?: string; success?: true }> {
+  const user = await requireRole("manager");
+  const supabase = await createServerClient();
+
+  const { error } = await supabase
+    .from("company_info")
+    .update({
+      about_sections_en: input.en ?? {},
+      about_sections_de: input.de ?? {},
+      about_sections_fr: input.fr ?? {},
+      updated_by: user.userId,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", 1);
+  if (error) return { error: error.message };
+
+  await supabase.from("audit_log").insert({
+    user_id: user.userId,
+    action: "update_company_info_about",
+    entity_type: "company_info",
+    entity_id: "1",
+    details: {
+      sections_en: Object.keys(input.en ?? {}),
+      sections_de: Object.keys(input.de ?? {}),
+      sections_fr: Object.keys(input.fr ?? {}),
+    },
+  });
+
+  revalidatePath("/", "layout");
+  await pingSiteRevalidate("company-info");
+  // Also ping the /about path directly so ISR picks up the change even
+  // when the site doesn't tag-revalidate for "company-info".
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  const secret = process.env.REVALIDATE_SECRET;
+  if (siteUrl && secret) {
+    try {
+      await fetch(`${siteUrl}/api/revalidate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ path: "/[locale]/about", secret }),
+        cache: "no-store",
+      });
+    } catch (err) {
+      console.error("[about revalidate] failed:", err);
+    }
+  }
+  return { success: true };
 }

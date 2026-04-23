@@ -342,6 +342,43 @@ export interface FunnelContent {
 }
 
 /* -------------------------------------------------------------------------- */
+/*                         About page (company_info)                          */
+/* -------------------------------------------------------------------------- */
+// Optional content blocks that the /about page renders when present.
+// Stored as JSONB in public.company_info.about_sections_{en,de,fr} (see
+// migration 20260429000008_about_content.sql). The existing hardcoded
+// hero / founder / locations copy stays in i18n JSON for this ship; this
+// type only covers the newer admin-editable sections.
+
+export interface AboutSections {
+  /** Short mission block. Appears after the hero + founder. */
+  mission?: { title: string; body: string };
+  /** Expanded company story. Appears after the proof numbers. */
+  story?: { title: string; body: string };
+  /** 3–5 value cards. */
+  values?: {
+    title?: string;
+    items: { title: string; desc: string }[];
+  };
+  /** Objective numbers tiles — e.g. "900 seats", "14 countries". */
+  metrics?: {
+    items: { value: string; label: string }[];
+  };
+  /** Press / partner logo strip. Optional — renders only when populated. */
+  press?: {
+    title?: string;
+    logos: { name: string; logoUrl: string; href?: string }[];
+  };
+  /** Bottom-of-page CTA band. Defaults to "Meet the team" → /team. */
+  finalCta?: {
+    title: string;
+    subtitle?: string;
+    primaryCta: string;
+    primaryCtaHref: string;
+  };
+}
+
+/* -------------------------------------------------------------------------- */
 /*                            Job offers                                      */
 /* -------------------------------------------------------------------------- */
 

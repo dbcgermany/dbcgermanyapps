@@ -1,11 +1,11 @@
-import Image from "next/image";
-import Link from "next/link";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { Card, Container, Eyebrow, Heading, Reveal, Section } from "@dbc/ui";
 import { createServerClient } from "@dbc/supabase/server";
 import { seoFromI18n } from "@/lib/seo";
 import { JsonLd, itemListJsonLd } from "@/lib/json-ld";
+import { TeamMemberCard } from "@/components/team/team-member-card";
+import { OurStoryTeaser } from "@/components/about/our-story-teaser";
 
 export const revalidate = 60;
 
@@ -46,19 +46,6 @@ async function getPublicTeam(): Promise<PublicMember[]> {
     .order("name", { ascending: true });
   return (data as PublicMember[]) ?? [];
 }
-
-function initialsOf(name: string) {
-  return name
-    .split(/\s+/)
-    .map((p) => p[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-}
-
-const AVATAR_GRADIENT =
-  "bg-gradient-to-br from-primary/25 via-primary/10 to-accent/25 text-primary ring-1 ring-primary/20";
 
 export default async function TeamPage({
   params,
@@ -138,57 +125,27 @@ export default async function TeamPage({
           </p>
         </Reveal>
 
+        <OurStoryTeaser locale={locale} />
+
         {members.length === 0 ? (
           <Card className="mt-14 border-dashed text-center">
             <p className="text-sm text-muted-foreground">{copy.empty}</p>
           </Card>
         ) : (
           <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {members.map((m, i) => {
-              const role = localeField(m, "role");
-              return (
-                <Reveal key={m.id} delay={Math.min(i, 5) * 50} className="h-full">
-                <Link
-                  href={`/${locale}/team/${m.slug}`}
-                  className="block h-full transition-transform hover:-translate-y-1"
-                >
-                  <Card className="flex h-full flex-col items-start transition-colors hover:border-primary/40">
-                    {m.photo_url ? (
-                      <div className="relative h-20 w-20 overflow-hidden rounded-full">
-                        <Image
-                          src={m.photo_url}
-                          alt={m.name}
-                          fill
-                          sizes="80px"
-                          className="object-cover"
-                          referrerPolicy="no-referrer"
-                        />
-                      </div>
-                    ) : (
-                      <div
-                        className={`flex h-20 w-20 items-center justify-center rounded-full font-heading text-2xl font-bold ${AVATAR_GRADIENT}`}
-                        aria-hidden
-                      >
-                        {initialsOf(m.name)}
-                      </div>
-                    )}
-                    <Heading level={4} className="mt-5">
-                      {m.name}
-                    </Heading>
-                    {role && <Eyebrow className="mt-1">{role}</Eyebrow>}
-                    <span className="mt-auto inline-flex items-center gap-1 pt-5 text-sm font-semibold text-primary">
-                      {l === "de"
-                        ? "Profil ansehen"
-                        : l === "fr"
-                          ? "Voir le profil"
-                          : "View profile"}
-                      <span aria-hidden>→</span>
-                    </span>
-                  </Card>
-                </Link>
-                </Reveal>
-              );
-            })}
+            {members.map((m, i) => (
+              <TeamMemberCard
+                key={m.id}
+                member={{
+                  slug: m.slug,
+                  name: m.name,
+                  role: localeField(m, "role"),
+                  photoUrl: m.photo_url,
+                }}
+                locale={locale}
+                revealDelay={Math.min(i, 5) * 50}
+              />
+            ))}
           </div>
         )}
       </Container>

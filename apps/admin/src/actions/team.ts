@@ -9,7 +9,10 @@ import { slugify, uniqueSlug } from "@/lib/slugify";
 import { pingRevalidate } from "@/lib/revalidate";
 
 function teamPublicPaths(slug?: string | null) {
-  const paths = ["/[locale]/team"];
+  // Always ping /about too — a member's featured_on_about flag can flip
+  // silently in an edit, and keeping /team + /about in lockstep costs
+  // one extra fetch per save.
+  const paths = ["/[locale]/team", "/[locale]/about"];
   if (slug) paths.push(`/[locale]/team/${slug}`);
   return paths;
 }
@@ -41,13 +44,14 @@ export interface TeamMember {
   linkedin_url: string | null;
   sort_order: number;
   visibility: TeamMemberVisibility;
+  featured_on_about: boolean;
   profile_id: string | null;
   created_at: string;
   updated_at: string;
 }
 
 const COLUMNS =
-  "id, slug, name, first_name, last_name, gender, birthday, country, role_en, role_de, role_fr, bio_en, bio_de, bio_fr, photo_url, email, linkedin_url, sort_order, visibility, profile_id, created_at, updated_at" as const;
+  "id, slug, name, first_name, last_name, gender, birthday, country, role_en, role_de, role_fr, bio_en, bio_de, bio_fr, photo_url, email, linkedin_url, sort_order, visibility, featured_on_about, profile_id, created_at, updated_at" as const;
 
 export async function getTeamMembers(): Promise<TeamMember[]> {
   await requireRole("manager");
@@ -184,6 +188,7 @@ export async function createTeamMember(formData: FormData) {
     sort_order: parseInt((formData.get("sort_order") as string) || "100", 10),
     visibility: ((formData.get("visibility") as string) ||
       "internal") as TeamMemberVisibility,
+    featured_on_about: formData.get("featured_on_about") === "on",
     profile_id: rawProfileId || null,
     updated_by: user.userId,
   };
@@ -240,6 +245,7 @@ export async function updateTeamMember(id: string, formData: FormData) {
     sort_order: parseInt((formData.get("sort_order") as string) || "100", 10),
     visibility: ((formData.get("visibility") as string) ||
       "internal") as TeamMemberVisibility,
+    featured_on_about: formData.get("featured_on_about") === "on",
     profile_id: rawProfileId || null,
     updated_by: user.userId,
   };

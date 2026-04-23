@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { AssetUpload, Button } from "@dbc/ui";
+import { AboutSectionsForm } from "./about-sections-form";
 import {
   updateCompanyInfoSection,
   uploadBrandAsset,
@@ -25,23 +26,27 @@ type Section =
   | "brand"
   | "social"
   | "seo"
-  | "banking";
+  | "banking"
+  | "about";
 
 const TAB_LABELS = {
   en: {
     legal: "Legal · Impressum", parent: "Parent org", france: "France entity",
     contact: "Contact", privacy: "Data protection", brand: "Brand assets",
     social: "Social links", seo: "SEO defaults", banking: "Banking",
+    about: "About page",
   },
   de: {
     legal: "Rechtliches · Impressum", parent: "Mutterorganisation", france: "Entität Frankreich",
     contact: "Kontakt", privacy: "Datenschutz", brand: "Markenassets",
     social: "Soziale Links", seo: "SEO-Standards", banking: "Bankdaten",
+    about: "About-Seite",
   },
   fr: {
     legal: "Mentions légales · Impressum", parent: "Société mère", france: "Entité France",
     contact: "Contact", privacy: "Protection des données", brand: "Ressources de marque",
     social: "Liens sociaux", seo: "SEO par défaut", banking: "Coordonnées bancaires",
+    about: "Page À propos",
   },
 } as const;
 
@@ -363,6 +368,8 @@ const FIELDS: Record<Section, FieldDef[]> = {
     { name: "iban", label: "IBAN" },
     { name: "bic", label: "BIC / SWIFT" },
   ],
+  // Handled by a dedicated component (JSONB + repeater rows per locale).
+  about: [],
 };
 
 export function CompanyInfoForm({
@@ -396,11 +403,26 @@ export function CompanyInfoForm({
       </div>
 
       <div className="mt-6">
-        <SectionForm section={tab} info={info} fields={FIELDS[tab]} locale={locale} />
+        {tab === "about" ? (
+          <AboutSectionsForm info={info} locale={locale} />
+        ) : (
+          <SectionForm
+            section={tab as FlatSection}
+            info={info}
+            fields={FIELDS[tab]}
+            locale={locale}
+          />
+        )}
       </div>
     </div>
   );
 }
+
+// The generic SectionForm handles only the flat-column tabs — the
+// "about" tab is rendered by the dedicated AboutSectionsForm component.
+// Narrow the type accordingly so `updateCompanyInfoSection(section,…)`
+// can never be called with "about".
+type FlatSection = Exclude<Section, "about">;
 
 function SectionForm({
   section,
@@ -408,7 +430,7 @@ function SectionForm({
   fields,
   locale,
 }: {
-  section: Section;
+  section: FlatSection;
   info: CompanyInfo;
   fields: FieldDef[];
   locale: string;

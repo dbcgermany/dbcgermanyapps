@@ -39,6 +39,8 @@ const T = {
     photo: "Photo", photoHint: "JPG / PNG / WebP up to 5 MB. Square crops look best.",
     orPasteUrl: "Or paste a CDN URL",
     roleTri: "Role (trilingual)", bioTri: "Bio (trilingual)",
+    featuredOnAbout: "Feature on About page",
+    featuredOnAboutHelp: "Show this member's card in the 'Meet the team' strip on /about. Doesn't affect the /team page.",
     saving: "Saving…", create: "Create", save: "Save",
   },
   de: {
@@ -56,6 +58,8 @@ const T = {
     photo: "Foto", photoHint: "JPG / PNG / WebP bis 5 MB. Quadratische Ausschnitte wirken am besten.",
     orPasteUrl: "Oder CDN-URL einfügen",
     roleTri: "Rolle (dreisprachig)", bioTri: "Bio (dreisprachig)",
+    featuredOnAbout: "Auf der About-Seite hervorheben",
+    featuredOnAboutHelp: "Zeigt die Karte dieser Person im 'Meet the team'-Streifen auf /about. Ändert /team nicht.",
     saving: "Wird gespeichert…", create: "Erstellen", save: "Speichern",
   },
   fr: {
@@ -73,6 +77,8 @@ const T = {
     photo: "Photo", photoHint: "JPG / PNG / WebP jusqu’à 5 Mo. Les cadrages carrés rendent mieux.",
     orPasteUrl: "Ou coller une URL CDN",
     roleTri: "Rôle (trilingue)", bioTri: "Biographie (trilingue)",
+    featuredOnAbout: "Mettre en avant sur la page À propos",
+    featuredOnAboutHelp: "Affiche la carte de ce membre dans la section « Meet the team » de /about. N'affecte pas /team.",
     saving: "Enregistrement…", create: "Créer", save: "Enregistrer",
   },
 } as const;
@@ -254,6 +260,22 @@ export function TeamMemberForm({
             <option value="internal">{t.visInternal}</option>
             <option value="hidden">{t.visHidden}</option>
           </select>
+        </div>
+        <div className="rounded-md border border-border bg-background p-3">
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              name="featured_on_about"
+              defaultChecked={initial?.featured_on_about ?? false}
+              className="mt-0.5 h-4 w-4 accent-primary cursor-pointer"
+            />
+            <span className="min-w-0">
+              <span className="block text-sm font-medium">{t.featuredOnAbout}</span>
+              <span className="mt-0.5 block text-xs text-muted-foreground">
+                {t.featuredOnAboutHelp}
+              </span>
+            </span>
+          </label>
         </div>
         <div>
           <label htmlFor="profile_id" className="mb-1 block text-sm font-medium">
