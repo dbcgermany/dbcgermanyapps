@@ -6,6 +6,7 @@ import { EVENT_TYPE_VALUES, type EventType } from "@dbc/types";
 import { Button, LinkButton } from "@dbc/ui";
 import { updateEvent } from "@/actions/events";
 import { CoverImageUpload } from "@/components/cover-image-upload";
+import { PaymentMethodsSelect } from "@/components/payment-methods-select";
 
 const T = {
   en: {
@@ -67,6 +68,7 @@ type EventRow = {
   ends_at: string;
   capacity: number;
   max_tickets_per_order: number | null;
+  enabled_payment_methods: string[] | null;
   cover_image_url: string | null;
   feedback_survey_url: string | null;
   sales_target_tickets: number | null;
@@ -359,6 +361,11 @@ export function EditEventForm({
           />
         </div>
       </div>
+
+      <PaymentMethodsSelect
+        locale={locale}
+        initialValues={event.enabled_payment_methods ?? []}
+      />
 
       <CoverImageUpload initialUrl={event.cover_image_url} />
 

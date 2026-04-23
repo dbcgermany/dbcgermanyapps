@@ -82,6 +82,38 @@ export const PAYMENT_METHOD_VALUES = [
 ] as const;
 export type PaymentMethod = (typeof PAYMENT_METHOD_VALUES)[number];
 
+/**
+ * Canonical Stripe Checkout `payment_method_types` values (pinned API
+ * 2026-03-25.dahlia). Used by `events.enabled_payment_methods` to
+ * whitelist the methods offered for that event. Values MUST match
+ * Stripe's exact spelling — `sepa_debit` not `sepa`, `amazon_pay` not
+ * `amazonpay`, etc. — or Stripe rejects the Checkout Session with
+ * `parameter_unknown`.
+ *
+ * An empty `enabled_payment_methods` array means "no whitelist —
+ * use the account's default payment method configuration", which is
+ * the recommended setting (operators toggle methods on/off in the
+ * Stripe Dashboard, no code change needed).
+ *
+ * Apple Pay / Google Pay aren't listed here: Stripe surfaces them
+ * automatically when `card` is enabled and the visitor's device
+ * supports them.
+ */
+export const STRIPE_PAYMENT_METHOD_TYPE_VALUES = [
+  "card",
+  "sepa_debit",
+  "paypal",
+  "klarna",
+  "link",
+  "bancontact",
+  "eps",
+  "ideal",
+  "amazon_pay",
+  "mb_way",
+] as const;
+export type StripePaymentMethodType =
+  (typeof STRIPE_PAYMENT_METHOD_TYPE_VALUES)[number];
+
 export const DISCOUNT_TYPE_VALUES = ["percentage", "fixed_amount"] as const;
 export type DiscountType = (typeof DISCOUNT_TYPE_VALUES)[number];
 

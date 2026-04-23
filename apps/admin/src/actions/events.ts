@@ -6,6 +6,21 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { slugify, uniqueSlug } from "@/lib/slugify";
 import { pingBoth } from "@/lib/revalidate";
+import {
+  STRIPE_PAYMENT_METHOD_TYPE_VALUES,
+  type StripePaymentMethodType,
+} from "@dbc/types";
+
+// Keep only Stripe-canonical values the SSOT allows. Anything else (a
+// stale 'sepa' instead of 'sepa_debit', a typo, a manually crafted FormData
+// blob) is dropped silently — Stripe would reject the session otherwise,
+// so we'd rather surface an empty list (= account defaults) than crash
+// checkout for every customer.
+function readPaymentMethods(fd: FormData): StripePaymentMethodType[] {
+  const raw = fd.getAll("enabled_payment_methods").map(String);
+  const allowed = new Set<string>(STRIPE_PAYMENT_METHOD_TYPE_VALUES);
+  return raw.filter((v): v is StripePaymentMethodType => allowed.has(v));
+}
 
 const COVER_BUCKET = "event-covers";
 
@@ -102,6 +117,7 @@ export async function createEvent(formData: FormData) {
       (formData.get("max_tickets_per_order") as string) || "10",
       10
     ),
+    enabled_payment_methods: readPaymentMethods(formData),
     cover_image_url:
       ((formData.get("cover_image_url") as string) || "").trim() || null,
     is_published: false,
@@ -221,6 +237,7 @@ export async function updateEvent(id: string, formData: FormData) {
       formData.get("max_tickets_per_order") as string,
       10
     ),
+    enabled_payment_methods: readPaymentMethods(formData),
     cover_image_url:
       ((formData.get("cover_image_url") as string) || "").trim() || null,
     feedback_survey_url:

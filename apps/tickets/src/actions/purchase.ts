@@ -20,13 +20,9 @@ function getStripe(): Stripe {
   return _stripe;
 }
 
-const PAYMENT_METHOD_MAP: Record<string, string> = {
-  card: "card",
-  sepa: "sepa_debit",
-  paypal: "paypal",
-  klarna: "klarna",
-  link: "link",
-};
+// events.enabled_payment_methods now stores canonical Stripe `payment_method_types`
+// values directly (validated against STRIPE_PAYMENT_METHOD_TYPE_VALUES on the
+// admin write path). No translation layer needed.
 
 // SSOT rule 65: max orders per email per event. Configurable via env,
 // default from @dbc/types DEFAULTS. A completed order is any order that is
@@ -475,9 +471,7 @@ export async function createCheckoutSession(input: CheckoutInput) {
     discounts.push({ coupon: stripeCoupon.id });
   }
 
-  const paymentMethodTypes = (event.enabled_payment_methods || [])
-    .map((m: string) => PAYMENT_METHOD_MAP[m])
-    .filter(Boolean) as string[];
+  const paymentMethodTypes = (event.enabled_payment_methods ?? []) as string[];
 
   // Stripe Checkout's `expires_at` must be at least 30 minutes in the future,
   // so line it up with max(30, reservation_ttl+slack).

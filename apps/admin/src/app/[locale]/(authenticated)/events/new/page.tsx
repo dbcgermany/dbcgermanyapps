@@ -7,6 +7,7 @@ import { Button } from "@dbc/ui";
 import { createEvent } from "@/actions/events";
 import { CoverImageUpload } from "@/components/cover-image-upload";
 import { PageHeader } from "@/components/page-header";
+import { PaymentMethodsSelect } from "@/components/payment-methods-select";
 
 const T = {
   en: {
@@ -267,6 +268,8 @@ export default function NewEventPage({
             />
           </div>
         </div>
+
+        <PaymentMethodsSelect locale={locale} initialValues={[]} />
 
         <CoverImageUpload />
 
