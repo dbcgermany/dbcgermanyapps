@@ -19,10 +19,12 @@ export async function getLiveEventStats(
 
   const [totalRes, checkedInRes, revenueRes, methodRawRes, recentRes] =
     await Promise.all([
-      // Total tickets
+      // Total tickets (paid/comped only — abandoned carts shouldn't
+      // show up on the live event operator screen as "capacity used").
       supabase
         .from("tickets")
-        .select("id", { count: "exact", head: true })
+        .select("id, orders!inner(status)", { count: "exact", head: true })
+        .in("orders.status", ["paid", "comped"])
         .eq("event_id", eventId),
 
       // Checked in

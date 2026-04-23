@@ -11,6 +11,11 @@ export interface PeriodStats {
   checkIns: number;
   aovCents: number;           // gross / paid order count
   arpaCents: number;          // gross / tickets sold
+  // Abandoned-cart signal: orders where the buyer reached Stripe's hosted
+  // checkout page (session id present) but never completed payment. A real
+  // intent-to-buy signal distinct from "Tickets sold".
+  abandonedCheckouts: number;
+  abandonedRevenueCents: number;
 }
 
 export interface DashboardKpis {
@@ -61,31 +66,48 @@ async function computePeriodStats(
   fromTs: string,
   toTs: string
 ): Promise<PeriodStats> {
-  const [paidRes, refundRes, ticketsRes, checkInsRes] = await Promise.all([
-    supabase
-      .from("orders")
-      .select("total_cents", { count: "exact" })
-      .in("status", ["paid", "comped"])
-      .gte("created_at", fromTs)
-      .lt("created_at", toTs),
-    supabase
-      .from("orders")
-      .select("total_cents")
-      .eq("status", "refunded")
-      .gte("created_at", fromTs)
-      .lt("created_at", toTs),
-    supabase
-      .from("tickets")
-      .select("id", { count: "exact", head: true })
-      .gte("created_at", fromTs)
-      .lt("created_at", toTs),
-    supabase
-      .from("tickets")
-      .select("id", { count: "exact", head: true })
-      .gte("checked_in_at", fromTs)
-      .lt("checked_in_at", toTs)
-      .not("checked_in_at", "is", null),
-  ]);
+  const [paidRes, refundRes, ticketsRes, checkInsRes, abandonedRes] =
+    await Promise.all([
+      supabase
+        .from("orders")
+        .select("total_cents", { count: "exact" })
+        .in("status", ["paid", "comped"])
+        .gte("created_at", fromTs)
+        .lt("created_at", toTs),
+      supabase
+        .from("orders")
+        .select("total_cents")
+        .eq("status", "refunded")
+        .gte("created_at", fromTs)
+        .lt("created_at", toTs),
+      // Only count tickets whose parent order actually sold (paid or
+      // comped). Without the inner-join filter, every reservation — even
+      // ones the buyer abandoned on Stripe — gets counted.
+      supabase
+        .from("tickets")
+        .select("id, orders!inner(status)", { count: "exact", head: true })
+        .in("orders.status", ["paid", "comped"])
+        .gte("created_at", fromTs)
+        .lt("created_at", toTs),
+      supabase
+        .from("tickets")
+        .select("id", { count: "exact", head: true })
+        .gte("checked_in_at", fromTs)
+        .lt("checked_in_at", toTs)
+        .not("checked_in_at", "is", null),
+      // Abandoned-cart count + potential revenue. Definition: the buyer
+      // made it as far as Stripe's hosted checkout page (so a session id
+      // was stamped on the order) but never paid. Excludes orders that
+      // failed before Stripe (those are checkout errors, tracked via
+      // the Stripe error log, not this KPI).
+      supabase
+        .from("orders")
+        .select("total_cents")
+        .in("status", ["pending", "cancelled"])
+        .not("stripe_checkout_session_id", "is", null)
+        .gte("created_at", fromTs)
+        .lt("created_at", toTs),
+    ]);
 
   const revenueCents = (paidRes.data ?? []).reduce(
     (s, o) => s + (o.total_cents ?? 0),
@@ -97,6 +119,13 @@ async function computePeriodStats(
   );
   const paidOrderCount = paidRes.count ?? 0;
   const ticketsSold = ticketsRes.count ?? 0;
+  const abandonedRows = (abandonedRes.data ?? []) as Array<{
+    total_cents: number | null;
+  }>;
+  const abandonedRevenueCents = abandonedRows.reduce(
+    (s, o) => s + (o.total_cents ?? 0),
+    0
+  );
 
   return {
     revenueCents,
@@ -107,6 +136,8 @@ async function computePeriodStats(
     checkIns: checkInsRes.count ?? 0,
     aovCents: paidOrderCount > 0 ? Math.round(revenueCents / paidOrderCount) : 0,
     arpaCents: ticketsSold > 0 ? Math.round(revenueCents / ticketsSold) : 0,
+    abandonedCheckouts: abandonedRows.length,
+    abandonedRevenueCents,
   };
 }
 
@@ -206,12 +237,15 @@ export async function getDashboardKpis(
     existing.revenue += o.total_cents ?? 0;
     eventRevenue.set(o.event_id, existing);
   }
+  // Same paid/comped filter as the dashboard ticketsSold KPI — otherwise
+  // the Top-Events "sold" column includes tickets from abandoned carts.
   const { data: ticketsByEvent } = await supabase
     .from("tickets")
-    .select("event_id")
+    .select("event_id, orders!inner(status)")
+    .in("orders.status", ["paid", "comped"])
     .gte("created_at", fromTs)
     .lte("created_at", toTs);
-  for (const t of ticketsByEvent ?? []) {
+  for (const t of (ticketsByEvent ?? []) as Array<{ event_id: string }>) {
     const existing = eventRevenue.get(t.event_id) ?? { revenue: 0, sold: 0 };
     existing.sold += 1;
     eventRevenue.set(t.event_id, existing);

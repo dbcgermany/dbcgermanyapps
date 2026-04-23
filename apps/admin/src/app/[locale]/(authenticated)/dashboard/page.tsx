@@ -91,6 +91,10 @@ export default async function DashboardPage({
       sellThrough: "Sell-through",
       sellThroughSub: "Sold of capacity per active event",
       capacity: "capacity",
+      abandonedCheckouts: "Abandoned checkouts",
+      abandonedCheckoutsSub: "Reached Stripe, never paid",
+      abandonedRevenue: "Abandoned value",
+      abandonedRevenueSub: "Potential revenue lost",
     },
     de: {
       welcome: "Willkommen zur\u00FCck",
@@ -119,6 +123,10 @@ export default async function DashboardPage({
       sellThrough: "Auslastung",
       sellThroughSub: "Verkauft / Kapazit\u00E4t pro Event",
       capacity: "Kapazit\u00E4t",
+      abandonedCheckouts: "Abgebrochene Checkouts",
+      abandonedCheckoutsSub: "Auf Stripe gelandet, nicht bezahlt",
+      abandonedRevenue: "Verlorener Umsatz",
+      abandonedRevenueSub: "Potenzielle Einnahmen verpasst",
     },
     fr: {
       welcome: "Bon retour",
@@ -147,6 +155,10 @@ export default async function DashboardPage({
       sellThrough: "Taux de remplissage",
       sellThroughSub: "Vendu / capacit\u00E9 par \u00E9v\u00E9nement",
       capacity: "capacit\u00E9",
+      abandonedCheckouts: "Paniers abandonn\u00E9s",
+      abandonedCheckoutsSub: "Arriv\u00E9s sur Stripe, non pay\u00E9s",
+      abandonedRevenue: "Valeur perdue",
+      abandonedRevenueSub: "Revenus potentiels manqu\u00E9s",
     },
   };
   const t = T[locale as keyof typeof T] ?? T.en;

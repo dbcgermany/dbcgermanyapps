@@ -119,9 +119,13 @@ export async function getEventReportData(opts: {
       .from("orders")
       .select("status, acquisition_type, total_cents, currency")
       .eq("event_id", opts.eventId);
+    // Only count tickets whose parent order is paid or comped. Without
+    // the inner-join filter, every abandoned-cart reservation inflates
+    // "tickets sold" on the event report.
     const { count: ticketCount } = await supabase
       .from("tickets")
-      .select("id", { count: "exact", head: true })
+      .select("id, orders!inner(status)", { count: "exact", head: true })
+      .in("orders.status", ["paid", "comped"])
       .eq("event_id", opts.eventId);
     const { count: checkedInCount } = await supabase
       .from("tickets")

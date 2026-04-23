@@ -12,9 +12,12 @@ async function maybeFireCheckInMilestone(
   eventId: string
 ) {
   const [{ count: total }, { count: checkedIn }] = await Promise.all([
+    // Paid/comped only — milestones should track attendance against
+    // actual ticket holders, not abandoned reservations.
     supabase
       .from("tickets")
-      .select("*", { count: "exact", head: true })
+      .select("*, orders!inner(status)", { count: "exact", head: true })
+      .in("orders.status", ["paid", "comped"])
       .eq("event_id", eventId),
     supabase
       .from("tickets")

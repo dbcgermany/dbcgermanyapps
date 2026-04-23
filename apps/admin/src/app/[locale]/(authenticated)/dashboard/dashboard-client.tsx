@@ -40,6 +40,10 @@ type T = {
   sellThrough: string;
   sellThroughSub: string;
   capacity: string;
+  abandonedCheckouts: string;
+  abandonedCheckoutsSub: string;
+  abandonedRevenue: string;
+  abandonedRevenueSub: string;
 };
 
 export function DashboardClient({
@@ -150,6 +154,34 @@ export function DashboardClient({
             delta={-pctChange(
               kpis.current.refundCents,
               kpis.prior.refundCents
+            )}
+            deltaLabel={t.vsPrior}
+            dense
+          />
+        </StatGrid>
+      </div>
+
+      {/* Abandoned-cart health — people who reached Stripe but didn't pay. */}
+      <div className="mt-4">
+        <StatGrid cols={4}>
+          <StatCard
+            label={t.abandonedCheckouts}
+            sub={t.abandonedCheckoutsSub}
+            value={kpis.current.abandonedCheckouts.toLocaleString(locale)}
+            delta={-pctChange(
+              kpis.current.abandonedCheckouts,
+              kpis.prior.abandonedCheckouts
+            )}
+            deltaLabel={t.vsPrior}
+            dense
+          />
+          <StatCard
+            label={t.abandonedRevenue}
+            sub={t.abandonedRevenueSub}
+            value={fmtEur(kpis.current.abandonedRevenueCents)}
+            delta={-pctChange(
+              kpis.current.abandonedRevenueCents,
+              kpis.prior.abandonedRevenueCents
             )}
             deltaLabel={t.vsPrior}
             dense
