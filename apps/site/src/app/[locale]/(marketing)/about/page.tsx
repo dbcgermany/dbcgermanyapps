@@ -1,4 +1,3 @@
-import Link from "next/link";
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
@@ -378,27 +377,6 @@ export default async function AboutPage({
       <TeamPreviewStrip members={featured} locale={locale} />
 
       <AboutFinalCta data={sections.finalCta} fallback={finalCtaFallback} />
-
-      <section className="py-12">
-        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <Reveal>
-            <div className="flex flex-wrap justify-center gap-3">
-              <Link
-                href={`/${locale}/contact`}
-                className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
-              >
-                {t("about.ctaCareers")}
-              </Link>
-              <Link
-                href={`/${locale}/services`}
-                className="rounded-full border border-border px-6 py-3 text-sm font-semibold text-foreground hover:bg-muted"
-              >
-                {t("nav.services")}
-              </Link>
-            </div>
-          </Reveal>
-        </div>
-      </section>
     </>
   );
 }
