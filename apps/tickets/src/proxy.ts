@@ -66,6 +66,31 @@ function geoLocale(request: NextRequest): Locale | null {
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // --- Cross-domain funnel redirect ---
+  // Funnels live on the marketing site (dbc-germany.com/{locale}/f/{slug}).
+  // Anyone who shaves the subdomain off a shared ad link lands here instead,
+  // so bounce them to the correct place in a single hop before any locale
+  // or auth handling kicks in.
+  const funnelMatch = pathname.match(/^(?:\/(en|de|fr))?\/f\/([^/]+)\/?$/);
+  if (funnelMatch) {
+    const [, pathLocale, slug] = funnelMatch;
+    const cookieLocale = request.cookies.get("locale")?.value;
+    const chosen: Locale =
+      (pathLocale as Locale | undefined) ??
+      (cookieLocale && (LOCALES as readonly string[]).includes(cookieLocale)
+        ? (cookieLocale as Locale)
+        : null) ??
+      parseAcceptLanguage(request.headers.get("accept-language")) ??
+      geoLocale(request) ??
+      DEFAULT_LOCALE;
+    const siteOrigin =
+      process.env.NEXT_PUBLIC_SITE_URL || "https://dbc-germany.com";
+    return NextResponse.redirect(
+      `${siteOrigin}/${chosen}/f/${slug}`,
+      301,
+    );
+  }
+
   // --- Locale detection & redirect ---
   const pathnameHasLocale = LOCALES.some(
     (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
