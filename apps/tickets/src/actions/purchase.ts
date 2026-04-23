@@ -508,13 +508,14 @@ export async function createCheckoutSession(input: CheckoutInput) {
   if (paymentMethodTypes.length > 0) {
     sessionParams.payment_method_types =
       paymentMethodTypes as Stripe.Checkout.SessionCreateParams["payment_method_types"];
-  } else {
-    // automatic_payment_methods exists at runtime on Stripe 2023-08+ but isn't
-    // in all type versions. Cast to index-access so TS stays happy.
-    (sessionParams as Record<string, unknown>).automatic_payment_methods = {
-      enabled: true,
-    };
   }
+  // Otherwise omit both payment_method_types and automatic_payment_methods.
+  // automatic_payment_methods is a PaymentIntent-only parameter — Stripe
+  // returns `parameter_unknown` if we pass it to Checkout Sessions. With
+  // neither set, Stripe uses the account's default payment method
+  // configuration from the Dashboard (card, Apple Pay, Klarna, Link,
+  // Bancontact, EPS, Amazon Pay, …), so enabling a new method in Stripe
+  // shows up on checkout without a redeploy.
 
   let session: Stripe.Checkout.Session;
   try {
@@ -531,7 +532,20 @@ export async function createCheckoutSession(input: CheckoutInput) {
       .from("orders")
       .update({ status: "cancelled", reservation_expires_at: null })
       .eq("id", order.id);
-    console.error("Stripe checkout creation failed:", err);
+    const stripeErr = err as {
+      type?: string;
+      code?: string;
+      param?: string;
+      message?: string;
+      requestId?: string;
+    };
+    console.error("[stripe] checkout.sessions.create failed:", {
+      type: stripeErr?.type,
+      code: stripeErr?.code,
+      param: stripeErr?.param,
+      message: stripeErr?.message,
+      request_id: stripeErr?.requestId,
+    });
     return {
       error:
         "Payment provider is unavailable. Your seats were released — please try again in a moment.",
