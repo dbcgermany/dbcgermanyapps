@@ -377,3 +377,447 @@ export async function getReportsEvents() {
 
   return data ?? [];
 }
+
+// ---------------------------------------------------------------------------
+// Finance — accountant-grade reporting with three-bucket channel taxonomy
+// (Online / Door / Comped). Every finance action is admin+ gated. Shares a
+// single fetch+aggregate pipeline so the summary and three CSVs stay
+// consistent with each other and with the dashboard channel split.
+// ---------------------------------------------------------------------------
+
+export type FinanceChannel = "online" | "door" | "comped";
+
+export interface FinanceFilter {
+  /** Inclusive ISO datetime. */
+  from?: string;
+  /** Exclusive ISO datetime. */
+  to?: string;
+  /** Narrow to a single channel bucket. */
+  channel?: FinanceChannel;
+  /** Narrow to a single event. */
+  eventId?: string;
+}
+
+export interface FinanceChannelSummary {
+  orders: number;
+  tickets: number;
+  /** Gross = sum of total_cents for status='paid'. Comped is always 0. */
+  grossCents: number;
+  /** Refunded = sum of total_cents for status='refunded'. Comped is always 0. */
+  refundCents: number;
+  /** Net = gross - refunds. */
+  netCents: number;
+}
+
+export interface FinancePaymentMethodRow {
+  /** Display key: "card" | "sepa" | "paypal" | "cash" | "door_card" | "door_cash" | "comped". */
+  method: string;
+  channel: FinanceChannel;
+  orders: number;
+  tickets: number;
+  grossCents: number;
+  refundCents: number;
+  netCents: number;
+}
+
+export interface FinanceEventRow {
+  eventId: string;
+  eventTitle: string;
+  eventSlug: string | null;
+  startsAt: string;
+  online: FinanceChannelSummary;
+  door: FinanceChannelSummary;
+  comped: FinanceChannelSummary;
+  totalGrossCents: number;
+  totalRefundCents: number;
+  totalNetCents: number;
+}
+
+export interface FinanceSummary {
+  online: FinanceChannelSummary;
+  door: FinanceChannelSummary;
+  comped: FinanceChannelSummary;
+  paymentMethods: FinancePaymentMethodRow[];
+  perEvent: FinanceEventRow[];
+  /** Paid-order value for events whose ends_at is still in the future. */
+  deferredRevenueCents: number;
+  /** Heuristic: 1.5% of online gross + €0.25 per online order. Real
+   *  number still comes from Stripe's payout reports. */
+  stripeFeeEstimateCents: number;
+  currency: string;
+}
+
+type FinanceOrderRow = {
+  id: string;
+  event_id: string;
+  status: "paid" | "refunded" | "comped";
+  acquisition_type: "purchased" | "door_sale" | "invited" | "assigned";
+  payment_method: "card" | "sepa" | "paypal" | "cash" | null;
+  total_cents: number;
+  subtotal_cents: number;
+  discount_cents: number;
+  currency: string;
+  recipient_name: string;
+  recipient_email: string;
+  stripe_checkout_session_id: string | null;
+  stripe_payment_intent_id: string | null;
+  created_at: string;
+  updated_at: string;
+  contact: { country: string | null } | { country: string | null }[] | null;
+  tickets: { id: string }[] | null;
+};
+
+function channelOf(o: FinanceOrderRow): FinanceChannel {
+  if (o.status === "comped") return "comped";
+  if (o.acquisition_type === "door_sale") return "door";
+  return "online";
+}
+
+function methodKey(o: FinanceOrderRow): string {
+  const ch = channelOf(o);
+  if (ch === "comped") return "comped";
+  if (ch === "door") {
+    return o.payment_method === "card" ? "door_card" : "door_cash";
+  }
+  return o.payment_method ?? "card";
+}
+
+function emptyChannel(): FinanceChannelSummary {
+  return { orders: 0, tickets: 0, grossCents: 0, refundCents: 0, netCents: 0 };
+}
+
+function accumulate(bucket: FinanceChannelSummary, o: FinanceOrderRow) {
+  bucket.orders += 1;
+  bucket.tickets += o.tickets?.length ?? 0;
+  if (o.status === "paid") bucket.grossCents += o.total_cents;
+  else if (o.status === "refunded") bucket.refundCents += o.total_cents;
+  bucket.netCents = bucket.grossCents - bucket.refundCents;
+}
+
+function contactCountry(contact: FinanceOrderRow["contact"]): string {
+  if (!contact) return "";
+  if (Array.isArray(contact)) return contact[0]?.country ?? "";
+  return contact.country ?? "";
+}
+
+async function fetchFinanceOrders(
+  supabase: Awaited<ReturnType<typeof createServerClient>>,
+  filter: FinanceFilter
+): Promise<FinanceOrderRow[]> {
+  let query = supabase
+    .from("orders")
+    .select(
+      "id, event_id, status, acquisition_type, payment_method, total_cents, subtotal_cents, discount_cents, currency, recipient_name, recipient_email, stripe_checkout_session_id, stripe_payment_intent_id, created_at, updated_at, contact:contacts(country), tickets(id)"
+    )
+    .in("status", ["paid", "refunded", "comped"]);
+
+  if (filter.from) query = query.gte("created_at", filter.from);
+  if (filter.to) query = query.lt("created_at", filter.to);
+  if (filter.eventId) query = query.eq("event_id", filter.eventId);
+
+  const { data, error } = await query;
+  if (error) throw new Error(error.message);
+
+  const rows = (data ?? []) as unknown as FinanceOrderRow[];
+  if (!filter.channel) return rows;
+  return rows.filter((o) => channelOf(o) === filter.channel);
+}
+
+export async function getFinanceSummary(
+  filter: FinanceFilter = {}
+): Promise<FinanceSummary> {
+  await requireRole("admin");
+  const supabase = await createServerClient();
+
+  const orders = await fetchFinanceOrders(supabase, filter);
+
+  const online = emptyChannel();
+  const door = emptyChannel();
+  const comped = emptyChannel();
+
+  const methodMap = new Map<string, FinancePaymentMethodRow>();
+  const eventMap = new Map<
+    string,
+    { online: FinanceChannelSummary; door: FinanceChannelSummary; comped: FinanceChannelSummary }
+  >();
+
+  let currency = "EUR";
+  let onlineOrderCount = 0;
+
+  for (const o of orders) {
+    currency = o.currency || currency;
+    const ch = channelOf(o);
+    const bucket = ch === "online" ? online : ch === "door" ? door : comped;
+    accumulate(bucket, o);
+    if (ch === "online") onlineOrderCount += 1;
+
+    const mKey = methodKey(o);
+    const mRow = methodMap.get(mKey) ?? {
+      method: mKey,
+      channel: ch,
+      orders: 0,
+      tickets: 0,
+      grossCents: 0,
+      refundCents: 0,
+      netCents: 0,
+    };
+    mRow.orders += 1;
+    mRow.tickets += o.tickets?.length ?? 0;
+    if (o.status === "paid") mRow.grossCents += o.total_cents;
+    else if (o.status === "refunded") mRow.refundCents += o.total_cents;
+    mRow.netCents = mRow.grossCents - mRow.refundCents;
+    methodMap.set(mKey, mRow);
+
+    const evBuckets = eventMap.get(o.event_id) ?? {
+      online: emptyChannel(),
+      door: emptyChannel(),
+      comped: emptyChannel(),
+    };
+    accumulate(
+      ch === "online" ? evBuckets.online : ch === "door" ? evBuckets.door : evBuckets.comped,
+      o
+    );
+    eventMap.set(o.event_id, evBuckets);
+  }
+
+  const eventIds = Array.from(eventMap.keys());
+  const [eventsRes, deferredRes] = await Promise.all([
+    eventIds.length > 0
+      ? supabase
+          .from("events")
+          .select("id, slug, title_en, starts_at")
+          .in("id", eventIds)
+      : Promise.resolve({
+          data: [] as Array<{ id: string; slug: string | null; title_en: string; starts_at: string }>,
+        }),
+    supabase
+      .from("orders")
+      .select("total_cents, event:events!inner(ends_at)")
+      .eq("status", "paid")
+      .gt("event.ends_at", new Date().toISOString()),
+  ]);
+
+  const eventLookup = new Map(
+    (eventsRes.data ?? []).map((e) => [
+      e.id,
+      { slug: e.slug, title: e.title_en, startsAt: e.starts_at },
+    ])
+  );
+
+  const perEvent: FinanceEventRow[] = eventIds
+    .map((id) => {
+      const buckets = eventMap.get(id)!;
+      const meta = eventLookup.get(id);
+      const totalGross =
+        buckets.online.grossCents + buckets.door.grossCents;
+      const totalRefund =
+        buckets.online.refundCents + buckets.door.refundCents;
+      return {
+        eventId: id,
+        eventTitle: meta?.title ?? "—",
+        eventSlug: meta?.slug ?? null,
+        startsAt: meta?.startsAt ?? "",
+        online: buckets.online,
+        door: buckets.door,
+        comped: buckets.comped,
+        totalGrossCents: totalGross,
+        totalRefundCents: totalRefund,
+        totalNetCents: totalGross - totalRefund,
+      };
+    })
+    .sort((a, b) => b.totalGrossCents - a.totalGrossCents);
+
+  const deferredRevenueCents = (deferredRes.data ?? []).reduce(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (sum, r: any) => sum + (r.total_cents ?? 0),
+    0
+  );
+
+  // 1.5% + €0.25/txn — rough pass-through rate for SEPA/card in EU.
+  const stripeFeeEstimateCents = Math.round(
+    online.grossCents * 0.015 + onlineOrderCount * 25
+  );
+
+  return {
+    online,
+    door,
+    comped,
+    paymentMethods: Array.from(methodMap.values()).sort(
+      (a, b) => b.grossCents - a.grossCents
+    ),
+    perEvent,
+    deferredRevenueCents,
+    stripeFeeEstimateCents,
+    currency,
+  };
+}
+
+export interface FinanceOrderCsvRow {
+  order_id: string;
+  created_at: string;
+  event_slug: string;
+  event_title_en: string;
+  channel: FinanceChannel;
+  acquisition_type: string;
+  status: string;
+  payment_method: string;
+  buyer_name: string;
+  buyer_email: string;
+  buyer_country: string;
+  ticket_count: number;
+  subtotal_cents: number;
+  discount_cents: number;
+  total_cents: number;
+  currency: string;
+  refunded_at: string;
+  refunded_cents: number;
+  stripe_checkout_session_id: string;
+  stripe_payment_intent_id: string;
+}
+
+export async function getFinanceOrdersCsv(
+  filter: FinanceFilter = {}
+): Promise<FinanceOrderCsvRow[]> {
+  await requireRole("admin");
+  const supabase = await createServerClient();
+
+  const orders = await fetchFinanceOrders(supabase, filter);
+  const eventIds = [...new Set(orders.map((o) => o.event_id))];
+  const { data: events } = eventIds.length
+    ? await supabase
+        .from("events")
+        .select("id, slug, title_en")
+        .in("id", eventIds)
+    : { data: [] as Array<{ id: string; slug: string | null; title_en: string }> };
+  const eventLookup = new Map((events ?? []).map((e) => [e.id, e]));
+
+  return orders
+    .sort((a, b) => (a.created_at < b.created_at ? 1 : -1))
+    .map((o) => {
+      const ev = eventLookup.get(o.event_id);
+      const refunded = o.status === "refunded";
+      return {
+        order_id: o.id,
+        created_at: o.created_at,
+        event_slug: ev?.slug ?? "",
+        event_title_en: ev?.title_en ?? "",
+        channel: channelOf(o),
+        acquisition_type: o.acquisition_type,
+        status: o.status,
+        payment_method: o.payment_method ?? "",
+        buyer_name: o.recipient_name,
+        buyer_email: o.recipient_email,
+        buyer_country: contactCountry(o.contact),
+        ticket_count: o.tickets?.length ?? 0,
+        subtotal_cents: o.subtotal_cents,
+        discount_cents: o.discount_cents,
+        total_cents: o.total_cents,
+        currency: o.currency,
+        refunded_at: refunded ? o.updated_at : "",
+        refunded_cents: refunded ? o.total_cents : 0,
+        stripe_checkout_session_id: o.stripe_checkout_session_id ?? "",
+        stripe_payment_intent_id: o.stripe_payment_intent_id ?? "",
+      };
+    });
+}
+
+export interface FinanceSummaryCsvRow {
+  date: string;
+  channel: FinanceChannel;
+  payment_method: string;
+  event_slug: string;
+  orders: number;
+  tickets: number;
+  gross_cents: number;
+  refund_cents: number;
+  net_cents: number;
+  currency: string;
+}
+
+export async function getFinanceSummaryCsv(
+  filter: FinanceFilter = {}
+): Promise<FinanceSummaryCsvRow[]> {
+  await requireRole("admin");
+  const supabase = await createServerClient();
+
+  const orders = await fetchFinanceOrders(supabase, filter);
+  const eventIds = [...new Set(orders.map((o) => o.event_id))];
+  const { data: events } = eventIds.length
+    ? await supabase.from("events").select("id, slug").in("id", eventIds)
+    : { data: [] as Array<{ id: string; slug: string | null }> };
+  const slugLookup = new Map((events ?? []).map((e) => [e.id, e.slug ?? ""]));
+
+  // Pivot: (date, channel, method, event_slug) → aggregate.
+  const pivot = new Map<string, FinanceSummaryCsvRow>();
+  for (const o of orders) {
+    const date = o.created_at.slice(0, 10);
+    const ch = channelOf(o);
+    const method = methodKey(o);
+    const slug = slugLookup.get(o.event_id) ?? "";
+    const key = `${date}|${ch}|${method}|${slug}`;
+    const row = pivot.get(key) ?? {
+      date,
+      channel: ch,
+      payment_method: method,
+      event_slug: slug,
+      orders: 0,
+      tickets: 0,
+      gross_cents: 0,
+      refund_cents: 0,
+      net_cents: 0,
+      currency: o.currency,
+    };
+    row.orders += 1;
+    row.tickets += o.tickets?.length ?? 0;
+    if (o.status === "paid") row.gross_cents += o.total_cents;
+    else if (o.status === "refunded") row.refund_cents += o.total_cents;
+    row.net_cents = row.gross_cents - row.refund_cents;
+    pivot.set(key, row);
+  }
+
+  return Array.from(pivot.values()).sort((a, b) => {
+    if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+    if (a.channel !== b.channel) return a.channel < b.channel ? -1 : 1;
+    return a.payment_method < b.payment_method ? -1 : 1;
+  });
+}
+
+export interface FinanceRefundCsvRow {
+  order_id: string;
+  refunded_at: string;
+  original_total_cents: number;
+  refunded_cents: number;
+  channel: FinanceChannel;
+  payment_method: string;
+  buyer_email: string;
+  event_slug: string;
+}
+
+export async function getFinanceRefundsCsv(
+  filter: FinanceFilter = {}
+): Promise<FinanceRefundCsvRow[]> {
+  await requireRole("admin");
+  const supabase = await createServerClient();
+
+  const orders = (await fetchFinanceOrders(supabase, filter)).filter(
+    (o) => o.status === "refunded"
+  );
+  const eventIds = [...new Set(orders.map((o) => o.event_id))];
+  const { data: events } = eventIds.length
+    ? await supabase.from("events").select("id, slug").in("id", eventIds)
+    : { data: [] as Array<{ id: string; slug: string | null }> };
+  const slugLookup = new Map((events ?? []).map((e) => [e.id, e.slug ?? ""]));
+
+  return orders
+    .sort((a, b) => (a.updated_at < b.updated_at ? 1 : -1))
+    .map((o) => ({
+      order_id: o.id,
+      refunded_at: o.updated_at,
+      original_total_cents: o.total_cents,
+      refunded_cents: o.total_cents,
+      channel: channelOf(o),
+      payment_method: methodKey(o),
+      buyer_email: o.recipient_email,
+      event_slug: slugLookup.get(o.event_id) ?? "",
+    }));
+}

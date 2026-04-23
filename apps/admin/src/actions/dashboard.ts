@@ -2,6 +2,21 @@
 
 import { createServerClient, requireRole } from "@dbc/supabase/server";
 
+/**
+ * Per-channel aggregate. Three channels get aggregated today:
+ *   - online: self-serve Stripe (acquisition_type='purchased')
+ *   - door:   operator-assisted paid sales (acquisition_type='door_sale')
+ *   - comped: zero-revenue invitations/assignments (status='comped')
+ *
+ * `revenueCents` / `refundCents` are always 0 for comped (no money moves).
+ */
+export interface ChannelStats {
+  orders: number;
+  tickets: number;
+  revenueCents: number;
+  refundCents: number;
+}
+
 export interface PeriodStats {
   revenueCents: number;       // gross ticket revenue (paid + comped)
   netRevenueCents: number;    // gross − refunds
@@ -16,6 +31,10 @@ export interface PeriodStats {
   // intent-to-buy signal distinct from "Tickets sold".
   abandonedCheckouts: number;
   abandonedRevenueCents: number;
+  // Per-channel split — same window as the aggregates above.
+  online: ChannelStats;
+  door: ChannelStats;
+  comped: ChannelStats;
 }
 
 export interface DashboardKpis {
@@ -60,14 +79,43 @@ function pctChange(current: number, prior: number): number {
   return ((current - prior) / prior) * 100;
 }
 
+type ChannelOrderRow = {
+  status: string | null;
+  total_cents: number | null;
+  tickets: { id: string }[] | null;
+};
+
+function aggregateChannel(rows: ChannelOrderRow[]): ChannelStats {
+  let orders = 0;
+  let tickets = 0;
+  let revenueCents = 0;
+  let refundCents = 0;
+  for (const o of rows) {
+    orders += 1;
+    tickets += o.tickets?.length ?? 0;
+    if (o.status === "paid") revenueCents += o.total_cents ?? 0;
+    else if (o.status === "refunded") refundCents += o.total_cents ?? 0;
+    // `comped` contributes zero revenue + zero refund on purpose.
+  }
+  return { orders, tickets, revenueCents, refundCents };
+}
+
 /** Computes KPIs for a single [fromTs, toTs) window. */
 async function computePeriodStats(
   supabase: Awaited<ReturnType<typeof createServerClient>>,
   fromTs: string,
   toTs: string
 ): Promise<PeriodStats> {
-  const [paidRes, refundRes, ticketsRes, checkInsRes, abandonedRes] =
-    await Promise.all([
+  const [
+    paidRes,
+    refundRes,
+    ticketsRes,
+    checkInsRes,
+    abandonedRes,
+    onlineRes,
+    doorRes,
+    compedRes,
+  ] = await Promise.all([
       supabase
         .from("orders")
         .select("total_cents", { count: "exact" })
@@ -107,6 +155,29 @@ async function computePeriodStats(
         .not("stripe_checkout_session_id", "is", null)
         .gte("created_at", fromTs)
         .lt("created_at", toTs),
+      // Channel split — three queries, mutually exclusive so nothing is
+      // double-counted. Embedded tickets(id) gives us the ticket count
+      // per order without a second round-trip.
+      supabase
+        .from("orders")
+        .select("status, total_cents, tickets(id)")
+        .eq("acquisition_type", "purchased")
+        .in("status", ["paid", "refunded"])
+        .gte("created_at", fromTs)
+        .lt("created_at", toTs),
+      supabase
+        .from("orders")
+        .select("status, total_cents, tickets(id)")
+        .eq("acquisition_type", "door_sale")
+        .in("status", ["paid", "refunded"])
+        .gte("created_at", fromTs)
+        .lt("created_at", toTs),
+      supabase
+        .from("orders")
+        .select("status, total_cents, tickets(id)")
+        .eq("status", "comped")
+        .gte("created_at", fromTs)
+        .lt("created_at", toTs),
     ]);
 
   const revenueCents = (paidRes.data ?? []).reduce(
@@ -127,6 +198,10 @@ async function computePeriodStats(
     0
   );
 
+  const online = aggregateChannel((onlineRes.data ?? []) as ChannelOrderRow[]);
+  const door = aggregateChannel((doorRes.data ?? []) as ChannelOrderRow[]);
+  const comped = aggregateChannel((compedRes.data ?? []) as ChannelOrderRow[]);
+
   return {
     revenueCents,
     netRevenueCents: revenueCents - refundCents,
@@ -138,6 +213,9 @@ async function computePeriodStats(
     arpaCents: ticketsSold > 0 ? Math.round(revenueCents / ticketsSold) : 0,
     abandonedCheckouts: abandonedRows.length,
     abandonedRevenueCents,
+    online,
+    door,
+    comped,
   };
 }
 

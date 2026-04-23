@@ -44,6 +44,14 @@ type T = {
   abandonedCheckoutsSub: string;
   abandonedRevenue: string;
   abandonedRevenueSub: string;
+  salesByChannel: string;
+  online: string;
+  onlineSub: string;
+  door: string;
+  doorSub: string;
+  comped: string;
+  compedSub: string;
+  tickets: string;
 };
 
 export function DashboardClient({
@@ -159,6 +167,52 @@ export function DashboardClient({
             dense
           />
         </StatGrid>
+      </div>
+
+      {/* Sales-by-channel split — accountant-facing taxonomy:
+          Online (self-serve Stripe), Door (operator-assisted paid),
+          Comped (zero-revenue invites / assignments). No overlap by
+          construction. The existing "Tickets sold" headline KPI above
+          equals Online.tickets + Door.tickets. */}
+      <div className="mt-8">
+        <h2 className="text-sm font-semibold text-muted-foreground">
+          {t.salesByChannel}
+        </h2>
+        <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <StatCard
+            label={t.online}
+            sub={`${kpis.current.online.tickets} ${t.tickets} · ${t.onlineSub}`}
+            value={fmtEur(kpis.current.online.revenueCents)}
+            delta={pctChange(
+              kpis.current.online.revenueCents,
+              kpis.prior.online.revenueCents
+            )}
+            deltaLabel={t.vsPrior}
+            dense
+          />
+          <StatCard
+            label={t.door}
+            sub={`${kpis.current.door.tickets} ${t.tickets} · ${t.doorSub}`}
+            value={fmtEur(kpis.current.door.revenueCents)}
+            delta={pctChange(
+              kpis.current.door.revenueCents,
+              kpis.prior.door.revenueCents
+            )}
+            deltaLabel={t.vsPrior}
+            dense
+          />
+          <StatCard
+            label={t.comped}
+            sub={t.compedSub}
+            value={`${kpis.current.comped.tickets.toLocaleString(locale)} ${t.tickets}`}
+            delta={pctChange(
+              kpis.current.comped.tickets,
+              kpis.prior.comped.tickets
+            )}
+            deltaLabel={t.vsPrior}
+            dense
+          />
+        </div>
       </div>
 
       {/* Abandoned-cart health — people who reached Stripe but didn't pay. */}
