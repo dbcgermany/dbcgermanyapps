@@ -5,8 +5,20 @@ import { createClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { slugify, uniqueSlug } from "@/lib/slugify";
+import { pingBoth } from "@/lib/revalidate";
 
 const COVER_BUCKET = "event-covers";
+
+function eventPublicPaths(slug?: string | null) {
+  // Site: the events listing + homepage upcoming strip.
+  // Tickets: the event detail + checkout pages when we know the slug.
+  return {
+    site: ["/[locale]", "/[locale]/events"],
+    tickets: slug
+      ? ["/[locale]/events", `/[locale]/events/${slug}`, `/[locale]/checkout/${slug}`]
+      : ["/[locale]/events"],
+  };
+}
 
 function getServiceClient() {
   return createClient(
@@ -98,7 +110,7 @@ export async function createEvent(formData: FormData) {
   const { data, error } = await supabase
     .from("events")
     .insert(eventData)
-    .select("id")
+    .select("id, slug")
     .single();
 
   if (error) return { error: error.message };
@@ -177,6 +189,8 @@ export async function createEvent(formData: FormData) {
   });
 
   revalidatePath(`/${locale}/events`);
+  const p = eventPublicPaths(data.slug);
+  await pingBoth(p.site, p.tickets);
   redirect(`/${locale}/events/${data.id}`);
 }
 
@@ -256,6 +270,13 @@ export async function updateEvent(id: string, formData: FormData) {
 
   revalidatePath(`/${locale}/events`);
   revalidatePath(`/${locale}/events/${id}`);
+  const { data: row } = await supabase
+    .from("events")
+    .select("slug")
+    .eq("id", id)
+    .single();
+  const p = eventPublicPaths(row?.slug);
+  await pingBoth(p.site, p.tickets);
   return { success: true };
 }
 
@@ -266,7 +287,7 @@ export async function togglePublish(id: string, locale: string) {
   // Get current state
   const { data: event } = await supabase
     .from("events")
-    .select("is_published, title_en")
+    .select("is_published, title_en, slug")
     .eq("id", id)
     .single();
 
@@ -289,6 +310,8 @@ export async function togglePublish(id: string, locale: string) {
 
   revalidatePath(`/${locale}/events`);
   revalidatePath(`/${locale}/events/${id}`);
+  const p = eventPublicPaths(event.slug);
+  await pingBoth(p.site, p.tickets);
   return { success: true };
 }
 
@@ -298,7 +321,7 @@ export async function deleteEvent(id: string, locale: string) {
 
   const { data: event } = await supabase
     .from("events")
-    .select("title_en")
+    .select("title_en, slug")
     .eq("id", id)
     .single();
 
@@ -315,6 +338,8 @@ export async function deleteEvent(id: string, locale: string) {
   });
 
   revalidatePath(`/${locale}/events`);
+  const p = eventPublicPaths(event?.slug);
+  await pingBoth(p.site, p.tickets);
   redirect(`/${locale}/events`);
 }
 

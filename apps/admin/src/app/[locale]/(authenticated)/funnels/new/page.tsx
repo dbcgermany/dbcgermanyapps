@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { PageHeader } from "@/components/page-header";
 import { FunnelForm } from "../funnel-form";
+import { listFunnelEventOptions } from "@/actions/funnels";
 
 const T = {
   en: { title: "New funnel" },
@@ -16,6 +17,7 @@ export default async function NewFunnelPage({
   const { locale } = await params;
   const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
   const tBack = await getTranslations({ locale, namespace: "admin.back" });
+  const eventOptions = await listFunnelEventOptions(locale);
 
   return (
     <div>
@@ -23,7 +25,7 @@ export default async function NewFunnelPage({
         title={t.title}
         back={{ href: `/${locale}/funnels`, label: tBack("funnels") }}
       />
-      <FunnelForm mode="create" locale={locale} />
+      <FunnelForm mode="create" locale={locale} eventOptions={eventOptions} />
     </div>
   );
 }

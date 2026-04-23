@@ -3,6 +3,7 @@ import {
   archiveFunnel,
   getFunnel,
   getFunnelKpis,
+  listFunnelEventOptions,
   publishFunnel,
   unpublishFunnel,
 } from "@/actions/funnels";
@@ -48,6 +49,7 @@ export default async function EditFunnelPage({
   const tBack = await getTranslations({ locale, namespace: "admin.back" });
   const funnel = await getFunnel(id);
   const kpis7 = await getFunnelKpis(id, 7);
+  const eventOptions = await listFunnelEventOptions(locale);
 
   return (
     <div className="space-y-10">
@@ -100,7 +102,12 @@ export default async function EditFunnelPage({
         <ShareLinkBuilder slug={funnel.slug} locale={locale} />
       </section>
 
-      <FunnelForm mode="edit" locale={locale} initial={funnel} />
+      <FunnelForm
+        mode="edit"
+        locale={locale}
+        initial={funnel}
+        eventOptions={eventOptions}
+      />
     </div>
   );
 }

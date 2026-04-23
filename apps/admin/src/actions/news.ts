@@ -4,6 +4,9 @@ import { createServerClient, requireRole } from "@dbc/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { slugify, uniqueSlug } from "@/lib/slugify";
+import { pingRevalidate } from "@/lib/revalidate";
+
+const NEWS_PUBLIC_PATHS = (slug: string) => ["/[locale]/news", `/[locale]/news/${slug}`];
 
 const POST_COLUMNS =
   "id, slug, title_en, title_de, title_fr, excerpt_en, excerpt_de, excerpt_fr, body_en, body_de, body_fr, cover_image_url, author_name, is_published, published_at, created_at, updated_at" as const;
@@ -77,6 +80,7 @@ export async function createNewsPost(formData: FormData) {
   });
 
   revalidatePath(`/${locale}/news`);
+  await pingRevalidate("site", NEWS_PUBLIC_PATHS(slug));
   redirect(`/${locale}/news/${data.id}`);
 }
 
@@ -124,6 +128,13 @@ export async function updateNewsPost(id: string, formData: FormData) {
 
   revalidatePath(`/${locale}/news`);
   revalidatePath(`/${locale}/news/${id}`);
+  // Best-effort: fetch the current slug so we revalidate the public /news/[slug]
+  const { data: slugRow } = await supabase
+    .from("news_posts")
+    .select("slug")
+    .eq("id", id)
+    .single();
+  if (slugRow?.slug) await pingRevalidate("site", NEWS_PUBLIC_PATHS(slugRow.slug));
   return { success: true };
 }
 
@@ -133,7 +144,7 @@ export async function toggleNewsPublish(id: string, locale: string) {
 
   const { data: post } = await supabase
     .from("news_posts")
-    .select("is_published, title_en")
+    .select("is_published, title_en, slug")
     .eq("id", id)
     .single();
   if (!post) return { error: "Post not found" };
@@ -158,6 +169,7 @@ export async function toggleNewsPublish(id: string, locale: string) {
   });
 
   revalidatePath(`/${locale}/news`);
+  await pingRevalidate("site", NEWS_PUBLIC_PATHS(post.slug));
   return { success: true };
 }
 
@@ -166,7 +178,7 @@ export async function deleteNewsPost(id: string, locale: string) {
   const supabase = await createServerClient();
   const { data: post } = await supabase
     .from("news_posts")
-    .select("title_en")
+    .select("title_en, slug")
     .eq("id", id)
     .single();
   const { error } = await supabase.from("news_posts").delete().eq("id", id);
@@ -179,5 +191,6 @@ export async function deleteNewsPost(id: string, locale: string) {
     details: { title: post?.title_en },
   });
   revalidatePath(`/${locale}/news`);
+  if (post?.slug) await pingRevalidate("site", NEWS_PUBLIC_PATHS(post.slug));
   redirect(`/${locale}/news`);
 }

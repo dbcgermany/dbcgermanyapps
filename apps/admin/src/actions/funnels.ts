@@ -12,6 +12,11 @@ import {
   type FunnelStatus,
 } from "@dbc/types";
 import { slugify, uniqueSlug } from "@/lib/slugify";
+import { pingRevalidate } from "@/lib/revalidate";
+
+function funnelPublicPaths(slug: string) {
+  return [`/[locale]/f/${slug}`];
+}
 
 const BRAND_BUCKET = "brand-assets";
 
@@ -23,7 +28,7 @@ function getServiceClient() {
 }
 
 const FUNNEL_COLUMNS =
-  "id, slug, status, cta_type, cta_href, hero_image_url, content_en, content_de, content_fr, seo_title, seo_description, og_image_url, created_at, updated_at, published_at" as const;
+  "id, slug, status, cta_type, cta_href, hero_image_url, content_en, content_de, content_fr, seo_title, seo_description, og_image_url, linked_event_id, created_at, updated_at, published_at" as const;
 
 export type FunnelRow = {
   id: string;
@@ -38,6 +43,7 @@ export type FunnelRow = {
   seo_title: string | null;
   seo_description: string | null;
   og_image_url: string | null;
+  linked_event_id: string | null;
   created_at: string;
   updated_at: string;
   published_at: string | null;
@@ -60,7 +66,42 @@ export type FunnelInput = {
   seo_title: string | null;
   seo_description: string | null;
   og_image_url: string | null;
+  linked_event_id: string | null;
 };
+
+export type FunnelEventOption = {
+  id: string;
+  slug: string;
+  title: string;
+  starts_at: string;
+};
+
+export async function listFunnelEventOptions(
+  locale: string
+): Promise<FunnelEventOption[]> {
+  await requireRole("manager");
+  const supabase = await createServerClient();
+  const { data } = await supabase
+    .from("events")
+    .select("id, slug, title_en, title_de, title_fr, starts_at, is_published")
+    .order("starts_at", { ascending: false });
+  const l = locale === "de" ? "de" : locale === "fr" ? "fr" : "en";
+  return ((data ?? []) as Array<{
+    id: string;
+    slug: string;
+    title_en: string;
+    title_de: string | null;
+    title_fr: string | null;
+    starts_at: string;
+  }>).map((e) => ({
+    id: e.id,
+    slug: e.slug,
+    title:
+      (l === "de" ? e.title_de : l === "fr" ? e.title_fr : e.title_en) ||
+      e.title_en,
+    starts_at: e.starts_at,
+  }));
+}
 
 function assertStatus(value: string): FunnelStatus {
   if (!(FUNNEL_STATUS_VALUES as readonly string[]).includes(value)) {
@@ -146,6 +187,7 @@ export async function createFunnel(input: FunnelInput) {
     seo_title: input.seo_title || null,
     seo_description: input.seo_description || null,
     og_image_url: input.og_image_url || null,
+    linked_event_id: input.linked_event_id || null,
     created_by: user.userId,
     published_at: status === "published" ? new Date().toISOString() : null,
   };
@@ -166,6 +208,7 @@ export async function createFunnel(input: FunnelInput) {
     details: { slug, cta_type, status },
   });
 
+  await pingRevalidate("site", funnelPublicPaths(slug));
   return { success: true as const, id: data.id, slug };
 }
 
@@ -187,6 +230,7 @@ export async function updateFunnel(id: string, input: FunnelInput) {
     seo_title: input.seo_title || null,
     seo_description: input.seo_description || null,
     og_image_url: input.og_image_url || null,
+    linked_event_id: input.linked_event_id || null,
   };
 
   const rawSlug = (input.slug ?? "").trim();
@@ -218,6 +262,12 @@ export async function updateFunnel(id: string, input: FunnelInput) {
     details: { slug: record.slug ?? null, status, cta_type },
   });
 
+  const { data: slugRow } = await supabase
+    .from("funnels")
+    .select("slug")
+    .eq("id", id)
+    .single();
+  if (slugRow?.slug) await pingRevalidate("site", funnelPublicPaths(slugRow.slug));
   return { success: true as const };
 }
 
@@ -237,6 +287,12 @@ export async function publishFunnel(id: string, locale: string) {
   });
   revalidatePath(`/${locale}/funnels`);
   revalidatePath(`/${locale}/funnels/${id}`);
+  const { data: row } = await supabase
+    .from("funnels")
+    .select("slug")
+    .eq("id", id)
+    .single();
+  if (row?.slug) await pingRevalidate("site", funnelPublicPaths(row.slug));
   return { success: true as const };
 }
 
@@ -256,12 +312,23 @@ export async function unpublishFunnel(id: string, locale: string) {
   });
   revalidatePath(`/${locale}/funnels`);
   revalidatePath(`/${locale}/funnels/${id}`);
+  const { data: row } = await supabase
+    .from("funnels")
+    .select("slug")
+    .eq("id", id)
+    .single();
+  if (row?.slug) await pingRevalidate("site", funnelPublicPaths(row.slug));
   return { success: true as const };
 }
 
 export async function archiveFunnel(id: string, locale: string) {
   const user = await requireRole("manager");
   const supabase = await createServerClient();
+  const { data: row } = await supabase
+    .from("funnels")
+    .select("slug")
+    .eq("id", id)
+    .single();
   const { error } = await supabase
     .from("funnels")
     .update({ status: "archived" })
@@ -274,6 +341,7 @@ export async function archiveFunnel(id: string, locale: string) {
     entity_id: id,
   });
   revalidatePath(`/${locale}/funnels`);
+  if (row?.slug) await pingRevalidate("site", funnelPublicPaths(row.slug));
   redirect(`/${locale}/funnels`);
 }
 

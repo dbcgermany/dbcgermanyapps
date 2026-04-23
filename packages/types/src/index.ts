@@ -215,14 +215,37 @@ export interface FunnelContent {
     subtitle?: string;
     primaryCta: string;
   };
+  /** Three-beat story arc: the pain the visitor already feels, the cost
+   *  of doing nothing, and what this event is. */
+  story?: {
+    problem: string;
+    agitation: string;
+    solution: string;
+  };
+  /** "By the numbers" strip — objective social proof tiles. */
+  proof?: {
+    items: { value: string; label: string }[];
+  };
   benefits?: {
     eyebrow?: string;
     title?: string;
     items: { key: string; title: string; desc: string }[];
   };
+  /** Shown below the pricing table — cohort access, post-event WhatsApp,
+   *  refund window. The "what's included beyond the ticket." */
+  bonus?: {
+    title: string;
+    items: { title: string; desc: string }[];
+  };
   faq?: {
     title: string;
     items: { q: string; a: string }[];
+  };
+  /** Last-chance closer after the FAQ. Scrolls back to pricing. */
+  finalCta?: {
+    title: string;
+    subtitle?: string;
+    primaryCta: string;
   };
   footerCta?: {
     text: string;

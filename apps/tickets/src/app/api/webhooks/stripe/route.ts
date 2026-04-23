@@ -69,6 +69,7 @@ export async function POST(request: Request) {
     const orderId = session.metadata?.order_id;
     const eventId = session.metadata?.event_id;
     const couponId = session.metadata?.coupon_id;
+    const funnelSlug = session.metadata?.funnel_slug || null;
 
     if (!orderId || !eventId) {
       console.error("Missing metadata in Stripe session:", session.id);
@@ -301,6 +302,37 @@ export async function POST(request: Request) {
           body: `${ticketCount ?? 0} ticket${(ticketCount ?? 0) === 1 ? "" : "s"} for ${eventRow.title_en} \u2014 \u20AC${(order.total_cents / 100).toFixed(2)}`,
           data: { order_id: orderId, event_id: eventId },
         });
+      }
+
+      // Close the funnel-attribution loop: if the visitor arrived via a
+      // funnel pricing button, the checkout page forwarded that slug through
+      // Stripe metadata. Look up the funnel and fire a `conversion` event so
+      // the admin KPI cards can show per-angle conversion rates.
+      if (funnelSlug) {
+        try {
+          const { data: funnelRow } = await supabase
+            .from("funnels")
+            .select("id")
+            .eq("slug", funnelSlug)
+            .maybeSingle();
+          if (funnelRow?.id) {
+            await supabase.rpc("insert_funnel_event", {
+              p_funnel_id: funnelRow.id,
+              p_event_type: "conversion",
+              p_session_id: `stripe:${session.id}`,
+              p_locale: (order?.locale as string) ?? null,
+              p_utm_source: null,
+              p_utm_medium: null,
+              p_utm_campaign: funnelSlug,
+              p_referrer: null,
+            });
+          }
+        } catch (err) {
+          console.error(
+            `Failed to record funnel conversion for order ${orderId}:`,
+            err
+          );
+        }
       }
 
       // Check if any tier just sold out

@@ -90,6 +90,10 @@ interface CheckoutInput {
   locale: string;
   turnstileToken?: string;
   source?: string;
+  /** Funnel slug the visitor arrived from. Passed through to Stripe
+   *  metadata so the webhook can fire a `conversion` funnel event
+   *  when the purchase completes. */
+  funnelSlug?: string;
 }
 
 function composeName(first: string, last: string): string {
@@ -496,6 +500,7 @@ export async function createCheckoutSession(input: CheckoutInput) {
       order_id: order.id,
       event_id: event.id,
       coupon_id: couponId ?? "",
+      funnel_slug: input.funnelSlug ?? "",
     },
     success_url: `${process.env.NEXT_PUBLIC_TICKETS_URL}/${input.locale}/confirmation/${order.id}?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${process.env.NEXT_PUBLIC_TICKETS_URL}/${input.locale}/events/${input.eventSlug}`,

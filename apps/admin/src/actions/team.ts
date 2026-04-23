@@ -6,6 +6,13 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { STAFF_ROLES, type TeamMemberVisibility } from "@dbc/types";
 import { slugify, uniqueSlug } from "@/lib/slugify";
+import { pingRevalidate } from "@/lib/revalidate";
+
+function teamPublicPaths(slug?: string | null) {
+  const paths = ["/[locale]/team"];
+  if (slug) paths.push(`/[locale]/team/${slug}`);
+  return paths;
+}
 
 function getServiceClient() {
   return createClient(
@@ -184,7 +191,7 @@ export async function createTeamMember(formData: FormData) {
   const { data, error } = await supabase
     .from("team_members")
     .insert(record)
-    .select("id")
+    .select("id, slug")
     .single();
   if (error) return { error: error.message };
 
@@ -197,6 +204,7 @@ export async function createTeamMember(formData: FormData) {
   });
 
   revalidatePath(`/${locale}/team`);
+  await pingRevalidate("site", teamPublicPaths(data.slug));
   redirect(`/${locale}/team/${data.id}`);
 }
 
@@ -258,6 +266,12 @@ export async function updateTeamMember(id: string, formData: FormData) {
   });
 
   revalidatePath(`/${locale}/team`);
+  const { data: slugRow } = await supabase
+    .from("team_members")
+    .select("slug")
+    .eq("id", id)
+    .single();
+  await pingRevalidate("site", teamPublicPaths(slugRow?.slug));
   return { success: true };
 }
 
@@ -283,6 +297,7 @@ export async function setTeamMemberVisibility(
   });
 
   revalidatePath(`/${locale}/team`);
+  await pingRevalidate("site", teamPublicPaths());
   return { success: true };
 }
 
@@ -353,6 +368,7 @@ export async function reorderTeamMembers(
 
   revalidatePath(`/${locale}/team`);
   revalidatePath(`/team`);
+  await pingRevalidate("site", teamPublicPaths());
   return { success: true };
 }
 
@@ -361,7 +377,7 @@ export async function deleteTeamMember(id: string, locale: string) {
   const supabase = await createServerClient();
   const { data: existing } = await supabase
     .from("team_members")
-    .select("name")
+    .select("name, slug")
     .eq("id", id)
     .single();
   const { error } = await supabase.from("team_members").delete().eq("id", id);
@@ -376,5 +392,6 @@ export async function deleteTeamMember(id: string, locale: string) {
   });
 
   revalidatePath(`/${locale}/team`);
+  await pingRevalidate("site", teamPublicPaths(existing?.slug));
   redirect(`/${locale}/team`);
 }

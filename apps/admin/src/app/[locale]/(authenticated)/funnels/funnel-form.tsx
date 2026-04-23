@@ -22,17 +22,28 @@ type TabKey = "en" | "de" | "fr";
 
 type Benefit = { key: string; title: string; desc: string };
 type FaqItem = { q: string; a: string };
+type ProofItem = { value: string; label: string };
+type BonusItem = { title: string; desc: string };
 
 type LocaleContent = {
   heroEyebrow: string;
   heroTitle: string;
   heroSubtitle: string;
   heroPrimaryCta: string;
+  storyProblem: string;
+  storyAgitation: string;
+  storySolution: string;
+  proof: ProofItem[];
   benefitsEyebrow: string;
   benefitsTitle: string;
   benefits: Benefit[];
+  bonusTitle: string;
+  bonus: BonusItem[];
   faqTitle: string;
   faq: FaqItem[];
+  finalCtaTitle: string;
+  finalCtaSubtitle: string;
+  finalCtaPrimary: string;
   footerCtaText: string;
   footerCtaEmail: string;
 };
@@ -46,6 +57,7 @@ type FormState = {
   seo_title: string;
   seo_description: string;
   og_image_url: string;
+  linked_event_id: string;
   content: Record<TabKey, LocaleContent>;
 };
 
@@ -54,11 +66,20 @@ const EMPTY_LOCALE: LocaleContent = {
   heroTitle: "",
   heroSubtitle: "",
   heroPrimaryCta: "",
+  storyProblem: "",
+  storyAgitation: "",
+  storySolution: "",
+  proof: [],
   benefitsEyebrow: "",
   benefitsTitle: "",
   benefits: [],
+  bonusTitle: "",
+  bonus: [],
   faqTitle: "",
   faq: [],
+  finalCtaTitle: "",
+  finalCtaSubtitle: "",
+  finalCtaPrimary: "",
   footerCtaText: "",
   footerCtaEmail: "",
 };
@@ -70,11 +91,20 @@ function toLocaleContent(c: Partial<FunnelContent> | null | undefined): LocaleCo
     heroTitle: c.hero?.title ?? "",
     heroSubtitle: c.hero?.subtitle ?? "",
     heroPrimaryCta: c.hero?.primaryCta ?? "",
+    storyProblem: c.story?.problem ?? "",
+    storyAgitation: c.story?.agitation ?? "",
+    storySolution: c.story?.solution ?? "",
+    proof: c.proof?.items ? c.proof.items.map((p) => ({ ...p })) : [],
     benefitsEyebrow: c.benefits?.eyebrow ?? "",
     benefitsTitle: c.benefits?.title ?? "",
     benefits: c.benefits?.items ? c.benefits.items.map((b) => ({ ...b })) : [],
+    bonusTitle: c.bonus?.title ?? "",
+    bonus: c.bonus?.items ? c.bonus.items.map((b) => ({ ...b })) : [],
     faqTitle: c.faq?.title ?? "",
     faq: c.faq?.items ? c.faq.items.map((f) => ({ ...f })) : [],
+    finalCtaTitle: c.finalCta?.title ?? "",
+    finalCtaSubtitle: c.finalCta?.subtitle ?? "",
+    finalCtaPrimary: c.finalCta?.primaryCta ?? "",
     footerCtaText: c.footerCta?.text ?? "",
     footerCtaEmail: c.footerCta?.email ?? "",
   };
@@ -90,6 +120,21 @@ function fromLocaleContent(l: LocaleContent): Partial<FunnelContent> {
       primaryCta: l.heroPrimaryCta,
     };
   }
+  if (
+    l.storyProblem.trim() &&
+    l.storyAgitation.trim() &&
+    l.storySolution.trim()
+  ) {
+    out.story = {
+      problem: l.storyProblem,
+      agitation: l.storyAgitation,
+      solution: l.storySolution,
+    };
+  }
+  const proof = l.proof.filter((p) => p.value.trim() || p.label.trim());
+  if (proof.length > 0) {
+    out.proof = { items: proof };
+  }
   const benefits = l.benefits.filter((b) => b.title.trim() || b.desc.trim());
   if (benefits.length > 0) {
     out.benefits = {
@@ -102,11 +147,22 @@ function fromLocaleContent(l: LocaleContent): Partial<FunnelContent> {
       })),
     };
   }
+  const bonus = l.bonus.filter((b) => b.title.trim() || b.desc.trim());
+  if (bonus.length > 0 && l.bonusTitle.trim()) {
+    out.bonus = { title: l.bonusTitle, items: bonus };
+  }
   const faq = l.faq.filter((f) => f.q.trim() || f.a.trim());
   if (faq.length > 0) {
     out.faq = {
       title: l.faqTitle || "",
       items: faq,
+    };
+  }
+  if (l.finalCtaTitle.trim() && l.finalCtaPrimary.trim()) {
+    out.finalCta = {
+      title: l.finalCtaTitle,
+      subtitle: l.finalCtaSubtitle || undefined,
+      primaryCta: l.finalCtaPrimary,
     };
   }
   if (l.footerCtaText.trim() && l.footerCtaEmail.trim()) {
@@ -131,6 +187,9 @@ const T = {
     },
     ctaHref: "CTA URL",
     ctaHrefHelp: "Where the primary CTA sends the visitor. Used only for External link.",
+    linkedEvent: "Linked event",
+    linkedEventHelp: "Optional. When set, the funnel shows a countdown and pricing cards pulled from the event's ticket tiers, and CTA buttons deep-link into checkout with the tier pre-selected.",
+    linkedEventNone: "— No event linked —",
     heroImage: "Hero image",
     heroImageHelp: "Optional. Appears behind or beside the hero copy.",
     seo: "SEO",
@@ -145,6 +204,16 @@ const T = {
     heroTitle: "Title",
     heroSubtitle: "Subtitle",
     heroPrimaryCta: "Primary CTA label",
+    story: "Story arc",
+    storyHelp: "Problem → Agitation → Solution. All three must be filled for the section to render.",
+    storyProblem: "Problem (the pain)",
+    storyAgitation: "Agitation (the cost of waiting)",
+    storySolution: "Solution (what this event is)",
+    proof: "Proof strip",
+    proofHelp: "Objective numbers shown just below the hero. E.g. value \"900\" / label \"seats\".",
+    addProof: "Add proof tile",
+    proofValue: "Value",
+    proofLabel: "Label",
     benefits: "Benefits",
     benefitsEyebrow: "Benefits eyebrow",
     benefitsTitle: "Benefits title",
@@ -152,11 +221,22 @@ const T = {
     benefitKey: "Key",
     benefitTitle: "Title",
     benefitDesc: "Description",
+    bonus: "Bonus / What's included",
+    bonusHelp: "Post-pricing reassurance: cohort access, refund window, etc.",
+    bonusTitleLabel: "Section title",
+    bonusItemTitle: "Title",
+    bonusItemDesc: "Description",
+    addBonus: "Add bonus item",
     faq: "FAQ",
     faqTitle: "FAQ title",
     addFaq: "Add question",
     faqQ: "Question",
     faqA: "Answer",
+    finalCta: "Final CTA",
+    finalCtaHelp: "Last-chance closer after the FAQ. Button scrolls back up to pricing.",
+    finalCtaTitle: "Title",
+    finalCtaSubtitle: "Subtitle",
+    finalCtaPrimary: "Button label",
     footerCta: "Footer CTA",
     footerCtaText: "Footer text",
     footerCtaEmail: "Footer email",
@@ -183,6 +263,9 @@ const T = {
     },
     ctaHref: "CTA-URL",
     ctaHrefHelp: "Ziel des Haupt-CTA. Nur für externen Link verwendet.",
+    linkedEvent: "Verknüpftes Event",
+    linkedEventHelp: "Optional. Wenn gesetzt, zeigt der Funnel einen Countdown und Preiskarten aus den Ticket-Kategorien des Events; CTA-Buttons deep-linken direkt in den Checkout mit vorausgewählter Kategorie.",
+    linkedEventNone: "— Kein Event verknüpft —",
     heroImage: "Hero-Bild",
     heroImageHelp: "Optional. Erscheint hinter oder neben dem Hero-Text.",
     seo: "SEO",
@@ -197,6 +280,16 @@ const T = {
     heroTitle: "Titel",
     heroSubtitle: "Untertitel",
     heroPrimaryCta: "CTA-Beschriftung",
+    story: "Story-Arc",
+    storyHelp: "Problem → Verstärkung → Lösung. Alle drei müssen gefüllt sein, damit der Abschnitt rendert.",
+    storyProblem: "Problem (der Schmerz)",
+    storyAgitation: "Verstärkung (die Kosten des Wartens)",
+    storySolution: "Lösung (was dieses Event ist)",
+    proof: "Proof-Streifen",
+    proofHelp: "Objektive Zahlen unter dem Hero. Z. B. Wert \"900\" / Label \"Plätze\".",
+    addProof: "Proof-Kachel hinzufügen",
+    proofValue: "Wert",
+    proofLabel: "Label",
     benefits: "Vorteile",
     benefitsEyebrow: "Vorteile-Eyebrow",
     benefitsTitle: "Vorteile-Titel",
@@ -204,11 +297,22 @@ const T = {
     benefitKey: "Key",
     benefitTitle: "Titel",
     benefitDesc: "Beschreibung",
+    bonus: "Bonus / Im Preis enthalten",
+    bonusHelp: "Nach der Preistabelle: Cohort-Zugang, Erstattungsfrist, etc.",
+    bonusTitleLabel: "Abschnittstitel",
+    bonusItemTitle: "Titel",
+    bonusItemDesc: "Beschreibung",
+    addBonus: "Bonus-Item hinzufügen",
     faq: "FAQ",
     faqTitle: "FAQ-Titel",
     addFaq: "Frage hinzufügen",
     faqQ: "Frage",
     faqA: "Antwort",
+    finalCta: "Finaler CTA",
+    finalCtaHelp: "Letzter Closer nach der FAQ. Button scrollt zurück zur Preistabelle.",
+    finalCtaTitle: "Titel",
+    finalCtaSubtitle: "Untertitel",
+    finalCtaPrimary: "Button-Text",
     footerCta: "Footer-CTA",
     footerCtaText: "Footer-Text",
     footerCtaEmail: "Footer-E-Mail",
@@ -235,6 +339,9 @@ const T = {
     },
     ctaHref: "URL du CTA",
     ctaHrefHelp: "Où le CTA envoie le visiteur. Uniquement pour Lien externe.",
+    linkedEvent: "Événement lié",
+    linkedEventHelp: "Optionnel. Quand défini, le funnel affiche un compte à rebours et des cartes de prix tirées des catégories de billets de l'événement ; les boutons CTA mènent directement au checkout avec la catégorie pré-sélectionnée.",
+    linkedEventNone: "— Aucun événement lié —",
     heroImage: "Image hero",
     heroImageHelp: "Optionnel. Apparaît derrière ou à côté du texte hero.",
     seo: "SEO",
@@ -249,6 +356,16 @@ const T = {
     heroTitle: "Titre",
     heroSubtitle: "Sous-titre",
     heroPrimaryCta: "Libellé du CTA",
+    story: "Arc narratif",
+    storyHelp: "Problème → Agitation → Solution. Les trois doivent être remplis pour que la section s'affiche.",
+    storyProblem: "Problème (la douleur)",
+    storyAgitation: "Agitation (le coût d'attendre)",
+    storySolution: "Solution (ce qu'est cet événement)",
+    proof: "Bande de preuves",
+    proofHelp: "Chiffres objectifs sous le hero. Ex. valeur « 900 » / libellé « places ».",
+    addProof: "Ajouter une tuile",
+    proofValue: "Valeur",
+    proofLabel: "Libellé",
     benefits: "Bénéfices",
     benefitsEyebrow: "Eyebrow bénéfices",
     benefitsTitle: "Titre bénéfices",
@@ -256,11 +373,22 @@ const T = {
     benefitKey: "Clé",
     benefitTitle: "Titre",
     benefitDesc: "Description",
+    bonus: "Bonus / Ce qui est inclus",
+    bonusHelp: "Rassurance post-tarification : accès cohorte, fenêtre de remboursement, etc.",
+    bonusTitleLabel: "Titre de la section",
+    bonusItemTitle: "Titre",
+    bonusItemDesc: "Description",
+    addBonus: "Ajouter un bonus",
     faq: "FAQ",
     faqTitle: "Titre FAQ",
     addFaq: "Ajouter une question",
     faqQ: "Question",
     faqA: "Réponse",
+    finalCta: "CTA final",
+    finalCtaHelp: "Closer final après la FAQ. Le bouton remonte vers les prix.",
+    finalCtaTitle: "Titre",
+    finalCtaSubtitle: "Sous-titre",
+    finalCtaPrimary: "Libellé du bouton",
     footerCta: "CTA pied de page",
     footerCtaText: "Texte",
     footerCtaEmail: "E-mail",
@@ -279,11 +407,13 @@ type FormProps =
       mode: "create";
       locale: string;
       initial?: undefined;
+      eventOptions: { id: string; slug: string; title: string; starts_at: string }[];
     }
   | {
       mode: "edit";
       locale: string;
       initial: FunnelRow;
+      eventOptions: { id: string; slug: string; title: string; starts_at: string }[];
     };
 
 export function FunnelForm(props: FormProps) {
@@ -321,6 +451,7 @@ export function FunnelForm(props: FormProps) {
       seo_title: state.seo_title.trim() || null,
       seo_description: state.seo_description.trim() || null,
       og_image_url: state.og_image_url.trim() || null,
+      linked_event_id: state.linked_event_id || null,
     };
     startTransition(async () => {
       const result =
@@ -404,6 +535,20 @@ export function FunnelForm(props: FormProps) {
             />
           </Field>
         )}
+
+        <Field label={t.linkedEvent} hint={t.linkedEventHelp}>
+          <Select
+            value={state.linked_event_id}
+            onChange={(e) => setBasics("linked_event_id", e.target.value)}
+          >
+            <option value="">{t.linkedEventNone}</option>
+            {props.eventOptions.map((ev) => (
+              <option key={ev.id} value={ev.id}>
+                {ev.title} · {new Date(ev.starts_at).toLocaleDateString(props.locale)}
+              </option>
+            ))}
+          </Select>
+        </Field>
 
         <HeroImagePicker
           urlValue={state.hero_image_url}
@@ -499,6 +644,7 @@ function buildInitialState(props: FormProps): FormState {
       seo_title: row.seo_title ?? "",
       seo_description: row.seo_description ?? "",
       og_image_url: row.og_image_url ?? "",
+      linked_event_id: row.linked_event_id ?? "",
       content: {
         en: toLocaleContent(row.content_en),
         de: toLocaleContent(row.content_de),
@@ -515,6 +661,7 @@ function buildInitialState(props: FormProps): FormState {
     seo_title: "",
     seo_description: "",
     og_image_url: "",
+    linked_event_id: "",
     content: {
       en: { ...EMPTY_LOCALE },
       de: { ...EMPTY_LOCALE },
@@ -673,6 +820,93 @@ function LocaleTab({
         </Field>
       </fieldset>
 
+      {/* Story */}
+      <fieldset className="space-y-4">
+        <legend className="text-sm font-semibold">{t.story}</legend>
+        <p className="text-xs text-muted-foreground">{t.storyHelp}</p>
+        <Field label={t.storyProblem}>
+          <Textarea
+            rows={2}
+            value={content.storyProblem}
+            onChange={(e) => patch({ storyProblem: e.target.value })}
+          />
+        </Field>
+        <Field label={t.storyAgitation}>
+          <Textarea
+            rows={2}
+            value={content.storyAgitation}
+            onChange={(e) => patch({ storyAgitation: e.target.value })}
+          />
+        </Field>
+        <Field label={t.storySolution}>
+          <Textarea
+            rows={2}
+            value={content.storySolution}
+            onChange={(e) => patch({ storySolution: e.target.value })}
+          />
+        </Field>
+      </fieldset>
+
+      {/* Proof strip */}
+      <fieldset className="space-y-4">
+        <legend className="text-sm font-semibold">{t.proof}</legend>
+        <p className="text-xs text-muted-foreground">{t.proofHelp}</p>
+        <div className="space-y-3">
+          {content.proof.map((p, i) => (
+            <div
+              key={i}
+              className="rounded-md border border-border bg-background p-3 space-y-2"
+            >
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-[140px_1fr]">
+                <Input
+                  value={p.value}
+                  placeholder={t.proofValue}
+                  onChange={(e) =>
+                    patch({
+                      proof: content.proof.map((x, j) =>
+                        j === i ? { ...x, value: e.target.value } : x
+                      ),
+                    })
+                  }
+                />
+                <Input
+                  value={p.label}
+                  placeholder={t.proofLabel}
+                  onChange={(e) =>
+                    patch({
+                      proof: content.proof.map((x, j) =>
+                        j === i ? { ...x, label: e.target.value } : x
+                      ),
+                    })
+                  }
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() =>
+                  patch({ proof: content.proof.filter((_, j) => j !== i) })
+                }
+                className="text-xs text-red-500 hover:text-red-700"
+              >
+                {t.remove}
+              </button>
+            </div>
+          ))}
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={() =>
+              patch({
+                proof: [...content.proof, { value: "", label: "" }],
+              })
+            }
+          >
+            {t.addProof}
+          </Button>
+        </div>
+      </fieldset>
+
       {/* Benefits */}
       <fieldset className="space-y-4">
         <legend className="text-sm font-semibold">{t.benefits}</legend>
@@ -822,6 +1056,94 @@ function LocaleTab({
             {t.addFaq}
           </Button>
         </div>
+      </fieldset>
+
+      {/* Bonus */}
+      <fieldset className="space-y-4">
+        <legend className="text-sm font-semibold">{t.bonus}</legend>
+        <p className="text-xs text-muted-foreground">{t.bonusHelp}</p>
+        <Field label={t.bonusTitleLabel}>
+          <Input
+            value={content.bonusTitle}
+            onChange={(e) => patch({ bonusTitle: e.target.value })}
+          />
+        </Field>
+        <div className="space-y-3">
+          {content.bonus.map((b, i) => (
+            <div
+              key={i}
+              className="rounded-md border border-border bg-background p-3 space-y-2"
+            >
+              <Input
+                value={b.title}
+                placeholder={t.bonusItemTitle}
+                onChange={(e) =>
+                  patch({
+                    bonus: content.bonus.map((x, j) =>
+                      j === i ? { ...x, title: e.target.value } : x
+                    ),
+                  })
+                }
+              />
+              <Textarea
+                rows={2}
+                value={b.desc}
+                placeholder={t.bonusItemDesc}
+                onChange={(e) =>
+                  patch({
+                    bonus: content.bonus.map((x, j) =>
+                      j === i ? { ...x, desc: e.target.value } : x
+                    ),
+                  })
+                }
+              />
+              <button
+                type="button"
+                onClick={() =>
+                  patch({ bonus: content.bonus.filter((_, j) => j !== i) })
+                }
+                className="text-xs text-red-500 hover:text-red-700"
+              >
+                {t.remove}
+              </button>
+            </div>
+          ))}
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={() =>
+              patch({ bonus: [...content.bonus, { title: "", desc: "" }] })
+            }
+          >
+            {t.addBonus}
+          </Button>
+        </div>
+      </fieldset>
+
+      {/* Final CTA */}
+      <fieldset className="space-y-4">
+        <legend className="text-sm font-semibold">{t.finalCta}</legend>
+        <p className="text-xs text-muted-foreground">{t.finalCtaHelp}</p>
+        <Field label={t.finalCtaTitle}>
+          <Input
+            value={content.finalCtaTitle}
+            onChange={(e) => patch({ finalCtaTitle: e.target.value })}
+          />
+        </Field>
+        <Field label={t.finalCtaSubtitle}>
+          <Textarea
+            rows={2}
+            value={content.finalCtaSubtitle}
+            onChange={(e) => patch({ finalCtaSubtitle: e.target.value })}
+          />
+        </Field>
+        <Field label={t.finalCtaPrimary}>
+          <Input
+            value={content.finalCtaPrimary}
+            onChange={(e) => patch({ finalCtaPrimary: e.target.value })}
+          />
+        </Field>
       </fieldset>
 
       {/* Footer CTA */}

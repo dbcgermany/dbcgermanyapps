@@ -3,6 +3,23 @@
 import { createServerClient, requireRole } from "@dbc/supabase/server";
 import { revalidatePath } from "next/cache";
 import { slugify, uniqueSlug } from "@/lib/slugify";
+import { pingRevalidate } from "@/lib/revalidate";
+
+async function pingTierPaths(
+  supabase: Awaited<ReturnType<typeof createServerClient>>,
+  eventId: string
+) {
+  const { data } = await supabase
+    .from("events")
+    .select("slug")
+    .eq("id", eventId)
+    .single();
+  if (!data?.slug) return;
+  await pingRevalidate("tickets", [
+    `/[locale]/events/${data.slug}`,
+    `/[locale]/checkout/${data.slug}`,
+  ]);
+}
 
 const TIER_COLUMNS =
   "id, event_id, name_en, name_de, name_fr, description_en, description_de, description_fr, price_cents, currency, max_quantity, quantity_sold, sales_start_at, sales_end_at, is_public, sort_order, created_at" as const;
@@ -76,6 +93,7 @@ export async function createTier(formData: FormData) {
   });
 
   revalidatePath(`/${locale}/events/${eventId}/tiers`);
+  await pingTierPaths(supabase, eventId);
   return { success: true };
 }
 
@@ -121,6 +139,7 @@ export async function updateTier(tierId: string, formData: FormData) {
   });
 
   revalidatePath(`/${locale}/events/${eventId}/tiers`);
+  await pingTierPaths(supabase, eventId);
   return { success: true };
 }
 
@@ -156,6 +175,7 @@ export async function toggleTierPublic(
   });
 
   revalidatePath(`/${locale}/events/${eventId}/tiers`);
+  await pingTierPaths(supabase, eventId);
   return { success: true };
 }
 
@@ -187,6 +207,7 @@ export async function reorderTiers(
   });
 
   revalidatePath(`/${locale}/events/${eventId}/tiers`);
+  await pingTierPaths(supabase, eventId);
   return { success: true };
 }
 
@@ -220,5 +241,6 @@ export async function deleteTier(tierId: string, eventId: string, locale: string
   });
 
   revalidatePath(`/${locale}/events/${eventId}/tiers`);
+  await pingTierPaths(supabase, eventId);
   return { success: true };
 }

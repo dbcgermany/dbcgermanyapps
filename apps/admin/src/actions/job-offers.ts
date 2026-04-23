@@ -3,6 +3,13 @@
 import { createServerClient, requireRole } from "@dbc/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { pingRevalidate } from "@/lib/revalidate";
+
+function jobPublicPaths(id?: string | null) {
+  const paths = ["/[locale]/careers"];
+  if (id) paths.push(`/[locale]/careers/${id}`);
+  return paths;
+}
 
 const JOB_COLUMNS =
   "id, title_en, title_de, title_fr, description_en, description_de, description_fr, requirements_en, requirements_de, requirements_fr, location, employment_type, department, is_published, sort_order, created_at, updated_at" as const;
@@ -78,6 +85,7 @@ export async function createJobOffer(formData: FormData) {
   });
 
   revalidatePath(`/${locale}/job-offers`);
+  await pingRevalidate("site", jobPublicPaths(data.id));
   redirect(`/${locale}/job-offers/${data.id}`);
 }
 
@@ -120,6 +128,7 @@ export async function updateJobOffer(id: string, formData: FormData) {
 
   revalidatePath(`/${locale}/job-offers`);
   revalidatePath(`/${locale}/job-offers/${id}`);
+  await pingRevalidate("site", jobPublicPaths(id));
   return { success: true };
 }
 
@@ -151,6 +160,7 @@ export async function toggleJobOfferPublished(id: string, locale: string) {
   });
 
   revalidatePath(`/${locale}/job-offers`);
+  await pingRevalidate("site", jobPublicPaths(id));
   return { success: true };
 }
 
@@ -186,5 +196,6 @@ export async function deleteJobOffer(id: string, locale: string) {
   });
 
   revalidatePath(`/${locale}/job-offers`);
+  await pingRevalidate("site", jobPublicPaths(id));
   redirect(`/${locale}/job-offers`);
 }

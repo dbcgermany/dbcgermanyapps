@@ -73,6 +73,8 @@ export function CheckoutForm({
   maxPerOrder,
   turnstileSiteKey,
   source,
+  funnelSlug,
+  initialTierId,
 }: {
   eventSlug: string;
   locale: string;
@@ -80,10 +82,12 @@ export function CheckoutForm({
   maxPerOrder: number;
   turnstileSiteKey: string | null;
   source?: string | null;
+  funnelSlug?: string | null;
+  initialTierId?: string | null;
 }) {
   const tPerson = useTranslations("person");
   const [attendees, setAttendees] = useState<Attendee[]>([
-    emptyAttendee(tiers[0]?.id ?? ""),
+    emptyAttendee(initialTierId ?? tiers[0]?.id ?? ""),
   ]);
   const [couponCode, setCouponCode] = useState("");
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
@@ -196,6 +200,7 @@ export function CheckoutForm({
         locale,
         turnstileToken: turnstileToken ?? undefined,
         source: source ?? undefined,
+        funnelSlug: funnelSlug ?? undefined,
       });
 
       if (window.turnstile && turnstileWidgetIdRef.current) {
