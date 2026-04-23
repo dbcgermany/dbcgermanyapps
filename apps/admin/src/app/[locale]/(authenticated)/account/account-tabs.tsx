@@ -11,6 +11,7 @@ import {
   type AccountProfile,
 } from "@/actions/account";
 import { SecurityTab } from "./security-tab";
+import { NotificationsPreferencesForm } from "./notifications-preferences-form";
 
 type Tab = "profile" | "preferences" | "security";
 
@@ -83,9 +84,11 @@ function initialsOf(firstName: string | null, lastName: string | null, email: st
 export function AccountTabs({
   profile,
   locale,
+  notificationPrefs,
 }: {
   profile: AccountProfile;
   locale: string;
+  notificationPrefs: import("@/actions/account").NotificationPreferenceRow[];
 }) {
   const params = useSearchParams();
   const router = useRouter();
@@ -126,7 +129,13 @@ export function AccountTabs({
 
       <div className="mt-6 max-w-3xl">
         {tab === "profile" && <ProfileTab profile={profile} locale={locale} />}
-        {tab === "preferences" && <PreferencesTab profile={profile} />}
+        {tab === "preferences" && (
+          <PreferencesTabWithNotifications
+            profile={profile}
+            locale={locale}
+            notificationPrefs={notificationPrefs}
+          />
+        )}
         {tab === "security" && <SecurityTab />}
       </div>
     </div>
@@ -400,5 +409,25 @@ function PreferencesTab({ profile }: { profile: AccountProfile }) {
         </Button>
       </div>
     </form>
+  );
+}
+
+function PreferencesTabWithNotifications({
+  profile,
+  locale,
+  notificationPrefs,
+}: {
+  profile: AccountProfile;
+  locale: string;
+  notificationPrefs: import("@/actions/account").NotificationPreferenceRow[];
+}) {
+  return (
+    <div className="space-y-8">
+      <PreferencesTab profile={profile} />
+      <NotificationsPreferencesForm
+        locale={locale}
+        initialRows={notificationPrefs}
+      />
+    </div>
   );
 }

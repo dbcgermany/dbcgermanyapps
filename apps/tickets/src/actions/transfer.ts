@@ -1,6 +1,6 @@
 "use server";
 
-import { createServerClient } from "@dbc/supabase/server";
+import { createServerClient, notifyAdmins } from "@dbc/supabase/server";
 import { createClient } from "@supabase/supabase-js";
 import { sendTicketEmail, sendTransferConfirmation } from "@dbc/email";
 import { revalidatePath } from "next/cache";
@@ -142,6 +142,28 @@ export async function transferTicket(input: TransferInput) {
     process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://tickets.dbc-germany.com";
 
   after(async () => {
+    // 0. Admin-wide notification so operators see the resale/transfer
+    // activity. Off by default in NOTIFICATION_DEFAULTS — managers tracking
+    // transfer volume opt in via Preferences.
+    try {
+      const supabaseService = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
+      await notifyAdmins(supabaseService, {
+        type: "transfer",
+        title: `Ticket transferred · ${ticket.attendee_name} → ${input.newAttendeeName.trim()}`,
+        body: `${event.title_en} — ${tier?.name_en ?? "Ticket"}`,
+        data: {
+          event_id: event.id,
+          ticket_id: ticket.id,
+          order_id: ticket.order_id,
+        },
+      });
+    } catch (err) {
+      console.error("transfer notification failed:", err);
+    }
+
     // 1. Send the notification that the ticket was transferred.
     try {
       const startsAtDate = new Date(event.starts_at);

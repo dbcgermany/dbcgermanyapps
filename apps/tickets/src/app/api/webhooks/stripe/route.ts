@@ -405,5 +405,43 @@ export async function POST(request: Request) {
     }
   }
 
+  // Surfaces genuinely failed card authorisations to the admin. Stripe emits
+  // payment_intent.payment_failed when the attempt is declined/cancelled; we
+  // want operators to know immediately so they can follow up with the buyer
+  // instead of waiting for a silent no-show.
+  if (event.type === "payment_intent.payment_failed") {
+    const intent = event.data.object as Stripe.PaymentIntent;
+    const reason =
+      intent.last_payment_error?.message ??
+      intent.last_payment_error?.code ??
+      "unknown reason";
+    // Find the order via stripe_payment_intent_id so the deep link resolves.
+    const { data: failedOrder } = await supabase
+      .from("orders")
+      .select("id, event_id, recipient_name, recipient_email, total_cents, currency")
+      .eq("stripe_payment_intent_id", intent.id)
+      .maybeSingle();
+    after(async () => {
+      try {
+        await notifyAdmins(supabase, {
+          type: "payment_failed",
+          title: `Payment failed${failedOrder?.recipient_name ? ` — ${failedOrder.recipient_name}` : ""}`,
+          body: `${reason}${failedOrder?.total_cents ? ` · ${(failedOrder.total_cents / 100).toFixed(2)} ${failedOrder.currency ?? "EUR"}` : ""}`,
+          data: {
+            order_id: failedOrder?.id ?? null,
+            event_id: failedOrder?.event_id ?? null,
+            stripe_payment_intent_id: intent.id,
+            reason,
+          },
+        });
+      } catch (err) {
+        console.error(
+          `Failed to notify admins of payment_failed for ${intent.id}:`,
+          err
+        );
+      }
+    });
+  }
+
   return NextResponse.json({ received: true });
 }

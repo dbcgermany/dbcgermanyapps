@@ -344,6 +344,9 @@ importers:
 
   packages/supabase:
     dependencies:
+      '@dbc/email':
+        specifier: workspace:*
+        version: link:../email
       '@dbc/types':
         specifier: workspace:*
         version: link:../types

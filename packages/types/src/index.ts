@@ -118,6 +118,62 @@ export const DISCOUNT_TYPE_VALUES = ["percentage", "fixed_amount"] as const;
 export type DiscountType = (typeof DISCOUNT_TYPE_VALUES)[number];
 
 /* -------------------------------------------------------------------------- */
+/*                              Notifications                                 */
+/* -------------------------------------------------------------------------- */
+// Admin-facing in-app + email notifications. Every call to notifyAdmins
+// must use a value from this list; the fan-out filters recipients through
+// notification_preferences (per-user, per-type, per-channel) and falls
+// back to NOTIFICATION_DEFAULTS when a user hasn't tuned a given type.
+
+export const NOTIFICATION_TYPE_VALUES = [
+  // Revenue / orders
+  "new_order",
+  "payment_failed",
+  "refund_issued",
+  "tier_sold_out",
+  "low_inventory",
+  // Leads / submissions
+  "new_application",
+  "contact_form_received",
+  "newsletter_subscriber",
+  // Event operations
+  "check_in_milestone",
+  "waitlist_available",
+  "admin_event_reminder",
+  "door_sale",
+  "transfer",
+  // Digest
+  "daily_digest",
+] as const;
+export type NotificationType = (typeof NOTIFICATION_TYPE_VALUES)[number];
+
+/**
+ * Default delivery when a user hasn't tuned a given notification type.
+ * Tuned to "things a busy operator genuinely needs to see" — not every
+ * type shouts in-app, and only the revenue-critical ones email by
+ * default. Users can flip any of these in their Preferences tab.
+ */
+export const NOTIFICATION_DEFAULTS: Record<
+  NotificationType,
+  { in_app: boolean; email: boolean }
+> = {
+  new_order:             { in_app: true,  email: true  },
+  payment_failed:        { in_app: true,  email: true  },
+  refund_issued:         { in_app: true,  email: false },
+  tier_sold_out:         { in_app: true,  email: true  },
+  low_inventory:         { in_app: true,  email: false },
+  new_application:       { in_app: true,  email: true  },
+  contact_form_received: { in_app: true,  email: true  },
+  newsletter_subscriber: { in_app: false, email: false },
+  check_in_milestone:    { in_app: true,  email: false },
+  waitlist_available:    { in_app: true,  email: false },
+  admin_event_reminder:  { in_app: true,  email: true  },
+  door_sale:             { in_app: true,  email: false },
+  transfer:              { in_app: false, email: false },
+  daily_digest:          { in_app: false, email: true  },
+};
+
+/* -------------------------------------------------------------------------- */
 /*                                  Team                                      */
 /* -------------------------------------------------------------------------- */
 

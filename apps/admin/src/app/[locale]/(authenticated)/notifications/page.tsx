@@ -3,15 +3,21 @@ import {
   BarChart3,
   Bell,
   CheckCircle,
+  CreditCard,
   DoorOpen,
   FileText,
   Mail,
+  MessageSquare,
+  PackageOpen,
   ShoppingCart,
   Ticket,
   Undo2,
+  UserPlus,
+  CalendarClock,
   type LucideIcon,
 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+import { redirect } from "next/navigation";
 import {
   getAllNotifications,
   markReadAction,
@@ -19,18 +25,25 @@ import {
 } from "@/actions/notifications";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
+import { notificationHref } from "@/lib/notification-links";
+import type { NotificationType } from "@dbc/types";
 
 const TYPE_ICONS: Record<string, LucideIcon> = {
   new_order: ShoppingCart,
+  payment_failed: CreditCard,
   tier_sold_out: Ticket,
+  low_inventory: PackageOpen,
   refund_issued: Undo2,
   check_in_milestone: CheckCircle,
   waitlist_available: Bell,
+  admin_event_reminder: CalendarClock,
   door_sale: DoorOpen,
   transfer: ArrowLeftRight,
-  sequence_sent: Mail,
   new_application: FileText,
+  contact_form_received: MessageSquare,
+  newsletter_subscriber: UserPlus,
   daily_digest: BarChart3,
+  sequence_sent: Mail,
 };
 
 export default async function NotificationsPage({
@@ -79,12 +92,18 @@ export default async function NotificationsPage({
         <div className="mt-6 space-y-2">
           {notifications.map((n) => {
             const Icon = TYPE_ICONS[n.type] ?? Bell;
+            const href = notificationHref(
+              locale,
+              n.type as NotificationType,
+              (n as unknown as { data: Record<string, unknown> | null }).data
+            );
             return (
               <form
                 key={n.id}
                 action={async () => {
                   "use server";
                   if (!n.read_at) await markReadAction(n.id, locale);
+                  redirect(href);
                 }}
                 className="block"
               >

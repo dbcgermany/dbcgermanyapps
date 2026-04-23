@@ -20,7 +20,7 @@ export async function AdminShell({
   const [notifResult, unreadResult, profileResult] = await Promise.all([
     supabase
       .from("notifications")
-      .select("id, type, title, body, read_at, created_at")
+      .select("id, type, title, body, data, read_at, created_at")
       .eq("user_id", userId)
       .order("created_at", { ascending: false })
       .limit(10),

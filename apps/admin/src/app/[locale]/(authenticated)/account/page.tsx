@@ -1,5 +1,8 @@
 import { getTranslations } from "next-intl/server";
-import { getAccountProfile } from "@/actions/account";
+import {
+  getAccountProfile,
+  listNotificationPreferences,
+} from "@/actions/account";
 import { PageHeader } from "@/components/page-header";
 import { AccountTabs } from "./account-tabs";
 
@@ -10,6 +13,7 @@ export default async function AccountPage({
 }) {
   const { locale } = await params;
   const profile = await getAccountProfile();
+  const notificationPrefs = await listNotificationPreferences();
   const tBack = await getTranslations({ locale, namespace: "admin.back" });
 
   const title =
@@ -29,7 +33,11 @@ export default async function AccountPage({
         back={{ href: `/${locale}/dashboard`, label: tBack("dashboard") }}
       />
 
-      <AccountTabs profile={profile} locale={locale} />
+      <AccountTabs
+        profile={profile}
+        locale={locale}
+        notificationPrefs={notificationPrefs}
+      />
     </div>
   );
 }

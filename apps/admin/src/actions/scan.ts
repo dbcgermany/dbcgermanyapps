@@ -1,6 +1,62 @@
 "use server";
 
-import { createServerClient, requireRole } from "@dbc/supabase/server";
+import { createServerClient, notifyAdmins, requireRole } from "@dbc/supabase/server";
+
+// Fire a check_in_milestone notification when the event crosses a 25% /
+// 50% / 75% / 100% check-in threshold. Idempotent via an audit_log row
+// per (event_id, bucket).
+const MILESTONES = [25, 50, 75, 100] as const;
+
+async function maybeFireCheckInMilestone(
+  supabase: Awaited<ReturnType<typeof createServerClient>>,
+  eventId: string
+) {
+  const [{ count: total }, { count: checkedIn }] = await Promise.all([
+    supabase
+      .from("tickets")
+      .select("*", { count: "exact", head: true })
+      .eq("event_id", eventId),
+    supabase
+      .from("tickets")
+      .select("*", { count: "exact", head: true })
+      .eq("event_id", eventId)
+      .not("checked_in_at", "is", null),
+  ]);
+  const t = total ?? 0;
+  const c = checkedIn ?? 0;
+  if (t === 0) return;
+  const percent = Math.floor((c / t) * 100);
+  const bucket = MILESTONES.filter((m) => percent >= m).pop();
+  if (!bucket) return;
+
+  const { count: already } = await supabase
+    .from("audit_log")
+    .select("id", { count: "exact", head: true })
+    .eq("action", "notify_check_in_milestone")
+    .eq("entity_id", eventId)
+    .filter("details->>bucket", "eq", String(bucket));
+  if ((already ?? 0) > 0) return;
+
+  const { data: event } = await supabase
+    .from("events")
+    .select("title_en")
+    .eq("id", eventId)
+    .maybeSingle();
+
+  await notifyAdmins(supabase, {
+    type: "check_in_milestone",
+    title: `${bucket}% checked in · ${event?.title_en ?? "Event"}`,
+    body: `${c} of ${t} attendees are in the room.`,
+    data: { event_id: eventId, percent: bucket, checked_in: c, total: t },
+  });
+
+  await supabase.from("audit_log").insert({
+    action: "notify_check_in_milestone",
+    entity_type: "events",
+    entity_id: eventId,
+    details: { bucket: String(bucket), checked_in: c, total: t },
+  });
+}
 
 export interface ScanResult {
   success: boolean;
@@ -53,6 +109,11 @@ export async function checkInTicket(
       entity_type: "tickets",
       entity_id: row.ticket_id,
       details: { attendee: row.attendee_name, event_id: eventId },
+    });
+
+    // Fire-and-forget: don't slow down the scanner response.
+    maybeFireCheckInMilestone(supabase, eventId).catch((err) => {
+      console.error("[scan] check-in milestone check failed:", err);
     });
 
     return {

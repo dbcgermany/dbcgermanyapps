@@ -1,6 +1,6 @@
 "use server";
 
-import { createServerClient } from "@dbc/supabase/server";
+import { createServerClient, notifyAdmins } from "@dbc/supabase/server";
 import { sendNewsletterConfirm } from "@dbc/email";
 import { headers } from "next/headers";
 
@@ -129,6 +129,29 @@ export async function confirmNewsletterSubscription(token: string) {
       unsubscribed_at: null,
     })
     .eq("id", contact.id);
+
+  // Off by default in NOTIFICATION_DEFAULTS — admins who care opt in via
+  // the Preferences tab. Gives ops visibility into newsletter growth
+  // milestones without spamming everyone for every confirm.
+  try {
+    const { data: c } = await supabase
+      .from("contacts")
+      .select("first_name, last_name, email")
+      .eq("id", contact.id)
+      .single();
+    const name =
+      [c?.first_name, c?.last_name].filter(Boolean).join(" ").trim() ||
+      c?.email ||
+      "New subscriber";
+    await notifyAdmins(supabase, {
+      type: "newsletter_subscriber",
+      title: `${name} confirmed newsletter subscription`,
+      body: c?.email ?? "",
+      data: { contact_id: contact.id },
+    });
+  } catch (err) {
+    console.error("newsletter_subscriber notification failed:", err);
+  }
 
   return { success: true };
 }

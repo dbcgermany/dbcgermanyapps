@@ -6,11 +6,16 @@ import { Bell } from "lucide-react";
 import { toast } from "sonner";
 import { createBrowserClient } from "@dbc/supabase";
 
+import { notificationHref } from "@/lib/notification-links";
+import type { NotificationType } from "@dbc/types";
+import { markOneNotificationRead } from "@/actions/notifications";
+
 interface Notification {
   id: string;
   type: string;
   title: string;
   body: string | null;
+  data: Record<string, unknown> | null;
   read_at: string | null;
   created_at: string;
 }
@@ -51,12 +56,19 @@ export function NotificationBell({
           setUnreadCount((c) => c + 1);
 
           // In-app toast — user sees it whether or not the bell is open.
+          // Action button deep-links to the specific entity when possible
+          // so one click on the toast goes straight to the thing.
+          const toastHref = notificationHref(
+            locale,
+            newNotif.type as NotificationType,
+            newNotif.data
+          );
           toast.message(newNotif.title, {
             description: newNotif.body ?? undefined,
             action: {
               label: "View",
               onClick: () => {
-                window.location.href = `/${locale}/notifications`;
+                window.location.href = toastHref;
               },
             },
           });
@@ -131,9 +143,10 @@ export function NotificationBell({
       >
         <Bell className="h-5 w-5" strokeWidth={1.75} />
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
-            {unreadCount > 99 ? "99+" : unreadCount}
-          </span>
+          <span
+            aria-label={`${unreadCount} unread notification${unreadCount === 1 ? "" : "s"}`}
+            className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500 ring-2 ring-background"
+          />
         )}
       </button>
 
@@ -156,27 +169,53 @@ export function NotificationBell({
                 {t.empty}
               </p>
             ) : (
-              notifications.map((n) => (
-                <div
-                  key={n.id}
-                  className={`border-b border-border px-4 py-3 last:border-0 ${
-                    n.read_at ? "" : "bg-primary/5"
-                  }`}
-                >
-                  <p className="text-sm font-medium">{n.title}</p>
-                  {n.body && (
-                    <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">
-                      {n.body}
+              notifications.map((n) => {
+                const href = notificationHref(
+                  locale,
+                  n.type as NotificationType,
+                  n.data
+                );
+                return (
+                  <Link
+                    key={n.id}
+                    href={href}
+                    onClick={() => {
+                      if (!n.read_at) {
+                        // Optimistic: decrement locally; the Realtime UPDATE
+                        // will arrive when the server write lands.
+                        setUnreadCount((c) => Math.max(0, c - 1));
+                        setNotifications((prev) =>
+                          prev.map((row) =>
+                            row.id === n.id
+                              ? { ...row, read_at: new Date().toISOString() }
+                              : row
+                          )
+                        );
+                        markOneNotificationRead(n.id).catch((err) =>
+                          console.error("markOneNotificationRead failed:", err)
+                        );
+                      }
+                      setOpen(false);
+                    }}
+                    className={`block border-b border-border px-4 py-3 last:border-0 transition-colors hover:bg-muted ${
+                      n.read_at ? "" : "bg-primary/5"
+                    }`}
+                  >
+                    <p className="text-sm font-medium">{n.title}</p>
+                    {n.body && (
+                      <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">
+                        {n.body}
+                      </p>
+                    )}
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {new Date(n.created_at).toLocaleTimeString(locale, {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
                     </p>
-                  )}
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {new Date(n.created_at).toLocaleTimeString(locale, {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </p>
-                </div>
-              ))
+                  </Link>
+                );
+              })
             )}
           </div>
         </div>

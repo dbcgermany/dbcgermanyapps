@@ -19,6 +19,7 @@
     "gen-types": "supabase gen types typescript --project-id rcqgsexfuaoiiuqcqeka > ../types/src/database.ts"
   },
   "dependencies": {
+    "@dbc/email": "workspace:*",
     "@dbc/types": "workspace:*",
     "@supabase/supabase-js": "^2.49.0",
     "@supabase/ssr": "^0.7.0"

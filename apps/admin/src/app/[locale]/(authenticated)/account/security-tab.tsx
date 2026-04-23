@@ -4,6 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import { Badge, Button } from "@dbc/ui";
 import { toast } from "sonner";
 import { createBrowserClient } from "@dbc/supabase";
+import { humaniseSessionLabel } from "@/lib/vercel-regions";
 import {
   generateBackupCodes,
   countRemainingBackupCodes,
@@ -474,7 +475,10 @@ export function SecurityTab() {
         ) : (
           <ul className="mt-4 divide-y divide-border rounded-md border border-border">
             {sessions.map((s) => {
-              const ua = s.user_agent ?? "Unknown device";
+              const { label, isServer } = humaniseSessionLabel(
+                s.user_agent,
+                s.ip
+              );
               const last = s.updated_at ?? s.created_at;
               return (
                 <li
@@ -483,7 +487,15 @@ export function SecurityTab() {
                 >
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-medium text-foreground">
-                      {shortUserAgent(ua)}
+                      {isServer ? label : shortUserAgent(s.user_agent ?? "Unknown device")}
+                      {isServer && (
+                        <span
+                          className="ml-2 text-muted-foreground"
+                          title="Your page's server automatically refreshed your login token. This isn't a separate browser — it's the same account."
+                        >
+                          ⓘ
+                        </span>
+                      )}
                     </p>
                     <p className="text-muted-foreground">
                       {s.ip ? `${s.ip} · ` : ""}

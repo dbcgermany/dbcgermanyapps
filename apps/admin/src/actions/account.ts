@@ -113,6 +113,58 @@ export async function updateAccountProfile(input: ProfileFormInput) {
   return { success: true };
 }
 
+import {
+  NOTIFICATION_TYPE_VALUES,
+  type NotificationType,
+} from "@dbc/types";
+
+export interface NotificationPreferenceRow {
+  notification_type: NotificationType;
+  in_app: boolean;
+  email: boolean;
+}
+
+/** Load the current user's notification preference rows. Missing types
+ *  simply don't appear in the result — the client falls back to the
+ *  NOTIFICATION_DEFAULTS from @dbc/types. */
+export async function listNotificationPreferences(): Promise<
+  NotificationPreferenceRow[]
+> {
+  const user = await requireRole("team_member");
+  const supabase = await createServerClient();
+  const { data } = await supabase
+    .from("notification_preferences")
+    .select("notification_type, in_app, email")
+    .eq("user_id", user.userId);
+  return (data ?? []) as NotificationPreferenceRow[];
+}
+
+/** Upsert one row per (user, type). Any unknown types coming from the
+ *  client (stale bundle, tampered payload) are dropped. */
+export async function updateNotificationPreferences(
+  prefs: Partial<Record<NotificationType, { in_app: boolean; email: boolean }>>
+): Promise<{ error?: string; success?: true }> {
+  const user = await requireRole("team_member");
+  const supabase = await createServerClient();
+  const allowed = new Set<string>(NOTIFICATION_TYPE_VALUES);
+  const rows = Object.entries(prefs)
+    .filter(([type]) => allowed.has(type))
+    .map(([type, p]) => ({
+      user_id: user.userId,
+      notification_type: type,
+      in_app: !!p?.in_app,
+      email: !!p?.email,
+      updated_at: new Date().toISOString(),
+    }));
+  if (rows.length === 0) return { success: true };
+  const { error } = await supabase
+    .from("notification_preferences")
+    .upsert(rows, { onConflict: "user_id,notification_type" });
+  if (error) return { error: error.message };
+  revalidatePath("/", "layout");
+  return { success: true };
+}
+
 export interface PreferencesFormInput {
   locale: string;
   theme: "light" | "dark";

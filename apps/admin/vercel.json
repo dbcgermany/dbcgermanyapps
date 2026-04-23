@@ -11,6 +11,14 @@
     {
       "path": "/api/cron/pre-event-reminders",
       "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/cron/low-inventory",
+      "schedule": "*/30 * * * *"
+    },
+    {
+      "path": "/api/cron/admin-event-reminders",
+      "schedule": "0 7 * * *"
     }
   ]
 }

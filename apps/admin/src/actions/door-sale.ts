@@ -1,6 +1,6 @@
 "use server";
 
-import { createServerClient, requireRole } from "@dbc/supabase/server";
+import { createServerClient, notifyAdmins, requireRole } from "@dbc/supabase/server";
 import { CONTACT_CATEGORY } from "@dbc/types";
 import { sendTicketEmail } from "@dbc/email";
 import { revalidatePath } from "next/cache";
@@ -152,6 +152,25 @@ export async function createDoorSale(formData: FormData) {
       payment_method: rawPayment,
     },
   });
+
+  // Admin-wide notification (respects preferences). Off by default for
+  // most operators — the person making the sale already knows — but
+  // useful for managers tracking door-revenue in real time.
+  try {
+    await notifyAdmins(supabase, {
+      type: "door_sale",
+      title: `Door sale · ${attendeeName}`,
+      body: `${tier.name_en} — €${(totalCents / 100).toFixed(2)} (${rawPayment})`,
+      data: {
+        order_id: order.id,
+        event_id: tier.event_id,
+        tier_id: tier.id,
+        amount_cents: totalCents,
+      },
+    });
+  } catch (err) {
+    console.error("door_sale notification failed:", err);
+  }
 
   revalidatePath(`/${locale}/door-sale`);
   return { success: true, orderId: order.id };

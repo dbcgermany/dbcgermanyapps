@@ -3,6 +3,23 @@
 import { createServerClient, requireRole } from "@dbc/supabase/server";
 import { revalidatePath } from "next/cache";
 
+/**
+ * Marks a single notification read without revalidating the full page. Used
+ * by the bell dropdown on item-click — the Realtime UPDATE event handles
+ * UI state; we don't need to bust the notifications page cache.
+ */
+export async function markOneNotificationRead(notificationId: string) {
+  const user = await requireRole("team_member");
+  const supabase = await createServerClient();
+  await supabase
+    .from("notifications")
+    .update({ read_at: new Date().toISOString() })
+    .eq("id", notificationId)
+    .eq("user_id", user.userId)
+    .is("read_at", null);
+  return { success: true };
+}
+
 export async function markReadAction(notificationId: string, locale: string) {
   const user = await requireRole("team_member");
   const supabase = await createServerClient();

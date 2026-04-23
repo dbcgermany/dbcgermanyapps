@@ -1,7 +1,7 @@
 "use server";
 
 import { createEmailClient, sendContactFormConfirm } from "@dbc/email";
-import { createServerClient } from "@dbc/supabase/server";
+import { createServerClient, notifyAdmins } from "@dbc/supabase/server";
 
 const CONTACT_DEST =
   process.env.CONTACT_DEST_EMAIL ?? "info@dbc-germany.com";
@@ -57,6 +57,14 @@ export async function sendContactMessage(
     await supabase.from("analytics_events").insert({
       event_name: "site_contact_message",
       properties: { name, email, topic, locale: input.locale },
+    });
+
+    // In-app + email admin alert (respects per-user preferences).
+    await notifyAdmins(supabase, {
+      type: "contact_form_received",
+      title: `New contact form message from ${name}`,
+      body: `${topic ? `[${topic}] ` : ""}${message.slice(0, 240)}${message.length > 240 ? "…" : ""}`,
+      data: { email, topic, locale: input.locale },
     });
   } catch (err) {
     console.error("analytics_events insert failed:", err);
