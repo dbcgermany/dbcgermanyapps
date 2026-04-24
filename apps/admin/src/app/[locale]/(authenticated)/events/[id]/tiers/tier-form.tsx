@@ -10,7 +10,10 @@ const T = {
     nameEn: "Name (EN)",
     nameDe: "Name (DE)",
     nameFr: "Name (FR)",
-    priceLabel: "Price (€)",
+    priceLabel: "Current price (€)",
+    originalPriceLabel: "Regular price (€) — optional",
+    originalPriceHint:
+      "Shown struck through on the public page. Leave empty to hide the discount.",
     maxQty: "Max quantity (empty = unlimited)",
     sortOrder: "Sort order",
     salesStart: "Sales start (optional)",
@@ -25,7 +28,10 @@ const T = {
     nameEn: "Name (EN)",
     nameDe: "Name (DE)",
     nameFr: "Name (FR)",
-    priceLabel: "Preis (€)",
+    priceLabel: "Aktueller Preis (€)",
+    originalPriceLabel: "Regulärer Preis (€) — optional",
+    originalPriceHint:
+      "Auf der öffentlichen Seite durchgestrichen angezeigt. Leer lassen, um den Rabatt auszublenden.",
     maxQty: "Maximale Menge (leer = unbegrenzt)",
     sortOrder: "Sortierung",
     salesStart: "Verkaufsstart (optional)",
@@ -41,7 +47,10 @@ const T = {
     nameEn: "Nom (EN)",
     nameDe: "Nom (DE)",
     nameFr: "Nom (FR)",
-    priceLabel: "Prix (€)",
+    priceLabel: "Prix actuel (€)",
+    originalPriceLabel: "Prix régulier (€) — optionnel",
+    originalPriceHint:
+      "Affiché barré sur la page publique. Laisser vide pour masquer la remise.",
     maxQty: "Quantité max (vide = illimité)",
     sortOrder: "Ordre",
     salesStart: "Début des ventes (optionnel)",
@@ -125,8 +134,8 @@ export function TierForm({
         </div>
       </div>
 
-      {/* Price & Quantity */}
-      <div className="grid gap-3 sm:grid-cols-3">
+      {/* Price */}
+      <div className="grid gap-3 sm:grid-cols-2">
         <div>
           <label htmlFor="price" className="block text-xs text-muted-foreground mb-1">
             {t.priceLabel}
@@ -142,6 +151,27 @@ export function TierForm({
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
+        <div>
+          <label htmlFor="original_price" className="block text-xs text-muted-foreground mb-1">
+            {t.originalPriceLabel}
+          </label>
+          <input
+            id="original_price"
+            name="original_price"
+            type="number"
+            step="0.01"
+            min="0"
+            placeholder="99.00"
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          />
+          <p className="mt-1 text-[11px] leading-snug text-muted-foreground">
+            {t.originalPriceHint}
+          </p>
+        </div>
+      </div>
+
+      {/* Quantity & sort order */}
+      <div className="grid gap-3 sm:grid-cols-2">
         <div>
           <label htmlFor="max_quantity" className="block text-xs text-muted-foreground mb-1">
             {t.maxQty}

@@ -22,7 +22,27 @@ async function pingTierPaths(
 }
 
 const TIER_COLUMNS =
-  "id, event_id, name_en, name_de, name_fr, description_en, description_de, description_fr, price_cents, currency, max_quantity, quantity_sold, sales_start_at, sales_end_at, is_public, sort_order, created_at" as const;
+  "id, event_id, name_en, name_de, name_fr, description_en, description_de, description_fr, price_cents, original_price_cents, currency, max_quantity, quantity_sold, sales_start_at, sales_end_at, is_public, sort_order, created_at" as const;
+
+function parseOriginalPrice(
+  raw: FormDataEntryValue | null,
+  priceCents: number
+): { value: number | null; error?: string } {
+  const str = typeof raw === "string" ? raw.trim() : "";
+  if (str === "") return { value: null };
+  const parsed = parseFloat(str);
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    return { value: null, error: "Regular price must be a positive number." };
+  }
+  const cents = Math.round(parsed * 100);
+  if (cents < priceCents) {
+    return {
+      value: null,
+      error: "Regular price must be higher than the current price.",
+    };
+  }
+  return { value: cents };
+}
 
 export async function getTiers(eventId: string) {
   await requireRole("manager");
@@ -55,6 +75,15 @@ export async function createTier(formData: FormData) {
     value: eventId,
   });
 
+  const priceCents = Math.round(
+    parseFloat(formData.get("price") as string) * 100
+  );
+  const originalPrice = parseOriginalPrice(
+    formData.get("original_price"),
+    priceCents
+  );
+  if (originalPrice.error) return { error: originalPrice.error };
+
   const tierData = {
     event_id: eventId,
     slug,
@@ -64,9 +93,8 @@ export async function createTier(formData: FormData) {
     description_en: formData.get("description_en") as string,
     description_de: formData.get("description_de") as string,
     description_fr: formData.get("description_fr") as string,
-    price_cents: Math.round(
-      parseFloat(formData.get("price") as string) * 100
-    ),
+    price_cents: priceCents,
+    original_price_cents: originalPrice.value,
     max_quantity: formData.get("max_quantity")
       ? parseInt(formData.get("max_quantity") as string, 10)
       : null,
@@ -105,6 +133,15 @@ export async function updateTier(tierId: string, formData: FormData) {
   const locale = formData.get("locale") as string;
   const nameEn = formData.get("name_en") as string;
 
+  const priceCents = Math.round(
+    parseFloat(formData.get("price") as string) * 100
+  );
+  const originalPrice = parseOriginalPrice(
+    formData.get("original_price"),
+    priceCents
+  );
+  if (originalPrice.error) return { error: originalPrice.error };
+
   const tierData = {
     name_en: nameEn,
     name_de: (formData.get("name_de") as string) || nameEn,
@@ -112,9 +149,8 @@ export async function updateTier(tierId: string, formData: FormData) {
     description_en: formData.get("description_en") as string,
     description_de: formData.get("description_de") as string,
     description_fr: formData.get("description_fr") as string,
-    price_cents: Math.round(
-      parseFloat(formData.get("price") as string) * 100
-    ),
+    price_cents: priceCents,
+    original_price_cents: originalPrice.value,
     max_quantity: formData.get("max_quantity")
       ? parseInt(formData.get("max_quantity") as string, 10)
       : null,

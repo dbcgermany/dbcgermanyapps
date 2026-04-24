@@ -7,7 +7,10 @@ import { Button } from "@dbc/ui";
 const TR_T = {
   en: {
     nameEn: "Name (EN)", nameDe: "Name (DE)", nameFr: "Name (FR)",
-    price: "Price (€)", maxQty: "Max qty (empty=∞)", sort: "Sort",
+    price: "Current price (€)",
+    originalPrice: "Regular price (€) — optional",
+    originalPriceHint: "Shown struck through. Leave empty to hide the discount.",
+    maxQty: "Max qty (empty=∞)", sort: "Sort",
     descEn: "Description (EN)", descDe: "Description (DE)", descFr: "Description (FR)",
     saving: "Saving…", save: "Save", cancel: "Cancel",
     hidden: "Hidden", sold: "sold",
@@ -16,7 +19,10 @@ const TR_T = {
   },
   de: {
     nameEn: "Name (EN)", nameDe: "Name (DE)", nameFr: "Name (FR)",
-    price: "Preis (€)", maxQty: "Max. Menge (leer=∞)", sort: "Sort.",
+    price: "Aktueller Preis (€)",
+    originalPrice: "Regulärer Preis (€) — optional",
+    originalPriceHint: "Wird durchgestrichen gezeigt. Leer lassen, um den Rabatt auszublenden.",
+    maxQty: "Max. Menge (leer=∞)", sort: "Sort.",
     descEn: "Beschreibung (EN)", descDe: "Beschreibung (DE)", descFr: "Beschreibung (FR)",
     saving: "Wird gespeichert…", save: "Speichern", cancel: "Abbrechen",
     hidden: "Ausgeblendet", sold: "verkauft",
@@ -25,7 +31,10 @@ const TR_T = {
   },
   fr: {
     nameEn: "Nom (EN)", nameDe: "Nom (DE)", nameFr: "Nom (FR)",
-    price: "Prix (€)", maxQty: "Quantité max (vide=∞)", sort: "Ordre",
+    price: "Prix actuel (€)",
+    originalPrice: "Prix régulier (€) — optionnel",
+    originalPriceHint: "Affiché barré. Laisser vide pour masquer la remise.",
+    maxQty: "Quantité max (vide=∞)", sort: "Ordre",
     descEn: "Description (EN)", descDe: "Description (DE)", descFr: "Description (FR)",
     saving: "Enregistrement…", save: "Enregistrer", cancel: "Annuler",
     hidden: "Masqué", sold: "vendus",
@@ -43,6 +52,7 @@ type Tier = {
   description_de: string | null;
   description_fr: string | null;
   price_cents: number;
+  original_price_cents: number | null;
   max_quantity: number | null;
   quantity_sold: number;
   sales_start_at: string | null;
@@ -113,17 +123,41 @@ export function TierRow({
             className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
           />
         </div>
-        <div className="grid gap-2 sm:grid-cols-3">
-          <input
-            name="price"
-            type="number"
-            step="0.01"
-            min="0"
-            defaultValue={(tier.price_cents / 100).toFixed(2)}
-            required
-            placeholder={t.price}
-            className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-          />
+        <div className="grid gap-2 sm:grid-cols-2">
+          <div>
+            <input
+              name="price"
+              type="number"
+              step="0.01"
+              min="0"
+              defaultValue={(tier.price_cents / 100).toFixed(2)}
+              required
+              placeholder={t.price}
+              aria-label={t.price}
+              className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
+            />
+          </div>
+          <div>
+            <input
+              name="original_price"
+              type="number"
+              step="0.01"
+              min="0"
+              defaultValue={
+                tier.original_price_cents != null
+                  ? (tier.original_price_cents / 100).toFixed(2)
+                  : ""
+              }
+              placeholder={t.originalPrice}
+              aria-label={t.originalPrice}
+              className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
+            />
+            <p className="mt-1 text-[11px] leading-snug text-muted-foreground">
+              {t.originalPriceHint}
+            </p>
+          </div>
+        </div>
+        <div className="grid gap-2 sm:grid-cols-2">
           <input
             name="max_quantity"
             type="number"
@@ -206,7 +240,17 @@ export function TierRow({
           )}
         </div>
         <p className="mt-0.5 text-sm text-muted-foreground">
-          &euro;{(tier.price_cents / 100).toFixed(2)} &middot; {tier.quantity_sold}
+          <span className="font-medium text-foreground">
+            &euro;{(tier.price_cents / 100).toFixed(2)}
+          </span>
+          {tier.original_price_cents != null &&
+            tier.original_price_cents > tier.price_cents && (
+              <span className="ml-1.5 line-through">
+                &euro;{(tier.original_price_cents / 100).toFixed(2)}
+              </span>
+            )}
+          {" · "}
+          {tier.quantity_sold}
           {tier.max_quantity ? ` / ${tier.max_quantity}` : ""} {t.sold}
         </p>
       </div>

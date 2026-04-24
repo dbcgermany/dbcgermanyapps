@@ -2,10 +2,16 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getEventBySlug, getPublicTiers, getEventSchedule } from "@/lib/queries";
+import { getEventTriggers, TRIGGER_POLICY } from "@/actions/triggers";
 import { getCompanyInfo } from "@/lib/company-info";
 import { WaitlistButton } from "./waitlist-button";
 import { ShareButtons } from "./share-buttons";
 import { Countdown } from "./countdown";
+import { ScarcityBadge } from "@/components/event-triggers/scarcity-badge";
+import { SocialProofBadge } from "@/components/event-triggers/social-proof-badge";
+import { TierDeadlineCountdown } from "@/components/event-triggers/tier-deadline-countdown";
+import { RecentBuyerTicker } from "@/components/event-triggers/recent-buyer-ticker";
+import { PriceAnchor } from "@/components/event-triggers/price-anchor";
 
 export const revalidate = 30;
 
@@ -58,9 +64,15 @@ export default async function EventDetailPage({
   const event = eventOrNull;
   const company = await getCompanyInfo();
 
-  const [tiers, schedule] = await Promise.all([
+  const triggerLocale = (locale === "de" || locale === "fr" ? locale : "en") as
+    | "en"
+    | "de"
+    | "fr";
+
+  const [tiers, schedule, triggers] = await Promise.all([
     getPublicTiers(event.id),
     getEventSchedule(event.id),
+    getEventTriggers(event.id, triggerLocale),
   ]);
 
   const minPrice = tiers.length > 0
@@ -138,6 +150,20 @@ export default async function EventDetailPage({
       getTickets: "Get tickets",
       organizer: "Organizer",
       viewOnMap: "View on map",
+      scarcityOnly: "Only",
+      scarcityHurry: "Hurry, only",
+      scarcityLeft: "left",
+      socialProofSuffix: "people secured their spot in the last 24 hours",
+      saveLabel: "Save",
+      deadlinePrefix: "Ends in",
+      dayAbbr: "d",
+      hourAbbr: "h",
+      minAbbr: "m",
+      tickerPrefixCity: "Someone from",
+      tickerMiddleCity: "just bought a",
+      tickerPrefixAnon: "Someone just bought a",
+      tickerTicket: "ticket",
+      tickerJustNow: "just now",
     },
     de: {
       back: "Alle Veranstaltungen",
@@ -156,6 +182,21 @@ export default async function EventDetailPage({
       getTickets: "Tickets kaufen",
       organizer: "Veranstalter",
       viewOnMap: "Auf Karte anzeigen",
+      scarcityOnly: "Nur noch",
+      scarcityHurry: "Schnell sein — nur noch",
+      scarcityLeft: "verfügbar",
+      socialProofSuffix:
+        "Personen haben sich in den letzten 24 Stunden ihren Platz gesichert",
+      saveLabel: "Sparen",
+      deadlinePrefix: "Endet in",
+      dayAbbr: "T",
+      hourAbbr: "Std",
+      minAbbr: "Min",
+      tickerPrefixCity: "Jemand aus",
+      tickerMiddleCity: "hat gerade ein",
+      tickerPrefixAnon: "Jemand hat gerade ein",
+      tickerTicket: "Ticket gekauft",
+      tickerJustNow: "gerade eben",
     },
     fr: {
       back: "Tous les événements",
@@ -174,6 +215,21 @@ export default async function EventDetailPage({
       getTickets: "Réserver ma place",
       organizer: "Organisateur",
       viewOnMap: "Voir sur la carte",
+      scarcityOnly: "Plus que",
+      scarcityHurry: "Vite, plus que",
+      scarcityLeft: "disponibles",
+      socialProofSuffix:
+        "personnes ont réservé leur place dans les dernières 24 heures",
+      saveLabel: "Économisez",
+      deadlinePrefix: "Fin dans",
+      dayAbbr: "j",
+      hourAbbr: "h",
+      minAbbr: "min",
+      tickerPrefixCity: "Quelqu’un à",
+      tickerMiddleCity: "vient d’acheter un billet",
+      tickerPrefixAnon: "Quelqu’un vient d’acheter un billet",
+      tickerTicket: "",
+      tickerJustNow: "à l’instant",
     },
   }[locale] ?? {
     back: "All events", when: "Date & time", venue: "Venue",
@@ -182,20 +238,37 @@ export default async function EventDetailPage({
     salesStart: "Sales open", salesEnded: "Sales closed",
     remaining: "left", available: "Available", getTickets: "Get tickets",
     organizer: "Organizer", viewOnMap: "View on map",
+    scarcityOnly: "Only", scarcityHurry: "Hurry, only", scarcityLeft: "left",
+    socialProofSuffix: "people secured their spot in the last 24 hours",
+    saveLabel: "Save",
+    deadlinePrefix: "Ends in", dayAbbr: "d", hourAbbr: "h", minAbbr: "m",
+    tickerPrefixCity: "Someone from", tickerMiddleCity: "just bought a",
+    tickerPrefixAnon: "Someone just bought a", tickerTicket: "ticket",
+    tickerJustNow: "just now",
   };
 
-  function formatPrice(cents: number, currency: string) {
-    if (cents === 0) return t.free;
-    try {
-      return (cents / 100).toLocaleString(locale, {
-        style: "currency",
-        currency,
-        maximumFractionDigits: 0,
-      });
-    } catch {
-      return `${(cents / 100).toFixed(0)} ${currency}`;
-    }
-  }
+  const tickerLabels = {
+    prefixWithCity: t.tickerPrefixCity,
+    prefixAnon: t.tickerPrefixAnon,
+    middleKnownCity: t.tickerMiddleCity,
+    middleAnon: t.tickerPrefixAnon,
+    ticketSuffix: t.tickerTicket,
+    ago: {
+      justNow: t.tickerJustNow,
+      minutes: (n: number) =>
+        locale === "de"
+          ? `vor ${n} Min`
+          : locale === "fr"
+            ? `il y a ${n} min`
+            : `${n} min ago`,
+      hours: (n: number) =>
+        locale === "de"
+          ? `vor ${n} Std`
+          : locale === "fr"
+            ? `il y a ${n} h`
+            : `${n}h ago`,
+    },
+  };
 
   return (
     <main className="pb-20">
@@ -373,6 +446,22 @@ export default async function EventDetailPage({
                 </h2>
               </div>
 
+              {tiers.length > 0 && (
+                <div className="space-y-2 border-b border-border px-6 py-4">
+                  <SocialProofBadge
+                    displayed={triggers.socialProof.displayed}
+                    floored={triggers.socialProof.floored}
+                    label={t.socialProofSuffix}
+                  />
+                  {triggers.recentBuyers.length > 0 && (
+                    <RecentBuyerTicker
+                      buyers={triggers.recentBuyers}
+                      labels={tickerLabels}
+                    />
+                  )}
+                </div>
+              )}
+
               {tiers.length === 0 ? (
                 <p className="px-6 py-10 text-center text-sm text-muted-foreground">
                   {t.noTickets}
@@ -392,10 +481,8 @@ export default async function EventDetailPage({
                     const unavailable =
                       soldOut || notOnSaleYet || salesEnded;
                     const description = tierLoc(tier, "description");
-                    const remaining =
-                      tier.max_quantity !== null
-                        ? tier.max_quantity - tier.quantity_sold
-                        : null;
+                    const tierStats = triggers.tiers[tier.id];
+                    const isFree = tier.price_cents === 0;
 
                     return (
                       <div
@@ -410,9 +497,19 @@ export default async function EventDetailPage({
                           <p className="font-heading text-base font-bold">
                             {tierLoc(tier, "name")}
                           </p>
-                          <p className="font-heading text-2xl font-bold text-primary sm:text-3xl">
-                            {formatPrice(tier.price_cents, tier.currency)}
-                          </p>
+                          {isFree ? (
+                            <p className="font-heading text-2xl font-bold text-primary sm:text-3xl">
+                              {t.free}
+                            </p>
+                          ) : (
+                            <PriceAnchor
+                              priceCents={tier.price_cents}
+                              originalPriceCents={tier.original_price_cents}
+                              currency={tier.currency}
+                              locale={locale}
+                              saveLabel={t.saveLabel}
+                            />
+                          )}
                         </div>
 
                         {description && (
@@ -421,9 +518,9 @@ export default async function EventDetailPage({
                           </p>
                         )}
 
-                        <div className="mt-3">
+                        <div className="mt-3 flex flex-wrap items-center gap-2">
                           {soldOut ? (
-                            <div className="space-y-2">
+                            <div className="w-full space-y-2">
                               <span className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
                                 {t.soldOut}
                               </span>
@@ -448,16 +545,35 @@ export default async function EventDetailPage({
                             <span className="inline-flex items-center rounded-full bg-muted/60 px-3 py-1 text-xs font-medium text-muted-foreground">
                               {t.salesEnded}
                             </span>
-                          ) : remaining !== null && remaining <= 20 ? (
-                            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary">
-                              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-                              {remaining} {t.remaining}
-                            </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-                              <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                              {t.available}
-                            </span>
+                            <>
+                              {tierStats?.capacity != null ? (
+                                <ScarcityBadge
+                                  displayRemaining={tierStats.displayRemaining}
+                                  capacity={tierStats.capacity}
+                                  labels={{
+                                    only: t.scarcityOnly,
+                                    hurry: t.scarcityHurry,
+                                    left: t.scarcityLeft,
+                                  }}
+                                />
+                              ) : (
+                                <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                                  <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                                  {t.available}
+                                </span>
+                              )}
+                              <TierDeadlineCountdown
+                                salesEndAt={tierStats?.salesEndAt ?? null}
+                                warnHours={TRIGGER_POLICY.DEADLINE_WARN_HOURS}
+                                labels={{
+                                  prefix: t.deadlinePrefix,
+                                  d: t.dayAbbr,
+                                  h: t.hourAbbr,
+                                  m: t.minAbbr,
+                                }}
+                              />
+                            </>
                           )}
                         </div>
                       </div>

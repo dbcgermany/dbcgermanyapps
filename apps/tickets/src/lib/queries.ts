@@ -7,7 +7,7 @@ const EVENT_PUBLIC_DETAIL =
   "id, slug, title_en, title_de, title_fr, description_en, description_de, description_fr, event_type, venue_name, venue_address, city, country, timezone, starts_at, ends_at, capacity, max_tickets_per_order, enabled_payment_methods, cover_image_url, seo_title, seo_description, og_image_url" as const;
 
 const TIER_PUBLIC =
-  "id, slug, name_en, name_de, name_fr, description_en, description_de, description_fr, price_cents, currency, max_quantity, quantity_sold, sales_start_at, sales_end_at, sort_order" as const;
+  "id, slug, name_en, name_de, name_fr, description_en, description_de, description_fr, price_cents, original_price_cents, currency, max_quantity, quantity_sold, sales_start_at, sales_end_at, sort_order" as const;
 
 const SCHEDULE_PUBLIC =
   "id, title_en, title_de, title_fr, description_en, description_de, description_fr, starts_at, ends_at, speaker_name, speaker_title, speaker_image_url, sort_order" as const;
