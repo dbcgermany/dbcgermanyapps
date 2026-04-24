@@ -52,6 +52,10 @@ type T = {
   comped: string;
   compedSub: string;
   tickets: string;
+  channelMix: string;
+  channelMixSub: string;
+  paid: string;
+  free: string;
 };
 
 export function DashboardClient({
@@ -172,46 +176,69 @@ export function DashboardClient({
       {/* Sales-by-channel split — accountant-facing taxonomy:
           Online (self-serve Stripe), Door (operator-assisted paid),
           Comped (zero-revenue invites / assignments). No overlap by
-          construction. The existing "Tickets sold" headline KPI above
-          equals Online.tickets + Door.tickets. */}
+          construction. The fourth card is a paid-vs-free mix so the
+          row fills the 4-col StatGrid cleanly without duplicating the
+          headline KPIs. */}
       <div className="mt-8">
         <h2 className="text-sm font-semibold text-muted-foreground">
           {t.salesByChannel}
         </h2>
-        <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <StatCard
-            label={t.online}
-            sub={`${kpis.current.online.tickets} ${t.tickets} · ${t.onlineSub}`}
-            value={fmtEur(kpis.current.online.revenueCents)}
-            delta={pctChange(
-              kpis.current.online.revenueCents,
-              kpis.prior.online.revenueCents
-            )}
-            deltaLabel={t.vsPrior}
-            dense
-          />
-          <StatCard
-            label={t.door}
-            sub={`${kpis.current.door.tickets} ${t.tickets} · ${t.doorSub}`}
-            value={fmtEur(kpis.current.door.revenueCents)}
-            delta={pctChange(
-              kpis.current.door.revenueCents,
-              kpis.prior.door.revenueCents
-            )}
-            deltaLabel={t.vsPrior}
-            dense
-          />
-          <StatCard
-            label={t.comped}
-            sub={t.compedSub}
-            value={`${kpis.current.comped.tickets.toLocaleString(locale)} ${t.tickets}`}
-            delta={pctChange(
-              kpis.current.comped.tickets,
-              kpis.prior.comped.tickets
-            )}
-            deltaLabel={t.vsPrior}
-            dense
-          />
+        <div className="mt-3">
+          <StatGrid cols={4}>
+            <StatCard
+              label={t.online}
+              sub={`${kpis.current.online.tickets} ${t.tickets} · ${t.onlineSub}`}
+              value={fmtEur(kpis.current.online.revenueCents)}
+              delta={pctChange(
+                kpis.current.online.revenueCents,
+                kpis.prior.online.revenueCents
+              )}
+              deltaLabel={t.vsPrior}
+              dense
+            />
+            <StatCard
+              label={t.door}
+              sub={`${kpis.current.door.tickets} ${t.tickets} · ${t.doorSub}`}
+              value={fmtEur(kpis.current.door.revenueCents)}
+              delta={pctChange(
+                kpis.current.door.revenueCents,
+                kpis.prior.door.revenueCents
+              )}
+              deltaLabel={t.vsPrior}
+              dense
+            />
+            <StatCard
+              label={t.comped}
+              sub={t.compedSub}
+              value={`${kpis.current.comped.tickets.toLocaleString(locale)} ${t.tickets}`}
+              delta={pctChange(
+                kpis.current.comped.tickets,
+                kpis.prior.comped.tickets
+              )}
+              deltaLabel={t.vsPrior}
+              dense
+            />
+            {(() => {
+              const paidTickets =
+                kpis.current.online.tickets + kpis.current.door.tickets;
+              const freeTickets = kpis.current.comped.tickets;
+              const total = paidTickets + freeTickets;
+              const paidPct = total === 0 ? 0 : (paidTickets / total) * 100;
+              const freePct = total === 0 ? 0 : 100 - paidPct;
+              return (
+                <StatCard
+                  label={t.channelMix}
+                  sub={`${t.paid} ${paidTickets.toLocaleString(locale)} · ${t.free} ${freeTickets.toLocaleString(locale)} · ${t.channelMixSub}`}
+                  value={
+                    total === 0
+                      ? "—"
+                      : `${paidPct.toFixed(0)}% / ${freePct.toFixed(0)}%`
+                  }
+                  dense
+                />
+              );
+            })()}
+          </StatGrid>
         </div>
       </div>
 

@@ -39,6 +39,10 @@ const T = {
     onlineSub: "Self-serve via Stripe",
     doorSub: "Sold at the venue",
     compedSub: "Invited / assigned — zero revenue",
+    channelMix: "Paid vs free",
+    channelMixSub: "Attendance mix",
+    paid: "Paid",
+    free: "Free",
     gross: "Gross",
     net: "Net",
     refunds: "Refunds",
@@ -84,6 +88,10 @@ const T = {
     onlineSub: "Selbstbedienung über Stripe",
     doorSub: "Am Einlass verkauft",
     compedSub: "Eingeladen / zugewiesen — kein Umsatz",
+    channelMix: "Bezahlt vs. gratis",
+    channelMixSub: "Besuchermix",
+    paid: "Bezahlt",
+    free: "Gratis",
     gross: "Brutto",
     net: "Netto",
     refunds: "Erstattungen",
@@ -129,6 +137,10 @@ const T = {
     onlineSub: "Achat direct via Stripe",
     doorSub: "Vendus au guichet",
     compedSub: "Invités / attribués — sans revenu",
+    channelMix: "Payants vs gratuits",
+    channelMixSub: "Répartition des entrées",
+    paid: "Payants",
+    free: "Gratuits",
     gross: "Brut",
     net: "Net",
     refunds: "Remboursements",
@@ -373,12 +385,14 @@ export function FinanceTab({ locale, summary, events, filters }: FinanceTabProps
         )}
       </div>
 
-      {/* Channel summary */}
+      {/* Channel summary — 4 cards to respect the StatGrid 1/2/4 rule.
+          The 4th card is a paid-vs-free mix ratio so the row fills
+          without repeating the Online / Door / Comped values. */}
       <section>
         <h2 className="font-heading text-lg font-semibold">
           {t.channelSummary}
         </h2>
-        <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
             label={t.online}
             value={fmt(summary.online.netCents, currency, locale)}
@@ -394,6 +408,24 @@ export function FinanceTab({ locale, summary, events, filters }: FinanceTabProps
             value={`${summary.comped.tickets.toLocaleString(locale)} ${t.tickets}`}
             sub={`${summary.comped.orders} ${t.orders} · ${t.compedSub}`}
           />
+          {(() => {
+            const paid = summary.online.tickets + summary.door.tickets;
+            const free = summary.comped.tickets;
+            const total = paid + free;
+            const paidPct = total === 0 ? 0 : (paid / total) * 100;
+            const freePct = total === 0 ? 0 : 100 - paidPct;
+            return (
+              <StatCard
+                label={t.channelMix}
+                value={
+                  total === 0
+                    ? "—"
+                    : `${paidPct.toFixed(0)}% / ${freePct.toFixed(0)}%`
+                }
+                sub={`${t.paid} ${paid} · ${t.free} ${free} · ${t.channelMixSub}`}
+              />
+            );
+          })()}
         </div>
       </section>
 

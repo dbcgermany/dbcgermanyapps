@@ -103,6 +103,10 @@ export default async function DashboardPage({
       comped: "Comped",
       compedSub: "Invited / assigned \u2014 zero revenue",
       tickets: "tickets",
+      channelMix: "Paid vs free",
+      channelMixSub: "Attendance mix",
+      paid: "Paid",
+      free: "Free",
     },
     de: {
       welcome: "Willkommen zur\u00FCck",
@@ -143,6 +147,10 @@ export default async function DashboardPage({
       comped: "Freikarten",
       compedSub: "Eingeladen / zugewiesen \u2014 kein Umsatz",
       tickets: "Tickets",
+      channelMix: "Bezahlt vs. gratis",
+      channelMixSub: "Besuchermix",
+      paid: "Bezahlt",
+      free: "Gratis",
     },
     fr: {
       welcome: "Bon retour",
@@ -183,6 +191,10 @@ export default async function DashboardPage({
       comped: "Invitations",
       compedSub: "Invit\u00E9s / attribu\u00E9s \u2014 sans revenu",
       tickets: "billets",
+      channelMix: "Payants vs gratuits",
+      channelMixSub: "R\u00E9partition des entr\u00E9es",
+      paid: "Payants",
+      free: "Gratuits",
     },
   };
   const t = T[locale as keyof typeof T] ?? T.en;
