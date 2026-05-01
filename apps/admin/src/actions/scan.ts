@@ -74,86 +74,102 @@ export interface ScanResult {
 /**
  * Checks in a ticket by its QR token via the atomic check_in_ticket() RPC.
  * Prevents double scans through a single SQL UPDATE with WHERE checked_in_at IS NULL.
+ *
+ * Never throws — auth/env/RPC failures are funnelled into a ScanResult so
+ * the scanner UI can keep running across a live event without tripping the
+ * route error boundary.
  */
 export async function checkInTicket(
   ticketToken: string,
   eventId: string
 ): Promise<ScanResult> {
-  const user = await requireRole("team_member");
-  const supabase = await createServerClient();
+  try {
+    const user = await requireRole("team_member");
+    const supabase = await createServerClient();
 
-  // Validate token looks like a UUID (prevent injection)
-  const uuidRegex =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  if (!uuidRegex.test(ticketToken.trim())) {
-    return { success: false, error: "Invalid ticket code" };
-  }
+    // Validate token looks like a UUID (prevent injection)
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(ticketToken.trim())) {
+      return { success: false, error: "Invalid ticket code" };
+    }
 
-  const { data, error } = await supabase.rpc("check_in_ticket", {
-    p_ticket_token: ticketToken.trim(),
-    p_event_id: eventId,
-    p_staff_id: user.userId,
-  });
-
-  if (error) {
-    return { success: false, error: error.message };
-  }
-
-  if (!data || data.length === 0) {
-    return { success: false, error: "Ticket not found" };
-  }
-
-  const row = data[0];
-
-  if (row.success) {
-    await supabase.from("audit_log").insert({
-      user_id: user.userId,
-      action: "check_in_ticket",
-      entity_type: "tickets",
-      entity_id: row.ticket_id,
-      details: { attendee: row.attendee_name, event_id: eventId },
+    const { data, error } = await supabase.rpc("check_in_ticket", {
+      p_ticket_token: ticketToken.trim(),
+      p_event_id: eventId,
+      p_staff_id: user.userId,
     });
 
-    // Fire-and-forget: don't slow down the scanner response.
-    maybeFireCheckInMilestone(supabase, eventId).catch((err) => {
-      console.error("[scan] check-in milestone check failed:", err);
-    });
+    if (error) {
+      return { success: false, error: error.message };
+    }
 
+    if (!data || data.length === 0) {
+      return { success: false, error: "Ticket not found" };
+    }
+
+    const row = data[0];
+
+    if (row.success) {
+      await supabase.from("audit_log").insert({
+        user_id: user.userId,
+        action: "check_in_ticket",
+        entity_type: "tickets",
+        entity_id: row.ticket_id,
+        details: { attendee: row.attendee_name, event_id: eventId },
+      });
+
+      // Fire-and-forget: don't slow down the scanner response.
+      maybeFireCheckInMilestone(supabase, eventId).catch((err) => {
+        console.error("[scan] check-in milestone check failed:", err);
+      });
+
+      return {
+        success: true,
+        attendeeName: row.attendee_name,
+        attendeeEmail: row.attendee_email,
+        tierName: row.tier_name,
+      };
+    }
+
+    // Already scanned or wrong event
     return {
-      success: true,
+      success: false,
       attendeeName: row.attendee_name,
       attendeeEmail: row.attendee_email,
       tierName: row.tier_name,
+      alreadyCheckedInAt: row.already_checked_in_at,
+      alreadyCheckedInBy: row.already_checked_in_by ?? "Unknown staff",
     };
+  } catch (err) {
+    console.error("[scan] checkInTicket failed:", err);
+    return { success: false, error: "scan_failed" };
   }
-
-  // Already scanned or wrong event
-  return {
-    success: false,
-    attendeeName: row.attendee_name,
-    attendeeEmail: row.attendee_email,
-    tierName: row.tier_name,
-    alreadyCheckedInAt: row.already_checked_in_at,
-    alreadyCheckedInBy: row.already_checked_in_by ?? "Unknown staff",
-  };
 }
 
-export async function getScanStats(eventId: string) {
-  await requireRole("team_member");
-  const supabase = await createServerClient();
+export async function getScanStats(
+  eventId: string
+): Promise<{ total: number; checkedIn: number }> {
+  try {
+    await requireRole("team_member");
+    const supabase = await createServerClient();
 
-  const { count: total } = await supabase
-    .from("tickets")
-    .select("*", { count: "exact", head: true })
-    .eq("event_id", eventId);
+    const { count: total } = await supabase
+      .from("tickets")
+      .select("*", { count: "exact", head: true })
+      .eq("event_id", eventId);
 
-  const { count: checkedIn } = await supabase
-    .from("tickets")
-    .select("*", { count: "exact", head: true })
-    .eq("event_id", eventId)
-    .not("checked_in_at", "is", null);
+    const { count: checkedIn } = await supabase
+      .from("tickets")
+      .select("*", { count: "exact", head: true })
+      .eq("event_id", eventId)
+      .not("checked_in_at", "is", null);
 
-  return { total: total ?? 0, checkedIn: checkedIn ?? 0 };
+    return { total: total ?? 0, checkedIn: checkedIn ?? 0 };
+  } catch (err) {
+    console.error("[scan] getScanStats failed:", err);
+    return { total: 0, checkedIn: 0 };
+  }
 }
 
 export async function getAssignedEvents() {

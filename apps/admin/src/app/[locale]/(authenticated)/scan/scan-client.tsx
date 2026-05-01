@@ -338,13 +338,14 @@ export function ScanClient({
       </form>
 
       {/* Quick-find by name (for lost-ticket visitors) */}
-      <NameFindPanel eventId={eventId} locale={locale} onCheckedIn={() => refreshStats()} />
+      <NameFindPanel eventId={eventId} locale={locale} onCheckedIn={refreshStats} />
     </div>
   );
 
-  async function refreshStats() {
-    const s = await getScanStats(eventId);
-    setStats(s);
+  function refreshStats() {
+    getScanStats(eventId)
+      .then(setStats)
+      .catch((err) => console.error("[scan] stats refresh failed:", err));
   }
 }
 
@@ -359,6 +360,8 @@ const FIND_T = {
     resendPdf: "Resend PDF",
     checkedInToast: "Checked in: {name}",
     resendToast: "Ticket sent to {email}.",
+    searchFailed: "Search failed. Try again.",
+    actionFailed: "Action failed. Try again.",
   },
   de: {
     heading: "Scan nicht möglich? Namen suchen",
@@ -370,6 +373,8 @@ const FIND_T = {
     resendPdf: "PDF erneut senden",
     checkedInToast: "Eingecheckt: {name}",
     resendToast: "Ticket gesendet an {email}.",
+    searchFailed: "Suche fehlgeschlagen. Bitte erneut versuchen.",
+    actionFailed: "Aktion fehlgeschlagen. Bitte erneut versuchen.",
   },
   fr: {
     heading: "Impossible de scanner ? Rechercher par nom",
@@ -381,6 +386,8 @@ const FIND_T = {
     resendPdf: "Renvoyer le PDF",
     checkedInToast: "Enregistré : {name}",
     resendToast: "Billet envoyé à {email}.",
+    searchFailed: "Échec de la recherche. Réessayez.",
+    actionFailed: "Action échouée. Réessayez.",
   },
 } as const;
 
@@ -403,12 +410,18 @@ function NameFindPanel({
     if (query.trim().length < 2) return;
     const handle = setTimeout(() => {
       startSearch(async () => {
-        const rows = await searchAttendees({ query, eventId, limit: 20 });
-        setResults(rows);
+        try {
+          const rows = await searchAttendees({ query, eventId, limit: 20 });
+          setResults(rows);
+        } catch (err) {
+          console.error("[scan] attendee search failed:", err);
+          setResults([]);
+          toast.error(ft.searchFailed);
+        }
       });
     }, 250);
     return () => clearTimeout(handle);
-  }, [query, eventId]);
+  }, [query, eventId, ft.searchFailed]);
 
   // Derive empty state from query length rather than mutating in an effect.
   const shouldShowResults = query.trim().length >= 2;
@@ -416,7 +429,16 @@ function NameFindPanel({
 
   function handleCheckIn(r: AttendeeSearchResult) {
     startAction(async () => {
-      const result = await manualCheckIn(r.ticket_token, eventId);
+      // Quick-find runs during a live event — a thrown server action would
+      // unmount the scanner under the route error boundary. Synthesize a
+      // soft error so the staff can retry on the same screen.
+      let result: Awaited<ReturnType<typeof manualCheckIn>>;
+      try {
+        result = await manualCheckIn(r.ticket_token, eventId);
+      } catch (err) {
+        console.error("[scan] manual check-in failed:", err);
+        result = { error: ft.actionFailed };
+      }
       if ("error" in result) {
         toast.error(
           `${result.error}${
@@ -441,7 +463,13 @@ function NameFindPanel({
 
   function handleResend(r: AttendeeSearchResult) {
     startAction(async () => {
-      const result = await resendTicketPdf(r.ticket_id);
+      let result: Awaited<ReturnType<typeof resendTicketPdf>>;
+      try {
+        result = await resendTicketPdf(r.ticket_id);
+      } catch (err) {
+        console.error("[scan] resend ticket failed:", err);
+        result = { error: ft.actionFailed };
+      }
       if ("error" in result) toast.error(result.error);
       else toast.success(ft.resendToast.replace("{email}", r.attendee_email));
     });
