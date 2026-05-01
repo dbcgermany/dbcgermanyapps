@@ -3,6 +3,63 @@
 import { createServerClient, requireRole } from "@dbc/supabase/server";
 import { revalidatePath } from "next/cache";
 
+export interface CrossEventAttendee {
+  id: string;
+  ticket_token: string;
+  attendee_name: string;
+  attendee_email: string;
+  event_id: string;
+  event_title: string;
+  event_starts_at: string;
+  tier_name: string;
+  acquisition_type: string;
+  checked_in_at: string | null;
+  created_at: string;
+}
+
+/**
+ * List attendees across all events (or scoped to one event), for the
+ * /contacts → Attendees tab. Lighter than getEventAttendees: skips notes
+ * and the per-event scope, includes the event title so the table can
+ * stay sortable across events.
+ */
+export async function getAllAttendees(
+  opts: { eventId?: string } = {}
+): Promise<CrossEventAttendee[]> {
+  await requireRole("manager");
+  const supabase = await createServerClient();
+
+  let query = supabase
+    .from("tickets")
+    .select(
+      `id, ticket_token, attendee_name, attendee_email, event_id, tier_id,
+       checked_in_at, created_at, order_id,
+       tier:ticket_tiers(name_en),
+       event:events(title_en, starts_at),
+       order:orders(acquisition_type)`
+    )
+    .order("created_at", { ascending: false })
+    .limit(500);
+
+  if (opts.eventId) query = query.eq("event_id", opts.eventId);
+
+  const { data } = await query;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return ((data ?? []) as any[]).map((t) => ({
+    id: t.id,
+    ticket_token: t.ticket_token,
+    attendee_name: t.attendee_name,
+    attendee_email: t.attendee_email,
+    event_id: t.event_id,
+    event_title: t.event?.title_en ?? "",
+    event_starts_at: t.event?.starts_at ?? "",
+    tier_name: t.tier?.name_en ?? "Ticket",
+    acquisition_type: t.order?.acquisition_type ?? "purchased",
+    checked_in_at: t.checked_in_at,
+    created_at: t.created_at,
+  }));
+}
+
 export async function getEventAttendees(eventId: string) {
   await requireRole("manager");
   const supabase = await createServerClient();

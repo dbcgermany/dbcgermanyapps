@@ -5,11 +5,21 @@ import {
   listContacts,
   listEventsForContactFilter,
 } from "@/actions/contacts";
+import { getAllAttendees } from "@/actions/attendees";
 import {
   INVOLVEMENT_ROLES,
   type InvolvementRole,
 } from "@/lib/involvements";
 import { PageHeader } from "@/components/page-header";
+import { AttendeesTab } from "./attendees-tab";
+
+type Tab = "contacts" | "attendees";
+
+const TAB_T = {
+  en: { contacts: "Contacts", attendees: "Attendees" },
+  de: { contacts: "Kontakte", attendees: "Teilnehmer" },
+  fr: { contacts: "Contacts", attendees: "Participants" },
+} as const;
 
 export default async function ContactsListPage({
   params,
@@ -17,6 +27,7 @@ export default async function ContactsListPage({
 }: {
   params: Promise<{ locale: string }>;
   searchParams: Promise<{
+    tab?: string;
     q?: string;
     category?: string;
     event?: string;
@@ -25,29 +36,23 @@ export default async function ContactsListPage({
   }>;
 }) {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "admin.contacts" });
-  const tRole = await getTranslations({
-    locale,
-    namespace: "admin.contacts.roles",
-  });
-  const tCommon = await getTranslations({ locale, namespace: "admin.common" });
   const sp = await searchParams;
-  const [contacts, events] = await Promise.all([
-    listContacts({
-      search: sp.q,
-      categorySlug: sp.category,
-      eventId: sp.event || undefined,
-      role:
-        sp.role && (INVOLVEMENT_ROLES as readonly string[]).includes(sp.role)
-          ? (sp.role as InvolvementRole)
-          : undefined,
-      marketingOnly: sp.marketing === "1",
-    }),
-    listEventsForContactFilter(),
-  ]);
+  const tab: Tab = sp.tab === "attendees" ? "attendees" : "contacts";
 
-  const filterInput =
-    "rounded-md border border-border bg-background px-3 py-2 text-sm";
+  const t = await getTranslations({ locale, namespace: "admin.contacts" });
+  const tCommon = await getTranslations({ locale, namespace: "admin.common" });
+  const tabT =
+    TAB_T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof TAB_T];
+
+  // Event list is needed by both tabs, so fetch once.
+  const events = await listEventsForContactFilter();
+
+  const tabClass = (active: boolean) =>
+    `border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
+      active
+        ? "border-primary text-foreground"
+        : "border-transparent text-muted-foreground hover:text-foreground"
+    }`;
 
   return (
     <div>
@@ -55,12 +60,89 @@ export default async function ContactsListPage({
         title={t("title")}
         description=""
         cta={
-          <LinkButton href={`/${locale}/contacts/new`}>
-            {t("createContact")}
-          </LinkButton>
+          tab === "contacts" ? (
+            <LinkButton href={`/${locale}/contacts/new`}>
+              {t("createContact")}
+            </LinkButton>
+          ) : null
         }
       />
 
+      <div className="mt-6 flex gap-1 border-b border-border">
+        <Link
+          href={`/${locale}/contacts`}
+          className={tabClass(tab === "contacts")}
+        >
+          {tabT.contacts}
+        </Link>
+        <Link
+          href={`/${locale}/contacts?tab=attendees${sp.event ? `&event=${sp.event}` : ""}`}
+          className={tabClass(tab === "attendees")}
+        >
+          {tabT.attendees}
+        </Link>
+      </div>
+
+      {tab === "contacts" ? (
+        <ContactsTabContent
+          locale={locale}
+          sp={sp}
+          events={events}
+          t={t}
+          tCommon={tCommon}
+        />
+      ) : (
+        <AttendeesTabContent
+          locale={locale}
+          eventId={sp.event ?? ""}
+          events={events}
+        />
+      )}
+    </div>
+  );
+}
+
+// -- Contacts tab (server component) ---------------------------------------
+
+async function ContactsTabContent({
+  locale,
+  sp,
+  events,
+  t,
+  tCommon,
+}: {
+  locale: string;
+  sp: {
+    q?: string;
+    category?: string;
+    event?: string;
+    role?: string;
+    marketing?: string;
+  };
+  events: Array<{ id: string; title_en: string }>;
+  t: Awaited<ReturnType<typeof getTranslations>>;
+  tCommon: Awaited<ReturnType<typeof getTranslations>>;
+}) {
+  const tRole = await getTranslations({
+    locale,
+    namespace: "admin.contacts.roles",
+  });
+  const contacts = await listContacts({
+    search: sp.q,
+    categorySlug: sp.category,
+    eventId: sp.event || undefined,
+    role:
+      sp.role && (INVOLVEMENT_ROLES as readonly string[]).includes(sp.role)
+        ? (sp.role as InvolvementRole)
+        : undefined,
+    marketingOnly: sp.marketing === "1",
+  });
+
+  const filterInput =
+    "rounded-md border border-border bg-background px-3 py-2 text-sm";
+
+  return (
+    <>
       <form className="mt-6 flex flex-wrap gap-2" method="get">
         <input
           type="search"
@@ -192,6 +274,28 @@ export default async function ContactsListPage({
           </tbody>
         </table>
       </div>
-    </div>
+    </>
+  );
+}
+
+// -- Attendees tab (server fetch + client component) -----------------------
+
+async function AttendeesTabContent({
+  locale,
+  eventId,
+  events,
+}: {
+  locale: string;
+  eventId: string;
+  events: Array<{ id: string; title_en: string }>;
+}) {
+  const attendees = await getAllAttendees({ eventId: eventId || undefined });
+  return (
+    <AttendeesTab
+      locale={locale}
+      attendees={attendees}
+      events={events}
+      selectedEventId={eventId}
+    />
   );
 }
