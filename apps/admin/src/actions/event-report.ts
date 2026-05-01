@@ -74,11 +74,22 @@ export async function getEventReportData(opts: {
   const { data: event } = await supabase
     .from("events")
     .select(
-      "id, title_en, title_de, title_fr, starts_at, ends_at, venue_name, city, capacity"
+      "id, title_en, title_de, title_fr, starts_at, ends_at, venue_name, city"
     )
     .eq("id", opts.eventId)
     .single();
   if (!event) throw new Error("Event not found");
+
+  // Capacity is derived from sum of tier max_quantity (NULL tiers excluded).
+  const { data: tierRows } = await supabase
+    .from("ticket_tiers")
+    .select("max_quantity")
+    .eq("event_id", opts.eventId)
+    .not("max_quantity", "is", null);
+  const capacity = (tierRows ?? []).reduce(
+    (sum, t) => sum + (t.max_quantity ?? 0),
+    0
+  );
 
   const { data: companyInfo } = await supabase
     .from("company_info")
@@ -99,7 +110,7 @@ export async function getEventReportData(opts: {
       endsAt: event.ends_at,
       venueName: event.venue_name ?? "",
       city: event.city ?? "",
-      capacity: event.capacity,
+      capacity,
     },
     brand: {
       brandName: companyInfo?.brand_name ?? "DBC Germany",

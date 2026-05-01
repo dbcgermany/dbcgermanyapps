@@ -238,35 +238,20 @@ export default function NewEventPage({
           </div>
         </div>
 
-        {/* Capacity & Settings */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label htmlFor="capacity" className="block text-sm font-medium mb-1">
-              {t.capacity}
-            </label>
-            <input
-              id="capacity"
-              name="capacity"
-              type="number"
-              min="1"
-              required
-              defaultValue="950"
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-          </div>
-          <div>
-            <label htmlFor="max_tickets_per_order" className="block text-sm font-medium mb-1">
-              {t.maxPerOrder}
-            </label>
-            <input
-              id="max_tickets_per_order"
-              name="max_tickets_per_order"
-              type="number"
-              min="1"
-              defaultValue={String(DEFAULTS.MAX_TICKETS_PER_ORDER)}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-          </div>
+        {/* Max tickets per order — total event capacity is derived from
+            the sum of each tier's max_quantity once tiers are added. */}
+        <div>
+          <label htmlFor="max_tickets_per_order" className="block text-sm font-medium mb-1">
+            {t.maxPerOrder}
+          </label>
+          <input
+            id="max_tickets_per_order"
+            name="max_tickets_per_order"
+            type="number"
+            min="1"
+            defaultValue={String(DEFAULTS.MAX_TICKETS_PER_ORDER)}
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          />
         </div>
 
         <PaymentMethodsSelect locale={locale} initialValues={[]} />

@@ -1333,7 +1333,6 @@ export type Database = {
       }
       events: {
         Row: {
-          capacity: number
           city: string | null
           country: string
           cover_image_url: string | null
@@ -1366,7 +1365,6 @@ export type Database = {
           venue_name: string | null
         }
         Insert: {
-          capacity: number
           city?: string | null
           country?: string
           cover_image_url?: string | null
@@ -1399,7 +1397,6 @@ export type Database = {
           venue_name?: string | null
         }
         Update: {
-          capacity?: number
           city?: string | null
           country?: string
           cover_image_url?: string | null

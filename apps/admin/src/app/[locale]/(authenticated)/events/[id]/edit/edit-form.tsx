@@ -281,21 +281,14 @@ export function EditEventForm({
         </div>
       </div>
 
-      {/* Capacity & Settings */}
+      {/* Total capacity is derived from sum of per-tier max_quantity.
+          Shown read-only here; edit it by changing tier limits. */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label htmlFor="capacity" className="block text-sm font-medium mb-1">
-            {t.capacity}
-          </label>
-          <input
-            id="capacity"
-            name="capacity"
-            type="number"
-            min="1"
-            required
-            defaultValue={event.capacity}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          />
+          <label className="block text-sm font-medium mb-1">{t.capacity}</label>
+          <p className="rounded-md border border-input bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
+            {(event.capacity ?? 0).toLocaleString()}
+          </p>
         </div>
         <div>
           <label htmlFor="max_tickets_per_order" className="block text-sm font-medium mb-1">

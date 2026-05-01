@@ -44,12 +44,46 @@ function getServiceClient() {
 
 // ---------------------------------------------------------------------------
 // Column selections (no SELECT *)
+// `capacity` is intentionally omitted — total capacity is derived from
+// SUM(ticket_tiers.max_quantity) per event. See getEventCapacities().
 // ---------------------------------------------------------------------------
 const EVENT_LIST_COLUMNS =
-  "id, slug, title_en, title_de, title_fr, event_type, starts_at, ends_at, capacity, is_published, cover_image_url, city" as const;
+  "id, slug, title_en, title_de, title_fr, event_type, starts_at, ends_at, is_published, cover_image_url, city" as const;
 
 const EVENT_DETAIL_COLUMNS =
-  "id, slug, title_en, title_de, title_fr, description_en, description_de, description_fr, event_type, venue_name, venue_address, city, country, timezone, starts_at, ends_at, capacity, max_tickets_per_order, enabled_payment_methods, cover_image_url, is_published, feedback_survey_url, sales_target_tickets, sales_target_revenue_cents, created_at, updated_at" as const;
+  "id, slug, title_en, title_de, title_fr, description_en, description_de, description_fr, event_type, venue_name, venue_address, city, country, timezone, starts_at, ends_at, max_tickets_per_order, enabled_payment_methods, cover_image_url, is_published, feedback_survey_url, sales_target_tickets, sales_target_revenue_cents, created_at, updated_at" as const;
+
+// ---------------------------------------------------------------------------
+// Capacity helpers (derived from sum of tier max_quantity per event)
+// ---------------------------------------------------------------------------
+
+/**
+ * Compute capacity for one or more events as the sum of ticket_tiers.max_quantity.
+ * Tiers with NULL max_quantity (= unlimited) are excluded from the sum.
+ * Returns a Map keyed by event_id; events without tiers map to 0.
+ */
+export async function getEventCapacities(
+  eventIds: string[]
+): Promise<Map<string, number>> {
+  const out = new Map<string, number>();
+  if (eventIds.length === 0) return out;
+  const supabase = await createServerClient();
+  const { data } = await supabase
+    .from("ticket_tiers")
+    .select("event_id, max_quantity")
+    .in("event_id", eventIds)
+    .not("max_quantity", "is", null);
+  for (const row of data ?? []) {
+    out.set(row.event_id, (out.get(row.event_id) ?? 0) + (row.max_quantity ?? 0));
+  }
+  for (const id of eventIds) if (!out.has(id)) out.set(id, 0);
+  return out;
+}
+
+export async function getEventCapacity(eventId: string): Promise<number> {
+  const map = await getEventCapacities([eventId]);
+  return map.get(eventId) ?? 0;
+}
 
 // ---------------------------------------------------------------------------
 // Queries
@@ -65,7 +99,9 @@ export async function getEvents() {
     .order("starts_at", { ascending: false });
 
   if (error) throw new Error(error.message);
-  return data;
+  const rows = data ?? [];
+  const capacities = await getEventCapacities(rows.map((r) => r.id));
+  return rows.map((r) => ({ ...r, capacity: capacities.get(r.id) ?? 0 }));
 }
 
 export async function getEvent(id: string) {
@@ -79,7 +115,7 @@ export async function getEvent(id: string) {
     .single();
 
   if (error) throw new Error(error.message);
-  return data;
+  return { ...data, capacity: await getEventCapacity(id) };
 }
 
 // ---------------------------------------------------------------------------
@@ -112,7 +148,6 @@ export async function createEvent(formData: FormData) {
     timezone: (formData.get("timezone") as string) || "Europe/Berlin",
     starts_at: formData.get("starts_at") as string,
     ends_at: formData.get("ends_at") as string,
-    capacity: parseInt(formData.get("capacity") as string, 10),
     max_tickets_per_order: parseInt(
       (formData.get("max_tickets_per_order") as string) || "10",
       10
@@ -232,7 +267,6 @@ export async function updateEvent(id: string, formData: FormData) {
     timezone: formData.get("timezone") as string,
     starts_at: formData.get("starts_at") as string,
     ends_at: formData.get("ends_at") as string,
-    capacity: parseInt(formData.get("capacity") as string, 10),
     max_tickets_per_order: parseInt(
       formData.get("max_tickets_per_order") as string,
       10
@@ -372,7 +406,7 @@ export async function duplicateEvent(sourceId: string, locale: string) {
   const { data: source, error: srcErr } = await supabase
     .from("events")
     .select(
-      "title_en, title_de, title_fr, description_en, description_de, description_fr, event_type, venue_name, venue_address, city, country, timezone, starts_at, ends_at, capacity, max_tickets_per_order, enabled_payment_methods, cover_image_url"
+      "title_en, title_de, title_fr, description_en, description_de, description_fr, event_type, venue_name, venue_address, city, country, timezone, starts_at, ends_at, max_tickets_per_order, enabled_payment_methods, cover_image_url"
     )
     .eq("id", sourceId)
     .single();
