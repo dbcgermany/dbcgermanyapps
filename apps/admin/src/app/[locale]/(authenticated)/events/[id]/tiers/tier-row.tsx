@@ -12,6 +12,8 @@ const TR_T = {
     originalPriceHint: "Shown struck through. Leave empty to hide the discount.",
     maxQty: "Max qty (empty=∞)", sort: "Sort",
     descEn: "Description (EN)", descDe: "Description (DE)", descFr: "Description (FR)",
+    lowStockPct: "Low-stock alert at %",
+    lowStockPctHint: "Notify admins when remaining drops to this % of capacity, then again at half and a quarter.",
     saving: "Saving…", save: "Save", cancel: "Cancel",
     hidden: "Hidden", sold: "sold",
     edit: "Edit", hide: "Hide", publish: "Publish", delete: "Delete",
@@ -24,6 +26,8 @@ const TR_T = {
     originalPriceHint: "Wird durchgestrichen gezeigt. Leer lassen, um den Rabatt auszublenden.",
     maxQty: "Max. Menge (leer=∞)", sort: "Sort.",
     descEn: "Beschreibung (EN)", descDe: "Beschreibung (DE)", descFr: "Beschreibung (FR)",
+    lowStockPct: "Bestandsalarm bei %",
+    lowStockPctHint: "Admins werden benachrichtigt, wenn der Restbestand auf diesen % der Kapazität fällt, dann erneut bei der Hälfte und einem Viertel.",
     saving: "Wird gespeichert…", save: "Speichern", cancel: "Abbrechen",
     hidden: "Ausgeblendet", sold: "verkauft",
     edit: "Bearbeiten", hide: "Ausblenden", publish: "Veröffentlichen", delete: "Löschen",
@@ -36,6 +40,8 @@ const TR_T = {
     originalPriceHint: "Affiché barré. Laisser vide pour masquer la remise.",
     maxQty: "Quantité max (vide=∞)", sort: "Ordre",
     descEn: "Description (EN)", descDe: "Description (DE)", descFr: "Description (FR)",
+    lowStockPct: "Alerte stock à %",
+    lowStockPctHint: "Notifier les admins quand le restant tombe à ce % de la capacité, puis à la moitié et au quart.",
     saving: "Enregistrement…", save: "Enregistrer", cancel: "Annuler",
     hidden: "Masqué", sold: "vendus",
     edit: "Modifier", hide: "Masquer", publish: "Publier", delete: "Supprimer",
@@ -55,6 +61,7 @@ type Tier = {
   original_price_cents: number | null;
   max_quantity: number | null;
   quantity_sold: number;
+  low_stock_threshold_pct: number;
   sales_start_at: string | null;
   sales_end_at: string | null;
   is_public: boolean;
@@ -157,7 +164,7 @@ export function TierRow({
             </p>
           </div>
         </div>
-        <div className="grid gap-2 sm:grid-cols-2">
+        <div className="grid gap-2 sm:grid-cols-3">
           <input
             name="max_quantity"
             type="number"
@@ -166,6 +173,21 @@ export function TierRow({
             placeholder={t.maxQty}
             className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
           />
+          <div>
+            <input
+              name="low_stock_threshold_pct"
+              type="number"
+              min="1"
+              max="100"
+              defaultValue={tier.low_stock_threshold_pct}
+              placeholder={t.lowStockPct}
+              aria-label={t.lowStockPct}
+              className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
+            />
+            <p className="mt-1 text-[11px] leading-snug text-muted-foreground">
+              {t.lowStockPctHint}
+            </p>
+          </div>
           <input
             name="sort_order"
             type="number"

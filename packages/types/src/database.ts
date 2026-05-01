@@ -2564,6 +2564,7 @@ export type Database = {
           event_id: string
           id: string
           is_public: boolean
+          low_stock_threshold_pct: number
           max_quantity: number | null
           name_de: string
           name_en: string
@@ -2585,6 +2586,7 @@ export type Database = {
           event_id: string
           id?: string
           is_public?: boolean
+          low_stock_threshold_pct?: number
           max_quantity?: number | null
           name_de: string
           name_en: string
@@ -2606,6 +2608,7 @@ export type Database = {
           event_id?: string
           id?: string
           is_public?: boolean
+          low_stock_threshold_pct?: number
           max_quantity?: number | null
           name_de?: string
           name_en?: string

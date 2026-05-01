@@ -4,13 +4,15 @@ import { notifyAdmins } from "@dbc/supabase/server";
 
 const CRON_SECRET = process.env.CRON_SECRET;
 
-// Fires a `low_inventory` admin notification the FIRST time an active tier
-// drops below LOW_INVENTORY_THRESHOLD remaining seats. Idempotent via an
-// audit_log lookup — we never send the same (tier_id, threshold) twice.
+// Fires a `low_inventory` admin notification when an active tier crosses its
+// per-tier low-stock threshold (low_stock_threshold_pct % of max_quantity).
+// Idempotent via an audit_log lookup — we never send the same (tier_id,
+// bucket) twice. Sub-buckets at 100/50/25% of the threshold re-trigger as
+// inventory continues to drop.
 // Runs every 30 min; the scale of this query is tiny (one row per active
 // tier across all events), so even a 5-min cadence would be fine later.
 
-const LOW_INVENTORY_THRESHOLD = 20;
+const DEFAULT_THRESHOLD_PCT = 20;
 
 export async function GET(req: Request) {
   if (
@@ -30,7 +32,7 @@ export async function GET(req: Request) {
   const { data: tiers, error } = await supabase
     .from("ticket_tiers")
     .select(
-      "id, event_id, name_en, max_quantity, quantity_sold, sales_end_at, events!inner(id, slug, title_en, starts_at, is_published)"
+      "id, event_id, name_en, max_quantity, quantity_sold, low_stock_threshold_pct, sales_end_at, events!inner(id, slug, title_en, starts_at, is_published)"
     )
     .eq("is_public", true)
     .gte("events.starts_at", nowIso)
@@ -48,6 +50,7 @@ export async function GET(req: Request) {
     name_en: string;
     max_quantity: number | null;
     quantity_sold: number;
+    low_stock_threshold_pct: number | null;
     sales_end_at: string | null;
     // Supabase types the nested relation as an array; inner-join guarantees
     // one element at runtime, so we normalise via first-element access below.
@@ -58,15 +61,18 @@ export async function GET(req: Request) {
     if (!ev) continue;
     const t = { ...raw, events: ev };
     if (t.max_quantity === null) continue;
-    const left = t.max_quantity - t.quantity_sold;
-    if (left > LOW_INVENTORY_THRESHOLD || left <= 0) continue;
     if (t.sales_end_at && new Date(t.sales_end_at) <= new Date()) continue;
 
-    // Idempotent check — did we already notify for this tier's current
-    // low-inventory state? Re-trigger only if inventory dropped further
-    // (separate buckets: <=20, <=10, <=5).
+    const pct = t.low_stock_threshold_pct ?? DEFAULT_THRESHOLD_PCT;
+    const triggerSeats = Math.max(1, Math.ceil((t.max_quantity * pct) / 100));
+    const left = t.max_quantity - t.quantity_sold;
+    if (left > triggerSeats || left <= 0) continue;
+
+    // Sub-buckets at 100/50/25% of the per-tier threshold so admins get
+    // re-notified as inventory keeps dropping.
+    const ratio = left / triggerSeats;
     const bucket =
-      left <= 5 ? "low_5" : left <= 10 ? "low_10" : "low_20";
+      ratio <= 0.25 ? "low_25" : ratio <= 0.5 ? "low_50" : "low_100";
     const { count } = await supabase
       .from("audit_log")
       .select("id", { count: "exact", head: true })
@@ -78,12 +84,13 @@ export async function GET(req: Request) {
     await notifyAdmins(supabase, {
       type: "low_inventory",
       title: `Only ${left} seat${left === 1 ? "" : "s"} left · ${t.name_en}`,
-      body: `${t.events.title_en} — ${t.name_en} dropped to ${left}/${t.max_quantity}.`,
+      body: `${t.events.title_en} — ${t.name_en} dropped to ${left}/${t.max_quantity} (${pct}% threshold).`,
       data: {
         tier_id: t.id,
         event_id: t.event_id,
         event_slug: t.events.slug,
         seats_left: left,
+        threshold_pct: pct,
         bucket,
       },
     });
@@ -92,7 +99,7 @@ export async function GET(req: Request) {
       action: "notify_low_inventory",
       entity_type: "ticket_tiers",
       entity_id: t.id,
-      details: { bucket, seats_left: left },
+      details: { bucket, seats_left: left, threshold_pct: pct },
     });
 
     fired += 1;

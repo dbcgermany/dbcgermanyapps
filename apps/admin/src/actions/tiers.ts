@@ -22,7 +22,17 @@ async function pingTierPaths(
 }
 
 const TIER_COLUMNS =
-  "id, event_id, name_en, name_de, name_fr, description_en, description_de, description_fr, price_cents, original_price_cents, currency, max_quantity, quantity_sold, sales_start_at, sales_end_at, is_public, sort_order, created_at" as const;
+  "id, event_id, name_en, name_de, name_fr, description_en, description_de, description_fr, price_cents, original_price_cents, currency, max_quantity, quantity_sold, low_stock_threshold_pct, sales_start_at, sales_end_at, is_public, sort_order, created_at" as const;
+
+function parseLowStockThresholdPct(
+  raw: FormDataEntryValue | null
+): number | null {
+  const str = typeof raw === "string" ? raw.trim() : "";
+  if (str === "") return null;
+  const parsed = parseInt(str, 10);
+  if (!Number.isFinite(parsed) || parsed < 1 || parsed > 100) return null;
+  return parsed;
+}
 
 function parseOriginalPrice(
   raw: FormDataEntryValue | null,
@@ -84,6 +94,10 @@ export async function createTier(formData: FormData) {
   );
   if (originalPrice.error) return { error: originalPrice.error };
 
+  const lowStockPct = parseLowStockThresholdPct(
+    formData.get("low_stock_threshold_pct")
+  );
+
   const tierData = {
     event_id: eventId,
     slug,
@@ -98,6 +112,7 @@ export async function createTier(formData: FormData) {
     max_quantity: formData.get("max_quantity")
       ? parseInt(formData.get("max_quantity") as string, 10)
       : null,
+    ...(lowStockPct != null ? { low_stock_threshold_pct: lowStockPct } : {}),
     sales_start_at: (formData.get("sales_start_at") as string) || null,
     sales_end_at: (formData.get("sales_end_at") as string) || null,
     is_public: formData.get("is_public") === "true",
@@ -142,6 +157,10 @@ export async function updateTier(tierId: string, formData: FormData) {
   );
   if (originalPrice.error) return { error: originalPrice.error };
 
+  const lowStockPct = parseLowStockThresholdPct(
+    formData.get("low_stock_threshold_pct")
+  );
+
   const tierData = {
     name_en: nameEn,
     name_de: (formData.get("name_de") as string) || nameEn,
@@ -154,6 +173,7 @@ export async function updateTier(tierId: string, formData: FormData) {
     max_quantity: formData.get("max_quantity")
       ? parseInt(formData.get("max_quantity") as string, 10)
       : null,
+    ...(lowStockPct != null ? { low_stock_threshold_pct: lowStockPct } : {}),
     sales_start_at: (formData.get("sales_start_at") as string) || null,
     sales_end_at: (formData.get("sales_end_at") as string) || null,
     sort_order: parseInt((formData.get("sort_order") as string) || "0", 10),
