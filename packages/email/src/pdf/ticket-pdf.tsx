@@ -39,13 +39,19 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   logoImage: {
-    width: 32,
-    height: 32,
+    width: 110,
+    height: 34,
+    objectFit: "contain",
   },
   brandName: {
     fontSize: 18,
     fontWeight: "bold",
     letterSpacing: 1,
+  },
+  brandSuffix: {
+    fontSize: 20,
+    fontWeight: "normal",
+    marginLeft: 2,
   },
   ticketLabel: {
     fontSize: 9,
@@ -257,13 +263,19 @@ export function TicketPdf(props: TicketPdfProps) {
           ]}
         >
           <View style={styles.brandStack}>
-            {props.logoUrl && (
-              /* eslint-disable-next-line jsx-a11y/alt-text */
-              <Image src={props.logoUrl} style={styles.logoImage} />
+            {props.logoUrl ? (
+              <>
+                {/* eslint-disable-next-line jsx-a11y/alt-text */}
+                <Image src={props.logoUrl} style={styles.logoImage} />
+                <Text style={[styles.brandSuffix, { color: primary }]}>
+                  Germany
+                </Text>
+              </>
+            ) : (
+              <Text style={[styles.brandName, { color: primary }]}>
+                {brandName.toUpperCase()}
+              </Text>
             )}
-            <Text style={[styles.brandName, { color: primary }]}>
-              {brandName.toUpperCase()}
-            </Text>
           </View>
           <View>
             <Text style={styles.ticketLabel}>{t.ticket}</Text>

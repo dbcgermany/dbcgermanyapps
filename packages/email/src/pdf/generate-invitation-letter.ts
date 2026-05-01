@@ -6,10 +6,19 @@ export interface GenerateInvitationLetterInput {
   // Branding
   brandName?: string;
   legalName?: string;
-  companyAddress?: string;
-  supportEmail?: string;
+  legalForm?: string;
   primaryColor?: string;
   logoUrl?: string;
+  // Sender
+  senderLine1?: string;
+  senderPostalCode?: string;
+  senderCity?: string;
+  senderCountry?: string;
+  senderPhone?: string;
+  supportEmail?: string;
+  // Recipient
+  recipientName: string;
+  recipientEmail?: string;
   // Letter content
   salutation: string;
   closing: string;
@@ -38,7 +47,7 @@ export async function generateInvitationLetterPdf(
   const eventTime = `${input.startsAt.toLocaleTimeString(input.locale, {
     hour: "2-digit",
     minute: "2-digit",
-  })} \u2013 ${input.endsAt.toLocaleTimeString(input.locale, {
+  })} – ${input.endsAt.toLocaleTimeString(input.locale, {
     hour: "2-digit",
     minute: "2-digit",
   })}`;
@@ -52,10 +61,17 @@ export async function generateInvitationLetterPdf(
     React.createElement(InvitationLetterPdf, {
       brandName: input.brandName || "DBC Germany",
       legalName: input.legalName || "DBC Germany",
-      companyAddress: input.companyAddress || "",
-      supportEmail: input.supportEmail || "info@dbc-germany.com",
+      legalForm: input.legalForm,
       primaryColor: input.primaryColor || "#c8102e",
       logoUrl: input.logoUrl,
+      senderLine1: input.senderLine1,
+      senderPostalCode: input.senderPostalCode,
+      senderCity: input.senderCity,
+      senderCountry: input.senderCountry,
+      senderPhone: input.senderPhone,
+      supportEmail: input.supportEmail || "info@dbc-germany.com",
+      recipientName: input.recipientName,
+      recipientEmail: input.recipientEmail,
       salutation: input.salutation,
       closing: input.closing,
       bodyText: input.bodyText,

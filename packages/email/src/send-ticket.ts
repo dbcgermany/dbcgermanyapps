@@ -34,10 +34,16 @@ export interface SendTicketEmailInput {
   // Branding — pulled from company_info at call time
   brandName?: string;
   legalName?: string;
+  legalForm?: string;
   supportEmail?: string;
   primaryColor?: string;
   logoUrl?: string;
-  companyAddress?: string;
+  // Sender postal address — used for the formal invitation letter
+  senderLine1?: string;
+  senderPostalCode?: string;
+  senderCity?: string;
+  senderCountry?: string;
+  senderPhone?: string;
   isInvitation?: boolean;
   // Formal invitation fields (only used when isInvitation === true)
   gender?: "female" | "male" | "diverse" | null;
@@ -165,10 +171,17 @@ export async function sendTicketEmail(
         locale: input.locale,
         brandName: input.brandName,
         legalName: input.legalName,
-        companyAddress: input.companyAddress,
+        legalForm: input.legalForm,
+        senderLine1: input.senderLine1,
+        senderPostalCode: input.senderPostalCode,
+        senderCity: input.senderCity,
+        senderCountry: input.senderCountry,
+        senderPhone: input.senderPhone,
         supportEmail: input.supportEmail,
         primaryColor: input.primaryColor,
         logoUrl: input.logoUrl,
+        recipientName: input.attendeeName,
+        recipientEmail: input.attendeeEmail,
       }),
     ]);
 
@@ -224,7 +237,7 @@ export async function sendTicketEmail(
   });
 
   if (result.error) {
-    throw new Error(`Resend error: ${result.error.message}`);
+    throw new Error(`Resend error: ${JSON.stringify(result.error)}`);
   }
 
   return { id: result.data?.id ?? "" };

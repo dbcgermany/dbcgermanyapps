@@ -110,7 +110,7 @@ export function InvitationEmail(props: InvitationEmailProps) {
                   )}
                   <td style={{ verticalAlign: "middle" }}>
                     <Text className="m-0 text-xl font-bold tracking-wider text-[#c8102e]">
-                      DBC GERMANY
+                      Germany
                     </Text>
                     <Text className="m-0 mt-1 text-xs text-neutral-500">
                       Africa{"\u2019"}s Top Business Group

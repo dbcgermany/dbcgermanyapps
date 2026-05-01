@@ -10,140 +10,200 @@ import {
 const COLORS = {
   primary: "#c8102e",
   text: "#111111",
-  textMuted: "#737373",
-  border: "#e5e5e5",
+  textMuted: "#666666",
+  textSubtle: "#999999",
+  border: "#d4d4d4",
+  borderSubtle: "#ececec",
   bg: "#ffffff",
   bgSubtle: "#fafafa",
 };
 
+// DIN A4 = 210 x 297 mm. @react-pdf default size="A4" handles the canvas.
+// Margins follow DIN 5008 (German business letter standard) loosely:
+//   left  ~25mm, right ~20mm, top ~25mm, bottom ~25mm
 const styles = StyleSheet.create({
   page: {
     backgroundColor: COLORS.bg,
-    padding: 50,
+    paddingTop: 56,
+    paddingBottom: 80,
+    paddingLeft: 71,
+    paddingRight: 56,
     fontFamily: "Helvetica",
     fontSize: 11,
     color: COLORS.text,
-    lineHeight: 1.6,
+    lineHeight: 1.55,
   },
-  // Letterhead
-  header: {
+  // Letterhead — logo + brand text
+  letterhead: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
-    paddingBottom: 20,
-    borderBottomWidth: 2,
-    borderBottomColor: COLORS.primary,
-    marginBottom: 30,
+    gap: 4,
+    marginBottom: 4,
   },
-  logo: {
-    width: 36,
-    height: 36,
+  logoImage: {
+    width: 110,
+    height: 34,
+    objectFit: "contain",
   },
-  brandName: {
-    fontSize: 16,
-    fontWeight: "bold",
-    letterSpacing: 1.5,
+  brandSuffix: {
+    fontSize: 20,
+    color: COLORS.primary,
   },
-  brandSubtext: {
+  brandTagline: {
     fontSize: 8,
-    color: COLORS.textMuted,
+    color: COLORS.textSubtle,
+    letterSpacing: 0.6,
     marginTop: 2,
+    marginBottom: 14,
   },
-  // Date line
+  letterheadRule: {
+    borderBottomWidth: 1.5,
+    borderBottomColor: COLORS.primary,
+    marginBottom: 28,
+  },
+  // Sender hairline (very small line, "From: ..." style above recipient block)
+  senderLine: {
+    fontSize: 7.5,
+    color: COLORS.textSubtle,
+    marginBottom: 6,
+    paddingBottom: 4,
+    borderBottomWidth: 0.5,
+    borderBottomColor: COLORS.borderSubtle,
+  },
+  // Recipient address block (positioned for window envelopes)
+  recipientBlock: {
+    marginBottom: 36,
+  },
+  recipientName: {
+    fontSize: 11,
+    color: COLORS.text,
+  },
+  recipientLine: {
+    fontSize: 11,
+    color: COLORS.text,
+  },
+  // City, date — right aligned
   dateLine: {
     textAlign: "right",
-    fontSize: 10,
-    color: COLORS.textMuted,
-    marginBottom: 24,
+    fontSize: 10.5,
+    color: COLORS.text,
+    marginBottom: 28,
   },
-  // Salutation + body
+  // Subject — bold, sets the tone
+  subject: {
+    fontSize: 11.5,
+    fontWeight: "bold",
+    marginBottom: 22,
+  },
+  // Salutation
   salutation: {
     fontSize: 11,
-    marginBottom: 16,
+    marginBottom: 14,
   },
+  // Body paragraphs
   bodyParagraph: {
     fontSize: 10.5,
     lineHeight: 1.7,
-    marginBottom: 10,
-    color: "#333333",
+    marginBottom: 11,
+    color: COLORS.text,
+    textAlign: "justify",
   },
-  // Event details card
+  // Event details — refined card, less "techy"
   detailsCard: {
-    backgroundColor: COLORS.bgSubtle,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 6,
-    padding: 20,
-    marginTop: 20,
-    marginBottom: 20,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    paddingTop: 14,
+    paddingBottom: 14,
+    marginTop: 18,
+    marginBottom: 18,
   },
   detailsTitle: {
-    fontSize: 12,
+    fontSize: 9,
     fontWeight: "bold",
-    marginBottom: 12,
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
+    color: COLORS.textMuted,
+    marginBottom: 10,
+  },
+  detailsEventTitle: {
+    fontSize: 13,
+    fontWeight: "bold",
+    marginBottom: 10,
+    color: COLORS.text,
   },
   detailRow: {
     flexDirection: "row",
-    marginBottom: 6,
+    marginBottom: 4,
   },
   detailLabel: {
-    width: 100,
-    fontSize: 9,
-    textTransform: "uppercase",
-    letterSpacing: 0.8,
+    width: 85,
+    fontSize: 9.5,
     color: COLORS.textMuted,
   },
   detailValue: {
     flex: 1,
     fontSize: 10.5,
-  },
-  // Ticket note
-  ticketNote: {
-    fontSize: 9.5,
-    color: COLORS.textMuted,
-    fontStyle: "italic",
-    marginBottom: 24,
+    color: COLORS.text,
   },
   // Closing
+  ticketNote: {
+    fontSize: 10,
+    color: COLORS.textMuted,
+    fontStyle: "italic",
+    marginTop: 12,
+    marginBottom: 28,
+  },
   closing: {
     fontSize: 11,
-    marginBottom: 6,
+    marginBottom: 8,
+  },
+  signatureSpace: {
+    height: 36,
   },
   senderName: {
     fontSize: 11,
     fontWeight: "bold",
-    marginTop: 16,
   },
   senderTitle: {
-    fontSize: 9,
+    fontSize: 9.5,
     color: COLORS.textMuted,
+    marginTop: 1,
   },
-  // Footer
+  // Footer at bottom of page
   footer: {
     position: "absolute",
-    bottom: 40,
-    left: 50,
-    right: 50,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
-    paddingTop: 10,
+    bottom: 32,
+    left: 71,
+    right: 56,
+    borderTopWidth: 0.5,
+    borderTopColor: COLORS.borderSubtle,
+    paddingTop: 8,
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "flex-start",
+  },
+  footerLeft: {
+    flexDirection: "column",
+    gap: 1,
+  },
+  footerRight: {
+    flexDirection: "column",
+    alignItems: "flex-end",
+    gap: 1,
   },
   footerText: {
-    fontSize: 8,
+    fontSize: 7.5,
     color: COLORS.textMuted,
-  },
-  // Reference
-  refLine: {
-    fontSize: 9,
-    color: COLORS.textMuted,
-    marginBottom: 20,
   },
 });
 
 const TRANSLATIONS = {
   en: {
+    senderPrefix: "From",
+    subjectLabel: "Subject",
+    subjectPrefix: "Invitation",
     detailsTitle: "Event details",
     dateLabel: "Date",
     timeLabel: "Time",
@@ -151,9 +211,13 @@ const TRANSLATIONS = {
     tierLabel: "Ticket type",
     refLabel: "Reference",
     ticketNote:
-      "Your personal ticket with QR code is attached to this email as a separate PDF.",
+      "Your personal admission ticket with QR code is attached as a separate PDF. Please bring it printed or on your phone.",
+    tagline: "AFRICA’S TOP BUSINESS GROUP",
   },
   de: {
+    senderPrefix: "Absender",
+    subjectLabel: "Betreff",
+    subjectPrefix: "Einladung",
     detailsTitle: "Veranstaltungsdetails",
     dateLabel: "Datum",
     timeLabel: "Uhrzeit",
@@ -161,17 +225,22 @@ const TRANSLATIONS = {
     tierLabel: "Ticketart",
     refLabel: "Referenz",
     ticketNote:
-      "Ihr pers\u00F6nliches Ticket mit QR-Code liegt dieser E-Mail als separate PDF-Datei bei.",
+      "Ihr persönliches Eintrittsticket mit QR-Code ist als separate PDF beigefügt. Bitte bringen Sie es ausgedruckt oder auf Ihrem Smartphone mit.",
+    tagline: "AFRIKAS FÜHRENDE BUSINESS-GRUPPE",
   },
   fr: {
-    detailsTitle: "D\u00E9tails de l\u2019\u00E9v\u00E9nement",
+    senderPrefix: "Expéditeur",
+    subjectLabel: "Objet",
+    subjectPrefix: "Invitation",
+    detailsTitle: "Détails de l’événement",
     dateLabel: "Date",
     timeLabel: "Heure",
     venueLabel: "Lieu",
     tierLabel: "Type de billet",
-    refLabel: "R\u00E9f\u00E9rence",
+    refLabel: "Référence",
     ticketNote:
-      "Votre billet personnel avec code QR est joint \u00E0 cet e-mail en pi\u00E8ce jointe PDF s\u00E9par\u00E9e.",
+      "Votre billet personnel avec code QR est joint à cette invitation en pièce séparée. Veuillez le présenter imprimé ou sur votre téléphone.",
+    tagline: "PREMIER GROUPE D’AFFAIRES AFRICAIN",
   },
 };
 
@@ -179,10 +248,19 @@ export interface InvitationLetterPdfProps {
   // Branding
   brandName: string;
   legalName: string;
-  companyAddress: string;
-  supportEmail: string;
+  legalForm?: string;
   primaryColor: string;
   logoUrl?: string;
+  // Sender (shown as hairline above recipient block + in footer)
+  senderLine1?: string;
+  senderPostalCode?: string;
+  senderCity?: string;
+  senderCountry?: string;
+  senderPhone?: string;
+  supportEmail: string;
+  // Recipient
+  recipientName: string;
+  recipientEmail?: string;
   // Letter content
   salutation: string;
   closing: string;
@@ -200,31 +278,72 @@ export interface InvitationLetterPdfProps {
   letterDate: string;
 }
 
+function formatSenderLine(props: InvitationLetterPdfProps): string | null {
+  const parts = [
+    props.senderLine1,
+    [props.senderPostalCode, props.senderCity].filter(Boolean).join(" "),
+    props.senderCountry,
+  ]
+    .filter(Boolean)
+    .map((s) => (s as string).trim())
+    .filter(Boolean);
+  if (parts.length === 0) return null;
+  return parts.join(" · ");
+}
+
+function formatLocationDate(props: InvitationLetterPdfProps): string {
+  // "Düsseldorf, 1. Mai 2026" — city + date stacked into one line.
+  return [props.senderCity, props.letterDate].filter(Boolean).join(", ");
+}
+
 export function InvitationLetterPdf(props: InvitationLetterPdfProps) {
   const t = TRANSLATIONS[props.locale];
   const paragraphs = props.bodyText.split(/\n\n+/).filter(Boolean);
   const primary = props.primaryColor || COLORS.primary;
+  const senderLine = formatSenderLine(props);
+  const locationDate = formatLocationDate(props);
+  const subject = `${t.subjectPrefix}: ${props.eventTitle}`;
+
+  const legalLineParts = [
+    [props.legalName, props.legalForm].filter(Boolean).join(" "),
+    props.senderLine1,
+    [props.senderPostalCode, props.senderCity].filter(Boolean).join(" "),
+  ].filter(Boolean);
+  const legalLine = legalLineParts.join(" · ");
 
   return (
     <Document>
       <Page size="A4" style={styles.page}>
         {/* Letterhead */}
-        <View style={[styles.header, { borderBottomColor: primary }]}>
+        <View style={styles.letterhead}>
           {props.logoUrl && (
-            <Image src={props.logoUrl} style={styles.logo} />
+            /* eslint-disable-next-line jsx-a11y/alt-text */
+            <Image src={props.logoUrl} style={styles.logoImage} />
           )}
-          <View>
-            <Text style={[styles.brandName, { color: primary }]}>
-              {props.brandName.toUpperCase()}
-            </Text>
-            <Text style={styles.brandSubtext}>{props.legalName}</Text>
-          </View>
+          <Text style={[styles.brandSuffix, { color: primary }]}>Germany</Text>
+        </View>
+        <Text style={styles.brandTagline}>{t.tagline}</Text>
+        <View style={[styles.letterheadRule, { borderBottomColor: primary }]} />
+
+        {/* Sender hairline + recipient block */}
+        {senderLine && (
+          <Text style={styles.senderLine}>
+            {t.senderPrefix}: {senderLine}
+          </Text>
+        )}
+        <View style={styles.recipientBlock}>
+          <Text style={styles.recipientName}>{props.recipientName}</Text>
+          {props.recipientEmail && (
+            <Text style={styles.recipientLine}>{props.recipientEmail}</Text>
+          )}
         </View>
 
-        {/* Date + reference */}
-        <Text style={styles.dateLine}>{props.letterDate}</Text>
-        <Text style={styles.refLine}>
-          {t.refLabel}: #{props.ticketShortId}
+        {/* City + date right-aligned */}
+        {locationDate && <Text style={styles.dateLine}>{locationDate}</Text>}
+
+        {/* Subject */}
+        <Text style={styles.subject}>
+          {t.subjectLabel}: {subject}
         </Text>
 
         {/* Salutation */}
@@ -237,18 +356,10 @@ export function InvitationLetterPdf(props: InvitationLetterPdfProps) {
           </Text>
         ))}
 
-        {/* Event details card */}
+        {/* Event details */}
         <View style={styles.detailsCard}>
           <Text style={styles.detailsTitle}>{t.detailsTitle}</Text>
-          <Text
-            style={{
-              fontSize: 13,
-              fontWeight: "bold",
-              marginBottom: 12,
-            }}
-          >
-            {props.eventTitle}
-          </Text>
+          <Text style={styles.detailsEventTitle}>{props.eventTitle}</Text>
 
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>{t.dateLabel}</Text>
@@ -269,24 +380,37 @@ export function InvitationLetterPdf(props: InvitationLetterPdfProps) {
             <Text style={styles.detailLabel}>{t.tierLabel}</Text>
             <Text style={styles.detailValue}>{props.tierName}</Text>
           </View>
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>{t.refLabel}</Text>
+            <Text style={styles.detailValue}>#{props.ticketShortId}</Text>
+          </View>
         </View>
 
-        {/* Ticket note */}
+        {/* Ticket attachment note */}
         <Text style={styles.ticketNote}>{t.ticketNote}</Text>
 
         {/* Closing + signature */}
         <Text style={styles.closing}>{props.closing}</Text>
-        <Text style={styles.senderName}>DBC Germany Team</Text>
+        <View style={styles.signatureSpace} />
+        <Text style={styles.senderName}>{props.brandName} Team</Text>
         <Text style={styles.senderTitle}>Event Management</Text>
 
         {/* Footer */}
         <View style={styles.footer} fixed>
-          <Text style={styles.footerText}>
-            {props.legalName} {"\u00B7"} {props.supportEmail}
-          </Text>
-          <Text style={styles.footerText}>
-            {props.companyAddress}
-          </Text>
+          <View style={styles.footerLeft}>
+            {legalLine ? (
+              <Text style={styles.footerText}>{legalLine}</Text>
+            ) : null}
+            <Text style={styles.footerText}>
+              {props.supportEmail}
+              {props.senderPhone ? ` · ${props.senderPhone}` : ""}
+            </Text>
+          </View>
+          <View style={styles.footerRight}>
+            <Text style={styles.footerText}>
+              {t.refLabel}: #{props.ticketShortId}
+            </Text>
+          </View>
         </View>
       </Page>
     </Document>

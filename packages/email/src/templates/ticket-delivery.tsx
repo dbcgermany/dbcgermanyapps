@@ -107,7 +107,7 @@ export function TicketDeliveryEmail(props: TicketDeliveryEmailProps) {
                   )}
                   <td style={{ verticalAlign: "middle" }}>
                     <Text className="m-0 text-xl font-bold tracking-wider text-[#c8102e]">
-                      DBC GERMANY
+                      Germany
                     </Text>
                     <Text className="m-0 mt-1 text-xs text-neutral-500">
                       Africa&rsquo;s Top Business Group
