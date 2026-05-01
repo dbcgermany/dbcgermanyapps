@@ -47,13 +47,25 @@ export function ScanClient({
       }
       lastScanRef.current = { token, time: now };
 
-      const result = await checkInTicket(token, eventId);
+      // Any exception here — network blip, expired session, RPC failure —
+      // must NOT bubble to React's error boundary, or staff lose the
+      // scanner mid-event. Treat unknowns as a soft "invalid" so the next
+      // scan retries cleanly.
+      let result: ScanResult;
+      try {
+        result = await checkInTicket(token, eventId);
+      } catch (err) {
+        console.error("[scan] check-in failed:", err);
+        result = { success: false, error: "scan_failed" };
+      }
 
       setStatus({ kind: result.success ? "success" : "error", result });
 
-      // Refresh stats
-      const newStats = await getScanStats(eventId);
-      setStats(newStats);
+      // Stats refresh runs out-of-band: a stats failure must not affect
+      // the result banner the staff just saw.
+      getScanStats(eventId)
+        .then(setStats)
+        .catch((err) => console.error("[scan] stats refresh failed:", err));
 
       // Reset status after 3 seconds
       setTimeout(() => setStatus({ kind: "scanning" }), 3000);
