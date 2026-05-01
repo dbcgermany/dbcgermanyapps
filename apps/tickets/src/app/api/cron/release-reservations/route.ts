@@ -72,7 +72,15 @@ export async function GET(request: Request) {
       });
     }
 
-    // 4) Audit: mark the release.
+    // 4) Drop the orphan ticket rows so attendee lists, CSV exports, and
+    // ticket counts only ever surface paid/comped attendees. Inventory was
+    // already returned via release_tickets above.
+    const { count: deletedTickets } = await supabase
+      .from("tickets")
+      .delete({ count: "exact" })
+      .eq("order_id", order.id);
+
+    // 5) Audit: mark the release.
     await supabase.from("audit_log").insert({
       action: "reservation_released",
       entity_type: "orders",
@@ -80,6 +88,7 @@ export async function GET(request: Request) {
       details: {
         event_id: order.event_id,
         released_tiers: tierCounts,
+        deleted_tickets: deletedTickets ?? 0,
       },
     });
 

@@ -401,6 +401,10 @@ export async function POST(request: Request) {
             p_quantity: qty,
           });
         }
+        // Drop the orphan ticket rows so admin attendee lists, CSV exports,
+        // and ticket counts only ever surface real (paid/comped) attendees.
+        // Inventory is already returned via release_tickets above.
+        await supabase.from("tickets").delete().eq("order_id", orderId);
       }
     }
   }

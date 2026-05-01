@@ -516,12 +516,15 @@ export async function createCheckoutSession(input: CheckoutInput) {
     session = await getStripe().checkout.sessions.create(sessionParams);
   } catch (err) {
     // Roll back the reservation if Stripe refused to create the session.
+    // Tickets were already inserted above, so wipe them so the order's
+    // cancelled state doesn't leave orphan attendee rows behind.
     for (const prev of reserved) {
       await supabase.rpc("release_tickets", {
         p_tier_id: prev.tierId,
         p_quantity: prev.qty,
       });
     }
+    await supabase.from("tickets").delete().eq("order_id", order.id);
     await supabase
       .from("orders")
       .update({ status: "cancelled", reservation_expires_at: null })
