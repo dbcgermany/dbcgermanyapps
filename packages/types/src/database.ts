@@ -688,6 +688,8 @@ export type Database = {
           id: string
           is_active: boolean
           max_uses: number | null
+          stripe_coupon_id: string | null
+          stripe_promotion_code_id: string | null
           times_used: number
           valid_from: string | null
           valid_until: string | null
@@ -702,6 +704,8 @@ export type Database = {
           id?: string
           is_active?: boolean
           max_uses?: number | null
+          stripe_coupon_id?: string | null
+          stripe_promotion_code_id?: string | null
           times_used?: number
           valid_from?: string | null
           valid_until?: string | null
@@ -716,6 +720,8 @@ export type Database = {
           id?: string
           is_active?: boolean
           max_uses?: number | null
+          stripe_coupon_id?: string | null
+          stripe_promotion_code_id?: string | null
           times_used?: number
           valid_from?: string | null
           valid_until?: string | null
@@ -2576,6 +2582,9 @@ export type Database = {
           sales_start_at: string | null
           slug: string
           sort_order: number
+          stripe_price_archived_ids: string[]
+          stripe_price_id: string | null
+          stripe_product_id: string | null
         }
         Insert: {
           created_at?: string
@@ -2598,6 +2607,9 @@ export type Database = {
           sales_start_at?: string | null
           slug: string
           sort_order?: number
+          stripe_price_archived_ids?: string[]
+          stripe_price_id?: string | null
+          stripe_product_id?: string | null
         }
         Update: {
           created_at?: string
@@ -2620,6 +2632,9 @@ export type Database = {
           sales_start_at?: string | null
           slug?: string
           sort_order?: number
+          stripe_price_archived_ids?: string[]
+          stripe_price_id?: string | null
+          stripe_product_id?: string | null
         }
         Relationships: [
           {
@@ -2942,7 +2957,13 @@ export type Database = {
         | "sent"
         | "failed"
       order_status: "pending" | "paid" | "comped" | "refunded" | "cancelled"
-      payment_method: "card" | "sepa" | "paypal" | "cash"
+      payment_method:
+        | "card"
+        | "sepa"
+        | "paypal"
+        | "cash"
+        | "sepa_debit"
+        | "klarna"
       sponsor_status: "lead" | "proposal" | "confirmed" | "active" | "completed"
       sponsor_tier:
         | "title"
@@ -3133,7 +3154,14 @@ export const Constants = {
         "failed",
       ],
       order_status: ["pending", "paid", "comped", "refunded", "cancelled"],
-      payment_method: ["card", "sepa", "paypal", "cash"],
+      payment_method: [
+        "card",
+        "sepa",
+        "paypal",
+        "cash",
+        "sepa_debit",
+        "klarna",
+      ],
       sponsor_status: ["lead", "proposal", "confirmed", "active", "completed"],
       sponsor_tier: [
         "title",

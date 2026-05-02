@@ -130,6 +130,7 @@ export const NOTIFICATION_TYPE_VALUES = [
   "new_order",
   "payment_failed",
   "refund_issued",
+  "dispute_created",
   "tier_sold_out",
   "low_inventory",
   // Leads / submissions
@@ -160,6 +161,7 @@ export const NOTIFICATION_DEFAULTS: Record<
   new_order:             { in_app: true,  email: true  },
   payment_failed:        { in_app: true,  email: true  },
   refund_issued:         { in_app: true,  email: false },
+  dispute_created:       { in_app: true,  email: true  },
   tier_sold_out:         { in_app: true,  email: true  },
   low_inventory:         { in_app: true,  email: false },
   new_application:       { in_app: true,  email: true  },

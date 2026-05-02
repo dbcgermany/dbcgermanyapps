@@ -76,13 +76,27 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing metadata" }, { status: 400 });
     }
 
-    // Determine payment method
+    // Determine payment method from the actual charge — `session.payment_method_types`
+    // is the menu shown to the buyer, not the chosen method. Read the canonical
+    // type from `latest_charge.payment_method_details.type` so we get
+    // card / sepa_debit / paypal / klarna / etc.
     let paymentMethod: string | null = null;
-    if (session.payment_method_types?.includes("card")) paymentMethod = "card";
-    if (session.payment_method_types?.includes("sepa_debit"))
-      paymentMethod = "sepa";
-    if (session.payment_method_types?.includes("paypal"))
-      paymentMethod = "paypal";
+    if (typeof session.payment_intent === "string") {
+      try {
+        const pi = await getStripe().paymentIntents.retrieve(
+          session.payment_intent,
+          { expand: ["latest_charge.payment_method_details"] }
+        );
+        const charge = pi.latest_charge as Stripe.Charge | null;
+        const detailType = charge?.payment_method_details?.type ?? null;
+        if (detailType) paymentMethod = detailType;
+      } catch (err) {
+        console.warn(
+          `[webhook] could not resolve payment_method for ${session.id}:`,
+          err
+        );
+      }
+    }
 
     // Flip pending → paid and clear the reservation expiry so the sweeper
     // won't touch this order. The WHERE guard ensures we only promote
@@ -441,6 +455,142 @@ export async function POST(request: Request) {
       } catch (err) {
         console.error(
           `Failed to notify admins of payment_failed for ${intent.id}:`,
+          err
+        );
+      }
+    });
+  }
+
+  // Mirror Stripe-Dashboard-initiated refunds back into our DB so the order
+  // status, inventory and reporting stay consistent. Idempotent: short-circuits
+  // if the order is already 'refunded' (covers the case where the admin refund
+  // action raced ahead of the webhook).
+  if (event.type === "charge.refunded") {
+    const charge = event.data.object as Stripe.Charge;
+    const piId =
+      typeof charge.payment_intent === "string" ? charge.payment_intent : null;
+    if (piId) {
+      const { data: order } = await supabase
+        .from("orders")
+        .select(
+          "id, status, event_id, recipient_name, recipient_email, total_cents, currency"
+        )
+        .eq("stripe_payment_intent_id", piId)
+        .maybeSingle();
+
+      if (order && order.status !== "refunded") {
+        const { data: ticketRows } = await supabase
+          .from("tickets")
+          .select("tier_id")
+          .eq("order_id", order.id);
+        const tierCounts: Record<string, number> = {};
+        for (const t of ticketRows ?? []) {
+          tierCounts[t.tier_id] = (tierCounts[t.tier_id] ?? 0) + 1;
+        }
+        for (const [tierId, qty] of Object.entries(tierCounts)) {
+          const { data: cur } = await supabase
+            .from("ticket_tiers")
+            .select("quantity_sold")
+            .eq("id", tierId)
+            .single();
+          if (cur) {
+            await supabase
+              .from("ticket_tiers")
+              .update({
+                quantity_sold: Math.max(0, cur.quantity_sold - qty),
+              })
+              .eq("id", tierId);
+          }
+        }
+
+        await supabase
+          .from("orders")
+          .update({ status: "refunded" })
+          .eq("id", order.id);
+
+        await supabase.from("audit_log").insert({
+          action: "refund_order",
+          entity_type: "orders",
+          entity_id: order.id,
+          details: {
+            source: "stripe_webhook",
+            stripe_event_id: event.id,
+            amount_refunded_cents: charge.amount_refunded,
+          },
+        });
+
+        after(async () => {
+          try {
+            await notifyAdmins(supabase, {
+              type: "refund_issued",
+              title: `Refund issued${order.recipient_name ? ` — ${order.recipient_name}` : ""}`,
+              body: `${(charge.amount_refunded / 100).toFixed(2)} ${(order.currency ?? "EUR").toUpperCase()} refunded via Stripe Dashboard`,
+              data: {
+                order_id: order.id,
+                event_id: order.event_id,
+                stripe_event_id: event.id,
+              },
+            });
+          } catch (err) {
+            console.error(
+              `Failed to notify admins of charge.refunded for ${charge.id}:`,
+              err
+            );
+          }
+        });
+      }
+    }
+  }
+
+  // Disputes (chargebacks, including SEPA reversals) need immediate operator
+  // attention. We don't auto-flip the order — the admin decides whether to
+  // contest or refund — but we audit-log it and ping the admin channels.
+  if (event.type === "charge.dispute.created") {
+    const dispute = event.data.object as Stripe.Dispute;
+    const piId =
+      typeof dispute.payment_intent === "string" ? dispute.payment_intent : null;
+    let order: {
+      id: string;
+      event_id: string | null;
+      recipient_name: string | null;
+    } | null = null;
+    if (piId) {
+      const { data } = await supabase
+        .from("orders")
+        .select("id, event_id, recipient_name")
+        .eq("stripe_payment_intent_id", piId)
+        .maybeSingle();
+      order = data ?? null;
+    }
+    await supabase.from("audit_log").insert({
+      action: "dispute_created",
+      entity_type: "orders",
+      entity_id: order?.id ?? null,
+      details: {
+        reason: dispute.reason,
+        amount: dispute.amount,
+        currency: dispute.currency,
+        stripe_dispute_id: dispute.id,
+        stripe_event_id: event.id,
+        stripe_payment_intent_id: piId,
+      },
+    });
+    after(async () => {
+      try {
+        await notifyAdmins(supabase, {
+          type: "dispute_created",
+          title: `Chargeback opened${order?.recipient_name ? ` — ${order.recipient_name}` : ""}`,
+          body: `${dispute.reason} · ${(dispute.amount / 100).toFixed(2)} ${dispute.currency.toUpperCase()}`,
+          data: {
+            order_id: order?.id ?? null,
+            event_id: order?.event_id ?? null,
+            stripe_dispute_id: dispute.id,
+            stripe_payment_intent_id: piId,
+          },
+        });
+      } catch (err) {
+        console.error(
+          `Failed to notify admins of dispute ${dispute.id}:`,
           err
         );
       }

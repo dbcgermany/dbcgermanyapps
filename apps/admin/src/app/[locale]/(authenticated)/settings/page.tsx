@@ -6,6 +6,7 @@ import { PageHeader } from "@/components/page-header";
 import { SettingsClient } from "./settings-client";
 import { SiteSettingsForm } from "./site-settings-form";
 import { AppSecretsSection } from "./app-secrets-section";
+import { StripeBackfillButton } from "./stripe-backfill-button";
 
 export default async function SettingsPage({
   params,
@@ -37,6 +38,8 @@ export default async function SettingsPage({
       )}
 
       {isSuperAdmin && <AppSecretsSection secrets={appSecrets} />}
+
+      <StripeBackfillButton />
 
       <SettingsClient
         locale={locale}

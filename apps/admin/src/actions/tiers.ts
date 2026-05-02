@@ -4,6 +4,11 @@ import { createServerClient, requireRole } from "@dbc/supabase/server";
 import { revalidatePath } from "next/cache";
 import { slugify, uniqueSlug } from "@/lib/slugify";
 import { pingRevalidate } from "@/lib/revalidate";
+import {
+  archiveTierInStripe,
+  bestEffortSync,
+  syncTierToStripe,
+} from "@/lib/stripe-sync";
 
 async function pingTierPaths(
   supabase: Awaited<ReturnType<typeof createServerClient>>,
@@ -21,8 +26,23 @@ async function pingTierPaths(
   ]);
 }
 
+async function persistStripeIdsForTier(
+  supabase: Awaited<ReturnType<typeof createServerClient>>,
+  tierId: string,
+  result: Awaited<ReturnType<typeof syncTierToStripe>>
+) {
+  await supabase
+    .from("ticket_tiers")
+    .update({
+      stripe_product_id: result.stripe_product_id,
+      stripe_price_id: result.stripe_price_id,
+      stripe_price_archived_ids: result.archived_price_ids,
+    })
+    .eq("id", tierId);
+}
+
 const TIER_COLUMNS =
-  "id, event_id, name_en, name_de, name_fr, description_en, description_de, description_fr, price_cents, original_price_cents, currency, max_quantity, quantity_sold, low_stock_threshold_pct, sales_start_at, sales_end_at, is_public, sort_order, created_at" as const;
+  "id, event_id, name_en, name_de, name_fr, description_en, description_de, description_fr, price_cents, original_price_cents, currency, max_quantity, quantity_sold, low_stock_threshold_pct, sales_start_at, sales_end_at, is_public, sort_order, stripe_product_id, stripe_price_id, stripe_price_archived_ids, created_at" as const;
 
 function parseLowStockThresholdPct(
   raw: FormDataEntryValue | null
@@ -135,9 +155,30 @@ export async function createTier(formData: FormData) {
     details: { name: nameEn, event_id: eventId },
   });
 
+  const synced = await bestEffortSync(
+    () =>
+      syncTierToStripe({
+        id: data.id,
+        event_id: eventId,
+        name_en: nameEn,
+        description_en: tierData.description_en,
+        price_cents: priceCents,
+        currency: "EUR",
+        stripe_product_id: null,
+        stripe_price_id: null,
+        stripe_price_archived_ids: [],
+        is_public: tierData.is_public,
+      }),
+    `createTier:${data.id}`
+  );
+  if (synced) await persistStripeIdsForTier(supabase, data.id, synced);
+
   revalidatePath(`/${locale}/events/${eventId}/tiers`);
   await pingTierPaths(supabase, eventId);
-  return { success: true };
+  return {
+    success: true,
+    stripeWarning: synced ? null : "Saved locally — Stripe sync failed. Click Resync.",
+  };
 }
 
 export async function updateTier(tierId: string, formData: FormData) {
@@ -194,9 +235,28 @@ export async function updateTier(tierId: string, formData: FormData) {
     details: { name: nameEn, event_id: eventId },
   });
 
+  const { data: existing } = await supabase
+    .from("ticket_tiers")
+    .select(
+      "id, event_id, name_en, description_en, price_cents, currency, stripe_product_id, stripe_price_id, stripe_price_archived_ids, is_public"
+    )
+    .eq("id", tierId)
+    .single();
+  let synced: Awaited<ReturnType<typeof syncTierToStripe>> | null = null;
+  if (existing) {
+    synced = await bestEffortSync(
+      () => syncTierToStripe(existing),
+      `updateTier:${tierId}`
+    );
+    if (synced) await persistStripeIdsForTier(supabase, tierId, synced);
+  }
+
   revalidatePath(`/${locale}/events/${eventId}/tiers`);
   await pingTierPaths(supabase, eventId);
-  return { success: true };
+  return {
+    success: true,
+    stripeWarning: synced ? null : "Saved locally — Stripe sync failed. Click Resync.",
+  };
 }
 
 export async function toggleTierPublic(
@@ -209,15 +269,18 @@ export async function toggleTierPublic(
 
   const { data: tier } = await supabase
     .from("ticket_tiers")
-    .select("is_public, name_en")
+    .select(
+      "is_public, name_en, event_id, description_en, price_cents, currency, stripe_product_id, stripe_price_id, stripe_price_archived_ids"
+    )
     .eq("id", tierId)
     .single();
 
   if (!tier) return { error: "Tier not found" };
 
+  const newIsPublic = !tier.is_public;
   const { error } = await supabase
     .from("ticket_tiers")
-    .update({ is_public: !tier.is_public })
+    .update({ is_public: newIsPublic })
     .eq("id", tierId);
 
   if (error) return { error: error.message };
@@ -229,6 +292,24 @@ export async function toggleTierPublic(
     entity_id: tierId,
     details: { name: tier.name_en, event_id: eventId },
   });
+
+  const synced = await bestEffortSync(
+    () =>
+      syncTierToStripe({
+        id: tierId,
+        event_id: tier.event_id,
+        name_en: tier.name_en,
+        description_en: tier.description_en,
+        price_cents: tier.price_cents,
+        currency: tier.currency,
+        stripe_product_id: tier.stripe_product_id,
+        stripe_price_id: tier.stripe_price_id,
+        stripe_price_archived_ids: tier.stripe_price_archived_ids,
+        is_public: newIsPublic,
+      }),
+    `toggleTierPublic:${tierId}`
+  );
+  if (synced) await persistStripeIdsForTier(supabase, tierId, synced);
 
   revalidatePath(`/${locale}/events/${eventId}/tiers`);
   await pingTierPaths(supabase, eventId);
@@ -273,12 +354,19 @@ export async function deleteTier(tierId: string, eventId: string, locale: string
 
   const { data: tier } = await supabase
     .from("ticket_tiers")
-    .select("name_en, quantity_sold")
+    .select("name_en, quantity_sold, stripe_product_id, stripe_price_id")
     .eq("id", tierId)
     .single();
 
   if (tier && tier.quantity_sold > 0) {
     return { error: "Cannot delete a tier that has sold tickets." };
+  }
+
+  if (tier) {
+    await bestEffortSync(
+      () => archiveTierInStripe(tier.stripe_product_id, tier.stripe_price_id),
+      `deleteTier:${tierId}`
+    );
   }
 
   const { error } = await supabase
@@ -298,5 +386,25 @@ export async function deleteTier(tierId: string, eventId: string, locale: string
 
   revalidatePath(`/${locale}/events/${eventId}/tiers`);
   await pingTierPaths(supabase, eventId);
+  return { success: true };
+}
+
+export async function resyncTierToStripe(tierId: string) {
+  await requireRole("manager");
+  const supabase = await createServerClient();
+  const { data: tier } = await supabase
+    .from("ticket_tiers")
+    .select(
+      "id, event_id, name_en, description_en, price_cents, currency, stripe_product_id, stripe_price_id, stripe_price_archived_ids, is_public"
+    )
+    .eq("id", tierId)
+    .single();
+  if (!tier) return { error: "Tier not found" };
+  const synced = await bestEffortSync(
+    () => syncTierToStripe(tier),
+    `resync:${tierId}`
+  );
+  if (!synced) return { error: "Stripe sync failed. Check logs." };
+  await persistStripeIdsForTier(supabase, tierId, synced);
   return { success: true };
 }

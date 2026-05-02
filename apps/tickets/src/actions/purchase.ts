@@ -7,6 +7,10 @@ import { redirect } from "next/navigation";
 import { after } from "next/server";
 import Stripe from "stripe";
 import { sendTicketsForOrder } from "@/lib/send-tickets-for-order";
+import {
+  filterToActive,
+  getActivePaymentMethodTypes,
+} from "@/lib/stripe-capabilities";
 
 // Lazy-initialised so the module can be imported during `next build`
 // (page-data collection) without STRIPE_SECRET_KEY being set.
@@ -161,7 +165,9 @@ export async function createCheckoutSession(input: CheckoutInput) {
   const tierIds = [...new Set(input.attendees.map((a) => a.tierId))];
   const { data: tiers, error: tiersError } = await supabase
     .from("ticket_tiers")
-    .select("id, name_en, price_cents, max_quantity, quantity_sold, is_public")
+    .select(
+      "id, name_en, price_cents, max_quantity, quantity_sold, is_public, stripe_product_id, stripe_price_id"
+    )
     .in("id", tierIds)
     .eq("event_id", event.id);
 
@@ -198,11 +204,14 @@ export async function createCheckoutSession(input: CheckoutInput) {
   // 6. Apply coupon (server-side validation)
   let discountCents = 0;
   let couponId: string | null = null;
+  let couponStripePromotionCodeId: string | null = null;
 
   if (input.couponCode) {
     const { data: coupon } = await supabase
       .from("coupons")
-      .select("id, discount_type, discount_value, max_uses, times_used, event_id, applicable_tier_ids, is_active, valid_from, valid_until")
+      .select(
+        "id, discount_type, discount_value, max_uses, times_used, event_id, applicable_tier_ids, is_active, valid_from, valid_until, stripe_coupon_id, stripe_promotion_code_id"
+      )
       .eq("code", input.couponCode.toUpperCase().trim())
       .eq("is_active", true)
       .single();
@@ -260,6 +269,7 @@ export async function createCheckoutSession(input: CheckoutInput) {
     }
 
     couponId = coupon.id;
+    couponStripePromotionCodeId = coupon.stripe_promotion_code_id ?? null;
   }
 
   const totalCents = subtotalCents - discountCents;
@@ -444,34 +454,73 @@ export async function createCheckoutSession(input: CheckoutInput) {
   }
 
   // 12. Create Stripe Checkout Session
-  const lineItems = input.attendees.map((attendee) => {
-    const tier = tierMap.get(attendee.tierId)!;
-    return {
-      price_data: {
-        currency: "eur" as const,
-        product_data: {
-          name: tier.name_en,
-          description: `Attendee: ${composeName(attendee.first_name, attendee.last_name)}`,
+  // Aggregate per-tier so we use Stripe's `quantity` instead of one line per
+  // attendee. Per-attendee names live in our `tickets` table + emails.
+  const lineItems = [] as Stripe.Checkout.SessionCreateParams["line_items"] &
+    object[];
+  for (const [tierId, qty] of Object.entries(tierQuantities)) {
+    const tier = tierMap.get(tierId)!;
+    if (tier.stripe_price_id) {
+      lineItems.push({ price: tier.stripe_price_id, quantity: qty });
+    } else {
+      // Fallback for legacy / pre-sync tiers. Identical shape to the
+      // pre-migration code so events created before backfill keep working.
+      lineItems.push({
+        price_data: {
+          currency: "eur" as const,
+          product_data: { name: tier.name_en },
+          unit_amount: tier.price_cents,
         },
-        unit_amount: tier.price_cents,
-      },
-      quantity: 1,
-    };
-  });
-
-  // Apply discount as a coupon in Stripe if applicable
-  const discounts: { coupon: string }[] = [];
-  if (discountCents > 0) {
-    const stripeCoupon = await getStripe().coupons.create({
-      amount_off: discountCents,
-      currency: "eur",
-      duration: "once",
-      name: input.couponCode?.toUpperCase() ?? "Discount",
-    });
-    discounts.push({ coupon: stripeCoupon.id });
+        quantity: qty,
+      });
+    }
   }
 
-  const paymentMethodTypes = (event.enabled_payment_methods ?? []) as string[];
+  // Apply discount: prefer the synced Promotion Code so URL ?code= flows
+  // surface in Stripe Checkout's promotion-code field. Fall back to an
+  // ephemeral session-level Coupon for legacy coupons not yet backfilled.
+  const discounts: Array<{ promotion_code?: string; coupon?: string }> = [];
+  if (discountCents > 0) {
+    if (couponStripePromotionCodeId) {
+      discounts.push({ promotion_code: couponStripePromotionCodeId });
+    } else {
+      const stripeCoupon = await getStripe().coupons.create({
+        amount_off: discountCents,
+        currency: "eur",
+        duration: "once",
+        name: input.couponCode?.toUpperCase() ?? "Discount",
+      });
+      discounts.push({ coupon: stripeCoupon.id });
+    }
+  }
+
+  const requestedMethods = (event.enabled_payment_methods ?? []) as string[];
+  const activeMethods = await getActivePaymentMethodTypes(getStripe());
+  const allowedMethods = filterToActive(requestedMethods, activeMethods);
+
+  // Negative path: event explicitly whitelisted methods but none are
+  // currently active on the Stripe account. Roll back and surface a clean
+  // error rather than letting Stripe reject the session params.
+  if (requestedMethods.length > 0 && allowedMethods.length === 0) {
+    for (const prev of reserved) {
+      await supabase.rpc("release_tickets", {
+        p_tier_id: prev.tierId,
+        p_quantity: prev.qty,
+      });
+    }
+    await supabase.from("tickets").delete().eq("order_id", order.id);
+    await supabase
+      .from("orders")
+      .update({ status: "cancelled", reservation_expires_at: null })
+      .eq("id", order.id);
+    console.error("[checkout] no active payment methods", {
+      requested: requestedMethods,
+      active: activeMethods,
+    });
+    return {
+      error: "Payments are temporarily unavailable. Please try again shortly.",
+    };
+  }
 
   // Stripe Checkout's `expires_at` must be at least 30 minutes in the future,
   // so line it up with max(30, reservation_ttl+slack).
@@ -480,11 +529,6 @@ export async function createCheckoutSession(input: CheckoutInput) {
     RESERVATION_TTL_MINUTES * 60 + 60
   );
 
-  // If the event row explicitly whitelists methods, use them. Otherwise let
-  // Stripe render every method the account has enabled that's eligible for
-  // this currency/amount/customer-country — so switching on PayPal, Klarna,
-  // Link, Apple Pay, etc. in the Stripe Dashboard flows through without a
-  // redeploy.
   const sessionParams: Stripe.Checkout.SessionCreateParams = {
     mode: "payment",
     line_items: lineItems,
@@ -499,17 +543,13 @@ export async function createCheckoutSession(input: CheckoutInput) {
     success_url: `${process.env.NEXT_PUBLIC_TICKETS_URL}/${input.locale}/confirmation/${order.id}?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${process.env.NEXT_PUBLIC_TICKETS_URL}/${input.locale}/events/${input.eventSlug}`,
   };
-  if (paymentMethodTypes.length > 0) {
+  if (requestedMethods.length > 0) {
+    // Event whitelist exists — pass the filtered (active-only) set.
     sessionParams.payment_method_types =
-      paymentMethodTypes as Stripe.Checkout.SessionCreateParams["payment_method_types"];
+      allowedMethods as Stripe.Checkout.SessionCreateParams["payment_method_types"];
   }
-  // Otherwise omit both payment_method_types and automatic_payment_methods.
-  // automatic_payment_methods is a PaymentIntent-only parameter — Stripe
-  // returns `parameter_unknown` if we pass it to Checkout Sessions. With
-  // neither set, Stripe uses the account's default payment method
-  // configuration from the Dashboard (card, Apple Pay, Klarna, Link,
-  // Bancontact, EPS, Amazon Pay, …), so enabling a new method in Stripe
-  // shows up on checkout without a redeploy.
+  // Otherwise omit both payment_method_types and automatic_payment_methods so
+  // Stripe falls back to the account's Dashboard-configured default methods.
 
   let session: Stripe.Checkout.Session;
   try {

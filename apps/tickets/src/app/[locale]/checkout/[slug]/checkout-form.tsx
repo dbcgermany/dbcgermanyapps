@@ -75,6 +75,7 @@ export function CheckoutForm({
   source,
   funnelSlug,
   initialTierId,
+  initialCouponCode,
 }: {
   eventSlug: string;
   locale: string;
@@ -84,12 +85,13 @@ export function CheckoutForm({
   source?: string | null;
   funnelSlug?: string | null;
   initialTierId?: string | null;
+  initialCouponCode?: string | null;
 }) {
   const tPerson = useTranslations("person");
   const [attendees, setAttendees] = useState<Attendee[]>([
     emptyAttendee(initialTierId ?? tiers[0]?.id ?? ""),
   ]);
-  const [couponCode, setCouponCode] = useState("");
+  const [couponCode, setCouponCode] = useState(initialCouponCode ?? "");
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const turnstileRef = useRef<HTMLDivElement>(null);
   const turnstileWidgetIdRef = useRef<string | null>(null);

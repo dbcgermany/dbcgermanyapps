@@ -21,12 +21,15 @@ export default async function CheckoutPage({
   searchParams,
 }: {
   params: Promise<{ locale: string; slug: string }>;
-  searchParams: Promise<{ src?: string; tier?: string; fn?: string }>;
+  searchParams: Promise<{ src?: string; tier?: string; fn?: string; code?: string }>;
 }) {
   const { locale, slug } = await params;
-  const { src, tier, fn } = await searchParams;
+  const { src, tier, fn, code } = await searchParams;
   const source = src && ALLOWED_SOURCES.has(src) ? src : null;
   const funnelSlug = fn && FUNNEL_SLUG_RE.test(fn) ? fn : null;
+  const COUPON_CODE_RE = /^[A-Z0-9_-]{3,40}$/i;
+  const initialCouponCode =
+    code && COUPON_CODE_RE.test(code) ? code.toUpperCase() : null;
   const event = await getEventBySlug(slug);
 
   if (!event) notFound();
@@ -69,6 +72,7 @@ export default async function CheckoutPage({
         source={funnelSlug ? "funnel" : source}
         funnelSlug={funnelSlug}
         initialTierId={preselectedTier?.id ?? null}
+        initialCouponCode={initialCouponCode}
       />
     </main>
   );

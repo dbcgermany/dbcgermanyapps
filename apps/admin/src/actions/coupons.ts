@@ -2,9 +2,45 @@
 
 import { createServerClient, requireRole } from "@dbc/supabase/server";
 import { revalidatePath } from "next/cache";
+import { pingRevalidate } from "@/lib/revalidate";
+import {
+  archiveCouponInStripe,
+  bestEffortSync,
+  syncCouponToStripe,
+} from "@/lib/stripe-sync";
 
 const COUPON_COLUMNS =
-  "id, event_id, code, discount_type, discount_value, max_uses, times_used, valid_from, valid_until, applicable_tier_ids, is_active, created_at" as const;
+  "id, event_id, code, discount_type, discount_value, max_uses, times_used, valid_from, valid_until, applicable_tier_ids, is_active, stripe_coupon_id, stripe_promotion_code_id, created_at" as const;
+
+async function pingCouponPaths(
+  supabase: Awaited<ReturnType<typeof createServerClient>>,
+  eventId: string
+) {
+  const { data } = await supabase
+    .from("events")
+    .select("slug")
+    .eq("id", eventId)
+    .single();
+  if (!data?.slug) return;
+  await pingRevalidate("tickets", [
+    `/[locale]/events/${data.slug}`,
+    `/[locale]/checkout/${data.slug}`,
+  ]);
+}
+
+async function persistStripeIdsForCoupon(
+  supabase: Awaited<ReturnType<typeof createServerClient>>,
+  couponId: string,
+  result: Awaited<ReturnType<typeof syncCouponToStripe>>
+) {
+  await supabase
+    .from("coupons")
+    .update({
+      stripe_coupon_id: result.stripe_coupon_id,
+      stripe_promotion_code_id: result.stripe_promotion_code_id,
+    })
+    .eq("id", couponId);
+}
 
 export async function getCoupons(eventId: string) {
   await requireRole("manager");
@@ -80,8 +116,30 @@ export async function createCoupon(formData: FormData) {
     details: { code, event_id: eventId },
   });
 
+  const synced = await bestEffortSync(
+    () =>
+      syncCouponToStripe({
+        id: data.id,
+        code,
+        discount_type: discountType as "percentage" | "fixed_amount",
+        discount_value: discountValue,
+        max_uses: couponData.max_uses,
+        valid_until: couponData.valid_until,
+        is_active: true,
+        stripe_coupon_id: null,
+        stripe_promotion_code_id: null,
+        event_id: eventId,
+      }),
+    `createCoupon:${data.id}`
+  );
+  if (synced) await persistStripeIdsForCoupon(supabase, data.id, synced);
+
   revalidatePath(`/${locale}/events/${eventId}/coupons`);
-  return { success: true };
+  await pingCouponPaths(supabase, eventId);
+  return {
+    success: true,
+    stripeWarning: synced ? null : "Saved locally — Stripe sync failed. Click Resync.",
+  };
 }
 
 export async function updateCoupon(couponId: string, formData: FormData) {
@@ -140,8 +198,28 @@ export async function updateCoupon(couponId: string, formData: FormData) {
     details: { code, event_id: eventId },
   });
 
+  const { data: existing } = await supabase
+    .from("coupons")
+    .select(
+      "id, code, discount_type, discount_value, max_uses, valid_until, is_active, stripe_coupon_id, stripe_promotion_code_id, event_id"
+    )
+    .eq("id", couponId)
+    .single();
+  let synced: Awaited<ReturnType<typeof syncCouponToStripe>> | null = null;
+  if (existing) {
+    synced = await bestEffortSync(
+      () => syncCouponToStripe(existing),
+      `updateCoupon:${couponId}`
+    );
+    if (synced) await persistStripeIdsForCoupon(supabase, couponId, synced);
+  }
+
   revalidatePath(`/${locale}/events/${eventId}/coupons`);
-  return { success: true };
+  await pingCouponPaths(supabase, eventId);
+  return {
+    success: true,
+    stripeWarning: synced ? null : "Saved locally — Stripe sync failed. Click Resync.",
+  };
 }
 
 export async function deleteCoupon(
@@ -154,7 +232,7 @@ export async function deleteCoupon(
 
   const { data: coupon } = await supabase
     .from("coupons")
-    .select("code, times_used")
+    .select("code, times_used, stripe_coupon_id, stripe_promotion_code_id")
     .eq("id", couponId)
     .single();
 
@@ -163,6 +241,17 @@ export async function deleteCoupon(
       error:
         "Cannot delete a coupon that has been used. Deactivate it instead.",
     };
+  }
+
+  if (coupon) {
+    await bestEffortSync(
+      () =>
+        archiveCouponInStripe(
+          coupon.stripe_coupon_id,
+          coupon.stripe_promotion_code_id
+        ),
+      `deleteCoupon:${couponId}`
+    );
   }
 
   const { error } = await supabase
@@ -181,6 +270,7 @@ export async function deleteCoupon(
   });
 
   revalidatePath(`/${locale}/events/${eventId}/coupons`);
+  await pingCouponPaths(supabase, eventId);
   return { success: true };
 }
 
@@ -194,15 +284,18 @@ export async function toggleCouponActive(
 
   const { data: coupon } = await supabase
     .from("coupons")
-    .select("is_active, code")
+    .select(
+      "id, is_active, code, discount_type, discount_value, max_uses, valid_until, stripe_coupon_id, stripe_promotion_code_id, event_id"
+    )
     .eq("id", couponId)
     .single();
 
   if (!coupon) return { error: "Coupon not found" };
 
+  const newIsActive = !coupon.is_active;
   const { error } = await supabase
     .from("coupons")
-    .update({ is_active: !coupon.is_active })
+    .update({ is_active: newIsActive })
     .eq("id", couponId);
 
   if (error) return { error: error.message };
@@ -215,6 +308,33 @@ export async function toggleCouponActive(
     details: { code: coupon.code },
   });
 
+  const synced = await bestEffortSync(
+    () => syncCouponToStripe({ ...coupon, is_active: newIsActive }),
+    `toggleCoupon:${couponId}`
+  );
+  if (synced) await persistStripeIdsForCoupon(supabase, couponId, synced);
+
   revalidatePath(`/${locale}/events/${eventId}/coupons`);
+  await pingCouponPaths(supabase, eventId);
+  return { success: true };
+}
+
+export async function resyncCouponToStripe(couponId: string) {
+  await requireRole("manager");
+  const supabase = await createServerClient();
+  const { data: coupon } = await supabase
+    .from("coupons")
+    .select(
+      "id, code, discount_type, discount_value, max_uses, valid_until, is_active, stripe_coupon_id, stripe_promotion_code_id, event_id"
+    )
+    .eq("id", couponId)
+    .single();
+  if (!coupon) return { error: "Coupon not found" };
+  const synced = await bestEffortSync(
+    () => syncCouponToStripe(coupon),
+    `resync:${couponId}`
+  );
+  if (!synced) return { error: "Stripe sync failed. Check logs." };
+  await persistStripeIdsForCoupon(supabase, couponId, synced);
   return { success: true };
 }

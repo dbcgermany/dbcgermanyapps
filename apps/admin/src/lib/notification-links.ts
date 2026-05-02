@@ -28,6 +28,7 @@ export function notificationHref(
     case "new_order":
     case "payment_failed":
     case "refund_issued":
+    case "dispute_created":
     case "door_sale":
       return orderId ? `${base}/orders/${orderId}` : `${base}/orders`;
     case "tier_sold_out":
