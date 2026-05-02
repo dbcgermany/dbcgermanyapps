@@ -10,6 +10,8 @@ const COPY = {
     emailLabel: "Email",
     firstNameLabel: "First name (optional)",
     interestsLabel: "What brings you here? (optional)",
+    consentLabel:
+      "I agree to receive the DBC Germany newsletter. I can unsubscribe at any time using the link in every email.",
     submit: "Subscribe",
     sending: "Sending…",
     success:
@@ -20,6 +22,8 @@ const COPY = {
     emailLabel: "E-Mail",
     firstNameLabel: "Vorname (optional)",
     interestsLabel: "Was f\u00fchrt Sie zu uns? (optional)",
+    consentLabel:
+      "Ich m\u00f6chte den DBC Germany Newsletter erhalten. Ich kann mich jederzeit \u00fcber den Link in jeder E-Mail abmelden.",
     submit: "Abonnieren",
     sending: "Wird gesendet…",
     success:
@@ -30,6 +34,8 @@ const COPY = {
     emailLabel: "E-mail",
     firstNameLabel: "Pr\u00e9nom (optionnel)",
     interestsLabel: "Qu'est-ce qui vous am\u00e8ne ? (optionnel)",
+    consentLabel:
+      "J'accepte de recevoir la newsletter DBC Germany. Je peux me d\u00e9sabonner \u00e0 tout moment via le lien pr\u00e9sent dans chaque e-mail.",
     submit: "S'abonner",
     sending: "Envoi…",
     success:
@@ -77,6 +83,7 @@ export function NewsletterSignupForm({ locale }: { locale: Locale }) {
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
   const [interests, setInterests] = useState<string[]>([]);
+  const [consent, setConsent] = useState(false);
   const [message, setMessage] = useState<{ type: "ok" | "err"; text: string } | null>(
     null
   );
@@ -93,6 +100,7 @@ export function NewsletterSignupForm({ locale }: { locale: Locale }) {
             firstName: firstName || undefined,
             locale,
             interestSlugs: interests,
+            marketingConsent: consent,
             source: "newsletter_page",
           });
           if ("error" in res && res.error) {
@@ -104,6 +112,7 @@ export function NewsletterSignupForm({ locale }: { locale: Locale }) {
             setEmail("");
             setFirstName("");
             setInterests([]);
+            setConsent(false);
           }
         });
       }}
@@ -154,9 +163,19 @@ export function NewsletterSignupForm({ locale }: { locale: Locale }) {
           ))}
         </div>
       </div>
+      <label className="flex items-start gap-2 text-sm">
+        <input
+          type="checkbox"
+          required
+          checked={consent}
+          onChange={(e) => setConsent(e.target.checked)}
+          className="mt-0.5"
+        />
+        <span>{t.consentLabel}</span>
+      </label>
       <button
         type="submit"
-        disabled={isPending}
+        disabled={isPending || !consent}
         className="rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground disabled:opacity-50"
       >
         {isPending ? t.sending : t.submit}

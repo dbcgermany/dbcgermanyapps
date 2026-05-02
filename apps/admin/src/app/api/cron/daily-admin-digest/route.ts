@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { isAuthorisedCronRequest } from "@dbc/supabase/server";
 import { dashboardDigestPrompt, setKeyResolver } from "@dbc/ai";
 
 /**
@@ -18,8 +19,7 @@ import { dashboardDigestPrompt, setKeyResolver } from "@dbc/ai";
  * weekly-kpi-report, legal-readiness-check, contact-stale-reminder, etc.
  */
 export async function GET(request: Request) {
-  const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!isAuthorisedCronRequest(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

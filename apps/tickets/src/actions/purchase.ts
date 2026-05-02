@@ -46,11 +46,23 @@ const RESERVATION_TTL_MINUTES = parseInt(
   10
 );
 
-// Cloudflare Turnstile verification. Only enforced when the secret is set,
-// so local/dev environments without Turnstile configured still work.
+// Cloudflare Turnstile verification.
+//   - Production (VERCEL_ENV === "production"): fail-secure. If the secret
+//     isn't set, refuse the checkout. Misconfigured prod must never let
+//     unverified traffic through.
+//   - Anywhere else (local, preview): no-op when secret missing so dev
+//     environments without Turnstile still work.
 async function verifyTurnstile(token: string | undefined): Promise<boolean> {
   const secret = process.env.TURNSTILE_SECRET_KEY;
-  if (!secret) return true;
+  if (!secret) {
+    if (process.env.VERCEL_ENV === "production") {
+      console.error(
+        "[turnstile] TURNSTILE_SECRET_KEY missing in production — rejecting"
+      );
+      return false;
+    }
+    return true;
+  }
   if (!token) return false;
 
   try {

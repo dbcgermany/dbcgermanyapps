@@ -169,6 +169,15 @@ export async function refundOrder(orderId: string, locale: string) {
     return { error: `Cannot refund ${order.status} order` };
   }
 
+  // Block refunding a paid order that has lost its payment intent reference
+  // (would issue zero-money refund and leave the customer un-refunded).
+  if (order.status === "paid" && !order.stripe_payment_intent_id) {
+    return {
+      error:
+        "Refused: paid order has no Stripe payment intent. Refund manually in Stripe Dashboard, then mark this order refunded.",
+    };
+  }
+
   // Issue Stripe refund if it was a paid order with a Stripe payment
   if (order.status === "paid" && order.stripe_payment_intent_id) {
     try {
@@ -189,36 +198,29 @@ export async function refundOrder(orderId: string, locale: string) {
     .select("id, tier_id")
     .eq("order_id", orderId);
 
-  // Restore inventory per tier
+  // Restore inventory per tier — atomic via release_tickets RPC so concurrent
+  // door sales / webhook refunds can't corrupt quantity_sold.
   if (tickets) {
     const tierCounts: Record<string, number> = {};
     for (const ticket of tickets) {
       tierCounts[ticket.tier_id] = (tierCounts[ticket.tier_id] || 0) + 1;
     }
-
     for (const [tierId, qty] of Object.entries(tierCounts)) {
-      // Decrement quantity_sold (opposite of reserve_tickets)
-      const { data: currentTier } = await supabase
-        .from("ticket_tiers")
-        .select("quantity_sold")
-        .eq("id", tierId)
-        .single();
-
-      if (currentTier) {
-        await supabase
-          .from("ticket_tiers")
-          .update({
-            quantity_sold: Math.max(0, currentTier.quantity_sold - qty),
-          })
-          .eq("id", tierId);
-      }
+      await supabase.rpc("release_tickets", {
+        p_tier_id: tierId,
+        p_quantity: qty,
+      });
     }
   }
 
-  // Mark order as refunded
+  // Mark order as refunded — record the full amount so the webhook
+  // (charge.refunded firing afterwards) sees this as already processed.
   await supabase
     .from("orders")
-    .update({ status: "refunded" })
+    .update({
+      status: "refunded",
+      amount_refunded_cents: order.total_cents,
+    })
     .eq("id", orderId);
 
   // Audit log

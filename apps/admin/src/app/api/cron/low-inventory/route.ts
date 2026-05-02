@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { notifyAdmins } from "@dbc/supabase/server";
-
-const CRON_SECRET = process.env.CRON_SECRET;
+import { isAuthorisedCronRequest, notifyAdmins } from "@dbc/supabase/server";
 
 // Fires a `low_inventory` admin notification when an active tier crosses its
 // per-tier low-stock threshold (low_stock_threshold_pct % of max_quantity).
@@ -15,10 +13,7 @@ const CRON_SECRET = process.env.CRON_SECRET;
 const DEFAULT_THRESHOLD_PCT = 20;
 
 export async function GET(req: Request) {
-  if (
-    CRON_SECRET &&
-    req.headers.get("authorization") !== `Bearer ${CRON_SECRET}`
-  ) {
+  if (!isAuthorisedCronRequest(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

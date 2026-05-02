@@ -60,6 +60,19 @@ const LEGACY_FUNNEL_REDIRECTS: Record<string, string> = {
   "/services/incubation/apply": "/f/incubation",
 };
 
+// On non-production deployments (Vercel preview branches) inject
+// X-Robots-Tag: noindex so search engines don't pick up staging copy.
+const isPreview =
+  process.env.VERCEL_ENV !== undefined &&
+  process.env.VERCEL_ENV !== "production";
+
+function withPreviewNoindex(response: NextResponse): NextResponse {
+  if (isPreview) {
+    response.headers.set("X-Robots-Tag", "noindex, nofollow");
+  }
+  return response;
+}
+
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -74,7 +87,7 @@ export function proxy(request: NextRequest) {
     if (legacyTarget) {
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = `/${locale}${legacyTarget}`;
-      return NextResponse.redirect(redirectUrl, 308);
+      return withPreviewNoindex(NextResponse.redirect(redirectUrl, 308));
     }
     const response = NextResponse.next();
     response.cookies.set("locale", locale, {
@@ -82,7 +95,7 @@ export function proxy(request: NextRequest) {
       maxAge: 60 * 60 * 24 * 365,
       sameSite: "lax",
     });
-    return response;
+    return withPreviewNoindex(response);
   }
 
   const cookieLocale = request.cookies.get("locale")?.value;
@@ -96,7 +109,7 @@ export function proxy(request: NextRequest) {
 
   const url = request.nextUrl.clone();
   url.pathname = `/${chosen}${pathname}`;
-  return NextResponse.redirect(url);
+  return withPreviewNoindex(NextResponse.redirect(url));
 }
 
 export const config = {

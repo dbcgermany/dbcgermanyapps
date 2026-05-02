@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { isAuthorisedCronRequest } from "@dbc/supabase/server";
 import React from "react";
 import {
   render,
@@ -8,15 +9,11 @@ import {
   PaymentReminderEmail,
 } from "@dbc/email";
 
-const CRON_SECRET = process.env.CRON_SECRET;
 const TICKETS_URL =
   process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://tickets.dbc-germany.com";
 
 export async function GET(req: Request) {
-  if (
-    CRON_SECRET &&
-    req.headers.get("authorization") !== `Bearer ${CRON_SECRET}`
-  ) {
+  if (!isAuthorisedCronRequest(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

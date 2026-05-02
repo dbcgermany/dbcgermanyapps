@@ -358,23 +358,33 @@ export async function deleteTier(tierId: string, eventId: string, locale: string
     .eq("id", tierId)
     .single();
 
-  if (tier && tier.quantity_sold > 0) {
+  if (!tier) return { error: "Tier not found." };
+  if (tier.quantity_sold > 0) {
     return { error: "Cannot delete a tier that has sold tickets." };
   }
 
-  if (tier) {
-    await bestEffortSync(
-      () => archiveTierInStripe(tier.stripe_product_id, tier.stripe_price_id),
-      `deleteTier:${tierId}`
-    );
-  }
+  // Archive Stripe entities before the DB delete so we don't lose the IDs.
+  await bestEffortSync(
+    () => archiveTierInStripe(tier.stripe_product_id, tier.stripe_price_id),
+    `deleteTier:${tierId}`
+  );
 
-  const { error } = await supabase
+  // Atomic guard: the WHERE clause prevents racing with a concurrent purchase
+  // that was mid-reservation when we read quantity_sold above. If a sale
+  // landed between read + delete, this returns 0 affected rows.
+  const { error, count } = await supabase
     .from("ticket_tiers")
-    .delete()
-    .eq("id", tierId);
+    .delete({ count: "exact" })
+    .eq("id", tierId)
+    .eq("quantity_sold", 0);
 
   if (error) return { error: error.message };
+  if (count === 0) {
+    return {
+      error:
+        "Tier could not be deleted — a sale was registered while you were viewing this page. Refresh and try again.",
+    };
+  }
 
   await supabase.from("audit_log").insert({
     user_id: user.userId,

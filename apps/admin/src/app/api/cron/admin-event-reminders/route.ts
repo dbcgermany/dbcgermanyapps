@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { notifyAdmins } from "@dbc/supabase/server";
-
-const CRON_SECRET = process.env.CRON_SECRET;
+import { isAuthorisedCronRequest, notifyAdmins } from "@dbc/supabase/server";
 
 // Fires admin event-reminder notifications at 30 / 7 / 1 days before any
 // published upcoming event. Runs daily. Idempotent via an audit_log row
@@ -16,10 +14,7 @@ function dayDiff(a: Date, b: Date): number {
 }
 
 export async function GET(req: Request) {
-  if (
-    CRON_SECRET &&
-    req.headers.get("authorization") !== `Bearer ${CRON_SECRET}`
-  ) {
+  if (!isAuthorisedCronRequest(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

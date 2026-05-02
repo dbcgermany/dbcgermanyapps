@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { isAuthorisedCronRequest } from "@dbc/supabase/server";
 import { createEmailClient } from "@dbc/email";
 
 /**
@@ -14,9 +15,7 @@ import { createEmailClient } from "@dbc/email";
  * Schedule in vercel.json: every hour via `0 * * * *`.
  */
 export async function GET(request: Request) {
-  // Verify cron secret
-  const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!isAuthorisedCronRequest(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -91,7 +90,21 @@ export async function GET(request: Request) {
       continue;
     }
 
+    // HTML-escape every interpolation. Buyer names + admin-authored bodies
+    // both end up in raw email HTML; without escaping a buyer named
+    // `<img src=x onerror=...>` or a malicious admin template would XSS the
+    // email client.
+    const escapeHtml = (s: string): string =>
+      s
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+
     const seen = new Set<string>();
+    let seqSentCount = 0;
+    let seqFailCount = 0;
     for (const order of orders) {
       if (seen.has(order.recipient_email)) continue;
       seen.add(order.recipient_email);
@@ -103,27 +116,46 @@ export async function GET(request: Request) {
       const bodyTemplate =
         (seq[`body_${recipientLocale}` as keyof typeof seq] as string) ||
         seq.body_en;
-      const body = bodyTemplate.replace(/\{name\}/g, order.recipient_name);
+      const safeName = escapeHtml(order.recipient_name ?? "");
+      const safeBody = escapeHtml(bodyTemplate ?? "").replace(
+        /\{name\}/g,
+        safeName
+      );
 
       try {
         const result = await resend.emails.send({
           from: fromAddress,
           to: order.recipient_email,
           subject,
-          html: `<div style="font-family:system-ui,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#111;"><p>Hi ${order.recipient_name},</p><div style="white-space:pre-wrap;line-height:1.6;">${body}</div><hr style="margin:24px 0;border:none;border-top:1px solid #e5e5e5;"/><p style="font-size:12px;color:#737373;">DBC Germany (UG i.G.)</p></div>`,
+          html: `<div style="font-family:system-ui,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#111;"><p>Hi ${safeName},</p><div style="white-space:pre-wrap;line-height:1.6;">${safeBody}</div><hr style="margin:24px 0;border:none;border-top:1px solid #e5e5e5;"/><p style="font-size:12px;color:#737373;">DBC Germany (UG i.G.)</p></div>`,
         });
-        if (result.error) totalFailed += 1;
-        else totalSent += 1;
+        if (result.error) {
+          totalFailed += 1;
+          seqFailCount += 1;
+        } else {
+          totalSent += 1;
+          seqSentCount += 1;
+        }
       } catch (err) {
         totalFailed += 1;
-        console.error("Cron email failure:", err);
+        seqFailCount += 1;
+        console.error(
+          "[email-sequences] send failed:",
+          (err as Error)?.message ?? "unknown"
+        );
       }
     }
 
-    await supabase
-      .from("event_email_sequences")
-      .update({ sent_at: new Date().toISOString() })
-      .eq("id", seq.id);
+    // Only mark the sequence as sent if at least one delivery succeeded AND
+    // there were no failures. Otherwise next cron run retries the sequence
+    // for the un-stamped recipients (we re-dedupe by recipient_email so
+    // already-sent ones don't get duplicated).
+    if (seqSentCount > 0 && seqFailCount === 0) {
+      await supabase
+        .from("event_email_sequences")
+        .update({ sent_at: new Date().toISOString() })
+        .eq("id", seq.id);
+    }
   }
 
   return NextResponse.json({

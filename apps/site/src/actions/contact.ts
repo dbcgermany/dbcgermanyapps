@@ -2,15 +2,17 @@
 
 import { createEmailClient, sendContactFormConfirm } from "@dbc/email";
 import { createServerClient, notifyAdmins } from "@dbc/supabase/server";
+import { headers } from "next/headers";
 
 const CONTACT_DEST =
   process.env.CONTACT_DEST_EMAIL ?? "info@dbc-germany.com";
 
-// Simple in-memory cooldown per email to slow down spam. Doesn't survive
-// cold starts, but it's cheap defense-in-depth alongside Turnstile-less
-// public forms.
-const SUBMIT_WINDOW_MS = 60_000;
-const lastSubmittedAt = new Map<string, number>();
+// DB-backed rate limit (replaces the previous in-memory Map that reset on
+// every Vercel cold start). Window kept generous because a real-life
+// follow-up after a quick correction is reasonable.
+const CONTACT_RATE_WINDOW_SECONDS = 60;
+const CONTACT_RATE_MAX_PER_EMAIL_PER_WINDOW = 2;
+const CONTACT_RATE_MAX_PER_IP_PER_WINDOW = 6;
 
 export interface ContactFormInput {
   name: string;
@@ -40,20 +42,51 @@ export async function sendContactMessage(
     return { error: "Message is too long (max 5000 characters)." };
   }
 
-  const now = Date.now();
-  const previous = lastSubmittedAt.get(email) ?? 0;
-  if (now - previous < SUBMIT_WINDOW_MS) {
+  const supabase = await createServerClient();
+
+  // DB-backed rate limit per email + per IP. Survives Vercel cold starts.
+  const hdrs = await headers();
+  const ipRaw =
+    hdrs.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    hdrs.get("x-real-ip") ??
+    null;
+  const since = new Date(
+    Date.now() - CONTACT_RATE_WINDOW_SECONDS * 1000
+  ).toISOString();
+  const { count: emailHits } = await supabase
+    .from("abuse_events")
+    .select("id", { count: "exact", head: true })
+    .eq("scope", "contact")
+    .eq("key", email)
+    .gte("occurred_at", since);
+  if ((emailHits ?? 0) >= CONTACT_RATE_MAX_PER_EMAIL_PER_WINDOW) {
     return {
       error:
         "Please wait a minute before sending another message from the same address.",
     };
   }
-  lastSubmittedAt.set(email, now);
+  if (ipRaw) {
+    const { count: ipHits } = await supabase
+      .from("abuse_events")
+      .select("id", { count: "exact", head: true })
+      .eq("scope", "contact")
+      .eq("ip", ipRaw)
+      .gte("occurred_at", since);
+    if ((ipHits ?? 0) >= CONTACT_RATE_MAX_PER_IP_PER_WINDOW) {
+      return {
+        error: "Too many requests. Please try again in a minute.",
+      };
+    }
+  }
+  await supabase.from("abuse_events").insert({
+    scope: "contact",
+    key: email,
+    ip: ipRaw,
+  });
 
   // Persist to Supabase analytics_events so the team sees inbound inquiries
   // even if email delivery fails.
   try {
-    const supabase = await createServerClient();
     await supabase.from("analytics_events").insert({
       event_name: "site_contact_message",
       properties: { name, email, topic, locale: input.locale },

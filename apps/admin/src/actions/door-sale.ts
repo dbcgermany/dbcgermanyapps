@@ -91,11 +91,13 @@ export async function createDoorSale(formData: FormData) {
     .single();
 
   if (orderError || !order) {
-    // Rollback: decrement the tier
-    await supabase
-      .from("ticket_tiers")
-      .update({ quantity_sold: tier.quantity_sold })
-      .eq("id", tierId);
+    // Rollback: release the seat we just reserved. release_tickets is atomic
+    // — using a raw write of `quantity_sold` would corrupt counts under
+    // concurrent door sales.
+    await supabase.rpc("release_tickets", {
+      p_tier_id: tierId,
+      p_quantity: 1,
+    });
     return { error: "Failed to create order." };
   }
 
@@ -112,6 +114,13 @@ export async function createDoorSale(formData: FormData) {
   });
 
   if (ticketError) {
+    // Order row exists but ticket failed — roll the order back AND release
+    // the inventory so we don't leave a zombie paid-no-ticket.
+    await supabase.from("orders").delete().eq("id", order.id);
+    await supabase.rpc("release_tickets", {
+      p_tier_id: tierId,
+      p_quantity: 1,
+    });
     return { error: "Failed to create ticket." };
   }
 

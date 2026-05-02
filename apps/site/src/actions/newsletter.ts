@@ -5,6 +5,9 @@ import { sendNewsletterConfirm } from "@dbc/email";
 import { headers } from "next/headers";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://dbc-germany.com";
+const MARKETING_CONSENT_TOKEN_TTL_HOURS = 48;
+const NEWSLETTER_RATE_WINDOW_SECONDS = 60;
+const NEWSLETTER_RATE_MAX_PER_WINDOW = 3;
 
 type Locale = "en" | "de" | "fr";
 
@@ -15,6 +18,7 @@ function normalizeLocale(input: string | null | undefined): Locale {
 
 export async function subscribeToNewsletter(input: {
   email: string;
+  marketingConsent: boolean;
   firstName?: string;
   locale: string;
   interestSlugs?: string[];
@@ -23,6 +27,12 @@ export async function subscribeToNewsletter(input: {
   const email = input.email.trim().toLowerCase();
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return { error: "Please enter a valid email address." };
+  }
+  if (!input.marketingConsent) {
+    return {
+      error:
+        "Please tick the consent checkbox so we can send you the newsletter.",
+    };
   }
 
   const locale = normalizeLocale(input.locale);
@@ -33,6 +43,41 @@ export async function subscribeToNewsletter(input: {
     hdrs.get("x-forwarded-for")?.split(",")[0]?.trim() ??
     hdrs.get("x-real-ip") ??
     null;
+
+  // DB-backed rate limit: max NEWSLETTER_RATE_MAX_PER_WINDOW signups for the
+  // same email or IP in the rolling window. Survives Vercel cold starts.
+  const since = new Date(
+    Date.now() - NEWSLETTER_RATE_WINDOW_SECONDS * 1000
+  ).toISOString();
+  const { count: emailHits } = await supabase
+    .from("abuse_events")
+    .select("id", { count: "exact", head: true })
+    .eq("scope", "newsletter")
+    .eq("key", email)
+    .gte("occurred_at", since);
+  if ((emailHits ?? 0) >= NEWSLETTER_RATE_MAX_PER_WINDOW) {
+    return {
+      error: "Too many requests. Please try again in a minute.",
+    };
+  }
+  if (ipRaw) {
+    const { count: ipHits } = await supabase
+      .from("abuse_events")
+      .select("id", { count: "exact", head: true })
+      .eq("scope", "newsletter")
+      .eq("ip", ipRaw)
+      .gte("occurred_at", since);
+    if ((ipHits ?? 0) >= NEWSLETTER_RATE_MAX_PER_WINDOW * 3) {
+      return {
+        error: "Too many requests. Please try again in a minute.",
+      };
+    }
+  }
+  await supabase.from("abuse_events").insert({
+    scope: "newsletter",
+    key: email,
+    ip: ipRaw,
+  });
 
   // Reuse the shared RPC so the contact row and tag links are populated
   // consistently with checkout / invitation flows.
@@ -66,11 +111,15 @@ export async function subscribeToNewsletter(input: {
   // (Re-)issue a confirmation token. If they previously unsubscribed and are
   // resubscribing, clear the old flag so the confirm step can flip it on.
   const token = crypto.randomUUID();
+  const expiresAt = new Date(
+    Date.now() + MARKETING_CONSENT_TOKEN_TTL_HOURS * 60 * 60 * 1000
+  ).toISOString();
   await supabase
     .from("contacts")
     .update({
       marketing_consent: false,
       marketing_consent_token: token,
+      marketing_consent_token_expires_at: expiresAt,
       marketing_consent_requested_at: new Date().toISOString(),
       marketing_consent_source: input.source ?? "public_signup",
       marketing_consent_ip: ipRaw,
@@ -110,7 +159,9 @@ export async function confirmNewsletterSubscription(token: string) {
 
   const { data: contact } = await supabase
     .from("contacts")
-    .select("id, marketing_consent, unsubscribed_at")
+    .select(
+      "id, marketing_consent, unsubscribed_at, marketing_consent_token_expires_at"
+    )
     .eq("marketing_consent_token", token)
     .maybeSingle();
 
@@ -120,12 +171,25 @@ export async function confirmNewsletterSubscription(token: string) {
     return { success: true, idempotent: true };
   }
 
+  // Reject expired confirmation tokens. Without this, a token from years
+  // ago would still flip marketing_consent to true.
+  if (
+    contact.marketing_consent_token_expires_at &&
+    new Date(contact.marketing_consent_token_expires_at) < new Date()
+  ) {
+    return {
+      error:
+        "This confirmation link has expired. Please subscribe again to receive a new one.",
+    };
+  }
+
   await supabase
     .from("contacts")
     .update({
       marketing_consent: true,
       marketing_consent_confirmed_at: new Date().toISOString(),
       marketing_consent_token: null,
+      marketing_consent_token_expires_at: null,
       unsubscribed_at: null,
     })
     .eq("id", contact.id);

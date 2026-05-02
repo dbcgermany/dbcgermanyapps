@@ -5,6 +5,7 @@
 
 export { createServerClient } from "./server-client";
 export { requireRole } from "./guards";
+export { isAuthorisedCronRequest } from "./cron-auth";
 export {
   notifyAdmins,
   markNotificationRead,

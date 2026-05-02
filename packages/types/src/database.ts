@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      abuse_events: {
+        Row: {
+          id: number
+          ip: unknown
+          key: string
+          occurred_at: string
+          scope: string
+        }
+        Insert: {
+          id?: never
+          ip?: unknown
+          key: string
+          occurred_at?: string
+          scope: string
+        }
+        Update: {
+          id?: never
+          ip?: unknown
+          key?: string
+          occurred_at?: string
+          scope?: string
+        }
+        Relationships: []
+      }
       analytics_events: {
         Row: {
           created_at: string
@@ -587,10 +611,14 @@ export type Database = {
           address_line_2: string | null
           admin_notes: string | null
           birthday: string | null
+          bounced_at: string | null
+          bounced_reason: string | null
           city: string | null
+          complained_at: string | null
           country: string | null
           created_at: string
           email: string
+          email_status: Database["public"]["Enums"]["email_status"]
           first_name: string | null
           gender: Database["public"]["Enums"]["gender_identity"] | null
           id: string
@@ -602,6 +630,7 @@ export type Database = {
           marketing_consent_requested_at: string | null
           marketing_consent_source: string | null
           marketing_consent_token: string | null
+          marketing_consent_token_expires_at: string | null
           occupation: string | null
           organization: string | null
           phone: string | null
@@ -618,10 +647,14 @@ export type Database = {
           address_line_2?: string | null
           admin_notes?: string | null
           birthday?: string | null
+          bounced_at?: string | null
+          bounced_reason?: string | null
           city?: string | null
+          complained_at?: string | null
           country?: string | null
           created_at?: string
           email: string
+          email_status?: Database["public"]["Enums"]["email_status"]
           first_name?: string | null
           gender?: Database["public"]["Enums"]["gender_identity"] | null
           id?: string
@@ -633,6 +666,7 @@ export type Database = {
           marketing_consent_requested_at?: string | null
           marketing_consent_source?: string | null
           marketing_consent_token?: string | null
+          marketing_consent_token_expires_at?: string | null
           occupation?: string | null
           organization?: string | null
           phone?: string | null
@@ -649,10 +683,14 @@ export type Database = {
           address_line_2?: string | null
           admin_notes?: string | null
           birthday?: string | null
+          bounced_at?: string | null
+          bounced_reason?: string | null
           city?: string | null
+          complained_at?: string | null
           country?: string | null
           created_at?: string
           email?: string
+          email_status?: Database["public"]["Enums"]["email_status"]
           first_name?: string | null
           gender?: Database["public"]["Enums"]["gender_identity"] | null
           id?: string
@@ -664,6 +702,7 @@ export type Database = {
           marketing_consent_requested_at?: string | null
           marketing_consent_source?: string | null
           marketing_consent_token?: string | null
+          marketing_consent_token_expires_at?: string | null
           occupation?: string | null
           organization?: string | null
           phone?: string | null
@@ -2172,6 +2211,7 @@ export type Database = {
       orders: {
         Row: {
           acquisition_type: Database["public"]["Enums"]["acquisition_type"]
+          amount_refunded_cents: number
           buyer_id: string | null
           contact_id: string | null
           coupon_id: string | null
@@ -2194,6 +2234,9 @@ export type Database = {
           recipient_title: string | null
           reminder_sent_at: string | null
           reservation_expires_at: string | null
+          revocation_waived: boolean
+          revocation_waived_at: string | null
+          revocation_waived_ip: unknown
           sold_by: string | null
           source: string | null
           status: Database["public"]["Enums"]["order_status"]
@@ -2205,6 +2248,7 @@ export type Database = {
         }
         Insert: {
           acquisition_type?: Database["public"]["Enums"]["acquisition_type"]
+          amount_refunded_cents?: number
           buyer_id?: string | null
           contact_id?: string | null
           coupon_id?: string | null
@@ -2227,6 +2271,9 @@ export type Database = {
           recipient_title?: string | null
           reminder_sent_at?: string | null
           reservation_expires_at?: string | null
+          revocation_waived?: boolean
+          revocation_waived_at?: string | null
+          revocation_waived_ip?: unknown
           sold_by?: string | null
           source?: string | null
           status?: Database["public"]["Enums"]["order_status"]
@@ -2238,6 +2285,7 @@ export type Database = {
         }
         Update: {
           acquisition_type?: Database["public"]["Enums"]["acquisition_type"]
+          amount_refunded_cents?: number
           buyer_id?: string | null
           contact_id?: string | null
           coupon_id?: string | null
@@ -2260,6 +2308,9 @@ export type Database = {
           recipient_title?: string | null
           reminder_sent_at?: string | null
           reservation_expires_at?: string | null
+          revocation_waived?: boolean
+          revocation_waived_at?: string | null
+          revocation_waived_ip?: unknown
           sold_by?: string | null
           source?: string | null
           status?: Database["public"]["Enums"]["order_status"]
@@ -2870,6 +2921,7 @@ export type Database = {
       mfa_redeem_backup_code: { Args: { p_code: string }; Returns: boolean }
       mfa_seed_backup_codes: { Args: { p_codes: string[] }; Returns: number }
       mfa_unused_backup_codes: { Args: never; Returns: number }
+      prune_abuse_events: { Args: never; Returns: number }
       redeem_coupon: { Args: { p_coupon_id: string }; Returns: boolean }
       release_tickets: {
         Args: { p_quantity: number; p_tier_id: string }
@@ -2912,6 +2964,7 @@ export type Database = {
     Enums: {
       acquisition_type: "purchased" | "invited" | "assigned" | "door_sale"
       discount_type: "percentage" | "fixed_amount"
+      email_status: "active" | "bounced" | "complained" | "unsubscribed"
       employment_type: "full_time" | "part_time" | "freelance" | "internship"
       event_media_type: "photo" | "video" | "link"
       event_type: "conference" | "masterclass"
@@ -3104,6 +3157,7 @@ export const Constants = {
     Enums: {
       acquisition_type: ["purchased", "invited", "assigned", "door_sale"],
       discount_type: ["percentage", "fixed_amount"],
+      email_status: ["active", "bounced", "complained", "unsubscribed"],
       employment_type: ["full_time", "part_time", "freelance", "internship"],
       event_media_type: ["photo", "video", "link"],
       event_type: ["conference", "masterclass"],

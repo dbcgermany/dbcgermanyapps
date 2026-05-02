@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { isAuthorisedCronRequest } from "@dbc/supabase/server";
 
 /**
  * Daily cron: materialise KPI data into `kpi_snapshots` for every event that
@@ -11,8 +12,7 @@ import { createClient } from "@supabase/supabase-js";
  * Schedule: `0 2 * * *` (02:00 UTC daily).
  */
 export async function GET(request: Request) {
-  const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (!isAuthorisedCronRequest(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

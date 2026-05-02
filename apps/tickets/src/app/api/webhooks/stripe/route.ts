@@ -98,6 +98,41 @@ export async function POST(request: Request) {
       }
     }
 
+    // Trust-but-verify the metadata. orderId came from session.metadata.order_id
+    // (which Stripe never alters) but we still cross-check: this same order
+    // must have been the one that created this Checkout Session.
+    const sessionPaymentIntentId =
+      typeof session.payment_intent === "string" ? session.payment_intent : null;
+    const { data: orderForCheck } = await supabase
+      .from("orders")
+      .select("id, stripe_checkout_session_id, stripe_payment_intent_id, status")
+      .eq("id", orderId)
+      .maybeSingle();
+    if (
+      !orderForCheck ||
+      (orderForCheck.stripe_checkout_session_id &&
+        orderForCheck.stripe_checkout_session_id !== session.id)
+    ) {
+      console.error(
+        `[webhook] session/order mismatch — session=${session.id} order=${orderId} stored=${orderForCheck?.stripe_checkout_session_id ?? "(null)"}`
+      );
+      return NextResponse.json({ error: "session mismatch" }, { status: 400 });
+    }
+
+    // Redeem coupon BEFORE the response so a crash between status flip and
+    // redemption can't leave a paid order with an un-incremented times_used.
+    // The RPC is atomic + idempotent against max_uses; safe to call early.
+    if (couponId && orderForCheck.status === "pending") {
+      try {
+        await supabase.rpc("redeem_coupon", { p_coupon_id: couponId });
+      } catch (err) {
+        console.warn(
+          `[webhook] redeem_coupon failed for order ${orderId}:`,
+          (err as Error)?.message
+        );
+      }
+    }
+
     // Flip pending → paid and clear the reservation expiry so the sweeper
     // won't touch this order. The WHERE guard ensures we only promote
     // reservations that are still live — prevents duplicate fulfilment if
@@ -109,7 +144,7 @@ export async function POST(request: Request) {
       .update({
         status: "paid",
         payment_method: paymentMethod,
-        stripe_payment_intent_id: session.payment_intent as string,
+        stripe_payment_intent_id: sessionPaymentIntentId,
         reservation_expires_at: null,
       })
       .eq("id", orderId)
@@ -160,11 +195,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ received: true, duplicate: true });
     }
 
-    // Atomic coupon redemption (inventory was already reserved at checkout
-    // intent time; we don't touch ticket_tiers here any more).
-    if (couponId) {
-      await supabase.rpc("redeem_coupon", { p_coupon_id: couponId });
-    }
+    // (Coupon redemption already happened above, before the order flip.)
 
     // Audit log: order_paid + one ticket_issued per ticket
     const { data: ticketsForAudit } = await supabase
@@ -462,9 +493,10 @@ export async function POST(request: Request) {
   }
 
   // Mirror Stripe-Dashboard-initiated refunds back into our DB so the order
-  // status, inventory and reporting stay consistent. Idempotent: short-circuits
-  // if the order is already 'refunded' (covers the case where the admin refund
-  // action raced ahead of the webhook).
+  // status, inventory and reporting stay consistent. Handles full AND partial
+  // refunds: amount_refunded_cents is cumulative; status flips to 'refunded'
+  // only when the running total >= the order total. Idempotent — same charge
+  // event arriving twice is a no-op because amount_refunded comes from Stripe.
   if (event.type === "charge.refunded") {
     const charge = event.data.object as Stripe.Charge;
     const piId =
@@ -473,71 +505,83 @@ export async function POST(request: Request) {
       const { data: order } = await supabase
         .from("orders")
         .select(
-          "id, status, event_id, recipient_name, recipient_email, total_cents, currency"
+          "id, status, event_id, recipient_name, recipient_email, total_cents, currency, amount_refunded_cents"
         )
         .eq("stripe_payment_intent_id", piId)
         .maybeSingle();
 
-      if (order && order.status !== "refunded") {
-        const { data: ticketRows } = await supabase
-          .from("tickets")
-          .select("tier_id")
-          .eq("order_id", order.id);
-        const tierCounts: Record<string, number> = {};
-        for (const t of ticketRows ?? []) {
-          tierCounts[t.tier_id] = (tierCounts[t.tier_id] ?? 0) + 1;
-        }
-        for (const [tierId, qty] of Object.entries(tierCounts)) {
-          const { data: cur } = await supabase
-            .from("ticket_tiers")
-            .select("quantity_sold")
-            .eq("id", tierId)
-            .single();
-          if (cur) {
+      if (order) {
+        const newAmount = charge.amount_refunded ?? 0;
+        const isFull = newAmount >= (order.total_cents ?? 0);
+        const wasFull = order.status === "refunded";
+
+        if (newAmount > (order.amount_refunded_cents ?? 0) || (isFull && !wasFull)) {
+          // Only release inventory + flip status on the FIRST time we hit
+          // "fully refunded". Partial refunds keep status='paid' and inventory held.
+          if (isFull && !wasFull) {
+            const { data: ticketRows } = await supabase
+              .from("tickets")
+              .select("tier_id")
+              .eq("order_id", order.id);
+            const tierCounts: Record<string, number> = {};
+            for (const t of ticketRows ?? []) {
+              tierCounts[t.tier_id] = (tierCounts[t.tier_id] ?? 0) + 1;
+            }
+            for (const [tierId, qty] of Object.entries(tierCounts)) {
+              await supabase.rpc("release_tickets", {
+                p_tier_id: tierId,
+                p_quantity: qty,
+              });
+            }
             await supabase
-              .from("ticket_tiers")
+              .from("orders")
               .update({
-                quantity_sold: Math.max(0, cur.quantity_sold - qty),
+                status: "refunded",
+                amount_refunded_cents: newAmount,
               })
-              .eq("id", tierId);
+              .eq("id", order.id);
+          } else {
+            // Partial refund: just record the cumulative amount.
+            await supabase
+              .from("orders")
+              .update({ amount_refunded_cents: newAmount })
+              .eq("id", order.id);
           }
+
+          await supabase.from("audit_log").insert({
+            action: isFull ? "refund_order" : "partial_refund",
+            entity_type: "orders",
+            entity_id: order.id,
+            details: {
+              source: "stripe_webhook",
+              stripe_event_id: event.id,
+              amount_refunded_cents: newAmount,
+              order_total_cents: order.total_cents,
+              is_full: isFull,
+            },
+          });
+
+          after(async () => {
+            try {
+              await notifyAdmins(supabase, {
+                type: "refund_issued",
+                title: `${isFull ? "Refund" : "Partial refund"}${order.recipient_name ? ` — ${order.recipient_name}` : ""}`,
+                body: `${(newAmount / 100).toFixed(2)} ${(order.currency ?? "EUR").toUpperCase()} refunded via Stripe Dashboard`,
+                data: {
+                  order_id: order.id,
+                  event_id: order.event_id,
+                  stripe_event_id: event.id,
+                  is_full: isFull,
+                },
+              });
+            } catch (err) {
+              console.error(
+                `Failed to notify admins of charge.refunded for ${charge.id}:`,
+                (err as Error)?.message
+              );
+            }
+          });
         }
-
-        await supabase
-          .from("orders")
-          .update({ status: "refunded" })
-          .eq("id", order.id);
-
-        await supabase.from("audit_log").insert({
-          action: "refund_order",
-          entity_type: "orders",
-          entity_id: order.id,
-          details: {
-            source: "stripe_webhook",
-            stripe_event_id: event.id,
-            amount_refunded_cents: charge.amount_refunded,
-          },
-        });
-
-        after(async () => {
-          try {
-            await notifyAdmins(supabase, {
-              type: "refund_issued",
-              title: `Refund issued${order.recipient_name ? ` — ${order.recipient_name}` : ""}`,
-              body: `${(charge.amount_refunded / 100).toFixed(2)} ${(order.currency ?? "EUR").toUpperCase()} refunded via Stripe Dashboard`,
-              data: {
-                order_id: order.id,
-                event_id: order.event_id,
-                stripe_event_id: event.id,
-              },
-            });
-          } catch (err) {
-            console.error(
-              `Failed to notify admins of charge.refunded for ${charge.id}:`,
-              err
-            );
-          }
-        });
       }
     }
   }

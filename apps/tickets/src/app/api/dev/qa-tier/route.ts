@@ -13,10 +13,14 @@ function getStripe(): Stripe {
 }
 
 function authorised(req: Request): boolean {
+  // Dual gate: ALLOW_QA_TIER=1 AND Bearer matches QA_TIER_ADMIN_TOKEN.
+  // Workflow: set both env vars right before running the acceptance test,
+  // unset both immediately after. Token rotated each test cycle.
   if (process.env.ALLOW_QA_TIER !== "1") return false;
   const expected = process.env.QA_TIER_ADMIN_TOKEN;
   if (!expected) return false;
-  return req.headers.get("authorization") === `Bearer ${expected}`;
+  const got = req.headers.get("authorization");
+  return got === `Bearer ${expected}`;
 }
 
 function getSupabase() {
