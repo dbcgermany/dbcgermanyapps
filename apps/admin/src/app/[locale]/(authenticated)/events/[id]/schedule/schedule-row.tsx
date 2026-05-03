@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { Button } from "@dbc/ui";
+import { Button, ConfirmDialog } from "@dbc/ui";
 import {
   updateScheduleItem,
   deleteScheduleItem,
@@ -220,19 +220,23 @@ export function ScheduleRow({
         >
           {t.edit}
         </button>
-        <form
-          action={async () => {
-            if (!confirm(t.deleteConfirm.replace("{title}", item.title_en))) return;
+        <ConfirmDialog
+          trigger={
+            <button
+              type="button"
+              className="text-xs text-red-500 hover:text-red-700"
+            >
+              {t.delete}
+            </button>
+          }
+          title={t.deleteConfirm.replace("{title}", item.title_en)}
+          confirmLabel={t.delete}
+          cancelLabel={t.cancel}
+          variant="danger"
+          onConfirm={async () => {
             await deleteScheduleItem(item.id, eventId, locale);
           }}
-        >
-          <button
-            type="submit"
-            className="text-xs text-red-500 hover:text-red-700"
-          >
-            {t.delete}
-          </button>
-        </form>
+        />
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Card } from "@dbc/ui";
+import { Card, ConfirmDialog } from "@dbc/ui";
 import type { UserRole } from "@dbc/types";
 import {
   lookupBuyer,
@@ -140,7 +140,6 @@ export function SettingsClient({
 
   function handleDelete() {
     if (!lookup) return;
-    if (!confirm(t.confirmDelete)) return;
     setError(null);
     setSuccess(null);
     startTransition(async () => {
@@ -277,13 +276,23 @@ export function SettingsClient({
                   {lookup.orderCount} {t.orders} {" \u00b7 "}
                   {lookup.ticketCount} {t.tickets}
                 </p>
-                <button
-                  onClick={handleDelete}
-                  disabled={isPending}
-                  className="mt-3 rounded-md bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
-                >
-                  {t.deleteBtn}
-                </button>
+                <ConfirmDialog
+                  trigger={
+                    <button
+                      type="button"
+                      disabled={isPending}
+                      className="mt-3 rounded-md bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                    >
+                      {t.deleteBtn}
+                    </button>
+                  }
+                  title={t.confirmDelete}
+                  description={lookup.email}
+                  confirmLabel={t.deleteBtn}
+                  cancelLabel="Cancel"
+                  variant="danger"
+                  onConfirm={handleDelete}
+                />
               </Card>
             )}
           </>

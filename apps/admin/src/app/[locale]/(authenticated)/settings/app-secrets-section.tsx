@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Key, Plus, Trash2 } from "lucide-react";
 import type { AppSecret } from "@/actions/app-secrets";
-import { Badge, Button } from "@dbc/ui";
+import { Badge, Button, ConfirmDialog } from "@dbc/ui";
 import { upsertAppSecret } from "@/actions/app-secrets";
 
 const KNOWN_KEYS: Array<{ key: string; note: string }> = [
@@ -142,7 +142,6 @@ function SecretRow({
   }
 
   function handleDelete() {
-    if (!confirm(`Delete ${canonicalKey}?`)) return;
     onSave(canonicalKey, "", "");
   }
 
@@ -190,15 +189,24 @@ function SecretRow({
                 {hasValue ? "Rotate" : "Set"}
               </button>
               {hasValue && !allowKeyEdit && (
-                <button
-                  type="button"
-                  onClick={handleDelete}
-                  className="inline-flex items-center gap-1 rounded-md border border-red-500/30 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/20"
-                  aria-label={`Delete ${canonicalKey}`}
-                >
-                  <Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} />
-                  Delete
-                </button>
+                <ConfirmDialog
+                  trigger={
+                    <button
+                      type="button"
+                      className="inline-flex items-center gap-1 rounded-md border border-red-500/30 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/20"
+                      aria-label={`Delete ${canonicalKey}`}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} />
+                      Delete
+                    </button>
+                  }
+                  title={`Delete ${canonicalKey}?`}
+                  description="This removes the value but keeps the key registered. Set a new value any time."
+                  confirmLabel="Delete"
+                  cancelLabel="Cancel"
+                  variant="danger"
+                  onConfirm={handleDelete}
+                />
               )}
             </>
           ) : null}

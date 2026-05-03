@@ -2,7 +2,7 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Badge, Button } from "@dbc/ui";
+import { Badge, Button, ConfirmDialog } from "@dbc/ui";
 import { createExpense, deleteExpense } from "@/actions/expenses";
 
 interface Expense {
@@ -91,7 +91,6 @@ export function BudgetClient({
   }
 
   function handleDelete(id: string) {
-    if (!confirm("Delete this expense?")) return;
     startTransition(async () => {
       await deleteExpense(id, eventId, locale);
       router.refresh();
@@ -144,13 +143,23 @@ export function BudgetClient({
                       : "\u2014"}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <button
-                      onClick={() => handleDelete(e.id)}
-                      disabled={isPending}
-                      className="text-xs text-red-500 hover:text-red-700 disabled:opacity-50"
-                    >
-                      {t.delete}
-                    </button>
+                    <ConfirmDialog
+                      trigger={
+                        <button
+                          type="button"
+                          disabled={isPending}
+                          className="text-xs text-red-500 hover:text-red-700 disabled:opacity-50"
+                        >
+                          {t.delete}
+                        </button>
+                      }
+                      title="Delete this expense?"
+                      description={`${e.description ?? ""} ${fmtAmount(e.amount_cents, e.currency ?? "EUR")}`}
+                      confirmLabel={t.delete}
+                      cancelLabel="Cancel"
+                      variant="danger"
+                      onConfirm={() => handleDelete(e.id)}
+                    />
                   </td>
                 </tr>
               ))}

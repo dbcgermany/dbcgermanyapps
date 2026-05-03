@@ -2,7 +2,7 @@
 
 import { useActionState, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Badge, Button } from "@dbc/ui";
+import { Badge, Button, ConfirmDialog } from "@dbc/ui";
 import {
   updateRunsheetItem,
   deleteRunsheetItem,
@@ -95,7 +95,6 @@ export function RunsheetRow({
   }
 
   function handleDelete() {
-    if (!confirm(t.deleteConfirm.replace("{title}", item.title))) return;
     startTransition(async () => {
       await deleteRunsheetItem(item.id, eventId, locale);
       router.refresh();
@@ -237,14 +236,22 @@ export function RunsheetRow({
         >
           {t.edit}
         </button>
-        <button
-          type="button"
-          onClick={handleDelete}
-          disabled={isPending}
-          className="text-xs text-red-500 hover:text-red-700 disabled:opacity-50"
-        >
-          {t.delete}
-        </button>
+        <ConfirmDialog
+          trigger={
+            <button
+              type="button"
+              disabled={isPending}
+              className="text-xs text-red-500 hover:text-red-700 disabled:opacity-50"
+            >
+              {t.delete}
+            </button>
+          }
+          title={t.deleteConfirm.replace("{title}", item.title)}
+          confirmLabel={t.delete}
+          cancelLabel={t.cancel}
+          variant="danger"
+          onConfirm={handleDelete}
+        />
       </div>
     </div>
   );

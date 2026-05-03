@@ -3,7 +3,7 @@
 import { useActionState, useState } from "react";
 import { Camera, Film, Link2, type LucideIcon } from "lucide-react";
 import { updateEventMedia, deleteEventMedia } from "@/actions/media";
-import { Button } from "@dbc/ui";
+import { Button, ConfirmDialog } from "@dbc/ui";
 
 type Media = {
   id: string;
@@ -133,19 +133,23 @@ export function MediaRow({
         >
           {t.edit}
         </button>
-        <form
-          action={async () => {
-            if (!confirm(t.deleteConfirm)) return;
+        <ConfirmDialog
+          trigger={
+            <button
+              type="button"
+              className="text-xs text-red-500 hover:text-red-700"
+            >
+              {t.delete}
+            </button>
+          }
+          title={t.deleteConfirm}
+          confirmLabel={t.delete}
+          cancelLabel={t.cancel}
+          variant="danger"
+          onConfirm={async () => {
             await deleteEventMedia(item.id, eventId, locale);
           }}
-        >
-          <button
-            type="submit"
-            className="text-xs text-red-500 hover:text-red-700"
-          >
-            {t.delete}
-          </button>
-        </form>
+        />
       </div>
     </div>
   );

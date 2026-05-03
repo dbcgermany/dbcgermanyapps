@@ -39,8 +39,15 @@ Run from top to bottom. Each section has a "blocker" tag — only the BLOCKER it
 - [ ] Decide payout schedule (currently `manual`; flip to `daily` ~T-3 if you want automated transfers).
 - [ ] Confirm `tos_acceptance` is current on the live account.
 
-### Backups + disaster recovery
-- [ ] Verify Supabase nightly backups enabled in dashboard (Settings → Database → Backups).
+### Backups + disaster recovery — BLOCKER for live payments
+- [ ] **Supabase project is currently on the free plan** — confirmed via management API
+  on 2026-05-03: `organization.plan: "free"`, `pitr_enabled: false`, `backups: []`.
+  Free tier has WAL archiving on (`walg_enabled: true`) but no user-restorable daily
+  snapshots and no PITR. **Upgrade to Pro before live payments open** (~$25/mo)
+  — that turns on daily backups + 7-day retention + PITR. URL:
+  https://supabase.com/dashboard/project/rcqgsexfuaoiiuqcqeka/settings/billing
+- [ ] After upgrade, re-query `GET /v1/projects/rcqgsexfuaoiiuqcqeka/database/backups`
+  and confirm the `backups` array populates with at least one snapshot.
 - [ ] Restore one nightly backup into a temporary project as a smoke test (delete the temp project after).
 - [ ] Document operator email + phone numbers (see `RUNBOOK.md`) for the 3 key vendors: Vercel, Supabase, Stripe.
 

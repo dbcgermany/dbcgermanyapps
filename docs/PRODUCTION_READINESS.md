@@ -48,6 +48,22 @@ owners of those systems can take.
   checkout); preview deployments fully no-indexed via `X-Robots-Tag` middleware.
 - Turnstile fail-secure in production (was: silent bypass when secret unset).
 
+### Operator UX (Tier 3)
+- All native `window.confirm()` destructive-action prompts on admin
+  migrated to `<ConfirmDialog>` from `@dbc/ui`: ads, app-secrets,
+  GDPR-delete (settings), schedule rows, runsheet rows, media rows,
+  checklist (delete + populate-defaults), budget expenses, ticket tiers,
+  orders refund + resend. Branded, keyboard-accessible, locale-aware
+  labels.
+- Orders list now paginated (50/page) with stable URL `?page=N`.
+- Loading skeletons on dashboard + order list (no flash of empty state).
+- Newsletter composer shows inline subject + body preview pane while
+  drafting (visual sanity check; pixel-rendering still verified via
+  the existing "Send test" path).
+- Server logs in Stripe webhook + send-tickets path no longer print
+  buyer email; only stable IDs (`order_id`, `ticket_id`). Sentry still
+  receives the structured event with PII-scrubbed context.
+
 ### Schema + types
 - Migration `20260503000002_production_hardening.sql` applied to live
   Supabase: `amount_refunded_cents`, `revocation_waived`, `email_status`
@@ -172,6 +188,52 @@ ticket." I can draft this if you give me the names + escalation paths.
 
 ---
 
+## Final manual items (post-Tier 3) — small, owner-only
+
+These are the remaining manual steps that need a human owner — they don't
+block launch, but skipping them adds avoidable risk.
+
+### A. Encrypt `cred/credentials.md` at rest
+
+The file lives outside the repo (sibling to `dbcgermanyapps/`) and is
+ignored from git multiple ways. It is still plain-text on the operator
+laptop. If the laptop is lost / stolen, the live Stripe restricted key,
+Supabase service role key, Resend API key, Sentry auth token, and Better
+Stack token all leak.
+
+**Action:** `gpg --symmetric --cipher-algo AES256 cred/credentials.md`
+and delete the plaintext. To read: `gpg -d cred/credentials.md.gpg`.
+Memorize the passphrase or store it in a separate password manager.
+
+### B. Scope-down the GitHub PAT
+
+The PAT in `cred/credentials.md` is a classic-style token with
+`repo` + `workflow` scopes. After launch, rotate it to a fine-grained
+PAT scoped to **only** the `dbc-germany` repo with `Contents: read+write`
+and `Workflows: read+write` permissions. Reduces blast radius if leaked.
+
+### C. Supabase Pro upgrade for backups
+
+Free tier confirmed via API on 2026-05-03 — daily backups + PITR are
+NOT enabled (`backups: []`, `pitr_enabled: false`). Either:
+- Upgrade to Pro before live payments open (recommended; ~$25/mo) and
+  re-verify via `GET /v1/projects/rcqgsexfuaoiiuqcqeka/database/backups`
+- OR script a nightly `pg_dump` from a GitHub Action into an external S3
+  bucket as a poor-man's backup. The action would use the read-only
+  Postgres role + `pg_dump --no-owner` and pipe to S3. Acceptable for
+  development; not acceptable once buyers start paying real money.
+
+### D. Vercel deployment annotations (post-deploy hook)
+
+Each deploy creates a Vercel deployment record. Sentry releases
+auto-link to the deploy via `VERCEL_GIT_COMMIT_SHA`, but the Vercel UI
+itself doesn't show release notes. If you want a human-readable
+"what changed" on each deploy, add a post-deploy webhook that hits
+`POST /v13/deployments/<id>/checks` with the commit subject. Optional
+polish — current Sentry release info already covers the common case.
+
+---
+
 ## How we got here — commit log
 
 - `2124f9f` — feat(stripe): wire live ticketing (tier+coupon sync,
@@ -180,3 +242,7 @@ ticket." I can draft this if you give me the names + escalation paths.
   observability, GDPR
 - `808774c` — feat(prod): batch 2 — Widerrufsrecht waiver, admin login
   i18n
+- `7815f67` — feat(tier3): destructive-action confirm() →
+  ConfirmDialog, orders pagination, loading skeletons, PII-safer logs
+- `97f1a48` — feat(tier3): event-page ISR 30s→300s, "unlimited" label
+  for null tier max_quantity

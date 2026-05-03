@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Badge, Button } from "@dbc/ui";
+import { Badge, Button, ConfirmDialog } from "@dbc/ui";
 import {
   createChecklistItem,
   toggleChecklistStatus,
@@ -65,6 +65,7 @@ const CL_T = {
     populateConfirm:
       "Populate checklist from default template? This adds all template items.",
     deleteConfirm: "Delete this checklist item?",
+    deleteLabel: "Delete",
     taskTitle: "Task title",
     unassigned: "Unassigned",
     adding: "Adding…",
@@ -96,6 +97,7 @@ const CL_T = {
     populateConfirm:
       "Checkliste aus Standardvorlage befüllen? Es werden alle Vorlagen-Einträge hinzugefügt.",
     deleteConfirm: "Diesen Eintrag löschen?",
+    deleteLabel: "Löschen",
     taskTitle: "Titel der Aufgabe",
     unassigned: "Nicht zugewiesen",
     adding: "Wird hinzugefügt…",
@@ -127,6 +129,7 @@ const CL_T = {
     populateConfirm:
       "Remplir la checklist depuis le modèle par défaut ? Tous les éléments seront ajoutés.",
     deleteConfirm: "Supprimer cet élément ?",
+    deleteLabel: "Supprimer",
     taskTitle: "Intitulé",
     unassigned: "Non assigné",
     adding: "Ajout…",
@@ -197,7 +200,6 @@ export function ChecklistClient({
   }
 
   function handleDelete(id: string) {
-    if (!confirm(t.deleteConfirm)) return;
     startTransition(async () => {
       await deleteChecklistItem(id, eventId, locale);
       router.refresh();
@@ -216,7 +218,6 @@ export function ChecklistClient({
   }
 
   function handlePopulate() {
-    if (!confirm(t.populateConfirm)) return;
     startTransition(async () => {
       await populateChecklistFromTemplate(eventId, eventStartsAt, locale);
       router.refresh();
@@ -300,6 +301,9 @@ export function ChecklistClient({
                 today={today}
                 onToggle={handleToggle}
                 onDelete={handleDelete}
+                deleteConfirmText={t.deleteConfirm}
+                deleteLabel={t.deleteLabel}
+                cancelLabel={t.cancel}
                 isPending={isPending}
               />
             ))}
@@ -321,6 +325,9 @@ export function ChecklistClient({
                 today={today}
                 onToggle={handleToggle}
                 onDelete={handleDelete}
+                deleteConfirmText={t.deleteConfirm}
+                deleteLabel={t.deleteLabel}
+                cancelLabel={t.cancel}
                 isPending={isPending}
               />
             ))}
@@ -342,6 +349,9 @@ export function ChecklistClient({
                 today={today}
                 onToggle={handleToggle}
                 onDelete={handleDelete}
+                deleteConfirmText={t.deleteConfirm}
+                deleteLabel={t.deleteLabel}
+                cancelLabel={t.cancel}
                 isPending={isPending}
               />
             ))}
@@ -355,14 +365,22 @@ export function ChecklistClient({
           {t.addItem}
         </Button>
         {items.length === 0 && (
-          <button
-            type="button"
-            onClick={handlePopulate}
-            disabled={isPending}
-            className="rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-muted disabled:opacity-50"
-          >
-            {t.populateFromTemplate}
-          </button>
+          <ConfirmDialog
+            trigger={
+              <button
+                type="button"
+                disabled={isPending}
+                className="rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-muted disabled:opacity-50"
+              >
+                {t.populateFromTemplate}
+              </button>
+            }
+            title={t.populateConfirm}
+            confirmLabel={t.populateFromTemplate}
+            cancelLabel={t.cancel}
+            variant="neutral"
+            onConfirm={handlePopulate}
+          />
         )}
       </div>
 
@@ -442,12 +460,18 @@ function ItemRow({
   onToggle,
   onDelete,
   isPending,
+  deleteConfirmText,
+  deleteLabel,
+  cancelLabel,
 }: {
   item: ChecklistItem;
   today: string;
   onToggle: (item: ChecklistItem) => void;
   onDelete: (id: string) => void;
   isPending: boolean;
+  deleteConfirmText: string;
+  deleteLabel: string;
+  cancelLabel: string;
 }) {
   const isOverdue =
     item.due_date &&
@@ -526,14 +550,23 @@ function ItemRow({
         </div>
       </div>
 
-      <button
-        type="button"
-        onClick={() => onDelete(item.id)}
-        disabled={isPending}
-        className="shrink-0 text-xs text-red-500 hover:text-red-700 disabled:opacity-50"
-      >
-        Delete
-      </button>
+      <ConfirmDialog
+        trigger={
+          <button
+            type="button"
+            disabled={isPending}
+            className="shrink-0 text-xs text-red-500 hover:text-red-700 disabled:opacity-50"
+          >
+            {deleteLabel}
+          </button>
+        }
+        title={deleteConfirmText}
+        description={item.title}
+        confirmLabel={deleteLabel}
+        cancelLabel={cancelLabel}
+        variant="danger"
+        onConfirm={() => onDelete(item.id)}
+      />
     </div>
   );
 }

@@ -310,6 +310,38 @@ export function NewsletterComposer({
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono"
             />
           </Field>
+          {/* Inline preview — visual sanity check while editing. Pixel-
+              perfect render still goes through the existing "Send test"
+              button (real email path through the React Email template). */}
+          {state.body_mdx.trim() && (
+            <Field label="Preview">
+              <div className="rounded-md border border-border bg-muted/20 p-4 text-sm">
+                <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                  Subject
+                </p>
+                <p className="font-semibold">{state.subject || "(no subject)"}</p>
+                {state.preheader && (
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {state.preheader}
+                  </p>
+                )}
+                <hr className="my-3 border-border" />
+                <div
+                  className="whitespace-pre-wrap leading-relaxed"
+                  style={{
+                    fontFamily:
+                      "system-ui, -apple-system, Segoe UI, Roboto, sans-serif",
+                  }}
+                >
+                  {state.body_mdx}
+                </div>
+                <hr className="my-3 border-border" />
+                <p className="text-xs text-muted-foreground">
+                  DBC Germany (UG i.G.) · Speditionstraße 15a, 40221 Düsseldorf
+                </p>
+              </div>
+            </Field>
+          )}
         </fieldset>
 
         {!readOnly && (

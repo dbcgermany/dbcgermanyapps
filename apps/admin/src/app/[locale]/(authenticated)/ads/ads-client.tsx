@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Badge, Button } from "@dbc/ui";
+import { Badge, Button, ConfirmDialog } from "@dbc/ui";
 import {
   createDashboardAd,
   updateDashboardAd,
@@ -167,8 +167,7 @@ export function AdsClient({
     });
   }
 
-  function handleDelete(id: string, title: string) {
-    if (!confirm(t.deleteConfirm + "\n\n" + title)) return;
+  function handleDelete(id: string) {
     startTransition(async () => {
       const res = await deleteDashboardAd(id);
       if ("error" in res) toast.error(res.error);
@@ -303,14 +302,23 @@ export function AdsClient({
                     >
                       {ad.is_active ? t.deactivate : t.activate}
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(ad.id, ad.title_en)}
-                      disabled={isPending}
-                      className="rounded-md px-2 py-1 font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50 dark:hover:bg-red-950/30"
-                    >
-                      {t.delete}
-                    </button>
+                    <ConfirmDialog
+                      trigger={
+                        <button
+                          type="button"
+                          disabled={isPending}
+                          className="rounded-md px-2 py-1 font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50 dark:hover:bg-red-950/30"
+                        >
+                          {t.delete}
+                        </button>
+                      }
+                      title={t.deleteConfirm}
+                      description={ad.title_en}
+                      confirmLabel={t.delete}
+                      cancelLabel={t.cancel}
+                      variant="danger"
+                      onConfirm={() => handleDelete(ad.id)}
+                    />
                   </div>
                 </li>
               )

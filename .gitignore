@@ -44,9 +44,13 @@ supabase/.temp/
 .vercel
 .env*.local
 
-# Secrets (never commit)
+# Secrets (never commit) — cred/ lives as a sibling folder OUTSIDE this repo
+# (at ../cred/). These rules are belt-and-braces in case anyone ever moves
+# it inside accidentally — protects the working tree from staging it.
 credentials.md
 credentials/
+cred/
+cred
 
 # Sentry CLI rc — local file that can carry SENTRY_AUTH_TOKEN
 .sentryclirc
