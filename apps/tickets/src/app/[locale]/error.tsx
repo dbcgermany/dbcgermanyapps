@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import * as Sentry from "@sentry/nextjs";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { BrandedError } from "@dbc/ui";
@@ -29,6 +30,7 @@ export default function LocaleErrorBoundary({
   const stale = isStaleServerActionError(error);
 
   useEffect(() => {
+    if (!stale) Sentry.captureException(error);
     console.error("[tickets] route error", error);
     if (!stale) return;
     const handle = setTimeout(() => window.location.reload(), 100);

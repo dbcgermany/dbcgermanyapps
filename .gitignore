@@ -47,3 +47,6 @@ supabase/.temp/
 # Secrets (never commit)
 credentials.md
 credentials/
+
+# Sentry CLI rc — local file that can carry SENTRY_AUTH_TOKEN
+.sentryclirc

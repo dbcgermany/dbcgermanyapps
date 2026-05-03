@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import * as Sentry from "@sentry/nextjs";
 import { BrandedErrorFallback } from "@dbc/ui";
 
 /**
@@ -17,6 +18,7 @@ export default function AdminGlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
+    Sentry.captureException(error);
     console.error("[admin] global error", error);
   }, [error]);
 

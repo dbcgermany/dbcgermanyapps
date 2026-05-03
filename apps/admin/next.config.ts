@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
@@ -66,4 +67,18 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withNextIntl(nextConfig);
+// Sentry wrapper: uploads source maps at build time (when SENTRY_AUTH_TOKEN
+// + SENTRY_ORG + SENTRY_PROJECT are set), creates a release per Vercel
+// deploy, and routes browser-side events through /monitoring so ad-blockers
+// don't drop them. With no DSN env set the SDK no-ops at runtime — safe
+// for first deploys before Sentry projects exist.
+export default withSentryConfig(withNextIntl(nextConfig), {
+  org: "dbc-germany",
+  project: "dbc-admin",
+  silent: !process.env.CI,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  widenClientFileUpload: true,
+  tunnelRoute: "/monitoring",
+  disableLogger: true,
+  automaticVercelMonitors: true,
+});

@@ -5,6 +5,7 @@ import { createClient } from "@supabase/supabase-js";
 import { notifyAdmins } from "@dbc/supabase/server";
 import { sendOrderReceipt } from "@dbc/email";
 import { sendTicketsForOrder } from "@/lib/send-tickets-for-order";
+import { captureServerError } from "@/lib/observe";
 
 // Lazy-initialised so the module can be imported during `next build`
 // (page-data collection) without STRIPE_SECRET_KEY being set.
@@ -42,6 +43,12 @@ export async function POST(request: Request) {
       process.env.STRIPE_WEBHOOK_SECRET!
     );
   } catch (err) {
+    // Bad signatures are typically benign (probes, retries with rotated secret).
+    // Capture as warning so a flood is visible but doesn't page operators.
+    captureServerError(err, {
+      scope: "stripe_webhook:signature",
+      severity: "warning",
+    });
     console.error("Webhook signature verification failed:", err);
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
@@ -153,6 +160,10 @@ export async function POST(request: Request) {
       .maybeSingle();
 
     if (orderError) {
+      captureServerError(orderError, {
+        scope: "stripe_webhook:promote_order",
+        data: { order_id: orderId, event_type: event.type, stripe_event_id: event.id },
+      });
       console.error("Failed to update order:", orderError);
       return NextResponse.json(
         { error: "Failed to update order" },
@@ -252,6 +263,12 @@ export async function POST(request: Request) {
       try {
         await sendTicketsForOrder(supabase, orderId);
       } catch (err) {
+        // Buyer charged + order marked paid but ticket delivery failed —
+        // page operators immediately. This is the highest-stakes failure mode.
+        captureServerError(err, {
+          scope: "stripe_webhook:send_tickets",
+          data: { order_id: orderId, event_id: eventId },
+        });
         console.error(`Failed to send tickets for order ${orderId}:`, err);
       }
 
@@ -336,6 +353,10 @@ export async function POST(request: Request) {
               .eq("id", orderId);
           }
         } catch (err) {
+          captureServerError(err, {
+            scope: "stripe_webhook:order_receipt",
+            data: { order_id: orderId, event_id: eventId },
+          });
           console.error(`Failed to send order receipt for ${orderId}:`, err);
         }
       }

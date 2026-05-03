@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import * as Sentry from "@sentry/nextjs";
 import { BrandedErrorFallback } from "@dbc/ui";
 
 export default function TicketsGlobalError({
@@ -11,6 +12,7 @@ export default function TicketsGlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
+    Sentry.captureException(error);
     console.error("[tickets] global error", error);
   }, [error]);
 

@@ -4,6 +4,7 @@ import { createServerClient, requireRole, notifyAdmins } from "@dbc/supabase/ser
 import { sendRefundConfirmation } from "@dbc/email";
 import { revalidatePath } from "next/cache";
 import Stripe from "stripe";
+import { captureServerError } from "@/lib/observe";
 
 // Lazy-initialised so the module can be imported during `next build`
 // (page-data collection) without STRIPE_SECRET_KEY being set in the env.
@@ -186,6 +187,14 @@ export async function refundOrder(orderId: string, locale: string) {
         amount: order.total_cents,
       });
     } catch (err) {
+      captureServerError(err, {
+        scope: "admin:refund_order:stripe",
+        data: {
+          order_id: orderId,
+          stripe_payment_intent_id: order.stripe_payment_intent_id,
+          amount_cents: order.total_cents,
+        },
+      });
       return {
         error: `Stripe refund failed: ${(err as Error).message}`,
       };
