@@ -38,7 +38,7 @@ export async function GET(request: Request) {
   }
 
   if (!sequences || sequences.length === 0) {
-    return NextResponse.json({ dispatched: 0 });
+    return NextResponse.json({ ok: true, dispatched: 0 });
   }
 
   // Fetch events in one go
@@ -63,7 +63,7 @@ export async function GET(request: Request) {
   });
 
   if (dueSequences.length === 0) {
-    return NextResponse.json({ dispatched: 0 });
+    return NextResponse.json({ ok: true, dispatched: 0 });
   }
 
   const resend = createEmailClient();
@@ -159,6 +159,7 @@ export async function GET(request: Request) {
   }
 
   return NextResponse.json({
+    ok: totalFailed === 0,
     dispatched: dueSequences.length,
     sent: totalSent,
     failed: totalFailed,

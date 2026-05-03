@@ -36,7 +36,7 @@ export async function GET(request: Request) {
     .order("created_at", { ascending: true });
 
   if (!entries || entries.length === 0) {
-    return NextResponse.json({ notified: 0 });
+    return NextResponse.json({ ok: true, notified: 0 });
   }
 
   // Group by tier_id
@@ -149,5 +149,5 @@ export async function GET(request: Request) {
     }
   }
 
-  return NextResponse.json({ notified: totalNotified });
+  return NextResponse.json({ ok: true, notified: totalNotified });
 }

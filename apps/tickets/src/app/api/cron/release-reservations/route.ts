@@ -95,5 +95,5 @@ export async function GET(request: Request) {
     released += 1;
   }
 
-  return NextResponse.json({ released, skipped });
+  return NextResponse.json({ ok: true, released, skipped });
 }

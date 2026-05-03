@@ -30,7 +30,7 @@ export async function GET(req: Request) {
     .lt("starts_at", threeDays);
 
   if (!events || events.length === 0) {
-    return NextResponse.json({ sent: 0, events: 0 });
+    return NextResponse.json({ ok: true, sent: 0, events: 0 });
   }
 
   let totalSent = 0;
@@ -99,6 +99,7 @@ export async function GET(req: Request) {
   }
 
   return NextResponse.json({
+    ok: true,
     sent: totalSent,
     events: events.length,
   });

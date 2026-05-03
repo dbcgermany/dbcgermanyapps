@@ -1,6 +1,18 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createServerClient } from "@dbc/supabase/server";
+
+// The confirmation URL contains an order UUID. Without strict referrer policy,
+// any external link the buyer clicks from this page would leak that UUID to
+// the destination's analytics. `no-referrer` on the page metadata tells the
+// browser to omit the Referer header for outbound navigation. Combined with
+// the email mask + the noindex below, a leaked share of this URL no longer
+// exposes PII to third parties.
+export const metadata: Metadata = {
+  referrer: "no-referrer",
+  robots: { index: false, follow: false },
+};
 
 // Mask "name@example.com" -> "n***@e***.com" so anyone with the order UUID
 // can recognise it's their order without exposing the full PII to a leaked

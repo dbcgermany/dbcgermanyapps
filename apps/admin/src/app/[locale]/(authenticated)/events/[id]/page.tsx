@@ -38,6 +38,11 @@ const T = {
     published: "Published",
     draft: "Draft",
     ticketsSold: "Tickets sold",
+    salesByTier: "Sales by tier",
+    salesByTierEmpty: "No paid tickets yet — breakdown will appear here once sales start.",
+    tierName: "Tier",
+    tierTickets: "Tickets",
+    tierRevenue: "Revenue",
     ofCapacity: "of {n} capacity",
     revenue: "Revenue",
     checkedIn: "Checked in",
@@ -107,6 +112,11 @@ const T = {
     published: "Veröffentlicht",
     draft: "Entwurf",
     ticketsSold: "Verkaufte Tickets",
+    salesByTier: "Verkäufe nach Kategorie",
+    salesByTierEmpty: "Noch keine bezahlten Tickets — die Aufschlüsselung erscheint hier, sobald der Verkauf startet.",
+    tierName: "Kategorie",
+    tierTickets: "Tickets",
+    tierRevenue: "Umsatz",
     ofCapacity: "von {n} Kapazität",
     revenue: "Umsatz",
     checkedIn: "Eingecheckt",
@@ -176,6 +186,11 @@ const T = {
     published: "Publié",
     draft: "Brouillon",
     ticketsSold: "Billets vendus",
+    salesByTier: "Ventes par catégorie",
+    salesByTierEmpty: "Aucun billet payé pour l'instant — la ventilation apparaîtra ici dès le début des ventes.",
+    tierName: "Catégorie",
+    tierTickets: "Billets",
+    tierRevenue: "Revenus",
     ofCapacity: "sur {n} de capacité",
     revenue: "Revenus",
     checkedIn: "Enregistrés",
@@ -375,6 +390,41 @@ export default async function EventDetailPage({
           />
         </StatGrid>
       </div>
+
+      {/* Per-tier sales breakdown — quickly answers "which tier is moving?" */}
+      <section className="mt-8">
+        <h2 className="font-heading text-lg font-semibold">{t.salesByTier}</h2>
+        {liveStats.revenueByTier.length === 0 ? (
+          <p className="mt-3 rounded-lg border border-dashed border-border p-6 text-sm text-muted-foreground">
+            {t.salesByTierEmpty}
+          </p>
+        ) : (
+          <div className="mt-3 overflow-hidden rounded-lg border border-border">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/50 text-xs uppercase text-muted-foreground">
+                <tr>
+                  <th className="px-4 py-2 text-left font-medium">{t.tierName}</th>
+                  <th className="px-4 py-2 text-right font-medium">{t.tierTickets}</th>
+                  <th className="px-4 py-2 text-right font-medium">{t.tierRevenue}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {liveStats.revenueByTier.map((row) => (
+                  <tr key={row.tier_id} className="border-t border-border">
+                    <td className="px-4 py-2 font-medium">{row.tier_name}</td>
+                    <td className="px-4 py-2 text-right tabular-nums">
+                      {row.tickets_sold.toLocaleString(locale)}
+                    </td>
+                    <td className="px-4 py-2 text-right font-mono tabular-nums">
+                      €{(row.revenue_cents / 100).toLocaleString(locale, { maximumFractionDigits: 0 })}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
 
       {/* Event Info */}
       <div className="mt-8 grid gap-8 lg:grid-cols-2">

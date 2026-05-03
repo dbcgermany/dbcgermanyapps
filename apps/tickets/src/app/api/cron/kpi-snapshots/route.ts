@@ -40,7 +40,7 @@ export async function GET(request: Request) {
     .gte("ends_at", ninetyDaysAgo);
 
   if (!events || events.length === 0) {
-    return NextResponse.json({ snapshots: 0 });
+    return NextResponse.json({ ok: true, snapshots: 0 });
   }
 
   let written = 0;
@@ -113,5 +113,5 @@ export async function GET(request: Request) {
     }
   }
 
-  return NextResponse.json({ snapshots: written, date: snapshotDate });
+  return NextResponse.json({ ok: true, snapshots: written, date: snapshotDate });
 }

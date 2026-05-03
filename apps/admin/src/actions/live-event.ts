@@ -2,6 +2,13 @@
 
 import { createServerClient, requireRole } from "@dbc/supabase/server";
 
+export interface RevenueByTier {
+  tier_id: string;
+  tier_name: string;
+  tickets_sold: number;
+  revenue_cents: number;
+}
+
 export interface LiveEventStats {
   totalTickets: number;
   checkedIn: number;
@@ -9,6 +16,7 @@ export interface LiveEventStats {
   revenueCents: number;
   ordersByMethod: { payment_method: string; count: number }[];
   recentCheckIns: { attendee_name: string; checked_in_at: string }[];
+  revenueByTier: RevenueByTier[];
 }
 
 export async function getLiveEventStats(
@@ -17,7 +25,7 @@ export async function getLiveEventStats(
   await requireRole("team_member");
   const supabase = await createServerClient();
 
-  const [totalRes, checkedInRes, revenueRes, methodRawRes, recentRes] =
+  const [totalRes, checkedInRes, revenueRes, methodRawRes, recentRes, perTierRes] =
     await Promise.all([
       // Total tickets (paid/comped only — abandoned carts shouldn't
       // show up on the live event operator screen as "capacity used").
@@ -56,6 +64,18 @@ export async function getLiveEventStats(
         .not("checked_in_at", "is", null)
         .order("checked_in_at", { ascending: false })
         .limit(10),
+
+      // Per-tier breakdown: tickets sold + revenue grouped by tier. We
+      // aggregate in JS rather than via a Postgres view so admins can
+      // see tiers that exist but haven't sold yet (zero rows on the join).
+      // tier price comes from ticket_tiers.price_cents — using order
+      // discount_cents would double-count when the same coupon spans
+      // multiple tiers in one order.
+      supabase
+        .from("tickets")
+        .select("tier_id, orders!inner(status), ticket_tiers!inner(name_en, name_de, name_fr, price_cents)")
+        .in("orders.status", ["paid", "comped"])
+        .eq("event_id", eventId),
     ]);
 
   const totalTickets = totalRes.count ?? 0;
@@ -75,6 +95,50 @@ export async function getLiveEventStats(
     .map(([payment_method, count]) => ({ payment_method, count }))
     .sort((a, b) => b.count - a.count);
 
+  // Aggregate per-tier counts + revenue. Supabase typegen models inner-join
+  // relations as arrays even when 1:1, so we accept either shape and unwrap.
+  type TierData = {
+    name_en: string;
+    name_de: string | null;
+    name_fr: string | null;
+    price_cents: number;
+  };
+  type TierJoinRow = {
+    tier_id: string;
+    ticket_tiers: TierData | TierData[] | null;
+  };
+  const tierAcc = new Map<
+    string,
+    { tier_name: string; tickets: number; revenue: number }
+  >();
+  for (const row of (perTierRes.data ?? []) as unknown as TierJoinRow[]) {
+    const tierRel = Array.isArray(row.ticket_tiers)
+      ? row.ticket_tiers[0]
+      : row.ticket_tiers;
+    if (!tierRel) continue;
+    const existing = tierAcc.get(row.tier_id);
+    const tierName =
+      tierRel.name_en ?? tierRel.name_de ?? tierRel.name_fr ?? "Tier";
+    if (existing) {
+      existing.tickets += 1;
+      existing.revenue += tierRel.price_cents ?? 0;
+    } else {
+      tierAcc.set(row.tier_id, {
+        tier_name: tierName,
+        tickets: 1,
+        revenue: tierRel.price_cents ?? 0,
+      });
+    }
+  }
+  const revenueByTier: RevenueByTier[] = Array.from(tierAcc.entries())
+    .map(([tier_id, v]) => ({
+      tier_id,
+      tier_name: v.tier_name,
+      tickets_sold: v.tickets,
+      revenue_cents: v.revenue,
+    }))
+    .sort((a, b) => b.revenue_cents - a.revenue_cents);
+
   return {
     totalTickets,
     checkedIn,
@@ -85,5 +149,6 @@ export async function getLiveEventStats(
       attendee_name: string;
       checked_in_at: string;
     }[],
+    revenueByTier,
   };
 }

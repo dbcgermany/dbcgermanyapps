@@ -57,7 +57,7 @@ export async function GET(request: Request) {
     .maybeSingle();
 
   if (!event) {
-    return NextResponse.json({ skipped: true, reason: "no upcoming event" });
+    return NextResponse.json({ ok: true, skipped: true, reason: "no upcoming event" });
   }
   const eventId = event.id;
 
@@ -148,5 +148,5 @@ export async function GET(request: Request) {
     },
   });
 
-  return NextResponse.json({ digest, event: event.id });
+  return NextResponse.json({ ok: true, digest, event: event.id });
 }

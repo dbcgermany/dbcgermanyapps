@@ -37,7 +37,7 @@ export async function GET(req: Request) {
     .limit(50);
 
   if (!orders || orders.length === 0) {
-    return NextResponse.json({ sent: 0 });
+    return NextResponse.json({ ok: true, sent: 0, total: 0 });
   }
 
   const resend = createEmailClient();
@@ -90,5 +90,5 @@ export async function GET(req: Request) {
     }
   }
 
-  return NextResponse.json({ sent, total: orders.length });
+  return NextResponse.json({ ok: true, sent, total: orders.length });
 }
