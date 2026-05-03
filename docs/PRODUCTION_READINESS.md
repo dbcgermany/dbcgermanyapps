@@ -58,19 +58,16 @@ owners of those systems can take.
 
 ## What you still need to do (out of code's reach)
 
-### 1. CRITICAL — Resend domain verification (deliverability)
+### 1. ✅ DONE — Resend domain verification
 
-Status: **❌ failing per [credentials.md:148](cred/credentials.md#L148)**.
-DKIM/SPF/MX records aren't in the DNS provider for `dbc-germany.com`.
-Until verified, transactional emails (tickets, receipts, admin alerts) will
-land in spam or bounce.
+Status: **✅ verified as of 2026-05-02**. Confirmed via Resend API
+(`status: verified, sending: enabled`) and direct DNS query — DKIM TXT,
+SPF MX, and SPF TXT records are all live in Strato's DNS for
+`dbc-germany.com`. Smoke-test email queued successfully (id
+`67b8a618-429b-428a-a7c3-8955105b23f1`).
 
-**Action:** add the three DNS records from [credentials.md:166-175](cred/credentials.md#L166-L175)
-to whichever provider hosts `dbc-germany.com` DNS. Then in
-https://resend.com/domains click Verify on `dbc-germany.com`. After it
-flips green, do a test send: I'd recommend buying a 1¢ QA-tier ticket on
-the live account and confirming the inbox delivery (this is the same
-acceptance test in the Stripe live-mode plan).
+The "unverified" note in the 2026-04-16 credentials snapshot was stale;
+the records were already in place. Nothing to do here.
 
 ### 2. CRITICAL — Sentry (or equivalent error tracking)
 
