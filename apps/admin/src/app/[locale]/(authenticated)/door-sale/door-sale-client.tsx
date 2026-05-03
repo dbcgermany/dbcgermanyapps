@@ -28,15 +28,35 @@ export function DoorSaleClient({
   const router = useRouter();
   const [eventId, setEventId] = useState(initialEventId);
   const [tierId, setTierId] = useState(initialTiers[0]?.id ?? "");
-  const [attendeeName, setAttendeeName] = useState("");
-  const [attendeeEmail, setAttendeeEmail] = useState("");
-  const [phone, setPhone] = useState("");
+  // Persist form across the router.push() that fires when the operator
+  // switches event (it reloads the page so React state would otherwise
+  // reset). sessionStorage survives same-tab navigation; pulled out into
+  // a small helper so we don't crash during SSR (window undefined).
+  const STORAGE_KEY = "doorSaleDraft";
+  const draft =
+    typeof window !== "undefined"
+      ? (() => {
+          try {
+            return JSON.parse(window.sessionStorage.getItem(STORAGE_KEY) ?? "{}") as {
+              attendeeName?: string;
+              attendeeEmail?: string;
+              phone?: string;
+              paymentMethod?: "cash" | "sepa" | "comp";
+            };
+          } catch {
+            return {};
+          }
+        })()
+      : {};
+  const [attendeeName, setAttendeeName] = useState(draft.attendeeName ?? "");
+  const [attendeeEmail, setAttendeeEmail] = useState(draft.attendeeEmail ?? "");
+  const [phone, setPhone] = useState(draft.phone ?? "");
   // "cash" + "sepa" are DB payment_method enum values. "comp" is a UX-only
   // pseudo-value the action translates to a NULL payment_method (for comped
   // tickets). Prior bug: this state used "bank_transfer", which isn't in
   // the DB enum — any submission with that value failed the insert.
   const [paymentMethod, setPaymentMethod] =
-    useState<"cash" | "sepa" | "comp">("cash");
+    useState<"cash" | "sepa" | "comp">(draft.paymentMethod ?? "cash");
   const [result, setResult] = useState<{
     error?: string;
     success?: boolean;
@@ -48,9 +68,33 @@ export function DoorSaleClient({
   } | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  // Persist draft on every change so the next route.push restore picks it up.
+  // Cheap (~few writes per keystroke); no debounce needed at this volume.
+  if (typeof window !== "undefined") {
+    try {
+      window.sessionStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ attendeeName, attendeeEmail, phone, paymentMethod })
+      );
+    } catch {
+      // sessionStorage may be disabled (private mode) — silently skip.
+    }
+  }
+
+  function clearDraft() {
+    if (typeof window === "undefined") return;
+    try {
+      window.sessionStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // no-op
+    }
+  }
+
   function handleEventChange(newEventId: string) {
     setEventId(newEventId);
-    // Navigate to reload tiers for the new event, preserve mode
+    // Navigate to reload tiers for the new event, preserve mode. The
+    // sessionStorage block above already saved the draft, so the form
+    // values come back when this page re-renders.
     router.push(`?mode=${mode}&event=${newEventId}`);
   }
 
@@ -63,6 +107,8 @@ export function DoorSaleClient({
         setLastSale({ orderId: res.orderId, name });
         setAttendeeName("");
         setAttendeeEmail("");
+        setPhone("");
+        clearDraft();
         // Refresh to update tier remaining counts
         router.refresh();
       }
