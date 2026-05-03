@@ -63,6 +63,17 @@ export async function POST(request: Request) {
     .single();
 
   if (existing) {
+    // Structured log so a sustained Stripe-retry storm is greppable in
+    // Vercel logs / Sentry breadcrumbs without needing a stack trace.
+    console.log(
+      JSON.stringify({
+        scope: "stripe_webhook",
+        decision: "dedup",
+        event_id: event.id,
+        event_type: event.type,
+        ts: new Date().toISOString(),
+      })
+    );
     return NextResponse.json({ received: true, duplicate: true });
   }
 

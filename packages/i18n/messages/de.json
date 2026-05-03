@@ -377,7 +377,9 @@
       "dark": "Dunkel",
       "signOut": "Abmelden",
       "signOutEverywhere": "Auf allen Geräten abmelden",
-      "openMenu": "Benutzermenü öffnen"
+      "openMenu": "Benutzermenü öffnen",
+      "signOutFailed": "Abmeldung fehlgeschlagen.",
+      "signedOutEverywhere": "Auf allen Geräten abgemeldet."
     },
     "shell": {
       "welcome": "Willkommen zurück",

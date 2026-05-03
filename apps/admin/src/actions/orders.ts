@@ -179,6 +179,17 @@ export async function refundOrder(orderId: string, locale: string) {
     };
   }
 
+  // Defence against the "manually flipped status" foot-gun: if an order was
+  // marked comped in the DB but actually has a Stripe payment intent (i.e.
+  // a real card charge sat behind it), refunding-as-comped would skip the
+  // Stripe refund entirely. Block and force the operator to confirm.
+  if (order.status === "comped" && order.stripe_payment_intent_id) {
+    return {
+      error:
+        "Refused: order is marked 'comped' but has a Stripe payment intent. Either flip status to 'paid' first (so the Stripe refund fires), or refund directly in the Stripe Dashboard then mark this order refunded.",
+    };
+  }
+
   // Issue Stripe refund if it was a paid order with a Stripe payment
   if (order.status === "paid" && order.stripe_payment_intent_id) {
     try {

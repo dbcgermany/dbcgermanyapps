@@ -377,7 +377,9 @@
       "dark": "Sombre",
       "signOut": "Se déconnecter",
       "signOutEverywhere": "Déconnecter tous les appareils",
-      "openMenu": "Ouvrir le menu utilisateur"
+      "openMenu": "Ouvrir le menu utilisateur",
+      "signOutFailed": "Échec de la déconnexion.",
+      "signedOutEverywhere": "Déconnecté de tous les appareils."
     },
     "shell": {
       "welcome": "Bon retour",

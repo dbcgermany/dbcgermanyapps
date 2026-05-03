@@ -72,7 +72,7 @@ export function UserMenu({
         await logout(locale);
       } catch (err) {
         if (!isRedirectError(err)) {
-          toast.error("Sign-out failed.");
+          toast.error(t("signOutFailed"));
         }
       }
     });
@@ -85,12 +85,12 @@ export function UserMenu({
         toast.error(result.error);
         return;
       }
-      toast.success("Signed out on all devices.");
+      toast.success(t("signedOutEverywhere"));
       try {
         await logout(locale);
       } catch (err) {
         if (!isRedirectError(err)) {
-          toast.error("Sign-out failed.");
+          toast.error(t("signOutFailed"));
         }
       }
     });

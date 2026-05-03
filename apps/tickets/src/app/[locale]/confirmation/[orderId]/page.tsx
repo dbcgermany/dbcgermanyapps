@@ -2,6 +2,27 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createServerClient } from "@dbc/supabase/server";
 
+// Mask "name@example.com" -> "n***@e***.com" so anyone with the order UUID
+// can recognise it's their order without exposing the full PII to a leaked
+// link. The full email is only ever in the email itself + admin order
+// detail page (auth-gated).
+function maskEmail(email: string | null | undefined): string {
+  if (!email) return "";
+  const at = email.indexOf("@");
+  if (at < 1) return email;
+  const local = email.slice(0, at);
+  const rest = email.slice(at + 1);
+  const dot = rest.lastIndexOf(".");
+  const domain = dot > 0 ? rest.slice(0, dot) : rest;
+  const tld = dot > 0 ? rest.slice(dot) : "";
+  const maskLocal = local[0] + "*".repeat(Math.max(2, local.length - 1));
+  const maskDomain =
+    domain.length <= 1
+      ? domain
+      : domain[0] + "*".repeat(Math.max(2, domain.length - 1));
+  return `${maskLocal}@${maskDomain}${tld}`;
+}
+
 export default async function ConfirmationPage({
   params,
 }: {
@@ -155,7 +176,7 @@ export default async function ConfirmationPage({
                 <div>
                   <p className="font-medium">{ticket.attendee_name}</p>
                   <p className="text-sm text-muted-foreground">
-                    {ticket.attendee_email}
+                    {maskEmail(ticket.attendee_email)}
                   </p>
                 </div>
                 <span className="font-mono text-xs text-muted-foreground">

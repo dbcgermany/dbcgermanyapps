@@ -9,7 +9,7 @@ import {
   type SponsorStatus,
   type SponsorTier,
 } from "@dbc/types";
-import { createSponsor, deleteSponsor } from "@/actions/sponsors";
+import { createSponsor, deleteSponsor, updateSponsor } from "@/actions/sponsors";
 
 interface Sponsor {
   id: string;
@@ -68,7 +68,10 @@ const SP_T = {
       "Deliverables (logo placement, mentions, stage time, etc.)",
     notesPh: "Internal notes",
     adding: "Adding…",
+    saving: "Saving…",
+    save: "Save",
     add: "Add",
+    edit: "Edit",
     cancel: "Cancel",
     tiers: {
       title: "Title",
@@ -104,7 +107,10 @@ const SP_T = {
       "Leistungen (Logo-Platzierung, Erwähnungen, Bühnenzeit usw.)",
     notesPh: "Interne Notizen",
     adding: "Wird hinzugefügt…",
+    saving: "Wird gespeichert…",
+    save: "Speichern",
     add: "Hinzufügen",
+    edit: "Bearbeiten",
     cancel: "Abbrechen",
     tiers: {
       title: "Hauptsponsor",
@@ -140,7 +146,10 @@ const SP_T = {
       "Livrables (placement logo, mentions, temps de scène, etc.)",
     notesPh: "Notes internes",
     adding: "Ajout…",
+    saving: "Enregistrement…",
+    save: "Enregistrer",
     add: "Ajouter",
+    edit: "Modifier",
     cancel: "Annuler",
     tiers: {
       title: "Sponsor principal",
@@ -173,6 +182,7 @@ export function SponsorsClient({
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editing, setEditing] = useState<Sponsor | null>(null);
   const t = SP_T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof SP_T];
 
   function fmtMoney(cents: number | null, currency: string) {
@@ -184,12 +194,15 @@ export function SponsorsClient({
     });
   }
 
-  function handleAdd(formData: FormData) {
+  function handleSubmit(formData: FormData) {
     formData.set("locale", locale);
     startTransition(async () => {
-      const res = await createSponsor(eventId, formData);
+      const res = editing
+        ? await updateSponsor(editing.id, formData)
+        : await createSponsor(eventId, formData);
       if (!res.error) {
         setShowAddForm(false);
+        setEditing(null);
         router.refresh();
       }
     });
@@ -201,6 +214,11 @@ export function SponsorsClient({
       await deleteSponsor(id, eventId, locale);
       router.refresh();
     });
+  }
+
+  function handleEdit(sponsor: Sponsor) {
+    setEditing(sponsor);
+    setShowAddForm(true);
   }
 
   return (
@@ -264,13 +282,22 @@ export function SponsorsClient({
                   </p>
                 )}
               </div>
-              <button
-                onClick={() => handleDelete(s.id)}
-                disabled={isPending}
-                className="text-xs text-red-500 hover:text-red-700 disabled:opacity-50"
-              >
-                {t.delete}
-              </button>
+              <div className="flex shrink-0 flex-col items-end gap-1 text-xs">
+                <button
+                  onClick={() => handleEdit(s)}
+                  disabled={isPending}
+                  className="text-primary hover:text-primary/80 disabled:opacity-50"
+                >
+                  {t.edit}
+                </button>
+                <button
+                  onClick={() => handleDelete(s.id)}
+                  disabled={isPending}
+                  className="text-red-500 hover:text-red-700 disabled:opacity-50"
+                >
+                  {t.delete}
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -283,20 +310,26 @@ export function SponsorsClient({
         </Button>
       ) : (
         <form
-          action={handleAdd}
+          // Re-key on `editing.id` so React fully resets the form when the
+          // operator clicks Edit on a different sponsor (or switches between
+          // edit + create modes). Without this, `defaultValue` on a controlled
+          // form is sticky to the first render.
+          key={editing?.id ?? "new"}
+          action={handleSubmit}
           className="rounded-lg border border-primary/50 bg-muted/30 p-4 space-y-3"
         >
           <div className="grid gap-3 sm:grid-cols-2">
             <input
               name="company_name"
               placeholder={t.companyName}
+              defaultValue={editing?.company_name ?? ""}
               required
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             />
             <div className="grid grid-cols-2 gap-2">
               <select
                 name="tier"
-                defaultValue="partner"
+                defaultValue={editing?.tier ?? "partner"}
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               >
                 {SPONSOR_TIER_VALUES.map((tier) => (
@@ -307,7 +340,7 @@ export function SponsorsClient({
               </select>
               <select
                 name="status"
-                defaultValue="lead"
+                defaultValue={editing?.status ?? "lead"}
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               >
                 {SPONSOR_STATUS_VALUES.map((status) => (
@@ -322,11 +355,13 @@ export function SponsorsClient({
             <input
               name="contact_first_name"
               placeholder={t.contactFirstName}
+              defaultValue={editing?.contact_first_name ?? ""}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             />
             <input
               name="contact_last_name"
               placeholder={t.contactLastName}
+              defaultValue={editing?.contact_last_name ?? ""}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             />
           </div>
@@ -335,11 +370,13 @@ export function SponsorsClient({
               name="contact_email"
               type="email"
               placeholder={t.contactEmail}
+              defaultValue={editing?.contact_email ?? ""}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             />
             <input
               name="contact_phone"
               placeholder={t.phone}
+              defaultValue={editing?.contact_phone ?? ""}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             />
           </div>
@@ -349,38 +386,54 @@ export function SponsorsClient({
               type="number"
               step="0.01"
               placeholder={t.dealValue}
+              defaultValue={
+                editing?.deal_value_cents != null
+                  ? (editing.deal_value_cents / 100).toFixed(2)
+                  : ""
+              }
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             />
             <input
               name="website_url"
               type="url"
               placeholder={t.websiteUrl}
+              defaultValue={editing?.website_url ?? ""}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             />
           </div>
           <textarea
             name="deliverables"
             placeholder={t.deliverablesPh}
+            defaultValue={editing?.deliverables ?? ""}
             rows={2}
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
           />
           <textarea
             name="notes"
             placeholder={t.notesPh}
+            defaultValue={editing?.notes ?? ""}
             rows={2}
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
           />
           <div className="flex gap-2">
-            <Button type="submit"
-              disabled={isPending}>
-              {isPending ? "Adding..." : "Add"}
+            <Button type="submit" disabled={isPending}>
+              {isPending
+                ? editing
+                  ? t.saving
+                  : t.adding
+                : editing
+                  ? t.save
+                  : t.add}
             </Button>
             <button
               type="button"
-              onClick={() => setShowAddForm(false)}
+              onClick={() => {
+                setShowAddForm(false);
+                setEditing(null);
+              }}
               className="rounded-md border border-input px-4 py-1.5 text-sm font-medium hover:bg-muted"
             >
-              Cancel
+              {t.cancel}
             </button>
           </div>
         </form>
