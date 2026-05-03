@@ -120,6 +120,6 @@ export const config = {
     // 307-redirect them into /{locale}/… and break browser icon resolution
     // and the PWA manifest. `brand/` is the self-hosted DBC brand mark
     // folder (SVG + WebP lockups) — also must pass through untouched.
-    "/((?!_next/static|_next/image|favicon\\.ico|icon\\.png|icon\\.svg|icon-.*|apple-icon\\.png|apple-touch-icon|opengraph-image|twitter-image|robots\\.txt|sitemap\\.xml|manifest|brand/|api/).*)",
+    "/((?!_next/static|_next/image|favicon\\.ico|icon\\.png|icon\\.svg|icon-.*|apple-icon\\.png|apple-touch-icon|opengraph-image|twitter-image|robots\\.txt|sitemap\\.xml|manifest|brand/|monitoring|api/).*)",
   ],
 };

@@ -156,6 +156,6 @@ export const config = {
     // robots.txt, sitemap.xml, favicon.ico) + the numbered icon-XXX variants
     // in /public, or middleware will 307-redirect them into /{locale}/…
     // which breaks browser icon resolution and the PWA manifest.
-    "/((?!_next/static|_next/image|favicon\\.ico|icon\\.png|icon\\.svg|icon-.*|apple-icon\\.png|apple-touch-icon|opengraph-image|twitter-image|robots\\.txt|sitemap\\.xml|manifest|brand/|api/).*)",
+    "/((?!_next/static|_next/image|favicon\\.ico|icon\\.png|icon\\.svg|icon-.*|apple-icon\\.png|apple-touch-icon|opengraph-image|twitter-image|robots\\.txt|sitemap\\.xml|manifest|brand/|monitoring|api/).*)",
   ],
 };
