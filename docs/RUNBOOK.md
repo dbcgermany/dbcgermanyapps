@@ -15,11 +15,12 @@ Common incidents, what they look like, and exactly what to do. Open this in a ta
 
 ## On-call rotation
 
-Fill in: who's first responder, who's escalation, who's last resort. Update this section whenever rotation changes.
+Update this whenever rotation changes. Sentry alerts + Better Stack incidents
+should email the primary; if no ack within 15 min, escalation.
 
 | Tier | Name | Phone | Slack | Email |
 |---|---|---|---|---|
-| Primary | _TBD_ | _TBD_ | _TBD_ | _TBD_ |
+| Primary | Jay N Kalala | _TBD_ | _TBD_ | realjaynka@gmail.com |
 | Escalation | _TBD_ | _TBD_ | _TBD_ | _TBD_ |
 | Owner of last resort | _TBD_ | _TBD_ | _TBD_ | _TBD_ |
 
