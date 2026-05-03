@@ -8,16 +8,18 @@ export default async function OrdersPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ event?: string; status?: string }>;
+  searchParams: Promise<{ event?: string; status?: string; page?: string }>;
 }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "admin.orders" });
   const sp = await searchParams;
+  const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
 
-  const [orders, events] = await Promise.all([
-    getOrders({ eventId: sp.event, status: sp.status }),
+  const [ordersResult, events] = await Promise.all([
+    getOrders({ eventId: sp.event, status: sp.status, page }),
     getOrdersEvents(),
   ]);
+  const orders = ordersResult.orders;
 
   return (
     <div>
@@ -50,6 +52,9 @@ export default async function OrdersPage({
         }))}
         currentEventFilter={sp.event ?? ""}
         currentStatusFilter={sp.status ?? ""}
+        page={page}
+        pageSize={ordersResult.pageSize}
+        total={ordersResult.total}
       />
     </div>
   );

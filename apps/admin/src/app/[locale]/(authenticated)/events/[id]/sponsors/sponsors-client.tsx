@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Badge, Button } from "@dbc/ui";
+import { Badge, Button, ConfirmDialog } from "@dbc/ui";
 import {
   SPONSOR_STATUS_VALUES,
   SPONSOR_TIER_VALUES,
@@ -209,7 +209,6 @@ export function SponsorsClient({
   }
 
   function handleDelete(id: string) {
-    if (!confirm(t.deleteConfirm)) return;
     startTransition(async () => {
       await deleteSponsor(id, eventId, locale);
       router.refresh();
@@ -290,13 +289,23 @@ export function SponsorsClient({
                 >
                   {t.edit}
                 </button>
-                <button
-                  onClick={() => handleDelete(s.id)}
-                  disabled={isPending}
-                  className="text-red-500 hover:text-red-700 disabled:opacity-50"
-                >
-                  {t.delete}
-                </button>
+                <ConfirmDialog
+                  trigger={
+                    <button
+                      type="button"
+                      disabled={isPending}
+                      className="text-red-500 hover:text-red-700 disabled:opacity-50"
+                    >
+                      {t.delete}
+                    </button>
+                  }
+                  title={t.deleteConfirm}
+                  description={s.company_name}
+                  confirmLabel={t.delete}
+                  cancelLabel={t.cancel}
+                  variant="danger"
+                  onConfirm={() => handleDelete(s.id)}
+                />
               </div>
             </div>
           ))}

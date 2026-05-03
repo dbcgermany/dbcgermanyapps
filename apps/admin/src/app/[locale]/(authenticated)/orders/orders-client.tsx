@@ -32,17 +32,25 @@ export function OrdersClient({
   events,
   currentEventFilter,
   currentStatusFilter,
+  page,
+  pageSize,
+  total,
 }: {
   locale: string;
   orders: Order[];
   events: { id: string; title: string }[];
   currentEventFilter: string;
   currentStatusFilter: string;
+  page: number;
+  pageSize: number;
+  total: number;
 }) {
   const router = useRouter();
   const [refundingId, setRefundingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   function updateFilters(event?: string, status?: string) {
     const params = new URLSearchParams();
@@ -50,6 +58,15 @@ export function OrdersClient({
     const st = status ?? currentStatusFilter;
     if (ev) params.set("event", ev);
     if (st) params.set("status", st);
+    // Reset to page 1 when filters change.
+    router.push(`?${params.toString()}`);
+  }
+
+  function goToPage(p: number) {
+    const params = new URLSearchParams();
+    if (currentEventFilter) params.set("event", currentEventFilter);
+    if (currentStatusFilter) params.set("status", currentStatusFilter);
+    if (p > 1) params.set("page", String(p));
     router.push(`?${params.toString()}`);
   }
 
@@ -363,6 +380,46 @@ export function OrdersClient({
             </tbody>
           </table>
         </div>
+        {totalPages > 1 && (
+          <nav
+            className="mt-4 flex items-center justify-between text-sm"
+            aria-label="Pagination"
+          >
+            <p className="text-muted-foreground">
+              {locale === "de"
+                ? `Seite ${page} von ${totalPages} · ${total} Bestellungen`
+                : locale === "fr"
+                  ? `Page ${page} sur ${totalPages} · ${total} commandes`
+                  : `Page ${page} of ${totalPages} · ${total} orders`}
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => goToPage(page - 1)}
+                disabled={page <= 1 || isPending}
+                className="rounded-md border border-border px-3 py-1.5 hover:bg-muted disabled:opacity-50"
+              >
+                {locale === "de"
+                  ? "Zurück"
+                  : locale === "fr"
+                    ? "Précédent"
+                    : "Previous"}
+              </button>
+              <button
+                type="button"
+                onClick={() => goToPage(page + 1)}
+                disabled={page >= totalPages || isPending}
+                className="rounded-md border border-border px-3 py-1.5 hover:bg-muted disabled:opacity-50"
+              >
+                {locale === "de"
+                  ? "Weiter"
+                  : locale === "fr"
+                    ? "Suivant"
+                    : "Next"}
+              </button>
+            </div>
+          </nav>
+        )}
         </>
       )}
     </div>

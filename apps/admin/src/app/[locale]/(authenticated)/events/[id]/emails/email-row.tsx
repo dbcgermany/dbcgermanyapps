@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { Badge, Button } from "@dbc/ui";
+import { Badge, Button, ConfirmDialog } from "@dbc/ui";
 import {
   updateEmailSequence,
   deleteEmailSequence,
@@ -209,33 +209,42 @@ export function EmailRow({
             </button>
           )}
           {!seq.sent_at && (
-            <form
-              action={async () => {
-                if (!confirm(t.sendConfirm)) return;
+            <ConfirmDialog
+              trigger={
+                <button
+                  type="button"
+                  className="text-xs text-primary hover:text-primary/80"
+                >
+                  {t.sendNow}
+                </button>
+              }
+              title={t.sendConfirm}
+              description={seq.subject_en}
+              confirmLabel={t.sendNow}
+              cancelLabel={t.cancel}
+              variant="neutral"
+              onConfirm={async () => {
                 await dispatchEmailSequence(seq.id, eventId, locale);
               }}
-            >
-              <button
-                type="submit"
-                className="text-xs text-primary hover:text-primary/80"
-              >
-                {t.sendNow}
-              </button>
-            </form>
+            />
           )}
-          <form
-            action={async () => {
-              if (!confirm(t.deleteConfirm.replace("{subject}", seq.subject_en))) return;
+          <ConfirmDialog
+            trigger={
+              <button
+                type="button"
+                className="text-xs text-red-500 hover:text-red-700"
+              >
+                {t.delete}
+              </button>
+            }
+            title={t.deleteConfirm.replace("{subject}", seq.subject_en)}
+            confirmLabel={t.delete}
+            cancelLabel={t.cancel}
+            variant="danger"
+            onConfirm={async () => {
               await deleteEmailSequence(seq.id, eventId, locale);
             }}
-          >
-            <button
-              type="submit"
-              className="text-xs text-red-500 hover:text-red-700"
-            >
-              {t.delete}
-            </button>
-          </form>
+          />
         </div>
       </div>
     </div>

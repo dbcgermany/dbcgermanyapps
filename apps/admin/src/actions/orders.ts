@@ -18,25 +18,33 @@ function getStripe(): Stripe {
   return _stripe;
 }
 
+export const ORDERS_PAGE_SIZE = 50;
+
 export async function getOrders(filter?: {
   eventId?: string;
   status?: string;
+  page?: number;
 }) {
   await requireRole("manager");
   const supabase = await createServerClient();
 
+  const page = Math.max(1, filter?.page ?? 1);
+  const from = (page - 1) * ORDERS_PAGE_SIZE;
+  const to = from + ORDERS_PAGE_SIZE - 1;
+
   let query = supabase
     .from("orders")
     .select(
-      "id, event_id, total_cents, discount_cents, status, acquisition_type, payment_method, recipient_name, recipient_email, locale, created_at, email_sent_at, stripe_payment_intent_id, sold_by, seller:profiles!orders_sold_by_fkey(display_name)"
+      "id, event_id, total_cents, discount_cents, status, acquisition_type, payment_method, recipient_name, recipient_email, locale, created_at, email_sent_at, stripe_payment_intent_id, sold_by, seller:profiles!orders_sold_by_fkey(display_name)",
+      { count: "exact" }
     )
     .order("created_at", { ascending: false })
-    .limit(200);
+    .range(from, to);
 
   if (filter?.eventId) query = query.eq("event_id", filter.eventId);
   if (filter?.status) query = query.eq("status", filter.status);
 
-  const { data, error } = await query;
+  const { data, count, error } = await query;
   if (error) throw new Error(error.message);
 
   // Enrich with event titles
@@ -48,10 +56,15 @@ export async function getOrders(filter?: {
 
   const eventMap = new Map((events ?? []).map((e) => [e.id, e]));
 
-  return (data ?? []).map((o) => ({
-    ...o,
-    event: eventMap.get(o.event_id) ?? null,
-  }));
+  return {
+    orders: (data ?? []).map((o) => ({
+      ...o,
+      event: eventMap.get(o.event_id) ?? null,
+    })),
+    total: count ?? 0,
+    page,
+    pageSize: ORDERS_PAGE_SIZE,
+  };
 }
 
 export async function getOrdersEvents() {

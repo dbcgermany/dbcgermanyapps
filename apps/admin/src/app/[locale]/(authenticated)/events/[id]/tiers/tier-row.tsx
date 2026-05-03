@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { updateTier, toggleTierPublic, deleteTier } from "@/actions/tiers";
-import { Button } from "@dbc/ui";
+import { Button, ConfirmDialog } from "@dbc/ui";
 
 const TR_T = {
   en: {
@@ -296,19 +296,23 @@ export function TierRow({
             {tier.is_public ? t.hide : t.publish}
           </button>
         </form>
-        <form
-          action={async () => {
-            if (!confirm(t.deleteConfirm.replace("{name}", tier.name_en))) return;
+        <ConfirmDialog
+          trigger={
+            <button
+              type="button"
+              className="text-xs text-red-500 hover:text-red-700"
+            >
+              {t.delete}
+            </button>
+          }
+          title={t.deleteConfirm.replace("{name}", tier.name_en)}
+          confirmLabel={t.delete}
+          cancelLabel={t.cancel}
+          variant="danger"
+          onConfirm={async () => {
             await deleteTier(tier.id, eventId, locale);
           }}
-        >
-          <button
-            type="submit"
-            className="text-xs text-red-500 hover:text-red-700"
-          >
-            {t.delete}
-          </button>
-        </form>
+        />
       </div>
     </div>
   );

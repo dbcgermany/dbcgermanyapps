@@ -177,8 +177,11 @@ export async function sendTicketsForOrder(
           event_id: order.event_id,
         },
       });
+      // ticket.id is enough for forensics; attendee_email kept out of the
+      // log to keep Vercel runtime logs PII-clean. (Sentry already gets the
+      // structured event via captureServerError above with PII scrubbing.)
       console.error(
-        `Failed to send ticket ${ticket.id} to ${ticket.attendee_email}:`,
+        `Failed to send ticket ${ticket.id}:`,
         err instanceof Error ? err.message : err
       );
       // Continue with other tickets — don't fail the whole batch.

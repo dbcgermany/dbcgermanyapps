@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Button, PhoneInput } from "@dbc/ui";
+import { Button, ConfirmDialog, PhoneInput } from "@dbc/ui";
 import { createDoorSale, voidDoorSale } from "@/actions/door-sale";
 
 interface Tier {
@@ -117,7 +117,6 @@ export function DoorSaleClient({
 
   function handleVoid() {
     if (!lastSale) return;
-    if (!confirm(`Void the ticket for ${lastSale.name}? This restores inventory.`)) return;
     startTransition(async () => {
       const res = await voidDoorSale(lastSale.orderId, locale);
       if (res.success) {
@@ -205,14 +204,23 @@ export function DoorSaleClient({
             <span>
               &#x2713; {t.success} &mdash; {lastSale.name}
             </span>
-            <button
-              type="button"
-              onClick={handleVoid}
-              disabled={isPending}
-              className="rounded-md border border-red-300 bg-white px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-50 dark:bg-transparent"
-            >
-              Undo / Void
-            </button>
+            <ConfirmDialog
+              trigger={
+                <button
+                  type="button"
+                  disabled={isPending}
+                  className="rounded-md border border-red-300 bg-white px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-50 dark:bg-transparent"
+                >
+                  Undo / Void
+                </button>
+              }
+              title={`Void the ticket for ${lastSale.name}?`}
+              description="This restores inventory + refunds payment if it was a card sale."
+              confirmLabel="Void"
+              cancelLabel="Cancel"
+              variant="danger"
+              onConfirm={handleVoid}
+            />
           </div>
         </div>
       )}

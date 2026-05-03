@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Card } from "@dbc/ui";
+import { Card, ConfirmDialog } from "@dbc/ui";
 import type { DomainCheckResult } from "@dbc/email";
 import {
   saveNewsletter,
@@ -67,6 +67,7 @@ const T = {
     sendBroadcastHint:
       "One-way. Saves the draft first, then dispatches to the resolved recipient list.",
     sendNow: "Send now",
+    cancel: "Cancel",
     domainUnverifiedTitle: "Sender domain is not verified",
     domainUnverifiedBody:
       "Resend hasn't verified dbc-germany.com yet, so real broadcasts are blocked. Add the 3 DNS records listed in cred/dns-email-setup.md at Strato and wait 5-30 min. Test sends to the Resend account owner still work (from onboarding@resend.dev).",
@@ -96,6 +97,7 @@ const T = {
     sendBroadcastHint:
       "Einseitig. Speichert den Entwurf zuerst und versendet dann an die aufgelöste Empfängerliste.",
     sendNow: "Jetzt senden",
+    cancel: "Abbrechen",
     domainUnverifiedTitle: "Absender-Domain nicht verifiziert",
     domainUnverifiedBody:
       "Resend hat dbc-germany.com noch nicht verifiziert — echte Broadcasts sind deshalb blockiert. Fügen Sie bei Strato die 3 DNS-Einträge aus cred/dns-email-setup.md hinzu und warten Sie 5-30 Min. Tests an den Resend-Inhaber funktionieren weiterhin (von onboarding@resend.dev).",
@@ -125,6 +127,7 @@ const T = {
     sendBroadcastHint:
       "Action unidirectionnelle. Enregistre d’abord le brouillon puis diffuse à la liste résolue.",
     sendNow: "Envoyer maintenant",
+    cancel: "Annuler",
     domainUnverifiedTitle: "Domaine d’expéditeur non vérifié",
     domainUnverifiedBody:
       "Resend n’a pas encore vérifié dbc-germany.com — l’envoi en masse est bloqué. Ajoutez les 3 enregistrements DNS listés dans cred/dns-email-setup.md chez Strato et attendez 5 à 30 min. Les envois test vers le titulaire du compte Resend fonctionnent toujours (depuis onboarding@resend.dev).",
@@ -214,9 +217,8 @@ export function NewsletterComposer({
       setMsg({ type: "err", text: t.saveFirstPlain });
       return;
     }
-    const n = recipientCount ?? 0;
-    if (!confirm(t.confirmSend.replace("{n}", String(n)).replace("{s}", n === 1 ? "" : "s")))
-      return;
+    // Confirmation now lives in the surrounding ConfirmDialog — this fn is
+    // only invoked once the operator has explicitly confirmed.
     startTransition(async () => {
       const res = await sendNewsletter(state.id!);
       if ("error" in res && res.error) {
@@ -417,14 +419,24 @@ export function NewsletterComposer({
             <p className="mt-1 text-xs text-muted-foreground">
               {t.sendBroadcastHint}
             </p>
-            <button
-              type="button"
-              onClick={handleSendReal}
-              disabled={isPending || !state.id || domainUnverified}
-              className="mt-2 w-full rounded-md bg-red-600 px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
-            >
-              {t.sendNow}
-            </button>
+            <ConfirmDialog
+              trigger={
+                <button
+                  type="button"
+                  disabled={isPending || !state.id || domainUnverified}
+                  className="mt-2 w-full rounded-md bg-red-600 px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
+                >
+                  {t.sendNow}
+                </button>
+              }
+              title={t.confirmSend
+                .replace("{n}", String(recipientCount ?? 0))
+                .replace("{s}", (recipientCount ?? 0) === 1 ? "" : "s")}
+              confirmLabel={t.sendNow}
+              cancelLabel={t.cancel}
+              variant="danger"
+              onConfirm={handleSendReal}
+            />
           </div>
         )}
 
