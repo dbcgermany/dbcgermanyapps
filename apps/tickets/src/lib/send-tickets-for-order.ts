@@ -1,10 +1,17 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { sendTicketEmail } from "@dbc/email";
+import { captureServerError } from "@/lib/observe";
 
 /**
  * Generates PDF tickets and emails one to each attendee on the order.
- * Idempotent: skips tickets that already have a pdf_url stamped.
- * Marks the order with email_sent_at after all tickets are sent.
+ *
+ * Idempotency:
+ *   - Per-ticket: each row carries `tickets.email_sent_at`. The loop only
+ *     attempts rows where it's NULL (or all rows when forceResend is set).
+ *   - Per-order: `orders.email_sent_at` is stamped only after every ticket
+ *     has its own stamp. A partial-failure batch leaves order.email_sent_at
+ *     NULL so the next caller (Stripe webhook retry, manual resend, cron)
+ *     re-enters the loop and only the un-sent rows fire.
  *
  * Designed to be called from the Stripe webhook OR from a free-order code path.
  * Uses a service-role Supabase client (no cookie auth).
@@ -13,13 +20,11 @@ export async function sendTicketsForOrder(
   supabase: SupabaseClient,
   orderId: string,
   options: { forceResend?: boolean; overrideEmail?: string } = {}
-): Promise<void> {
+): Promise<{ sent: number; skipped: number; failed: number }> {
   // Fetch order
   const { data: order, error: orderError } = await supabase
     .from("orders")
-    .select(
-      "id, event_id, locale, email_sent_at, status, acquisition_type"
-    )
+    .select("id, event_id, locale, email_sent_at, status, acquisition_type")
     .eq("id", orderId)
     .single();
 
@@ -27,9 +32,10 @@ export async function sendTicketsForOrder(
     throw new Error(`Order ${orderId} not found`);
   }
 
-  // Idempotency: skip if already sent, unless caller asked for a resend
+  // Order-level idempotency: order.email_sent_at means "all rows sent".
+  // Skip the whole batch if we've already done that, unless forceResend.
   if (order.email_sent_at && !options.forceResend) {
-    return;
+    return { sent: 0, skipped: 0, failed: 0 };
   }
 
   // Only send for paid/comped orders
@@ -50,11 +56,12 @@ export async function sendTicketsForOrder(
     throw new Error(`Event ${order.event_id} not found`);
   }
 
-  // Fetch tickets for the order (skip those already with a pdf_url)
+  // Fetch every ticket on the order — we filter the un-sent ones in code so
+  // the per-order summary at the end can count skipped rows.
   const { data: tickets, error: ticketsError } = await supabase
     .from("tickets")
     .select(
-      "id, ticket_token, attendee_name, attendee_email, tier_id, pdf_url"
+      "id, ticket_token, attendee_name, attendee_email, tier_id, pdf_url, email_sent_at"
     )
     .eq("order_id", orderId);
 
@@ -89,9 +96,22 @@ export async function sendTicketsForOrder(
     process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://tickets.dbc-germany.com";
   const orderUrl = `${ticketsBaseUrl}/${locale}/confirmation/${orderId}`;
 
-  // Send each ticket
+  let sent = 0;
+  let skipped = 0;
+  let failed = 0;
+
   for (const ticket of tickets) {
-    if (ticket.pdf_url && !options.forceResend) continue; // already sent
+    // Per-ticket skip when already sent (and not forcing). The legacy
+    // `pdf_url: 'sent:<iso>'` sentinel is also honoured so existing rows
+    // from before this column existed don't get duplicates on first run
+    // after the migration.
+    const alreadySent =
+      ticket.email_sent_at != null ||
+      (typeof ticket.pdf_url === "string" && ticket.pdf_url.startsWith("sent:"));
+    if (alreadySent && !options.forceResend) {
+      skipped++;
+      continue;
+    }
 
     const tier = tierMap.get(ticket.tier_id);
     const tierName = tier
@@ -133,27 +153,55 @@ export async function sendTicketsForOrder(
           order.acquisition_type === "assigned",
       });
 
-      // Stamp the ticket as sent + persist the Resend message ID for
-      // downstream bounce/deliverability tracking.
+      // Stamp the per-ticket idempotency token + Resend message ID. Both
+      // happen in one update so a crash between can't leave them out of
+      // sync. `pdf_url` keeps the old "sent:<iso>" sentinel for any code
+      // that still reads it, but new code should use email_sent_at.
+      const nowIso = new Date().toISOString();
       await supabase
         .from("tickets")
         .update({
-          pdf_url: `sent:${new Date().toISOString()}`,
+          email_sent_at: nowIso,
+          pdf_url: `sent:${nowIso}`,
           email_message_id: result?.id ?? null,
         })
         .eq("id", ticket.id);
+      sent++;
     } catch (err) {
+      failed++;
+      captureServerError(err, {
+        scope: "send_tickets_for_order",
+        data: {
+          order_id: orderId,
+          ticket_id: ticket.id,
+          event_id: order.event_id,
+        },
+      });
       console.error(
         `Failed to send ticket ${ticket.id} to ${ticket.attendee_email}:`,
-        err
+        err instanceof Error ? err.message : err
       );
-      // Continue with other tickets — don't fail the whole batch
+      // Continue with other tickets — don't fail the whole batch.
     }
   }
 
-  // Mark order as fully emailed
-  await supabase
-    .from("orders")
-    .update({ email_sent_at: new Date().toISOString() })
-    .eq("id", orderId);
+  // Stamp order.email_sent_at only when EVERY ticket has its own stamp.
+  // A partial-success leaves it NULL so a retry (Stripe webhook redelivery,
+  // manual resend, or future cron) can pick up only the un-sent rows.
+  if (failed === 0) {
+    const { count: stillUnsent } = await supabase
+      .from("tickets")
+      .select("id", { count: "exact", head: true })
+      .eq("order_id", orderId)
+      .is("email_sent_at", null);
+
+    if ((stillUnsent ?? 0) === 0) {
+      await supabase
+        .from("orders")
+        .update({ email_sent_at: new Date().toISOString() })
+        .eq("id", orderId);
+    }
+  }
+
+  return { sent, skipped, failed };
 }

@@ -2712,6 +2712,7 @@ export type Database = {
           contact_id: string | null
           created_at: string
           email_message_id: string | null
+          email_sent_at: string | null
           event_id: string
           id: string
           is_transferred: boolean
@@ -2738,6 +2739,7 @@ export type Database = {
           contact_id?: string | null
           created_at?: string
           email_message_id?: string | null
+          email_sent_at?: string | null
           event_id: string
           id?: string
           is_transferred?: boolean
@@ -2764,6 +2766,7 @@ export type Database = {
           contact_id?: string | null
           created_at?: string
           email_message_id?: string | null
+          email_sent_at?: string | null
           event_id?: string
           id?: string
           is_transferred?: boolean

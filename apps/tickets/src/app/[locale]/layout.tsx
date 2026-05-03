@@ -4,6 +4,7 @@ import { loadMessages } from "@dbc/i18n";
 import { NextIntlClientProvider } from "next-intl";
 import { notFound } from "next/navigation";
 import { TicketsHeader } from "@/components/tickets-header";
+import { TicketsFooter } from "@/components/tickets-footer";
 
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }));
@@ -28,6 +29,7 @@ export default async function LocaleLayout({
     <NextIntlClientProvider locale={locale} messages={messages}>
       <TicketsHeader locale={locale} />
       {children}
+      <TicketsFooter locale={locale} />
     </NextIntlClientProvider>
   );
 }
