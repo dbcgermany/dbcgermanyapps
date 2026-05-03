@@ -47,20 +47,41 @@ const RESERVATION_TTL_MINUTES = parseInt(
 );
 
 // Cloudflare Turnstile verification.
-//   - Production (VERCEL_ENV === "production"): fail-secure. If the secret
-//     isn't set, refuse the checkout. Misconfigured prod must never let
-//     unverified traffic through.
-//   - Anywhere else (local, preview): no-op when secret missing so dev
-//     environments without Turnstile still work.
+//
+// The site key is a NEXT_PUBLIC_* var read at build time and inlined into
+// the client bundle. The server has access to it via process.env too (Next
+// inlines NEXT_PUBLIC_* on both sides).
+//
+// Decision matrix:
+//   - Site key UNSET                 → Turnstile not deployed.
+//                                      No widget rendered client-side, no
+//                                      token can possibly arrive. Skip
+//                                      verification — otherwise we'd block
+//                                      every checkout. Bot risk: same as
+//                                      not having Turnstile at all (the
+//                                      pre-Turnstile baseline).
+//   - Site key set, secret UNSET    → Misconfiguration. Widget renders and
+//                                      collects tokens but server can't
+//                                      verify them. Log loudly to Sentry
+//                                      and SKIP rather than block real
+//                                      buyers. Operator must fix the env
+//                                      mismatch.
+//   - Both keys set, no token       → Reject. Widget should have produced a
+//                                      token; absence means the buyer
+//                                      bypassed the widget.
+//   - Both keys set, token present  → Verify with Cloudflare. Honour the
+//                                      result.
 async function verifyTurnstile(token: string | undefined): Promise<boolean> {
+  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
   const secret = process.env.TURNSTILE_SECRET_KEY;
+
+  if (!siteKey) {
+    return true;
+  }
   if (!secret) {
-    if (process.env.VERCEL_ENV === "production") {
-      console.error(
-        "[turnstile] TURNSTILE_SECRET_KEY missing in production — rejecting"
-      );
-      return false;
-    }
+    console.error(
+      "[turnstile] NEXT_PUBLIC_TURNSTILE_SITE_KEY is set but TURNSTILE_SECRET_KEY is missing — env mismatch, skipping verification to avoid blocking buyers"
+    );
     return true;
   }
   if (!token) return false;
