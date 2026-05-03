@@ -15,7 +15,7 @@ const TR_T = {
     lowStockPct: "Low-stock alert at %",
     lowStockPctHint: "Notify admins when remaining drops to this % of capacity, then again at half and a quarter.",
     saving: "Saving…", save: "Save", cancel: "Cancel",
-    hidden: "Hidden", sold: "sold",
+    hidden: "Hidden", sold: "sold", unlimited: "unlimited",
     edit: "Edit", hide: "Hide", publish: "Publish", delete: "Delete",
     deleteConfirm: 'Delete tier "{name}"?',
   },
@@ -29,7 +29,7 @@ const TR_T = {
     lowStockPct: "Bestandsalarm bei %",
     lowStockPctHint: "Admins werden benachrichtigt, wenn der Restbestand auf diesen % der Kapazität fällt, dann erneut bei der Hälfte und einem Viertel.",
     saving: "Wird gespeichert…", save: "Speichern", cancel: "Abbrechen",
-    hidden: "Ausgeblendet", sold: "verkauft",
+    hidden: "Ausgeblendet", sold: "verkauft", unlimited: "unbegrenzt",
     edit: "Bearbeiten", hide: "Ausblenden", publish: "Veröffentlichen", delete: "Löschen",
     deleteConfirm: "Kategorie „{name}“ löschen?",
   },
@@ -43,7 +43,7 @@ const TR_T = {
     lowStockPct: "Alerte stock à %",
     lowStockPctHint: "Notifier les admins quand le restant tombe à ce % de la capacité, puis à la moitié et au quart.",
     saving: "Enregistrement…", save: "Enregistrer", cancel: "Annuler",
-    hidden: "Masqué", sold: "vendus",
+    hidden: "Masqué", sold: "vendus", unlimited: "illimité",
     edit: "Modifier", hide: "Masquer", publish: "Publier", delete: "Supprimer",
     deleteConfirm: "Supprimer la catégorie « {name} » ?",
   },
@@ -273,7 +273,7 @@ export function TierRow({
             )}
           {" · "}
           {tier.quantity_sold}
-          {tier.max_quantity ? ` / ${tier.max_quantity}` : ""} {t.sold}
+          {tier.max_quantity ? ` / ${tier.max_quantity}` : ` / ${t.unlimited}`} {t.sold}
         </p>
       </div>
       <div className="flex items-center gap-3">

@@ -13,7 +13,12 @@ import { TierDeadlineCountdown } from "@/components/event-triggers/tier-deadline
 import { RecentBuyerTicker } from "@/components/event-triggers/recent-buyer-ticker";
 import { PriceAnchor } from "@/components/event-triggers/price-anchor";
 
-export const revalidate = 30;
+// 5-min ISR ceiling. Admin tier/coupon/event writes still trigger on-demand
+// revalidation via apps/admin/src/lib/revalidate.ts, so this is just the
+// background-refresh limit. Was 30s — under traffic spikes that meant a
+// regeneration every 30s per locale across edge regions; 300s flattens
+// that without losing freshness for operator-driven changes.
+export const revalidate = 300;
 
 export async function generateMetadata({
   params,
