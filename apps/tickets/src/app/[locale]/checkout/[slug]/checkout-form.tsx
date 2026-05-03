@@ -92,6 +92,7 @@ export function CheckoutForm({
     emptyAttendee(initialTierId ?? tiers[0]?.id ?? ""),
   ]);
   const [couponCode, setCouponCode] = useState(initialCouponCode ?? "");
+  const [revocationWaived, setRevocationWaived] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const turnstileRef = useRef<HTMLDivElement>(null);
   const turnstileWidgetIdRef = useRef<string | null>(null);
@@ -203,6 +204,7 @@ export function CheckoutForm({
         turnstileToken: turnstileToken ?? undefined,
         source: source ?? undefined,
         funnelSlug: funnelSlug ?? undefined,
+        revocationWaived,
       });
 
       if (window.turnstile && turnstileWidgetIdRef.current) {
@@ -468,10 +470,33 @@ export function CheckoutForm({
         </>
       )}
 
+      {/* German Widerrufsrecht (BGB §312g, §355) waiver. Required for digital
+          event tickets so the buyer can't claim a 14-day refund post-event. */}
+      <label className="flex items-start gap-2 rounded-md border border-border bg-muted/40 p-3 text-xs text-foreground">
+        <input
+          type="checkbox"
+          required
+          checked={revocationWaived}
+          onChange={(e) => setRevocationWaived(e.target.checked)}
+          className="mt-0.5"
+        />
+        <span>
+          {locale === "de"
+            ? "Ich stimme zu, dass DBC Germany mit der Erbringung der Leistung (Bereitstellung des Tickets und Eintritt zum Event) sofort beginnt, und bin mir bewusst, dass ich mein Widerrufsrecht damit verliere, sobald die Leistung vollständig erbracht wurde (§ 356 Abs. 4 BGB)."
+            : locale === "fr"
+              ? "J'accepte que DBC Germany commence immédiatement l'exécution du service (émission du billet et accès à l'événement) et reconnais perdre mon droit de rétractation dès l'exécution complète."
+              : "I agree that DBC Germany may begin performing the service (issuing my ticket and granting event access) immediately, and I acknowledge that my right of revocation lapses once the service has been fully performed."}
+        </span>
+      </label>
+
       {/* Submit */}
       <button
         type="submit"
-        disabled={isPending || (Boolean(turnstileSiteKey) && !turnstileToken)}
+        disabled={
+          isPending ||
+          !revocationWaived ||
+          (Boolean(turnstileSiteKey) && !turnstileToken)
+        }
         className="w-full rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 disabled:opacity-50 transition-colors"
       >
         {isPending

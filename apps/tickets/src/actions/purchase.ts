@@ -106,6 +106,10 @@ interface CheckoutInput {
    *  metadata so the webhook can fire a `conversion` funnel event
    *  when the purchase completes. */
   funnelSlug?: string;
+  /** German Widerrufsrecht (BGB §312g, §355 ff.) waiver. Required true:
+   *  buyer explicitly waives the 14-day revocation right for digital
+   *  event tickets. Stored on orders.revocation_waived. */
+  revocationWaived?: boolean;
 }
 
 function composeName(first: string, last: string): string {
@@ -128,6 +132,21 @@ export async function createCheckoutSession(input: CheckoutInput) {
   const turnstileOk = await verifyTurnstile(input.turnstileToken);
   if (!turnstileOk) {
     return { error: "Bot verification failed. Please refresh and try again." };
+  }
+
+  // German Widerrufsrecht: digital event tickets are exempt from the 14-day
+  // revocation right ONLY if the buyer explicitly consents BEFORE the order.
+  // Without consent capture, every ticket would technically be refundable
+  // for 14 days. Block the checkout when the box wasn't ticked.
+  if (!input.revocationWaived) {
+    return {
+      error:
+        input.locale === "de"
+          ? "Bitte bestätigen Sie den Verzicht auf das Widerrufsrecht, um fortzufahren."
+          : input.locale === "fr"
+            ? "Veuillez confirmer la renonciation au droit de rétractation pour continuer."
+            : "Please confirm the revocation-right waiver to continue.",
+    };
   }
 
   // 1. Fetch event
@@ -358,6 +377,8 @@ export async function createCheckoutSession(input: CheckoutInput) {
       recipient_name: buyerFullName,
       locale: input.locale,
       source: input.source ?? null,
+      revocation_waived: true,
+      revocation_waived_at: new Date().toISOString(),
       reservation_expires_at:
         totalCents === 0 ? null : reservationExpiresAt,
     })

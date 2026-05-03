@@ -6,6 +6,57 @@ import { loginWithPassword, requestPasswordResetForEmail } from "@/actions/auth"
 import { createBrowserClient } from "@dbc/supabase";
 import { Button } from "@dbc/ui";
 
+type Locale = "en" | "de" | "fr";
+
+const LOGIN_COPY = {
+  en: {
+    subtitle: "Admin Dashboard",
+    trouble: "Trouble signing in? Contact",
+    emailLabel: "Email",
+    emailPlaceholder: "you@dbc-germany.com",
+    passwordLabel: "Password",
+    forgot: "Forgot?",
+    enterEmailFirst: "Enter your email first.",
+    resetSent: "Password reset email sent. Check your inbox.",
+    signingIn: "Signing in...",
+    sendingReset: "Sending reset email...",
+    signIn: "Sign in",
+  },
+  de: {
+    subtitle: "Admin-Dashboard",
+    trouble: "Probleme beim Anmelden? Kontakt:",
+    emailLabel: "E-Mail",
+    emailPlaceholder: "sie@dbc-germany.com",
+    passwordLabel: "Passwort",
+    forgot: "Vergessen?",
+    enterEmailFirst: "Bitte geben Sie zuerst Ihre E-Mail-Adresse ein.",
+    resetSent:
+      "E-Mail zum Zurücksetzen des Passworts gesendet. Schauen Sie in Ihr Postfach.",
+    signingIn: "Anmelden …",
+    sendingReset: "E-Mail wird gesendet …",
+    signIn: "Anmelden",
+  },
+  fr: {
+    subtitle: "Tableau de bord admin",
+    trouble: "Problème de connexion ? Contact :",
+    emailLabel: "E-mail",
+    emailPlaceholder: "vous@dbc-germany.com",
+    passwordLabel: "Mot de passe",
+    forgot: "Oublié ?",
+    enterEmailFirst: "Veuillez d'abord saisir votre adresse e-mail.",
+    resetSent:
+      "E-mail de réinitialisation envoyé. Vérifiez votre boîte de réception.",
+    signingIn: "Connexion …",
+    sendingReset: "Envoi de l'e-mail …",
+    signIn: "Se connecter",
+  },
+} satisfies Record<Locale, Record<string, string>>;
+
+function localeKey(input: string): Locale {
+  if (input === "de" || input === "fr") return input;
+  return "en";
+}
+
 export default function LoginPage({
   params,
 }: {
@@ -74,7 +125,9 @@ export default function LoginPage({
           <h1 className="font-heading text-2xl font-bold tracking-tight text-white">
             DBC Germany
           </h1>
-          <p className="mt-1 text-sm text-white/70">Admin Dashboard</p>
+          <p className="mt-1 text-sm text-white/70">
+            {LOGIN_COPY[localeKey(locale)].subtitle}
+          </p>
         </div>
 
         {bootstrapping ? (
@@ -86,7 +139,7 @@ export default function LoginPage({
         )}
 
         <p className="text-center text-xs text-white/60">
-          Trouble signing in? Contact{" "}
+          {LOGIN_COPY[localeKey(locale)].trouble}{" "}
           <a
             href="mailto:dbc-germany@realjaynka.com"
             className="text-white underline decoration-white/40 underline-offset-2 hover:decoration-white"
@@ -100,6 +153,7 @@ export default function LoginPage({
 }
 
 function LoginForm({ locale }: { locale: string }) {
+  const t = LOGIN_COPY[localeKey(locale)];
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirect") ?? "";
   const [email, setEmail] = useState("");
@@ -119,7 +173,7 @@ function LoginForm({ locale }: { locale: string }) {
 
   async function handleForgot() {
     if (!email || !email.includes("@")) {
-      setForgotError("Enter your email first.");
+      setForgotError(t.enterEmailFirst);
       setForgotStage("error");
       return;
     }
@@ -144,7 +198,7 @@ function LoginForm({ locale }: { locale: string }) {
           htmlFor="email"
           className="mb-1.5 block text-sm font-medium text-white"
         >
-          Email
+          {t.emailLabel}
         </label>
         <input
           id="email"
@@ -155,21 +209,21 @@ function LoginForm({ locale }: { locale: string }) {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className={inputCls}
-          placeholder="you@dbc-germany.com"
+          placeholder={t.emailPlaceholder}
         />
       </div>
 
       <div>
         <div className="mb-1.5 flex items-center justify-between">
           <label htmlFor="password" className="block text-sm font-medium text-white">
-            Password
+            {t.passwordLabel}
           </label>
           <button
             type="button"
             onClick={handleForgot}
             className="text-xs text-white/80 hover:text-white"
           >
-            Forgot?
+            {t.forgot}
           </button>
         </div>
         <input
@@ -193,7 +247,7 @@ function LoginForm({ locale }: { locale: string }) {
 
       {forgotStage === "sent" && (
         <p className="rounded-md bg-emerald-500/20 p-3 text-sm text-emerald-100 backdrop-blur">
-          Password reset email sent. Check your inbox.
+          {t.resetSent}
         </p>
       )}
       {forgotStage === "error" && forgotError && (
@@ -208,10 +262,10 @@ function LoginForm({ locale }: { locale: string }) {
       <Button type="submit"
         disabled={isPending}>
         {isPending
-          ? "Signing in..."
+          ? t.signingIn
           : forgotStage === "sending"
-            ? "Sending reset email..."
-            : "Sign in"}
+            ? t.sendingReset
+            : t.signIn}
       </Button>
     </form>
   );
