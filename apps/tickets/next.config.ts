@@ -34,7 +34,7 @@ export default withSentryConfig(withNextIntl(nextConfig), {
   silent: !process.env.CI,
   authToken: process.env.SENTRY_AUTH_TOKEN,
   widenClientFileUpload: true,
-  tunnelRoute: "/monitoring",
+  // tunnelRoute removed: see apps/admin/next.config.ts for rationale.
   disableLogger: true,
   automaticVercelMonitors: true,
 });

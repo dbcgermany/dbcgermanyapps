@@ -78,7 +78,11 @@ export default withSentryConfig(withNextIntl(nextConfig), {
   silent: !process.env.CI,
   authToken: process.env.SENTRY_AUTH_TOKEN,
   widenClientFileUpload: true,
-  tunnelRoute: "/monitoring",
+  // tunnelRoute removed: Sentry v10's auto-generated tunnel handler isn't
+  // emitted on Next 16 App Router as of this version. SDK posts directly
+  // to ingest.de.sentry.io instead — uBlock Origin will block some events
+  // but that's acceptable for a pre-launch operator tool. Re-evaluate when
+  // Sentry's Next.js plugin picks up first-class Next 16 tunnel support.
   disableLogger: true,
   automaticVercelMonitors: true,
 });
