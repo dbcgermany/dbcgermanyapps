@@ -85,92 +85,67 @@ SPF MX, and SPF TXT records are all live in Strato's DNS for
 The "unverified" note in the 2026-04-16 credentials snapshot was stale;
 the records were already in place. Nothing to do here.
 
-### 2. CRITICAL — Sentry (or equivalent error tracking)
+### 2. ✅ DONE — Sentry error tracking
 
-Code is ready to wire — every error path already calls `console.error`.
-Without an error tracker, those logs vanish from Vercel after ~1 hour.
+Three Sentry projects live under org `dbc-germany` (EU region
+`de.sentry.io`): `dbc-admin`, `dbc-tickets`, `dbc-site`. Wired via
+`@sentry/nextjs` + the shared `@dbc/observability` package — server,
+edge, and client runtimes all initialised, PII scrubbing on
+`beforeSend`, releases auto-tagged with `VERCEL_GIT_COMMIT_SHA`. Wired
+in commit `bf020f9`.
 
-**Action:**
-1. Create a Sentry account → 3 projects (admin, tickets, site).
-2. Copy the DSN for each → add as `NEXT_PUBLIC_SENTRY_DSN` (or
-   `SENTRY_DSN`) on each Vercel project (Production + Preview).
-3. Tell me when done; I'll wire `@sentry/nextjs` into all three apps
-   (10-minute change once DSNs exist).
+### 3. ✅ DONE — Stripe Tax + Tax ID (live)
 
-### 3. CRITICAL — Stripe live account: Tax + Tax ID
+`tax_id_provided: true` confirmed via `GET /v1/account` on 2026-05-03.
+Stripe Tax enabled for DE with `head_office` set, `tax_behavior:
+inclusive`. SEPA Debit and PayPal capabilities both `active` on the
+live account — the capability detector at
+`apps/tickets/src/lib/stripe-capabilities.ts` lights them up in
+checkout automatically.
 
-Per the earlier `acct_1TM1lKCskIJw43NF` retrieve, `tax_id_provided: false`.
-German VAT (19%) **must** show on receipts.
+### 4. ✅ DONE — Resend webhook → app
 
-**Action:** in https://dashboard.stripe.com (live mode):
-- Settings → Tax → enable Stripe Tax for DE.
-- Settings → Account details → add Steuernummer or USt-IdNr.
-- Optional: Settings → Payment methods → activate SEPA Direct Debit and
-  PayPal so they auto-light in checkout (the capability detector in
-  `apps/tickets/src/lib/stripe-capabilities.ts` picks them up within 5
-  minutes).
+Endpoint `https://tickets.dbc-germany.com/api/webhooks/resend` is
+registered with Resend (webhook id `2145f0f8-de92-48c1-b32a-eb3e1700ce5e`)
+subscribed to `email.bounced` + `email.complained`.
+`RESEND_WEBHOOK_SECRET` set on the tickets Vercel project (Production
++ Preview). Bounces flip `contacts.email_status='bounced'` so we stop
+emailing dead addresses. Wired in commit `6c05e5b`.
 
-### 4. CRITICAL — Resend webhook → app
+### 5. HIGH — German Impressum + Privacy Policy review (legal, not code)
 
-Now that `/api/webhooks/resend` exists, finish the loop:
+Code-side: Impressum data fields are wired and rendered (commit
+`6c05e5b`), Widerrufsrecht waiver is enforced on checkout, privacy
+policy + ToS scaffolds live in `packages/legal/src/`. **Still
+pending**: a German-admitted Rechtsanwalt review of the privacy/ToS
+text. Tracked on the pre-launch checklist as a BLOCKER. Out of code's
+reach — needs counsel sign-off.
 
-**Action:** in https://resend.com/webhooks add an endpoint:
-- URL: `https://tickets.dbc-germany.com/api/webhooks/resend`
-- Events: `email.bounced`, `email.complained`
-- Copy the signing secret → set `RESEND_WEBHOOK_SECRET` on the tickets
-  Vercel project (Production env). The endpoint currently 503s with
-  "webhook not configured" until that env var is set.
+### 6. ✅ DONE — Uptime monitor (Better Stack)
 
-### 5. HIGH — German Impressum + Privacy Policy review
+Three monitors provisioned under Better Stack: tickets `4356310`,
+admin `4356311`, site `4356312` — all hitting `/api/health` at the
+documented frequencies. Public status page `245884` published at
+https://dbc-germany.betteruptime.com. Custom CNAME
+`status.dbc-germany.com` configured (TLS provisioning was last
+checked completing).
 
-The site likely has these but I haven't audited the content for
-TMG §5 / §7 compliance (legal entity, address, VAT ID, contact person,
-sole responsible) or whether the privacy policy mentions:
-- SEPA payment handling
-- Stripe + Resend as data processors
-- Refund / revocation policy
-- Audit-log + ticketing data retention
+### 7. ✅ DONE — Load test runner + baseline
 
-**Action:** legal review of `/en/imprint`, `/de/impressum`,
-`/fr/mentions-legales`, and the equivalent privacy pages. If you have a
-DPO, run them past it. I can wire copy changes once you have approved text.
+k6 runner at `scripts/load-test/` checked into the repo (commit
+`fbd09a0`); baseline numbers recorded in `docs/LOAD_TEST_RESULTS.md`.
+Re-run before launch is on the pre-launch checklist (T-14 days), but
+the tooling and baseline exist.
 
-### 6. HIGH — Uptime monitor
+### 8. ✅ DONE (mostly) — On-call + runbook
 
-`/api/health` is live at all 3 apps, but nothing is hitting it externally.
-
-**Action:** sign up for Better Stack (free tier), Pingdom, or
-UptimeRobot. Configure 3 monitors:
-- `https://tickets.dbc-germany.com/api/health`
-- `https://admin.dbc-germany.com/api/health`
-- `https://dbc-germany.com/api/health`
-Alert channel: a Slack webhook or email distribution list. Frequency: 1
-min for tickets (the buy flow), 5 min for the others.
-
-### 7. MEDIUM — Load test before go-live
-
-Buying flow has not been pressure-tested. The reservation TTL + atomic
-RPCs handle race-correctness in theory, but a real load test would
-expose Supabase connection-pool limits, Stripe rate-limit hits, and
-Vercel function-concurrency caps.
-
-**Action:** 30 minutes with k6 or Artillery against a preview deploy
-(use the Stripe test key for the preview env to avoid live charges):
-```
-k6 run --vus 100 --duration 5m checkout-flow.js
-```
-Target: 99% success rate, p95 < 2s. If anything fails, increase Supabase
-connection pool size in the Supabase dashboard.
-
-### 8. MEDIUM — On-call + runbook
-
-Currently undocumented. If something breaks at 23:00 UTC two days before
-the conference, who fixes it?
-
-**Action:** decide who is primary / backup on-call for go-live week.
-Document in a quick `docs/RUNBOOK.md` covering: webhook failures,
-Resend outage, Stripe outage, Supabase outage, "buyer charged but no
-ticket." I can draft this if you give me the names + escalation paths.
+`docs/RUNBOOK.md` covers all 8 incident playbooks (Stripe webhook
+failure, /api/health failing, inventory drift, bounces/complaint
+storm, customer-charged-no-ticket, coupon over-redemption, Vercel
+deploy failed, Supabase outage). Communication templates included.
+**Open item**: the on-call rotation table at the top of `RUNBOOK.md`
+still has `_TBD_` placeholders for primary/escalation/owner-of-last-
+resort phone + Slack — that needs a human decision, not a code change.
 
 ---
 
@@ -178,13 +153,16 @@ ticket." I can draft this if you give me the names + escalation paths.
 
 - Per-section error boundaries on admin (the locale-level boundary catches
   everything; section-level is polish).
-- Sponsors edit UI (currently list + delete only).
-- Bulk CSV import per-row error reporting.
-- Per-tier revenue breakdown on admin dashboard.
-- Sentry instrumentation (see item 2 above; code-side wiring is fast once
-  DSN exists).
-- `/api/dev/qa-tier`: hardened with dual-gate; production env-var pruning
-  doc still pending.
+- Bulk CSV import per-row error reporting (currently the importer
+  rolls back the whole batch on any single bad row).
+- `/api/dev/qa-tier`: hardened with dual-gate; production env-var
+  pruning (delete `ALLOW_QA_TIER` + `QA_TIER_ADMIN_TOKEN` post-
+  acceptance test) is on the T-7-day checklist.
+
+Already done in earlier passes (kept here for the audit trail):
+- ✅ Sponsors edit UI (commit `b59d5fa`)
+- ✅ Per-tier revenue breakdown on admin dashboard (commit `ec51414`)
+- ✅ Sentry instrumentation (commit `bf020f9`)
 
 ---
 
