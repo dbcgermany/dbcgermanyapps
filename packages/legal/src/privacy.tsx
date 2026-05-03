@@ -251,8 +251,10 @@ export function PrivacyPolicy({ company, locale, marketingSiteUrl }: LegalContex
                   <tbody>
                     <tr><td>Supabase, Inc.</td><td>Database, authentication, file storage</td><td>EU-Central (Frankfurt, Germany) — no transfer outside EEA</td></tr>
                     <tr><td>Stripe Payments Europe, Ltd.</td><td>Payment processing</td><td>Ireland (EU); onward US transfers covered by SCCs per Stripe DPA</td></tr>
+                    <tr><td>Cloudflare Germany GmbH</td><td>Bot / abuse protection on forms (Turnstile)</td><td>Germany (EU); fallback challenges may run on US edge — SCCs per Cloudflare DPA</td></tr>
                     <tr><td>Resend, Inc.</td><td>Transactional and newsletter email delivery</td><td>USA — EU-US Data Privacy Framework + Standard Contractual Clauses</td></tr>
                     <tr><td>Vercel, Inc.</td><td>Website hosting and delivery</td><td>USA — EU-US Data Privacy Framework + Standard Contractual Clauses</td></tr>
+                    <tr><td>Functional Software, Inc. (Sentry)</td><td>Error tracking, application performance monitoring</td><td>USA — EU-US Data Privacy Framework + Standard Contractual Clauses; PII (email, name) is automatically scrubbed before transmission</td></tr>
                     <tr><td>Google LLC (Workspace)</td><td>Operational email (info@, support@)</td><td>USA — EU-US Data Privacy Framework + Standard Contractual Clauses</td></tr>
                   </tbody>
                 </table>
@@ -269,8 +271,10 @@ export function PrivacyPolicy({ company, locale, marketingSiteUrl }: LegalContex
                   <tbody>
                     <tr><td>Supabase, Inc.</td><td>Datenbank, Authentifizierung, Dateispeicherung</td><td>EU-Central (Frankfurt, Deutschland) — keine Übermittlung außerhalb des EWR</td></tr>
                     <tr><td>Stripe Payments Europe, Ltd.</td><td>Zahlungsabwicklung</td><td>Irland (EU); Weiterleitung in die USA durch SCCs gemäß Stripe-AVV</td></tr>
+                    <tr><td>Cloudflare Germany GmbH</td><td>Bot- / Missbrauchsschutz für Formulare (Turnstile)</td><td>Deutschland (EU); Fallback-Challenges können auf US-Edge ausgeführt werden — SCCs gemäß Cloudflare-AVV</td></tr>
                     <tr><td>Resend, Inc.</td><td>Transaktions- und Newsletter-E-Mail-Versand</td><td>USA — EU-US-Datenschutzrahmen + Standardvertragsklauseln</td></tr>
                     <tr><td>Vercel, Inc.</td><td>Website-Hosting und -Bereitstellung</td><td>USA — EU-US-Datenschutzrahmen + Standardvertragsklauseln</td></tr>
+                    <tr><td>Functional Software, Inc. (Sentry)</td><td>Fehler-Tracking, Performance-Monitoring</td><td>USA — EU-US-Datenschutzrahmen + Standardvertragsklauseln; personenbezogene Daten (E-Mail, Name) werden vor der Übermittlung automatisch entfernt</td></tr>
                     <tr><td>Google LLC (Workspace)</td><td>Operative E-Mail (info@, support@)</td><td>USA — EU-US-Datenschutzrahmen + Standardvertragsklauseln</td></tr>
                   </tbody>
                 </table>
@@ -287,8 +291,10 @@ export function PrivacyPolicy({ company, locale, marketingSiteUrl }: LegalContex
                   <tbody>
                     <tr><td>Supabase, Inc.</td><td>Base de données, authentification, stockage de fichiers</td><td>EU-Central (Francfort, Allemagne) — aucun transfert hors EEE</td></tr>
                     <tr><td>Stripe Payments Europe, Ltd.</td><td>Traitement des paiements</td><td>Irlande (UE) ; transferts ultérieurs aux USA couverts par les CCT conformément au DPA Stripe</td></tr>
+                    <tr><td>Cloudflare Germany GmbH</td><td>Protection anti-bot / anti-abus des formulaires (Turnstile)</td><td>Allemagne (UE) ; les défis de secours peuvent être exécutés sur l'edge US — CCT selon le DPA Cloudflare</td></tr>
                     <tr><td>Resend, Inc.</td><td>Envoi d'e-mails transactionnels et de newsletters</td><td>USA — Cadre de protection des données UE-US + Clauses contractuelles types</td></tr>
                     <tr><td>Vercel, Inc.</td><td>Hébergement et diffusion du site web</td><td>USA — Cadre de protection des données UE-US + Clauses contractuelles types</td></tr>
+                    <tr><td>Functional Software, Inc. (Sentry)</td><td>Suivi d'erreurs, supervision des performances</td><td>USA — Cadre de protection des données UE-US + Clauses contractuelles types ; les données personnelles (e-mail, nom) sont automatiquement supprimées avant transmission</td></tr>
                     <tr><td>Google LLC (Workspace)</td><td>E-mail opérationnel (info@, support@)</td><td>USA — Cadre de protection des données UE-US + Clauses contractuelles types</td></tr>
                   </tbody>
                 </table>
@@ -356,6 +362,24 @@ export function PrivacyPolicy({ company, locale, marketingSiteUrl }: LegalContex
               <li><strong>Preuves de consentement</strong> (preuve de double opt-in, choix de cookies) : conservées pendant la durée du traitement qu'elles autorisent plus 3 ans (délai de prescription).</li>
             </ul>
           ),
+        }}
+      </S>
+
+      {/* ——— 6b. Obligation to provide (Art. 13(2)(e) GDPR) ——— */}
+      <h2>
+        <S locale={locale}>
+          {{
+            en: "6b. When providing data is required",
+            de: "6b. Erforderlichkeit der Bereitstellung",
+            fr: "6b. Caractère obligatoire de la fourniture",
+          }}
+        </S>
+      </h2>
+      <S locale={locale}>
+        {{
+          en: <p>To purchase a ticket, you must provide your name, email address, and country (for VAT purposes). Without this data we cannot conclude or perform the purchase contract — payment cannot be processed and tickets cannot be delivered. Optional fields (phone, date of birth, postal address, salutation) are clearly marked; you may leave them empty without affecting the contract. Newsletter subscription is voluntary and based on your consent; refusing has no consequence for any other service.</p>,
+          de: <p>Für den Ticketkauf müssen Sie Ihren Namen, Ihre E-Mail-Adresse und Ihr Land (für die Mehrwertsteuer) angeben. Ohne diese Daten können wir den Kaufvertrag weder schließen noch erfüllen — eine Zahlungsabwicklung und Ticketzustellung sind dann nicht möglich. Optionale Felder (Telefon, Geburtsdatum, Postanschrift, Anrede) sind eindeutig gekennzeichnet; Sie können diese ohne Auswirkungen auf den Vertrag leer lassen. Die Newsletter-Anmeldung ist freiwillig und beruht auf Ihrer Einwilligung; eine Ablehnung hat keine Folgen für andere Dienste.</p>,
+          fr: <p>Pour acheter un billet, vous devez fournir votre nom, votre adresse e-mail et votre pays (à des fins de TVA). Sans ces données, nous ne pouvons ni conclure ni exécuter le contrat d'achat — le paiement ne peut être traité ni les billets délivrés. Les champs facultatifs (téléphone, date de naissance, adresse postale, civilité) sont clairement signalés ; vous pouvez les laisser vides sans incidence sur le contrat. L'abonnement à la newsletter est volontaire et fondé sur votre consentement ; un refus n'a aucune conséquence sur les autres services.</p>,
         }}
       </S>
 

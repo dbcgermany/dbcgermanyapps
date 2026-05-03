@@ -133,12 +133,30 @@ export function TermsOfService({ company, locale, marketingSiteUrl }: LegalConte
       </S>
 
       {/* ——— 4. Tickets & payment ——— */}
-      <h2><S locale={locale}>{{ en: "4. Tickets and payment", de: "4. Tickets und Zahlung", fr: "4. Billets et paiement" }}</S></h2>
+      <h2><S locale={locale}>{{ en: "4. Tickets, contract conclusion and payment", de: "4. Tickets, Vertragsschluss und Zahlung", fr: "4. Billets, conclusion du contrat et paiement" }}</S></h2>
       <S locale={locale}>
         {{
-          en: <p>Ticket prices are displayed in Euros (EUR) and include applicable VAT. Payments are processed by Stripe Payments Europe, Ltd. By purchasing a ticket, you agree to Stripe's applicable terms. We do not store your full payment card details.</p>,
-          de: <p>Ticketpreise werden in Euro (EUR) angezeigt und verstehen sich inklusive der geltenden MwSt. Zahlungen werden von Stripe Payments Europe, Ltd. abgewickelt. Durch den Kauf eines Tickets stimmen Sie den geltenden Bedingungen von Stripe zu. Wir speichern keine vollständigen Zahlungskartendaten.</p>,
-          fr: <p>Les prix des billets sont affichés en euros (EUR), TVA applicable incluse. Les paiements sont traités par Stripe Payments Europe, Ltd. En achetant un billet, vous acceptez les conditions applicables de Stripe. Nous ne stockons pas les détails complets de votre carte de paiement.</p>,
+          en: (
+            <>
+              <p>Ticket prices are displayed in Euros (EUR) and include applicable VAT. Payments are processed by Stripe Payments Europe, Ltd. By purchasing a ticket, you agree to Stripe's applicable terms. We do not store your full payment card details.</p>
+              <p><strong>Contract conclusion (§ 312i BGB).</strong> The display of tickets in our shop is an invitation to you to make an offer; it is not a binding offer by us. By clicking the order button labelled "Order with obligation to pay" (or its German/French equivalent), you make a binding offer to purchase. We confirm receipt of your offer by an automatic order-receipt email — this email is not yet an acceptance of your offer. The contract is concluded when we send you the ticket(s) by email. If we cannot accept your offer (e.g., the tier sold out concurrently, the payment was not authorised), we will inform you without delay and any payment captured will be refunded.</p>
+              <p>You will receive a properly issued invoice by email. Invoices and order data are retained for 10 years to comply with German tax record-keeping obligations (§ 147 AO).</p>
+            </>
+          ),
+          de: (
+            <>
+              <p>Ticketpreise werden in Euro (EUR) angezeigt und verstehen sich inklusive der geltenden Mehrwertsteuer. Zahlungen werden von Stripe Payments Europe, Ltd. abgewickelt. Durch den Kauf eines Tickets stimmen Sie den geltenden Bedingungen von Stripe zu. Wir speichern keine vollständigen Zahlungskartendaten.</p>
+              <p><strong>Vertragsschluss (§ 312i BGB).</strong> Die Darstellung der Tickets in unserem Shop ist keine verbindliche Angebotsabgabe, sondern eine Aufforderung an Sie zur Abgabe eines Angebots. Mit Klick auf die Schaltfläche „Zahlungspflichtig bestellen" geben Sie ein verbindliches Angebot zum Kauf ab. Den Eingang Ihres Angebots bestätigen wir automatisch per Eingangsbestätigungs-E-Mail — diese E-Mail stellt noch keine Annahme Ihres Angebots dar. Der Vertrag kommt erst zustande, wenn wir Ihnen das/die Ticket(s) per E-Mail zusenden. Können wir Ihr Angebot nicht annehmen (z.&nbsp;B. weil die Kategorie zwischenzeitlich ausverkauft ist oder die Zahlung nicht autorisiert wurde), informieren wir Sie unverzüglich und erstatten bereits eingezogene Beträge.</p>
+              <p>Sie erhalten eine ordnungsgemäße Rechnung per E-Mail. Rechnungen und Bestelldaten werden 10 Jahre aufbewahrt (§ 147 AO).</p>
+            </>
+          ),
+          fr: (
+            <>
+              <p>Les prix des billets sont affichés en euros (EUR), TVA applicable incluse. Les paiements sont traités par Stripe Payments Europe, Ltd. En achetant un billet, vous acceptez les conditions applicables de Stripe. Nous ne stockons pas les détails complets de votre carte de paiement.</p>
+              <p><strong>Conclusion du contrat (§ 312i BGB).</strong> L'affichage des billets dans notre boutique constitue une invitation à formuler une offre, et non une offre contraignante de notre part. En cliquant sur le bouton « Commander avec obligation de paiement », vous nous adressez une offre d'achat contraignante. Nous accusons réception de votre offre par un e-mail automatique de confirmation de commande — cet e-mail ne constitue pas encore l'acceptation de votre offre. Le contrat est conclu lorsque nous vous envoyons le(s) billet(s) par e-mail. Si nous ne pouvons accepter votre offre (par exemple, la catégorie a été épuisée entre-temps, le paiement n'a pas été autorisé), nous vous en informerons sans délai et tout montant déjà prélevé vous sera remboursé.</p>
+              <p>Vous recevrez une facture en bonne et due forme par e-mail. Les factures et données de commande sont conservées 10 ans (§ 147 AO).</p>
+            </>
+          ),
         }}
       </S>
 
@@ -230,9 +248,9 @@ export function TermsOfService({ company, locale, marketingSiteUrl }: LegalConte
       <h2><S locale={locale}>{{ en: "8. Event cancellation by us", de: "8. Absage durch den Veranstalter", fr: "8. Annulation par l'organisateur" }}</S></h2>
       <S locale={locale}>
         {{
-          en: <p>If we cancel an event, we will notify ticket holders by email and refund the ticket price (excluding service fees) within 30 days of cancellation. Service fees are non-refundable.</p>,
-          de: <p>Wenn wir eine Veranstaltung absagen, benachrichtigen wir die Ticketinhaber per E-Mail und erstatten den Ticketpreis (abzüglich Servicegebühren) innerhalb von 30 Tagen nach Absage. Servicegebühren werden nicht erstattet.</p>,
-          fr: <p>Si nous annulons un événement, nous informerons les détenteurs de billets par e-mail et rembourserons le prix du billet (hors frais de service) dans les 30 jours suivant l'annulation. Les frais de service ne sont pas remboursables.</p>,
+          en: <p>If we cancel an event for reasons within our control, we will notify ticket holders by email and refund the full price paid — including any service fees — within 30 days of cancellation. If cancellation is due to force majeure (Section 13), we will refund the ticket face value; payment-processor fees that have been incurred and that we cannot recover may be retained, and we will disclose those amounts on request.</p>,
+          de: <p>Sagen wir eine Veranstaltung aus Gründen ab, die in unserem Verantwortungsbereich liegen, benachrichtigen wir die Ticketinhaber per E-Mail und erstatten den vollen Kaufpreis — einschließlich etwaiger Servicegebühren — innerhalb von 30 Tagen nach Absage. Bei Absagen aufgrund höherer Gewalt (Abschnitt 13) erstatten wir den Ticketnennwert; bereits angefallene und nicht erstattungsfähige Zahlungsabwicklungsgebühren können einbehalten werden und werden auf Anfrage transparent ausgewiesen.</p>,
+          fr: <p>Si nous annulons un événement pour des raisons relevant de notre contrôle, nous informerons les détenteurs de billets par e-mail et rembourserons le prix total payé — y compris les éventuels frais de service — dans les 30 jours suivant l'annulation. En cas d'annulation pour force majeure (Section 13), nous rembourserons la valeur faciale du billet ; les frais de traitement des paiements déjà engagés et non récupérables peuvent être retenus et seront communiqués de manière transparente sur demande.</p>,
         }}
       </S>
 
@@ -424,8 +442,18 @@ export function TermsOfService({ company, locale, marketingSiteUrl }: LegalConte
         }}
       </S>
 
-      {/* ——— 18. Contact ——— */}
-      <h2><S locale={locale}>{{ en: "18. Contact", de: "18. Kontakt", fr: "18. Contact" }}</S></h2>
+      {/* ——— 18a. Severability + form change ——— */}
+      <h2><S locale={locale}>{{ en: "18. Severability and form of amendments", de: "18. Salvatorische Klausel und Änderungen", fr: "18. Divisibilité et forme des modifications" }}</S></h2>
+      <S locale={locale}>
+        {{
+          en: <p>If any provision of these Terms is found to be invalid or unenforceable, the remaining provisions remain in full force and effect. The invalid provision will be replaced by a valid provision that comes closest to the economic purpose of the original. Amendments to or supplements of these Terms must be made in text form (Textform, § 126b BGB); side-agreements made orally do not bind the parties.</p>,
+          de: <p>Sollten einzelne Bestimmungen dieser AGB unwirksam oder undurchführbar sein, bleibt die Wirksamkeit der übrigen Bestimmungen davon unberührt. Anstelle der unwirksamen Bestimmung gilt diejenige wirksame Regelung als vereinbart, die dem wirtschaftlichen Zweck der unwirksamen Bestimmung am nächsten kommt. Änderungen und Ergänzungen dieser AGB bedürfen der Textform (§ 126b BGB); mündliche Nebenabreden binden die Parteien nicht.</p>,
+          fr: <p>Si une disposition des présentes Conditions est jugée invalide ou inapplicable, les autres dispositions conservent leur pleine force et effet. La disposition invalide sera remplacée par une disposition valide qui se rapproche le plus possible de l'objectif économique de l'originale. Les modifications ou compléments à ces Conditions doivent être effectués sous forme textuelle (Textform, § 126b BGB) ; les accords verbaux complémentaires ne lient pas les parties.</p>,
+        }}
+      </S>
+
+      {/* ——— 19. Contact ——— */}
+      <h2><S locale={locale}>{{ en: "19. Contact", de: "19. Kontakt", fr: "19. Contact" }}</S></h2>
       <S locale={locale}>
         {{
           en: (

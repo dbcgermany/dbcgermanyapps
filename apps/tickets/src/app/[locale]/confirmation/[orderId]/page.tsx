@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createServerClient } from "@dbc/supabase/server";
+import { RecoveryPanel } from "./recovery-panel";
 
 // The confirmation URL contains an order UUID. Without strict referrer policy,
 // any external link the buyer clicks from this page would leak that UUID to
@@ -46,7 +47,7 @@ export default async function ConfirmationPage({
   const { data: order } = await supabase
     .from("orders")
     .select(
-      "id, status, total_cents, recipient_name, recipient_email, event_id, created_at"
+      "id, status, total_cents, recipient_name, recipient_email, event_id, created_at, email_sent_at"
     )
     .eq("id", orderId)
     .single();
@@ -62,7 +63,7 @@ export default async function ConfirmationPage({
   const { data: tickets } = await supabase
     .from("tickets")
     .select(
-      "id, attendee_name, attendee_email, ticket_token, tier_id"
+      "id, attendee_name, attendee_email, ticket_token, tier_id, email_sent_at"
     )
     .eq("order_id", orderId);
 
@@ -85,6 +86,7 @@ export default async function ConfirmationPage({
       tickets: "Tickets",
       total: "Total",
       backToEvents: "Back to events",
+      downloadPdf: "Download PDF",
     },
     de: {
       confirmed: "Bestellung best\u00E4tigt!",
@@ -97,6 +99,7 @@ export default async function ConfirmationPage({
       tickets: "Tickets",
       total: "Gesamt",
       backToEvents: "Zur\u00FCck zu Veranstaltungen",
+      downloadPdf: "PDF herunterladen",
     },
     fr: {
       confirmed: "Commande confirm\u00E9e !",
@@ -109,10 +112,17 @@ export default async function ConfirmationPage({
       tickets: "Billets",
       total: "Total",
       backToEvents: "Retour aux \u00E9v\u00E9nements",
+      downloadPdf: "T\u00E9l\u00E9charger le PDF",
     },
   }[locale] ?? {
-    confirmed: "Order Confirmed!", pending: "Order Pending", subtitle: "", pendingSubtitle: "", orderNumber: "Order", event: "Event", date: "Date", tickets: "Tickets", total: "Total", backToEvents: "Back to events",
+    confirmed: "Order Confirmed!", pending: "Order Pending", subtitle: "", pendingSubtitle: "", orderNumber: "Order", event: "Event", date: "Date", tickets: "Tickets", total: "Total", backToEvents: "Back to events", downloadPdf: "Download PDF",
   };
+
+  const ticketCountUnsent = (tickets ?? []).filter(
+    (x) => !x.email_sent_at
+  ).length;
+  const recoveryLocale: "en" | "de" | "fr" =
+    locale === "de" || locale === "fr" ? locale : "en";
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-12">
@@ -175,6 +185,18 @@ export default async function ConfirmationPage({
         </div>
       </div>
 
+      {/* Recovery panel — visible whenever any ticket is unsent OR the
+          buyer wants to retry. Hidden until the order is paid (no point
+          resending tickets that don't exist yet). */}
+      {isPaid && tickets && tickets.length > 0 && (
+        <RecoveryPanel
+          orderId={orderId}
+          orderEmailSentAt={order.email_sent_at}
+          ticketCountUnsent={ticketCountUnsent}
+          locale={recoveryLocale}
+        />
+      )}
+
       {/* Ticket list */}
       {tickets && tickets.length > 0 && (
         <div className="mt-8">
@@ -191,9 +213,21 @@ export default async function ConfirmationPage({
                     {maskEmail(ticket.attendee_email)}
                   </p>
                 </div>
-                <span className="font-mono text-xs text-muted-foreground">
-                  {ticket.ticket_token.slice(0, 8).toUpperCase()}
-                </span>
+                <div className="flex items-center gap-3">
+                  <span className="font-mono text-xs text-muted-foreground">
+                    {ticket.ticket_token.slice(0, 8).toUpperCase()}
+                  </span>
+                  {isPaid && (
+                    <a
+                      href={`/api/tickets/${ticket.ticket_token}/pdf`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="rounded-md border border-border bg-background px-2.5 py-1 text-xs font-medium hover:bg-accent"
+                    >
+                      {t.downloadPdf}
+                    </a>
+                  )}
+                </div>
               </div>
             ))}
           </div>

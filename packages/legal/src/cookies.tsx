@@ -34,9 +34,9 @@ const copy = {
     fr: "Cookies que nous utilisons",
   },
   cookiesWeUseIntro: {
-    en: "We currently use only essential and preference cookies. We do not load any analytics, advertising, or third-party tracking scripts.",
-    de: "Wir verwenden derzeit ausschließlich notwendige Cookies und Präferenz-Cookies. Wir laden keine Analyse-, Werbe- oder Drittanbieter-Tracking-Skripte.",
-    fr: "Nous utilisons actuellement uniquement des cookies essentiels et de préférence. Nous ne chargeons aucun script d'analyse, de publicité ou de suivi tiers.",
+    en: "We use only essential cookies (required to operate the site, secure forms and process payments) and preference cookies (set only when you actively choose a language or theme — your action is your consent under § 25(2) Nr. 2 TTDSG / Art. 5(3) ePrivacy Directive). We do not load any analytics, advertising, or third-party tracking scripts.",
+    de: "Wir verwenden ausschließlich notwendige Cookies (für den Betrieb der Website, die Formularsicherheit und die Zahlungsabwicklung erforderlich) und Präferenz-Cookies (werden nur gesetzt, wenn Sie aktiv eine Sprache oder ein Theme auswählen — Ihre Auswahl gilt als Einwilligung gemäß § 25 Abs. 2 Nr. 2 TTDSG / Art. 5 Abs. 3 ePrivacy-Richtlinie). Wir laden keine Analyse-, Werbe- oder Drittanbieter-Tracking-Skripte.",
+    fr: "Nous utilisons uniquement des cookies essentiels (nécessaires au fonctionnement du site, à la sécurité des formulaires et au traitement des paiements) et des cookies de préférence (placés uniquement lorsque vous choisissez activement une langue ou un thème — votre action vaut consentement au sens du § 25(2) n° 2 TTDSG / art. 5(3) directive ePrivacy). Nous ne chargeons aucun script d'analyse, de publicité ou de suivi tiers.",
   },
   tableName: { en: "Name", de: "Name", fr: "Nom" },
   tableCategory: { en: "Category", de: "Kategorie", fr: "Catégorie" },
@@ -132,12 +132,34 @@ const COOKIES = [
     name: "dbc-theme",
     category: "preferences" as const,
     purpose: {
-      en: "Stores your color theme preference (light or dark). Stored in localStorage, not as a traditional cookie.",
-      de: "Speichert Ihre Farbschema-Einstellung (hell oder dunkel). Wird in localStorage gespeichert, nicht als herkömmliches Cookie.",
-      fr: "Stocke votre préférence de thème de couleur (clair ou sombre). Stocké dans localStorage, pas en tant que cookie traditionnel.",
+      en: "Stores your color theme preference (light or dark). Stored in localStorage, not as a traditional cookie. Set only when you actively use the theme switcher.",
+      de: "Speichert Ihre Farbschema-Einstellung (hell oder dunkel). Wird in localStorage gespeichert, nicht als herkömmliches Cookie. Wird nur gesetzt, wenn Sie den Theme-Schalter aktiv betätigen.",
+      fr: "Stocke votre préférence de thème de couleur (clair ou sombre). Stocké dans localStorage, pas en tant que cookie traditionnel. Placé uniquement lorsque vous utilisez activement le sélecteur de thème.",
     },
     duration: { en: "Indefinite (localStorage)", de: "Unbegrenzt (localStorage)", fr: "Indéfini (localStorage)" },
     provider: { en: "First party", de: "Erstanbieter", fr: "Première partie" },
+  },
+  {
+    name: "__stripe_mid, __stripe_sid, m",
+    category: "essential" as const,
+    purpose: {
+      en: "Set by Stripe.js when you reach the payment step. Used for fraud detection and to bind the payment session to your browser. Strictly necessary to process the payment you requested (§ 25(2) Nr. 2 TTDSG).",
+      de: "Werden von Stripe.js gesetzt, sobald Sie den Bezahlschritt erreichen. Dienen der Betrugserkennung und der Bindung der Zahlung an Ihren Browser. Für die von Ihnen ausdrücklich gewünschte Zahlungsabwicklung erforderlich (§ 25 Abs. 2 Nr. 2 TTDSG).",
+      fr: "Placés par Stripe.js lorsque vous arrivez à l'étape de paiement. Servent à la détection de fraude et à lier la session de paiement à votre navigateur. Strictement nécessaires au traitement du paiement que vous avez demandé (§ 25(2) n° 2 TTDSG).",
+    },
+    duration: { en: "Up to 1 year (mid); session (sid); 2 years (m)", de: "Bis 1 Jahr (mid); Sitzung (sid); 2 Jahre (m)", fr: "Jusqu'à 1 an (mid) ; session (sid) ; 2 ans (m)" },
+    provider: "Stripe Payments Europe, Ltd.",
+  },
+  {
+    name: "cf_clearance, __cf_bm",
+    category: "essential" as const,
+    purpose: {
+      en: "Set by Cloudflare Turnstile (bot protection) on contact, newsletter and checkout forms. Distinguishes human visitors from automated scripts. Strictly necessary to provide the security of the requested service (§ 25(2) Nr. 2 TTDSG).",
+      de: "Werden von Cloudflare Turnstile (Bot-Schutz) auf Kontakt-, Newsletter- und Checkout-Formularen gesetzt. Unterscheidet menschliche Besucher von automatisierten Skripten. Für die Sicherheit der angefragten Dienste erforderlich (§ 25 Abs. 2 Nr. 2 TTDSG).",
+      fr: "Placés par Cloudflare Turnstile (protection anti-bot) sur les formulaires de contact, newsletter et paiement. Distingue les visiteurs humains des scripts automatisés. Strictement nécessaires à la sécurité des services demandés (§ 25(2) n° 2 TTDSG).",
+    },
+    duration: { en: "30 minutes (bm); 30 days (clearance)", de: "30 Minuten (bm); 30 Tage (clearance)", fr: "30 minutes (bm) ; 30 jours (clearance)" },
+    provider: "Cloudflare Germany GmbH",
   },
 ];
 

@@ -499,6 +499,11 @@ export function CheckoutForm({
         }
         className="w-full rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 disabled:opacity-50 transition-colors"
       >
+        {/* \u00A7 312j(3) BGB requires the order button to be labelled with an
+            unambiguous payment-obligation phrase. "zahlungspflichtig bestellen"
+            is the safe-harbour wording; equivalents like "kostenpflichtig
+            kaufen" / "Order with obligation to pay" / "Commander avec
+            obligation de paiement" are accepted under the same rule. */}
         {isPending
           ? locale === "de"
             ? "Verarbeitung..."
@@ -507,15 +512,15 @@ export function CheckoutForm({
               : "Processing..."
           : subtotalCents === 0
             ? locale === "de"
-              ? "Kostenlos bestellen"
+              ? "Jetzt verbindlich bestellen"
               : locale === "fr"
-                ? "Commander gratuitement"
-                : "Complete free order"
+                ? "Commander de mani\u00E8re contraignante"
+                : "Place binding order"
             : locale === "de"
-              ? `\u20AC${(subtotalCents / 100).toFixed(2)} bezahlen`
+              ? `Zahlungspflichtig bestellen \u2014 \u20AC${(subtotalCents / 100).toFixed(2)}`
               : locale === "fr"
-                ? `Payer \u20AC${(subtotalCents / 100).toFixed(2)}`
-                : `Pay \u20AC${(subtotalCents / 100).toFixed(2)}`}
+                ? `Commander avec obligation de paiement \u2014 \u20AC${(subtotalCents / 100).toFixed(2)}`
+                : `Order with obligation to pay \u2014 \u20AC${(subtotalCents / 100).toFixed(2)}`}
       </button>
     </form>
   );

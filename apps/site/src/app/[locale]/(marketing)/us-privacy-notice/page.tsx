@@ -19,6 +19,7 @@ export default async function UsPrivacyNoticePage({
       <UsPrivacyNotice
         company={company}
         privacyUrl={`https://dbc-germany.com/${locale}/privacy`}
+        locale={l}
       />
     </LegalPageShell>
   );

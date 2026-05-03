@@ -194,37 +194,65 @@ export async function createCheckoutSession(input: CheckoutInput) {
     };
   }
 
-  // 2a. SSOT rule 65: per-email rate limit per event. Count any order that
-  // isn't cancelled — pending still counts so a user can't spam checkout.
+  // 2a. SSOT rule 65: per-email rate limit per event. Count paid/comped
+  // orders + LIVE pending orders only. Expired pendings don't count —
+  // otherwise a buyer who abandons 3 Apple-Pay flakes is locked out of
+  // the event for 15-30 minutes until the sweeper runs, which on launch
+  // day would block real buyers.
   const buyerEmail = input.attendees[0].email.trim().toLowerCase();
-  const { count: existingOrderCount } = await supabase
-    .from("orders")
-    .select("id", { count: "exact", head: true })
-    .eq("event_id", event.id)
-    .eq("recipient_email", buyerEmail)
-    .neq("status", "cancelled");
+  const livePendingCutoff = new Date().toISOString();
+  const [paidComped, livePending] = await Promise.all([
+    supabase
+      .from("orders")
+      .select("id", { count: "exact", head: true })
+      .eq("event_id", event.id)
+      .eq("recipient_email", buyerEmail)
+      .in("status", ["paid", "comped"]),
+    supabase
+      .from("orders")
+      .select("id", { count: "exact", head: true })
+      .eq("event_id", event.id)
+      .eq("recipient_email", buyerEmail)
+      .eq("status", "pending")
+      .gt("reservation_expires_at", livePendingCutoff),
+  ]);
+  const existingOrderCount =
+    (paidComped.count ?? 0) + (livePending.count ?? 0);
 
-  if (
-    existingOrderCount !== null &&
-    existingOrderCount >= MAX_ORDERS_PER_EMAIL_PER_EVENT
-  ) {
+  if (existingOrderCount >= MAX_ORDERS_PER_EMAIL_PER_EVENT) {
     return {
       error: `You have reached the maximum of ${MAX_ORDERS_PER_EMAIL_PER_EVENT} orders for this event. Contact support if you need more tickets.`,
     };
   }
 
-  // 3. Fetch tiers and compute totals
+  // 3. Fetch tiers and compute totals.
+  //    Trust boundary: this server action is the only point that authorises a
+  //    Stripe Checkout creation. The page filters hidden / out-of-window
+  //    tiers in render but a malicious actor could POST a tier UUID
+  //    directly. Mirror the page's filter here so internal/comp/expired
+  //    tiers can never be purchased even with a known UUID.
   const tierIds = [...new Set(input.attendees.map((a) => a.tierId))];
+  const nowIso = new Date().toISOString();
   const { data: tiers, error: tiersError } = await supabase
     .from("ticket_tiers")
     .select(
-      "id, name_en, price_cents, max_quantity, quantity_sold, is_public, stripe_product_id, stripe_price_id"
+      "id, name_en, price_cents, max_quantity, quantity_sold, is_public, sales_start_at, sales_end_at, stripe_product_id, stripe_price_id"
     )
     .in("id", tierIds)
-    .eq("event_id", event.id);
+    .eq("event_id", event.id)
+    .eq("is_public", true);
 
   if (tiersError || !tiers || tiers.length !== tierIds.length) {
     return { error: "Invalid ticket tier selected." };
+  }
+
+  for (const tier of tiers) {
+    if (tier.sales_start_at && tier.sales_start_at > nowIso) {
+      return { error: `Sales for "${tier.name_en}" have not started yet.` };
+    }
+    if (tier.sales_end_at && tier.sales_end_at < nowIso) {
+      return { error: `Sales for "${tier.name_en}" have ended.` };
+    }
   }
 
   // 4. Validate availability for each tier
