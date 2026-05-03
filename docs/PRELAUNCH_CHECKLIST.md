@@ -42,11 +42,8 @@ Run from top to bottom. Each section has a "blocker" tag — only the BLOCKER it
 ### Backups + disaster recovery
 - [x] **Supabase Pro upgrade complete (2026-05-04)** — re-verified via management
   API: `organization.plan: "pro"`, `walg_enabled: true`, 7 daily snapshots present
-  (oldest 2026-04-27, newest 2026-05-03). RPO = 24h.
-- [ ] *(Recommended for launch week)* Enable Point-in-Time Recovery as a separate
-  add-on in Supabase Dashboard → Settings → Add-ons (~$100/mo). PITR drops RPO
-  from 24h to ~2 min — worth it for a single high-traffic launch month, then can
-  be disabled. URL: https://supabase.com/dashboard/project/rcqgsexfuaoiiuqcqeka/settings/addons
+  (oldest 2026-04-27, newest 2026-05-03). RPO = 24h. PITR add-on intentionally
+  not enabled — daily snapshots accepted as the recovery target.
 - [ ] Restore one nightly backup into a temporary project as a smoke test (delete the temp project after).
 - [ ] Document operator email + phone numbers (see `RUNBOOK.md`) for the 3 key vendors: Vercel, Supabase, Stripe.
 

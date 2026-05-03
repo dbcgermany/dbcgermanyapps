@@ -216,10 +216,8 @@ and `Workflows: read+write` permissions. Reduces blast radius if leaked.
 
 Upgraded 2026-05-04. API confirms `organization.plan: "pro"` and 7 daily
 snapshots present (oldest 2026-04-27, newest 2026-05-03). RPO = 24h.
-
-Optional: turn on Point-in-Time Recovery as an add-on (~$100/mo) for
-launch week — drops RPO to ~2 minutes. Disable it after the conference
-to revert to the base Pro plan.
+PITR add-on intentionally skipped — daily snapshots accepted as the
+recovery target.
 
 ### D. Vercel deployment annotations (post-deploy hook)
 
