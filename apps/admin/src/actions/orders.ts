@@ -18,7 +18,8 @@ function getStripe(): Stripe {
   return _stripe;
 }
 
-export const ORDERS_PAGE_SIZE = 50;
+// Default page size kept inline (server actions can only export async fns).
+const ORDERS_PAGE_SIZE = 50;
 
 export async function getOrders(filter?: {
   eventId?: string;
