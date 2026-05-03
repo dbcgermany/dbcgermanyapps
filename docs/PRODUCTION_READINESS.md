@@ -212,16 +212,14 @@ The PAT in `cred/credentials.md` is a classic-style token with
 PAT scoped to **only** the `dbc-germany` repo with `Contents: read+write`
 and `Workflows: read+write` permissions. Reduces blast radius if leaked.
 
-### C. Supabase Pro upgrade for backups
+### C. ✅ DONE — Supabase Pro upgrade
 
-Free tier confirmed via API on 2026-05-03 — daily backups + PITR are
-NOT enabled (`backups: []`, `pitr_enabled: false`). Either:
-- Upgrade to Pro before live payments open (recommended; ~$25/mo) and
-  re-verify via `GET /v1/projects/rcqgsexfuaoiiuqcqeka/database/backups`
-- OR script a nightly `pg_dump` from a GitHub Action into an external S3
-  bucket as a poor-man's backup. The action would use the read-only
-  Postgres role + `pg_dump --no-owner` and pipe to S3. Acceptable for
-  development; not acceptable once buyers start paying real money.
+Upgraded 2026-05-04. API confirms `organization.plan: "pro"` and 7 daily
+snapshots present (oldest 2026-04-27, newest 2026-05-03). RPO = 24h.
+
+Optional: turn on Point-in-Time Recovery as an add-on (~$100/mo) for
+launch week — drops RPO to ~2 minutes. Disable it after the conference
+to revert to the base Pro plan.
 
 ### D. Vercel deployment annotations (post-deploy hook)
 

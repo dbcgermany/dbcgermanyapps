@@ -39,15 +39,14 @@ Run from top to bottom. Each section has a "blocker" tag — only the BLOCKER it
 - [ ] Decide payout schedule (currently `manual`; flip to `daily` ~T-3 if you want automated transfers).
 - [ ] Confirm `tos_acceptance` is current on the live account.
 
-### Backups + disaster recovery — BLOCKER for live payments
-- [ ] **Supabase project is currently on the free plan** — confirmed via management API
-  on 2026-05-03: `organization.plan: "free"`, `pitr_enabled: false`, `backups: []`.
-  Free tier has WAL archiving on (`walg_enabled: true`) but no user-restorable daily
-  snapshots and no PITR. **Upgrade to Pro before live payments open** (~$25/mo)
-  — that turns on daily backups + 7-day retention + PITR. URL:
-  https://supabase.com/dashboard/project/rcqgsexfuaoiiuqcqeka/settings/billing
-- [ ] After upgrade, re-query `GET /v1/projects/rcqgsexfuaoiiuqcqeka/database/backups`
-  and confirm the `backups` array populates with at least one snapshot.
+### Backups + disaster recovery
+- [x] **Supabase Pro upgrade complete (2026-05-04)** — re-verified via management
+  API: `organization.plan: "pro"`, `walg_enabled: true`, 7 daily snapshots present
+  (oldest 2026-04-27, newest 2026-05-03). RPO = 24h.
+- [ ] *(Recommended for launch week)* Enable Point-in-Time Recovery as a separate
+  add-on in Supabase Dashboard → Settings → Add-ons (~$100/mo). PITR drops RPO
+  from 24h to ~2 min — worth it for a single high-traffic launch month, then can
+  be disabled. URL: https://supabase.com/dashboard/project/rcqgsexfuaoiiuqcqeka/settings/addons
 - [ ] Restore one nightly backup into a temporary project as a smoke test (delete the temp project after).
 - [ ] Document operator email + phone numbers (see `RUNBOOK.md`) for the 3 key vendors: Vercel, Supabase, Stripe.
 
