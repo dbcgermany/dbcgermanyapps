@@ -30,6 +30,15 @@ interface Attendee {
   title: Title | "";
   gender: Gender | "";
   birthday: string;
+  // Optional voluntary fields — left empty on the contract. We use these
+  // for community insight (where attendees are from, what fields they
+  // work in). Lawful basis: explicit consent (the attendee chooses to
+  // fill them in; nothing is required to complete the purchase).
+  occupation: string;
+  address_line_1: string;
+  address_line_2: string;
+  postal_code: string;
+  city: string;
   showOptional: boolean;
 }
 
@@ -62,6 +71,11 @@ function emptyAttendee(tierId: string): Attendee {
     title: "",
     gender: "",
     birthday: "",
+    occupation: "",
+    address_line_1: "",
+    address_line_2: "",
+    postal_code: "",
+    city: "",
     showOptional: false,
   };
 }
@@ -198,6 +212,11 @@ export function CheckoutForm({
           title: a.title || undefined,
           gender: a.gender || undefined,
           birthday: a.birthday || null,
+          occupation: a.occupation.trim() || null,
+          address_line_1: a.address_line_1.trim() || null,
+          address_line_2: a.address_line_2.trim() || null,
+          postal_code: a.postal_code.trim() || null,
+          city: a.city.trim() || null,
         })),
         couponCode: couponCode.trim() || undefined,
         locale,
@@ -358,6 +377,13 @@ export function CheckoutForm({
 
               {attendee.showOptional && (
                 <div className="mt-3 space-y-3">
+                  <p className="text-[11px] leading-snug text-muted-foreground">
+                    {locale === "de"
+                      ? "Optional. Hilft uns, unsere Community besser zu verstehen — keines dieser Felder ist Pflicht."
+                      : locale === "fr"
+                        ? "Facultatif. Nous aide à mieux comprendre notre communauté — aucun de ces champs n'est obligatoire."
+                        : "Optional. Helps us understand our community better — none of these fields are required."}
+                  </p>
                   <TitleGenderFields
                     title={attendee.title}
                     gender={attendee.gender}
@@ -375,6 +401,105 @@ export function CheckoutForm({
                     }
                     label={tPerson("birthday")}
                   />
+                  <div>
+                    <label className="block text-xs text-muted-foreground mb-1">
+                      {locale === "de"
+                        ? "Beruf / Tätigkeit"
+                        : locale === "fr"
+                          ? "Profession / activité"
+                          : "Occupation"}
+                    </label>
+                    <input
+                      type="text"
+                      autoComplete="organization-title"
+                      value={attendee.occupation}
+                      onChange={(e) =>
+                        updateAttendee(index, "occupation", e.target.value)
+                      }
+                      placeholder={
+                        locale === "de"
+                          ? "z. B. Software-Ingenieur"
+                          : locale === "fr"
+                            ? "p. ex. ingénieur logiciel"
+                            : "e.g. Software engineer"
+                      }
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-muted-foreground mb-1">
+                      {locale === "de"
+                        ? "Straße und Hausnummer"
+                        : locale === "fr"
+                          ? "Adresse (ligne 1)"
+                          : "Street address"}
+                    </label>
+                    <input
+                      type="text"
+                      autoComplete="address-line1"
+                      value={attendee.address_line_1}
+                      onChange={(e) =>
+                        updateAttendee(index, "address_line_1", e.target.value)
+                      }
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-muted-foreground mb-1">
+                      {locale === "de"
+                        ? "Adresszusatz (optional)"
+                        : locale === "fr"
+                          ? "Complément d'adresse"
+                          : "Address line 2"}
+                    </label>
+                    <input
+                      type="text"
+                      autoComplete="address-line2"
+                      value={attendee.address_line_2}
+                      onChange={(e) =>
+                        updateAttendee(index, "address_line_2", e.target.value)
+                      }
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                    />
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="col-span-1">
+                      <label className="block text-xs text-muted-foreground mb-1">
+                        {locale === "de"
+                          ? "PLZ"
+                          : locale === "fr"
+                            ? "Code postal"
+                            : "Postal code"}
+                      </label>
+                      <input
+                        type="text"
+                        autoComplete="postal-code"
+                        value={attendee.postal_code}
+                        onChange={(e) =>
+                          updateAttendee(index, "postal_code", e.target.value)
+                        }
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <label className="block text-xs text-muted-foreground mb-1">
+                        {locale === "de"
+                          ? "Stadt"
+                          : locale === "fr"
+                            ? "Ville"
+                            : "City"}
+                      </label>
+                      <input
+                        type="text"
+                        autoComplete="address-level2"
+                        value={attendee.city}
+                        onChange={(e) =>
+                          updateAttendee(index, "city", e.target.value)
+                        }
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                      />
+                    </div>
+                  </div>
                 </div>
               )}
             </div>

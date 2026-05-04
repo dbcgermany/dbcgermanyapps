@@ -115,6 +115,15 @@ interface AttendeeInfo {
   title?: Title | "";
   gender?: Gender | "";
   birthday?: string | null;
+  /** Optional demographic / contact fields the attendee can volunteer
+   *  during checkout. Lawful basis: explicit consent (left empty by
+   *  default). Stored on contacts.* and never required to complete the
+   *  purchase. */
+  occupation?: string | null;
+  address_line_1?: string | null;
+  address_line_2?: string | null;
+  postal_code?: string | null;
+  city?: string | null;
 }
 
 interface CheckoutInput {
@@ -145,6 +154,55 @@ function effectiveGender(
   const implied = impliedGenderFromTitle(title ? (title as Title) : null);
   if (implied) return implied;
   return gender ? (gender as Gender) : null;
+}
+
+// Optional address fields collected at checkout. The RPC upsert handles
+// occupation / birthday / gender / country / name; address columns aren't
+// on its signature so we patch them with a fill-in-blanks UPDATE — never
+// overwriting data the contact already has from an earlier order or an
+// admin edit.
+async function applyOptionalContactFields(
+  supabase: Awaited<ReturnType<typeof createServerClient>>,
+  contactId: string | null,
+  attendee: AttendeeInfo
+) {
+  if (!contactId) return;
+  const incoming = {
+    address_line_1:
+      attendee.address_line_1 && attendee.address_line_1.trim()
+        ? attendee.address_line_1.trim()
+        : null,
+    address_line_2:
+      attendee.address_line_2 && attendee.address_line_2.trim()
+        ? attendee.address_line_2.trim()
+        : null,
+    postal_code:
+      attendee.postal_code && attendee.postal_code.trim()
+        ? attendee.postal_code.trim()
+        : null,
+    city:
+      attendee.city && attendee.city.trim() ? attendee.city.trim() : null,
+  };
+
+  const hasIncoming = Object.values(incoming).some((v) => v !== null);
+  if (!hasIncoming) return;
+
+  const { data: current } = await supabase
+    .from("contacts")
+    .select("address_line_1, address_line_2, postal_code, city")
+    .eq("id", contactId)
+    .single();
+  if (!current) return;
+
+  const patch: Record<string, string> = {};
+  for (const [key, value] of Object.entries(incoming)) {
+    if (value === null) continue;
+    if (current[key as keyof typeof current]) continue;
+    patch[key] = value;
+  }
+  if (Object.keys(patch).length === 0) return;
+
+  await supabase.from("contacts").update(patch).eq("id", contactId);
 }
 
 export async function createCheckoutSession(input: CheckoutInput) {
@@ -404,8 +462,24 @@ export async function createCheckoutSession(input: CheckoutInput) {
       p_first_name: buyerFirst,
       p_last_name: buyerLast,
       p_country: buyer.country || null,
+      p_birthday:
+        buyer.birthday && buyer.birthday.trim() ? buyer.birthday : null,
+      p_gender: buyer.gender || null,
+      p_occupation:
+        buyer.occupation && buyer.occupation.trim()
+          ? buyer.occupation.trim()
+          : null,
       p_auto_category_slug: CONTACT_CATEGORY.event_attendees,
     }
+  );
+
+  // Address fields aren't on the RPC signature — write them directly with
+  // a fill-in-blanks UPDATE so we never overwrite better data the contact
+  // already has from a previous order or admin edit.
+  await applyOptionalContactFields(
+    supabase,
+    buyerContactId as string | null,
+    buyer
   );
 
   // 9. Create order (status: pending) with explicit reservation window.
@@ -465,9 +539,19 @@ export async function createCheckoutSession(input: CheckoutInput) {
             p_first_name: first,
             p_last_name: last,
             p_country: attendee.country || null,
+            p_birthday: birthday,
+            p_gender: attendee.gender || null,
+            p_occupation:
+              attendee.occupation && attendee.occupation.trim()
+                ? attendee.occupation.trim()
+                : null,
             p_auto_category_slug: CONTACT_CATEGORY.event_attendees,
           })
         ).data as string | null);
+
+    if (!isBuyer) {
+      await applyOptionalContactFields(supabase, contactId, attendee);
+    }
 
     ticketRows.push({
       order_id: order.id,
