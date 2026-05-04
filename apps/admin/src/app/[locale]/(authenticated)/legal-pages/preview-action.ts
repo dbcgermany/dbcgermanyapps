@@ -1,6 +1,7 @@
 "use server";
 
-import { renderLegalMarkdown, getCompanyInfo } from "@dbc/legal";
+import { getCompanyInfo } from "@dbc/legal";
+import { renderLegalMarkdown } from "@dbc/legal/server";
 import type { LegalLocale } from "@dbc/legal";
 
 // Server action returning the rendered HTML for a markdown draft so the

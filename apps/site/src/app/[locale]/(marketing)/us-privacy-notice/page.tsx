@@ -3,9 +3,9 @@ import {
   getCompanyInfo,
   UsPrivacyNotice,
   LegalPageShell,
-  MaybeDbLegalDoc,
   type LegalLocale,
 } from "@dbc/legal";
+import { MaybeDbLegalDoc } from "@dbc/legal/server";
 
 export const metadata: Metadata = {
   title: "US Privacy Notice — DBC Germany",

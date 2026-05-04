@@ -3,9 +3,9 @@ import {
   getCompanyInfo,
   CookiePolicy,
   LegalPageShell,
-  MaybeDbLegalDoc,
   type LegalLocale,
 } from "@dbc/legal";
+import { MaybeDbLegalDoc } from "@dbc/legal/server";
 
 const titles: Record<string, string> = {
   en: "Cookie Policy — DBC Germany",

@@ -3,9 +3,9 @@ import {
   getCompanyInfo,
   PrivacyPolicy,
   LegalPageShell,
-  MaybeDbLegalDoc,
   type LegalLocale,
 } from "@dbc/legal";
+import { MaybeDbLegalDoc } from "@dbc/legal/server";
 
 const titles: Record<string, string> = {
   en: "Privacy Policy — DBC Germany Tickets",

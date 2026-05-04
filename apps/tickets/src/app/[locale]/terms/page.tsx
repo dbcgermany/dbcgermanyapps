@@ -3,9 +3,9 @@ import {
   getCompanyInfo,
   TermsOfService,
   LegalPageShell,
-  MaybeDbLegalDoc,
   type LegalLocale,
 } from "@dbc/legal";
+import { MaybeDbLegalDoc } from "@dbc/legal/server";
 
 const titles: Record<string, string> = {
   en: "Terms of Service — DBC Germany Tickets",
