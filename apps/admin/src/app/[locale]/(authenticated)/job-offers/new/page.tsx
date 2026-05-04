@@ -14,54 +14,18 @@ const EMPLOYMENT_TYPE_LABEL_KEY: Record<EmploymentType, "fullTime" | "partTime" 
   internship: "internship",
 };
 
-const T = {
-  en: {
-    title: "New job offer",
-    titleEn: "Title (EN)", titleDe: "Title (DE)", titleFr: "Title (FR)",
-    descEn: "Description (EN)", descDe: "Description (DE)", descFr: "Description (FR)",
-    reqEn: "Requirements (EN)", reqDe: "Requirements (DE)", reqFr: "Requirements (FR)",
-    location: "Location",
-    employmentType: "Employment type", selectType: "Select type",
-    fullTime: "Full-time", partTime: "Part-time", freelance: "Freelance", internship: "Internship",
-    department: "Department",
-    saving: "Saving…", saveDraft: "Save draft",
-  },
-  de: {
-    title: "Neue Stelle",
-    titleEn: "Titel (EN)", titleDe: "Titel (DE)", titleFr: "Titel (FR)",
-    descEn: "Beschreibung (EN)", descDe: "Beschreibung (DE)", descFr: "Beschreibung (FR)",
-    reqEn: "Anforderungen (EN)", reqDe: "Anforderungen (DE)", reqFr: "Anforderungen (FR)",
-    location: "Ort",
-    employmentType: "Beschäftigungsart", selectType: "Art auswählen",
-    fullTime: "Vollzeit", partTime: "Teilzeit", freelance: "Freelance", internship: "Praktikum",
-    department: "Abteilung",
-    saving: "Wird gespeichert…", saveDraft: "Entwurf speichern",
-  },
-  fr: {
-    title: "Nouvelle offre",
-    titleEn: "Titre (EN)", titleDe: "Titre (DE)", titleFr: "Titre (FR)",
-    descEn: "Description (EN)", descDe: "Description (DE)", descFr: "Description (FR)",
-    reqEn: "Exigences (EN)", reqDe: "Exigences (DE)", reqFr: "Exigences (FR)",
-    location: "Lieu",
-    employmentType: "Type de contrat", selectType: "Sélectionner un type",
-    fullTime: "Temps plein", partTime: "Temps partiel", freelance: "Freelance", internship: "Stage",
-    department: "Département",
-    saving: "Enregistrement…", saveDraft: "Enregistrer le brouillon",
-  },
-} as const;
-
 export default function NewJobOfferPage({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = use(params);
-  const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
+  const t = useTranslations("admin.jobOffers.new");
   const tBack = useTranslations("admin.back");
 
   const employmentTypes = EMPLOYMENT_TYPE_VALUES.map((value) => ({
     value,
-    label: t[EMPLOYMENT_TYPE_LABEL_KEY[value]],
+    label: t(EMPLOYMENT_TYPE_LABEL_KEY[value]),
   }));
 
   const [state, formAction, isPending] = useActionState(
@@ -75,7 +39,7 @@ export default function NewJobOfferPage({
   return (
     <div>
       <PageHeader
-        title={t.title}
+        title={t("title")}
         back={{ href: `/${locale}/job-offers`, label: tBack("jobOffers") }}
       />
 
@@ -86,30 +50,30 @@ export default function NewJobOfferPage({
           </div>
         )}
 
-        <Field name="title_en" label={t.titleEn} required />
-        <Field name="title_de" label={t.titleDe} />
-        <Field name="title_fr" label={t.titleFr} />
+        <Field name="title_en" label={t("titleEn")} required />
+        <Field name="title_de" label={t("titleDe")} />
+        <Field name="title_fr" label={t("titleFr")} />
 
-        <Field name="description_en" label={t.descEn} textarea rows={8} required />
-        <Field name="description_de" label={t.descDe} textarea rows={8} />
-        <Field name="description_fr" label={t.descFr} textarea rows={8} />
+        <Field name="description_en" label={t("descEn")} textarea rows={8} required />
+        <Field name="description_de" label={t("descDe")} textarea rows={8} />
+        <Field name="description_fr" label={t("descFr")} textarea rows={8} />
 
-        <Field name="requirements_en" label={t.reqEn} textarea rows={6} />
-        <Field name="requirements_de" label={t.reqDe} textarea rows={6} />
-        <Field name="requirements_fr" label={t.reqFr} textarea rows={6} />
+        <Field name="requirements_en" label={t("reqEn")} textarea rows={6} />
+        <Field name="requirements_de" label={t("reqDe")} textarea rows={6} />
+        <Field name="requirements_fr" label={t("reqFr")} textarea rows={6} />
 
-        <Field name="location" label={t.location} />
+        <Field name="location" label={t("location")} />
 
         <div>
           <label htmlFor="employment_type" className="mb-1 block text-sm font-medium">
-            {t.employmentType}
+            {t("employmentType")}
           </label>
           <select
             id="employment_type"
             name="employment_type"
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
           >
-            <option value="">{t.selectType}</option>
+            <option value="">{t("selectType")}</option>
             {employmentTypes.map((et) => (
               <option key={et.value} value={et.value}>
                 {et.label}
@@ -118,10 +82,10 @@ export default function NewJobOfferPage({
           </select>
         </div>
 
-        <Field name="department" label={t.department} />
+        <Field name="department" label={t("department")} />
 
         <Button type="submit" disabled={isPending}>
-          {isPending ? t.saving : t.saveDraft}
+          {isPending ? t("saving") : t("saveDraft")}
         </Button>
       </form>
     </div>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { createServerClient } from "@dbc/supabase/server";
 
 export default async function OrdersPage({
@@ -8,74 +9,24 @@ export default async function OrdersPage({
 }) {
   const { locale } = await params;
   const supabase = await createServerClient();
+  const t = await getTranslations({
+    locale,
+    namespace: "tickets.orders.list",
+  });
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const copy = {
-    en: {
-      title: "My Orders",
-      subtitle: "Tickets you've purchased on DBC Germany.",
-      signInRequired: "Please sign in to view your orders.",
-      empty: "You don't have any orders yet.",
-      emptyCta: "Browse events",
-      browseHref: `/${locale}`,
-      status: {
-        pending: "Pending",
-        paid: "Paid",
-        comped: "Complimentary",
-        refunded: "Refunded",
-        cancelled: "Cancelled",
-      },
-      free: "Free",
-      viewReceipt: "View receipt",
-    },
-    de: {
-      title: "Meine Bestellungen",
-      subtitle: "Tickets, die Sie bei DBC Germany gekauft haben.",
-      signInRequired: "Bitte melden Sie sich an, um Ihre Bestellungen zu sehen.",
-      empty: "Sie haben noch keine Bestellungen.",
-      emptyCta: "Veranstaltungen ansehen",
-      browseHref: `/${locale}`,
-      status: {
-        pending: "Ausstehend",
-        paid: "Bezahlt",
-        comped: "Kostenlos",
-        refunded: "Erstattet",
-        cancelled: "Storniert",
-      },
-      free: "Kostenlos",
-      viewReceipt: "Beleg ansehen",
-    },
-    fr: {
-      title: "Mes commandes",
-      subtitle: "Billets achetés sur DBC Germany.",
-      signInRequired: "Veuillez vous connecter pour voir vos commandes.",
-      empty: "Vous n'avez pas encore de commandes.",
-      emptyCta: "Voir les événements",
-      browseHref: `/${locale}`,
-      status: {
-        pending: "En attente",
-        paid: "Pay\u00E9",
-        comped: "Gratuit",
-        refunded: "Rembours\u00E9",
-        cancelled: "Annul\u00E9",
-      },
-      free: "Gratuit",
-      viewReceipt: "Voir le re\u00E7u",
-    },
-  };
-  const t =
-    (copy[locale as keyof typeof copy] as (typeof copy)["en"]) ?? copy.en;
+  const browseHref = `/${locale}`;
 
   if (!user) {
     return (
       <main className="mx-auto max-w-2xl px-4 py-16 text-center">
         <h1 className="font-heading text-3xl font-bold tracking-tight">
-          {t.title}
+          {t("title")}
         </h1>
-        <p className="mt-4 text-muted-foreground">{t.signInRequired}</p>
+        <p className="mt-4 text-muted-foreground">{t("signInRequired")}</p>
       </main>
     );
   }
@@ -96,23 +47,37 @@ export default async function OrdersPage({
 
   const eventMap = new Map((events ?? []).map((e) => [e.id, e]));
 
+  const statusKeys = new Set([
+    "pending",
+    "paid",
+    "comped",
+    "refunded",
+    "cancelled",
+  ]);
+  function statusLabelOf(status: string): string {
+    if (statusKeys.has(status)) {
+      return t(`status.${status}`);
+    }
+    return status;
+  }
+
   return (
     <main className="mx-auto max-w-3xl px-4 py-12 sm:py-16">
       <div>
         <h1 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">
-          {t.title}
+          {t("title")}
         </h1>
-        <p className="mt-2 text-muted-foreground">{t.subtitle}</p>
+        <p className="mt-2 text-muted-foreground">{t("subtitle")}</p>
       </div>
 
       {!orders || orders.length === 0 ? (
         <div className="mt-10 rounded-2xl border border-dashed border-border bg-surface p-10 text-center">
-          <p className="text-muted-foreground">{t.empty}</p>
+          <p className="text-muted-foreground">{t("empty")}</p>
           <Link
-            href={t.browseHref}
+            href={browseHref}
             className="mt-6 inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90"
           >
-            {t.emptyCta}
+            {t("emptyCta")}
             <span aria-hidden>&rarr;</span>
           </Link>
         </div>
@@ -124,8 +89,7 @@ export default async function OrdersPage({
             const eventTitle = evt
               ? (evt[titleKey] as string) || evt.title_en
               : "Event";
-            const statusLabel =
-              t.status[order.status as keyof typeof t.status] || order.status;
+            const statusLabel = statusLabelOf(order.status);
             const isPaid =
               order.status === "paid" || order.status === "comped";
 
@@ -148,8 +112,8 @@ export default async function OrdersPage({
                   <div className="shrink-0 text-right">
                     <p className="font-semibold">
                       {order.total_cents === 0
-                        ? t.free
-                        : `\u20AC${(order.total_cents / 100).toFixed(2)}`}
+                        ? t("free")
+                        : `€${(order.total_cents / 100).toFixed(2)}`}
                     </p>
                     <span
                       className={`mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-medium ${

@@ -2,6 +2,7 @@
 
 import { Fragment, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import type { AuditLogEntry } from "@/actions/audit";
 import { CsvExportButton } from "@/components/csv-export-button";
 
@@ -73,97 +74,7 @@ export function AuditLogClient({
   const firstRow = total === 0 ? 0 : (page - 1) * pageSize + 1;
   const lastRow = Math.min(page * pageSize, total);
 
-  const t = {
-    en: {
-      filters: "Filters",
-      action: "Action",
-      entity: "Entity",
-      user: "User email",
-      userDisplay: "User",
-      userPlaceholder: "Search by email",
-      from: "From",
-      to: "To",
-      apply: "Apply",
-      clear: "Clear filters",
-      allActions: "All actions",
-      allEntities: "All entities",
-      timestamp: "Timestamp",
-      entityId: "Entity ID",
-      ip: "IP",
-      details: "Details",
-      view: "View",
-      hide: "Hide",
-      noRows: "No audit log entries match your filters.",
-      showing: "Showing",
-      to_word: "to",
-      of: "of",
-      prev: "Previous",
-      next: "Next",
-      page: "Page",
-    },
-    de: {
-      filters: "Filter",
-      action: "Aktion",
-      entity: "Entit\u00E4t",
-      user: "Benutzer-E-Mail",
-      userDisplay: "Nutzer",
-      userPlaceholder: "Nach E-Mail suchen",
-      from: "Von",
-      to: "Bis",
-      apply: "Anwenden",
-      clear: "Filter zur\u00FCcksetzen",
-      allActions: "Alle Aktionen",
-      allEntities: "Alle Entit\u00E4ten",
-      timestamp: "Zeitstempel",
-      entityId: "Entit\u00E4ts-ID",
-      ip: "IP",
-      details: "Details",
-      view: "Anzeigen",
-      hide: "Ausblenden",
-      noRows: "Keine Eintr\u00E4ge gefunden.",
-      showing: "Zeige",
-      to_word: "bis",
-      of: "von",
-      prev: "Zur\u00FCck",
-      next: "Weiter",
-      page: "Seite",
-    },
-    fr: {
-      filters: "Filtres",
-      action: "Action",
-      entity: "Entit\u00E9",
-      user: "E-mail utilisateur",
-      userDisplay: "Utilisateur",
-      userPlaceholder: "Rechercher par e-mail",
-      from: "Du",
-      to: "Au",
-      apply: "Appliquer",
-      clear: "R\u00E9initialiser les filtres",
-      allActions: "Toutes les actions",
-      allEntities: "Toutes les entit\u00E9s",
-      timestamp: "Horodatage",
-      entityId: "ID entit\u00E9",
-      ip: "IP",
-      details: "D\u00E9tails",
-      view: "Voir",
-      hide: "Masquer",
-      noRows: "Aucune entr\u00E9e ne correspond aux filtres.",
-      showing: "Affichage",
-      to_word: "\u00E0",
-      of: "sur",
-      prev: "Pr\u00E9c\u00E9dent",
-      next: "Suivant",
-      page: "Page",
-    },
-  }[locale] ?? {
-    filters: "Filters", action: "Action", entity: "Entity", user: "User email",
-    userDisplay: "User",
-    userPlaceholder: "Search by email", from: "From", to: "To", apply: "Apply",
-    clear: "Clear", allActions: "All actions", allEntities: "All entities",
-    timestamp: "Timestamp", entityId: "Entity ID", ip: "IP", details: "Details",
-    view: "View", hide: "Hide", noRows: "No entries", showing: "Showing",
-    to_word: "to", of: "of", prev: "Previous", next: "Next", page: "Page",
-  };
+  const t = useTranslations("admin.auditLog.client");
 
   function formatTimestamp(iso: string) {
     return new Date(iso).toLocaleString(locale, {
@@ -182,7 +93,7 @@ export function AuditLogClient({
       <div className="rounded-lg border border-border p-4">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            {t.filters}
+            {t("filters")}
           </p>
           <CsvExportButton
             rows={rows.map((r) => ({
@@ -197,14 +108,14 @@ export function AuditLogClient({
             }))}
             filename={`audit-log-${new Date().toISOString().slice(0, 10)}.csv`}
             headers={[
-              { key: "timestamp", label: t.timestamp },
-              { key: "user_email", label: t.user },
-              { key: "user_display", label: t.userDisplay },
-              { key: "action", label: t.action },
-              { key: "entity_type", label: t.entity },
-              { key: "entity_id", label: t.entityId },
-              { key: "ip", label: t.ip },
-              { key: "details", label: `${t.details} (JSON)` },
+              { key: "timestamp", label: t("timestamp") },
+              { key: "user_email", label: t("user") },
+              { key: "user_display", label: t("userDisplay") },
+              { key: "action", label: t("action") },
+              { key: "entity_type", label: t("entity") },
+              { key: "entity_id", label: t("entityId") },
+              { key: "ip", label: t("ip") },
+              { key: "details", label: `${t("details")} (JSON)` },
             ]}
           />
         </div>
@@ -216,7 +127,7 @@ export function AuditLogClient({
             onChange={(e) => pushFilters({ action: e.target.value, page: 1 })}
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring lg:w-auto"
           >
-            <option value="">{t.allActions}</option>
+            <option value="">{t("allActions")}</option>
             {actions.map((a) => (
               <option key={a} value={a}>
                 {a}
@@ -229,7 +140,7 @@ export function AuditLogClient({
             onChange={(e) => pushFilters({ entity: e.target.value, page: 1 })}
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring lg:w-auto"
           >
-            <option value="">{t.allEntities}</option>
+            <option value="">{t("allEntities")}</option>
             {entityTypes.map((e) => (
               <option key={e} value={e}>
                 {e}
@@ -248,20 +159,20 @@ export function AuditLogClient({
               type="text"
               value={userInput}
               onChange={(e) => setUserInput(e.target.value)}
-              placeholder={t.userPlaceholder}
+              placeholder={t("userPlaceholder")}
               className="min-w-0 flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring lg:flex-none"
             />
             <button
               type="submit"
               className="shrink-0 rounded-md border border-border px-3 py-2 text-sm hover:bg-muted"
             >
-              {t.apply}
+              {t("apply")}
             </button>
           </form>
 
           <div className="flex items-center gap-2">
             <label className="flex min-w-0 flex-1 items-center gap-2 text-xs text-muted-foreground lg:flex-none">
-              {t.from}
+              {t("from")}
               <input
                 type="date"
                 value={currentFromFilter}
@@ -272,7 +183,7 @@ export function AuditLogClient({
               />
             </label>
             <label className="flex min-w-0 flex-1 items-center gap-2 text-xs text-muted-foreground lg:flex-none">
-              {t.to}
+              {t("to")}
               <input
                 type="date"
                 value={currentToFilter}
@@ -286,7 +197,7 @@ export function AuditLogClient({
             onClick={clearFilters}
             className="rounded-md border border-border px-3 py-2 text-sm text-muted-foreground hover:bg-muted lg:ml-auto"
           >
-            {t.clear}
+            {t("clear")}
           </button>
         </div>
       </div>
@@ -294,7 +205,7 @@ export function AuditLogClient({
       {/* Table */}
       {rows.length === 0 ? (
         <p className="mt-8 rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-          {t.noRows}
+          {t("noRows")}
         </p>
       ) : (
         <div className="mt-6 overflow-x-auto rounded-lg border border-border">
@@ -302,17 +213,17 @@ export function AuditLogClient({
             <thead>
               <tr className="border-b border-border bg-muted/50">
                 <th className="px-4 py-3 text-left font-medium">
-                  {t.timestamp}
+                  {t("timestamp")}
                 </th>
-                <th className="px-4 py-3 text-left font-medium">{t.user}</th>
-                <th className="px-4 py-3 text-left font-medium">{t.action}</th>
-                <th className="px-4 py-3 text-left font-medium">{t.entity}</th>
+                <th className="px-4 py-3 text-left font-medium">{t("user")}</th>
+                <th className="px-4 py-3 text-left font-medium">{t("action")}</th>
+                <th className="px-4 py-3 text-left font-medium">{t("entity")}</th>
                 <th className="px-4 py-3 text-left font-medium">
-                  {t.entityId}
+                  {t("entityId")}
                 </th>
-                <th className="px-4 py-3 text-left font-medium">{t.ip}</th>
+                <th className="px-4 py-3 text-left font-medium">{t("ip")}</th>
                 <th className="px-4 py-3 text-right font-medium">
-                  {t.details}
+                  {t("details")}
                 </th>
               </tr>
             </thead>
@@ -366,7 +277,7 @@ export function AuditLogClient({
                           }
                           className="text-xs text-primary hover:text-primary/80"
                         >
-                          {isExpanded ? t.hide : t.view}
+                          {isExpanded ? t("hide") : t("view")}
                         </button>
                       </td>
                     </tr>
@@ -391,7 +302,7 @@ export function AuditLogClient({
       {total > 0 && (
         <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
           <p>
-            {t.showing} {firstRow} {t.to_word} {lastRow} {t.of} {total}
+            {t("showing")} {firstRow} {t("to_word")} {lastRow} {t("of")} {total}
           </p>
           <div className="flex items-center gap-2">
             <button
@@ -399,17 +310,17 @@ export function AuditLogClient({
               disabled={page <= 1}
               className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {t.prev}
+              {t("prev")}
             </button>
             <span>
-              {t.page} {page} / {totalPages}
+              {t("page")} {page} / {totalPages}
             </span>
             <button
               onClick={() => pushFilters({ page: page + 1 })}
               disabled={page >= totalPages}
               className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {t.next}
+              {t("next")}
             </button>
           </div>
         </div>

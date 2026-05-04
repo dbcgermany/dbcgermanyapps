@@ -1,17 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 // Bottom-stuck CTA bar that fades in once the hero has scrolled past and
 // fades back out once the pricing section is in view (so it doesn't
 // duplicate the primary buttons). Shows the cheapest tier's price + a
 // tiny countdown so urgency follows the reader down the page.
-
-const LABELS = {
-  en: { scrollToBuy: "Reserve your seat", daysLeft: "d" },
-  de: { scrollToBuy: "Platz sichern", daysLeft: "T" },
-  fr: { scrollToBuy: "Réserver ta place", daysLeft: "j" },
-} as const;
 
 function daysUntil(iso: string): number {
   const ms = new Date(iso).getTime() - Date.now();
@@ -21,13 +16,12 @@ function daysUntil(iso: string): number {
 export function FunnelStickyCta({
   startingPriceLabel,
   eventStartsAt,
-  locale,
 }: {
   startingPriceLabel: string;
   eventStartsAt: string;
-  locale: "en" | "de" | "fr";
+  locale?: "en" | "de" | "fr";
 }) {
-  const t = LABELS[locale];
+  const t = useTranslations("site.funnel.stickyCta");
   const [visible, setVisible] = useState(false);
   const [days, setDays] = useState(() => daysUntil(eventStartsAt));
 
@@ -66,7 +60,7 @@ export function FunnelStickyCta({
           {days > 0 ? (
             <span className="hidden text-xs text-muted-foreground sm:inline tabular-nums">
               · {days}
-              {t.daysLeft}
+              {t("daysLeft")}
             </span>
           ) : null}
         </div>
@@ -74,7 +68,7 @@ export function FunnelStickyCta({
           href="#pricing"
           className="inline-flex shrink-0 items-center justify-center rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground sm:text-sm"
         >
-          {t.scrollToBuy}
+          {t("scrollToBuy")}
           <span aria-hidden className="ml-1">
             &rarr;
           </span>

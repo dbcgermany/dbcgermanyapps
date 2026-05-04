@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { cn } from "./utils";
 import { CountrySelect } from "./country-select";
 
@@ -32,33 +33,6 @@ export interface AddressFieldsProps {
   className?: string;
 }
 
-const LABELS = {
-  en: {
-    line1: "Address line 1",
-    line2: "Address line 2 (optional)",
-    city: "City",
-    state: "State / region",
-    postal_code: "Postal code",
-    country: "Country",
-  },
-  de: {
-    line1: "Stra\u00dfe und Hausnummer",
-    line2: "Adresszusatz (optional)",
-    city: "Stadt",
-    state: "Bundesland / Region",
-    postal_code: "PLZ",
-    country: "Land",
-  },
-  fr: {
-    line1: "Adresse (ligne 1)",
-    line2: "Adresse (ligne 2, optionnelle)",
-    city: "Ville",
-    state: "R\u00e9gion / d\u00e9partement",
-    postal_code: "Code postal",
-    country: "Pays",
-  },
-} as const;
-
 /**
  * Google/Stripe-style address composite. Emits one Address object. Country is
  * stored as an ISO-3166-1 alpha-2 code via the shared CountrySelect.
@@ -75,7 +49,7 @@ export function AddressFields({
     | "en"
     | "de"
     | "fr";
-  const t = LABELS[key];
+  const t = useTranslations("ui.address");
 
   const set =
     <K extends keyof Address>(field: K) =>
@@ -87,7 +61,7 @@ export function AddressFields({
 
   return (
     <div className={cn("grid gap-3", className)}>
-      <Field label={t.line1} required={required}>
+      <Field label={t("line1")} required={required}>
         <input
           type="text"
           autoComplete="address-line1"
@@ -99,7 +73,7 @@ export function AddressFields({
         />
       </Field>
 
-      <Field label={t.line2}>
+      <Field label={t("line2")}>
         <input
           type="text"
           autoComplete="address-line2"
@@ -111,7 +85,7 @@ export function AddressFields({
       </Field>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <Field label={t.city} required={required}>
+        <Field label={t("city")} required={required}>
           <input
             type="text"
             autoComplete="address-level2"
@@ -122,7 +96,7 @@ export function AddressFields({
             className={inputClass}
           />
         </Field>
-        <Field label={t.state}>
+        <Field label={t("state")}>
           <input
             type="text"
             autoComplete="address-level1"
@@ -135,7 +109,7 @@ export function AddressFields({
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <Field label={t.postal_code} required={required}>
+        <Field label={t("postal_code")} required={required}>
           <input
             type="text"
             autoComplete="postal-code"
@@ -146,7 +120,7 @@ export function AddressFields({
             className={inputClass}
           />
         </Field>
-        <Field label={t.country} required={required}>
+        <Field label={t("country")} required={required}>
           <CountrySelect
             locale={key}
             value={value.country}

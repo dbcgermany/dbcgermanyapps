@@ -14,62 +14,17 @@ import { EmptyState } from "@/components/empty-state";
 import { AreaChart, BarChart, ChartCard } from "@/components/charts";
 import type { DashboardKpis } from "@/actions/dashboard";
 
-type T = {
-  totalRevenue: string;
-  ticketsSold: string;
-  activeEvents: string;
-  checkInRate: string;
-  revenue: string;
-  checkIns: string;
-  topEvents: string;
-  sold: string;
-  viewAll: string;
-  noData: string;
-  noEvents: string;
-  aov: string;
-  aovSub: string;
-  arpa: string;
-  arpaSub: string;
-  netRevenue: string;
-  netRevenueSub: string;
-  refundRate: string;
-  refundRateSub: string;
-  velocity: string;
-  velocitySub: string;
-  vsPrior: string;
-  sellThrough: string;
-  sellThroughSub: string;
-  capacity: string;
-  abandonedCheckouts: string;
-  abandonedCheckoutsSub: string;
-  abandonedRevenue: string;
-  abandonedRevenueSub: string;
-  salesByChannel: string;
-  online: string;
-  onlineSub: string;
-  door: string;
-  doorSub: string;
-  comped: string;
-  compedSub: string;
-  tickets: string;
-  channelMix: string;
-  channelMixSub: string;
-  paid: string;
-  free: string;
-};
-
 export function DashboardClient({
   locale,
   kpis,
-  t,
 }: {
   locale: string;
   kpis: DashboardKpis;
-  t: T;
 }) {
   const router = useRouter();
   const search = useSearchParams();
   const tRange = useTranslations("admin.dashboard.dateRange");
+  const t = useTranslations("admin.dashboard.page");
 
   const range: DateRange = {
     from: kpis.range.from,
@@ -110,22 +65,22 @@ export function DashboardClient({
       <div className="mt-6">
         <StatGrid cols={4}>
           <StatCard
-            label={t.totalRevenue}
+            label={t("totalRevenue")}
             value={fmtEur(kpis.totalRevenueCents)}
             delta={pctChange(kpis.current.revenueCents, kpis.prior.revenueCents)}
-            deltaLabel={t.vsPrior}
+            deltaLabel={t("vsPrior")}
           />
           <StatCard
-            label={t.ticketsSold}
+            label={t("ticketsSold")}
             value={kpis.ticketsSold.toLocaleString(locale)}
             delta={pctChange(kpis.current.ticketsSold, kpis.prior.ticketsSold)}
-            deltaLabel={t.vsPrior}
+            deltaLabel={t("vsPrior")}
           />
           <StatCard
-            label={t.activeEvents}
+            label={t("activeEvents")}
             value={kpis.activeEventCount.toLocaleString(locale)}
           />
-          <StatCard label={t.checkInRate} value={`${kpis.checkInRate}%`} />
+          <StatCard label={t("checkInRate")} value={`${kpis.checkInRate}%`} />
         </StatGrid>
       </div>
 
@@ -133,41 +88,41 @@ export function DashboardClient({
       <div className="mt-4">
         <StatGrid cols={4}>
           <StatCard
-            label={t.aov}
-            sub={t.aovSub}
+            label={t("aov")}
+            sub={t("aovSub")}
             value={fmtEur(kpis.current.aovCents)}
             delta={pctChange(kpis.current.aovCents, kpis.prior.aovCents)}
-            deltaLabel={t.vsPrior}
+            deltaLabel={t("vsPrior")}
             dense
           />
           <StatCard
-            label={t.arpa}
-            sub={t.arpaSub}
+            label={t("arpa")}
+            sub={t("arpaSub")}
             value={fmtEur(kpis.current.arpaCents)}
             delta={pctChange(kpis.current.arpaCents, kpis.prior.arpaCents)}
-            deltaLabel={t.vsPrior}
+            deltaLabel={t("vsPrior")}
             dense
           />
           <StatCard
-            label={t.netRevenue}
-            sub={t.netRevenueSub}
+            label={t("netRevenue")}
+            sub={t("netRevenueSub")}
             value={fmtEur(kpis.current.netRevenueCents)}
             delta={pctChange(
               kpis.current.netRevenueCents,
               kpis.prior.netRevenueCents
             )}
-            deltaLabel={t.vsPrior}
+            deltaLabel={t("vsPrior")}
             dense
           />
           <StatCard
-            label={t.refundRate}
-            sub={t.refundRateSub}
+            label={t("refundRate")}
+            sub={t("refundRateSub")}
             value={`${kpis.refundRatePct.toFixed(1)}%`}
             delta={-pctChange(
               kpis.current.refundCents,
               kpis.prior.refundCents
             )}
-            deltaLabel={t.vsPrior}
+            deltaLabel={t("vsPrior")}
             dense
           />
         </StatGrid>
@@ -181,41 +136,41 @@ export function DashboardClient({
           headline KPIs. */}
       <div className="mt-8">
         <h2 className="text-sm font-semibold text-muted-foreground">
-          {t.salesByChannel}
+          {t("salesByChannel")}
         </h2>
         <div className="mt-3">
           <StatGrid cols={4}>
             <StatCard
-              label={t.online}
-              sub={`${kpis.current.online.tickets} ${t.tickets} · ${t.onlineSub}`}
+              label={t("online")}
+              sub={`${kpis.current.online.tickets} ${t("tickets")} · ${t("onlineSub")}`}
               value={fmtEur(kpis.current.online.revenueCents)}
               delta={pctChange(
                 kpis.current.online.revenueCents,
                 kpis.prior.online.revenueCents
               )}
-              deltaLabel={t.vsPrior}
+              deltaLabel={t("vsPrior")}
               dense
             />
             <StatCard
-              label={t.door}
-              sub={`${kpis.current.door.tickets} ${t.tickets} · ${t.doorSub}`}
+              label={t("door")}
+              sub={`${kpis.current.door.tickets} ${t("tickets")} · ${t("doorSub")}`}
               value={fmtEur(kpis.current.door.revenueCents)}
               delta={pctChange(
                 kpis.current.door.revenueCents,
                 kpis.prior.door.revenueCents
               )}
-              deltaLabel={t.vsPrior}
+              deltaLabel={t("vsPrior")}
               dense
             />
             <StatCard
-              label={t.comped}
-              sub={t.compedSub}
-              value={`${kpis.current.comped.tickets.toLocaleString(locale)} ${t.tickets}`}
+              label={t("comped")}
+              sub={t("compedSub")}
+              value={`${kpis.current.comped.tickets.toLocaleString(locale)} ${t("tickets")}`}
               delta={pctChange(
                 kpis.current.comped.tickets,
                 kpis.prior.comped.tickets
               )}
-              deltaLabel={t.vsPrior}
+              deltaLabel={t("vsPrior")}
               dense
             />
             {(() => {
@@ -227,8 +182,8 @@ export function DashboardClient({
               const freePct = total === 0 ? 0 : 100 - paidPct;
               return (
                 <StatCard
-                  label={t.channelMix}
-                  sub={`${t.paid} ${paidTickets.toLocaleString(locale)} · ${t.free} ${freeTickets.toLocaleString(locale)} · ${t.channelMixSub}`}
+                  label={t("channelMix")}
+                  sub={`${t("paid")} ${paidTickets.toLocaleString(locale)} · ${t("free")} ${freeTickets.toLocaleString(locale)} · ${t("channelMixSub")}`}
                   value={
                     total === 0
                       ? "—"
@@ -246,25 +201,25 @@ export function DashboardClient({
       <div className="mt-4">
         <StatGrid cols={4}>
           <StatCard
-            label={t.abandonedCheckouts}
-            sub={t.abandonedCheckoutsSub}
+            label={t("abandonedCheckouts")}
+            sub={t("abandonedCheckoutsSub")}
             value={kpis.current.abandonedCheckouts.toLocaleString(locale)}
             delta={-pctChange(
               kpis.current.abandonedCheckouts,
               kpis.prior.abandonedCheckouts
             )}
-            deltaLabel={t.vsPrior}
+            deltaLabel={t("vsPrior")}
             dense
           />
           <StatCard
-            label={t.abandonedRevenue}
-            sub={t.abandonedRevenueSub}
+            label={t("abandonedRevenue")}
+            sub={t("abandonedRevenueSub")}
             value={fmtEur(kpis.current.abandonedRevenueCents)}
             delta={-pctChange(
               kpis.current.abandonedRevenueCents,
               kpis.prior.abandonedRevenueCents
             )}
-            deltaLabel={t.vsPrior}
+            deltaLabel={t("vsPrior")}
             dense
           />
         </StatGrid>
@@ -274,20 +229,20 @@ export function DashboardClient({
       <div className="mt-8 grid gap-4 lg:grid-cols-2">
         {revenueData.every((d) => d.eur === 0) ? (
           <Card padding="md" className="rounded-lg">
-            <h2 className="font-heading text-sm font-semibold">{t.revenue}</h2>
+            <h2 className="font-heading text-sm font-semibold">{t("revenue")}</h2>
             <p className="mt-8 text-center text-sm text-muted-foreground">
-              {t.noData}
+              {t("noData")}
             </p>
           </Card>
         ) : (
           <ChartCard
-            title={t.revenue}
-            description={`${t.velocity}: ${kpis.velocity7dAvg.toFixed(1)} ${t.velocitySub.toLowerCase()}`}
+            title={t("revenue")}
+            description={`${t("velocity")}: ${kpis.velocity7dAvg.toFixed(1)} ${t("velocitySub").toLowerCase()}`}
           >
             <AreaChart
               data={revenueData}
               xKey="date"
-              series={[{ key: "eur", label: t.revenue }]}
+              series={[{ key: "eur", label: t("revenue") }]}
               yFormatter={(v) =>
                 `\u20AC${Math.round(v).toLocaleString()}`
               }
@@ -297,17 +252,17 @@ export function DashboardClient({
 
         {checkInData.every((d) => d.count === 0) ? (
           <Card padding="md" className="rounded-lg">
-            <h2 className="font-heading text-sm font-semibold">{t.checkIns}</h2>
+            <h2 className="font-heading text-sm font-semibold">{t("checkIns")}</h2>
             <p className="mt-8 text-center text-sm text-muted-foreground">
-              {t.noData}
+              {t("noData")}
             </p>
           </Card>
         ) : (
-          <ChartCard title={t.checkIns}>
+          <ChartCard title={t("checkIns")}>
             <BarChart
               data={checkInData}
               xKey="date"
-              series={[{ key: "count", label: t.checkIns, color: BRAND_HEX.gold }]}
+              series={[{ key: "count", label: t("checkIns"), color: BRAND_HEX.gold }]}
             />
           </ChartCard>
         )}
@@ -317,10 +272,10 @@ export function DashboardClient({
       {kpis.sellThrough.length > 0 && (
         <Card padding="md" className="mt-8 rounded-lg">
           <h2 className="font-heading text-lg font-semibold">
-            {t.sellThrough}
+            {t("sellThrough")}
           </h2>
           <p className="mt-1 text-xs text-muted-foreground">
-            {t.sellThroughSub}
+            {t("sellThroughSub")}
           </p>
           <ul className="mt-4 space-y-3">
             {kpis.sellThrough.map((s) => (
@@ -333,7 +288,7 @@ export function DashboardClient({
                     {s.eventTitle}
                   </Link>
                   <span className="shrink-0 font-mono text-xs text-muted-foreground">
-                    {s.sold}/{s.capacity} {t.capacity} · {s.pct}%
+                    {s.sold}/{s.capacity} {t("capacity")} · {s.pct}%
                   </span>
                 </div>
                 <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
@@ -351,17 +306,17 @@ export function DashboardClient({
       {/* Top events */}
       <div className="mt-8">
         <div className="flex items-center justify-between">
-          <h2 className="font-heading text-lg font-semibold">{t.topEvents}</h2>
+          <h2 className="font-heading text-lg font-semibold">{t("topEvents")}</h2>
           <Link
             href={`/${locale}/events`}
             className="text-sm text-primary hover:text-primary/80"
           >
-            {t.viewAll} &rarr;
+            {t("viewAll")} &rarr;
           </Link>
         </div>
 
         {kpis.topEvents.length === 0 ? (
-          <EmptyState message={t.noEvents} className="mt-6" />
+          <EmptyState message={t("noEvents")} className="mt-6" />
         ) : (
           <div className="mt-4 overflow-x-auto rounded-lg border border-border">
             <table className="w-full min-w-96 text-sm">
@@ -369,10 +324,10 @@ export function DashboardClient({
                 <tr className="border-b border-border bg-muted/50">
                   <th className="px-4 py-3 text-left font-medium">Event</th>
                   <th className="px-4 py-3 text-right font-medium">
-                    {t.revenue}
+                    {t("revenue")}
                   </th>
                   <th className="px-4 py-3 text-right font-medium">
-                    {t.sold}
+                    {t("sold")}
                   </th>
                 </tr>
               </thead>

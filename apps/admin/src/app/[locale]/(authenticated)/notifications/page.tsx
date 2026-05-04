@@ -54,20 +54,15 @@ export default async function NotificationsPage({
   const { locale } = await params;
   const notifications = await getAllNotifications();
   const tBack = await getTranslations({ locale, namespace: "admin.back" });
+  const t = await getTranslations({ locale, namespace: "admin.notifications.list" });
 
   const unreadCount = notifications.filter((n) => !n.read_at).length;
-
-  const t = {
-    en: { title: "Notifications", markAll: "Mark all as read", empty: "No notifications yet.", unread: "unread" },
-    de: { title: "Benachrichtigungen", markAll: "Alle als gelesen markieren", empty: "Keine Benachrichtigungen.", unread: "ungelesen" },
-    fr: { title: "Notifications", markAll: "Tout marquer comme lu", empty: "Aucune notification.", unread: "non lues" },
-  }[locale] ?? { title: "Notifications", markAll: "Mark all read", empty: "No notifications", unread: "unread" };
 
   return (
     <div>
       <PageHeader
-        title={t.title}
-        description={unreadCount > 0 ? `${unreadCount} ${t.unread}` : undefined}
+        title={t("title")}
+        description={unreadCount > 0 ? `${unreadCount} ${t("unread")}` : undefined}
         back={{ href: `/${locale}/dashboard`, label: tBack("dashboard") }}
         cta={unreadCount > 0 ? (
           <form
@@ -80,14 +75,14 @@ export default async function NotificationsPage({
               type="submit"
               className="rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
             >
-              {t.markAll}
+              {t("markAll")}
             </button>
           </form>
         ) : undefined}
       />
 
       {notifications.length === 0 ? (
-        <EmptyState icon={Bell} message={t.empty} className="mt-12" />
+        <EmptyState icon={Bell} message={t("empty")} className="mt-12" />
       ) : (
         <div className="mt-6 space-y-2">
           {notifications.map((n) => {

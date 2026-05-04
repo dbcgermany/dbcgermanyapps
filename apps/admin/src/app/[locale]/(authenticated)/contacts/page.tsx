@@ -15,12 +15,6 @@ import { AttendeesTab } from "./attendees-tab";
 
 type Tab = "contacts" | "attendees";
 
-const TAB_T = {
-  en: { contacts: "Contacts", attendees: "Attendees" },
-  de: { contacts: "Kontakte", attendees: "Teilnehmer" },
-  fr: { contacts: "Contacts", attendees: "Participants" },
-} as const;
-
 export default async function ContactsListPage({
   params,
   searchParams,
@@ -41,8 +35,7 @@ export default async function ContactsListPage({
 
   const t = await getTranslations({ locale, namespace: "admin.contacts" });
   const tCommon = await getTranslations({ locale, namespace: "admin.common" });
-  const tabT =
-    TAB_T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof TAB_T];
+  const tTabs = await getTranslations({ locale, namespace: "admin.contacts.list.tabs" });
 
   // Event list is needed by both tabs, so fetch once.
   const events = await listEventsForContactFilter();
@@ -73,13 +66,13 @@ export default async function ContactsListPage({
           href={`/${locale}/contacts`}
           className={tabClass(tab === "contacts")}
         >
-          {tabT.contacts}
+          {tTabs("contacts")}
         </Link>
         <Link
           href={`/${locale}/contacts?tab=attendees${sp.event ? `&event=${sp.event}` : ""}`}
           className={tabClass(tab === "attendees")}
         >
-          {tabT.attendees}
+          {tTabs("attendees")}
         </Link>
       </div>
 

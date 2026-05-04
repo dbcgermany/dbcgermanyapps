@@ -11,43 +11,13 @@ import { StatCard } from "@/components/stat-card";
 import { StatGrid } from "@/components/stat-grid";
 import { NewsletterComposer } from "../composer";
 
-const T = {
-  en: {
-    untitled: "(untitled)",
-    statusLabel: "Status",
-    analytics: "Delivery analytics",
-    delivered: "Delivered", opened: "Opened", clicked: "Clicked",
-    bouncedFailed: "Bounced / Failed",
-    unsubscribe: "unsubscribe since send",
-    unsubscribes: "unsubscribes since send",
-  },
-  de: {
-    untitled: "(ohne Titel)",
-    statusLabel: "Status",
-    analytics: "Versand-Analytics",
-    delivered: "Zugestellt", opened: "Geöffnet", clicked: "Geklickt",
-    bouncedFailed: "Bounced / Fehlgeschlagen",
-    unsubscribe: "Abmeldung seit Versand",
-    unsubscribes: "Abmeldungen seit Versand",
-  },
-  fr: {
-    untitled: "(sans titre)",
-    statusLabel: "Statut",
-    analytics: "Analytique d’envoi",
-    delivered: "Délivrés", opened: "Ouverts", clicked: "Cliqués",
-    bouncedFailed: "Rejetés / Échoués",
-    unsubscribe: "désabonnement depuis l’envoi",
-    unsubscribes: "désabonnements depuis l’envoi",
-  },
-} as const;
-
 export default async function NewsletterEditPage({
   params,
 }: {
   params: Promise<{ locale: string; id: string }>;
 }) {
   const { locale, id } = await params;
-  const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
+  const t = await getTranslations({ locale, namespace: "admin.newsletters.detail" });
   const tBack = await getTranslations({ locale, namespace: "admin.back" });
   const [nl, categories, domainStatus] = await Promise.all([
     getNewsletter(id),
@@ -64,8 +34,8 @@ export default async function NewsletterEditPage({
   return (
     <div>
       <PageHeader
-        title={nl.subject || t.untitled}
-        description={`${t.statusLabel}: ${nl.status}`}
+        title={nl.subject || t("untitled")}
+        description={`${t("statusLabel")}: ${nl.status}`}
         back={{ href: `/${locale}/newsletters`, label: tBack("newsletters") }}
       />
 
@@ -73,23 +43,23 @@ export default async function NewsletterEditPage({
       {stats && (
         <section className="mt-6">
           <h2 className="font-heading text-lg font-semibold">
-            {t.analytics}
+            {t("analytics")}
           </h2>
           <div className="mt-3">
             <StatGrid cols={4}>
-              <StatCard label={t.delivered} value={String(stats.delivered)} dense />
+              <StatCard label={t("delivered")} value={String(stats.delivered)} dense />
               <StatCard
-                label={t.opened}
+                label={t("opened")}
                 value={`${stats.opened} (${stats.openRate}%)`}
                 dense
               />
               <StatCard
-                label={t.clicked}
+                label={t("clicked")}
                 value={`${stats.clicked} (${stats.clickRate}%)`}
                 dense
               />
               <StatCard
-                label={t.bouncedFailed}
+                label={t("bouncedFailed")}
                 value={String(stats.bounced)}
                 dense
               />
@@ -97,7 +67,7 @@ export default async function NewsletterEditPage({
           </div>
           {stats.unsubscribed > 0 && (
             <p className="mt-2 text-xs text-muted-foreground">
-              {stats.unsubscribed} {stats.unsubscribed === 1 ? t.unsubscribe : t.unsubscribes}
+              {stats.unsubscribed} {stats.unsubscribed === 1 ? t("unsubscribe") : t("unsubscribes")}
             </p>
           )}
         </section>

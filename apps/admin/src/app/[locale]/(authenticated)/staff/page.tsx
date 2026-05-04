@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { getStaff, getEventsForAssignment } from "@/actions/staff";
 import { PageHeader } from "@/components/page-header";
 import { StaffClient } from "./staff-client";
@@ -8,6 +9,7 @@ export default async function StaffPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "admin.staff.list" });
 
   const [staff, events] = await Promise.all([
     getStaff(),
@@ -16,15 +18,7 @@ export default async function StaffPage({
 
   return (
     <div>
-      <PageHeader
-        title={
-          locale === "de"
-            ? "Mitarbeiterverwaltung"
-            : locale === "fr"
-              ? "Gestion du personnel"
-              : "Staff Management"
-        }
-      />
+      <PageHeader title={t("title")} />
 
       <StaffClient
         locale={locale}

@@ -1,23 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 export function ShareButtons({
   url,
   title,
-  locale,
+  locale: _locale,
 }: {
   url: string;
   title: string;
   locale: string;
 }) {
   const [copied, setCopied] = useState(false);
-
-  const t = {
-    en: { share: "Share", copied: "Link copied!" },
-    de: { share: "Teilen", copied: "Link kopiert!" },
-    fr: { share: "Partager", copied: "Lien copié !" },
-  }[locale] ?? { share: "Share", copied: "Copied!" };
+  const t = useTranslations("tickets.events.share");
 
   const encodedUrl = encodeURIComponent(url);
   const encodedText = encodeURIComponent(title);
@@ -35,7 +31,7 @@ export function ShareButtons({
   return (
     <div className="flex flex-wrap items-center gap-2">
       <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-        {t.share}
+        {t("share")}
       </span>
       <a
         href={`https://wa.me/?text=${encodedText}%20${encodedUrl}`}
@@ -75,7 +71,7 @@ export function ShareButtons({
         className="inline-flex h-8 items-center gap-1.5 rounded-full border border-border px-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
       >
         {copied ? (
-          t.copied
+          t("copied")
         ) : (
           <>
             <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">

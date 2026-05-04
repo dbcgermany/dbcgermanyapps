@@ -1,40 +1,8 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { Badge, LinkButton } from "@dbc/ui";
 import { listNewsletters } from "@/actions/newsletters";
 import { PageHeader } from "@/components/page-header";
-
-const T = {
-  en: {
-    title: "Newsletters",
-    description:
-      "Broadcasts to confirmed, non-unsubscribed contacts. Every email includes a one-click unsubscribe link.",
-    newNewsletter: "+ New newsletter",
-    subject: "Subject", status: "Status", locale: "Locale",
-    recipients: "Recipients", sentUpdated: "Sent / updated",
-    empty: "No newsletters yet. Create the first one.",
-    untitled: "(untitled)",
-  },
-  de: {
-    title: "Newsletter",
-    description:
-      "Rundmails an bestätigte, nicht abgemeldete Kontakte. Jede E-Mail enthält einen Ein-Klick-Abmeldelink.",
-    newNewsletter: "+ Neuer Newsletter",
-    subject: "Betreff", status: "Status", locale: "Sprache",
-    recipients: "Empfänger", sentUpdated: "Gesendet / aktualisiert",
-    empty: "Noch keine Newsletter. Erstellen Sie den ersten.",
-    untitled: "(ohne Titel)",
-  },
-  fr: {
-    title: "Newsletters",
-    description:
-      "Envois aux contacts confirmés non désabonnés. Chaque e-mail inclut un lien de désabonnement en un clic.",
-    newNewsletter: "+ Nouvelle newsletter",
-    subject: "Objet", status: "Statut", locale: "Langue",
-    recipients: "Destinataires", sentUpdated: "Envoyé / mis à jour",
-    empty: "Aucune newsletter pour le moment. Créez la première.",
-    untitled: "(sans titre)",
-  },
-} as const;
 
 export default async function NewslettersIndexPage({
   params,
@@ -42,17 +10,17 @@ export default async function NewslettersIndexPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
+  const t = await getTranslations({ locale, namespace: "admin.newsletters.list" });
   const newsletters = await listNewsletters();
 
   return (
     <div>
       <PageHeader
-        title={t.title}
-        description={t.description}
+        title={t("title")}
+        description={t("description")}
         cta={
           <LinkButton href={`/${locale}/newsletters/new`}>
-            {t.newNewsletter}
+            {t("newNewsletter")}
           </LinkButton>
         }
       />
@@ -61,7 +29,7 @@ export default async function NewslettersIndexPage({
       <ul className="mt-6 divide-y divide-border overflow-hidden rounded-xl border border-border bg-card md:hidden">
         {newsletters.length === 0 ? (
           <li className="px-4 py-10 text-center text-sm text-muted-foreground">
-            {t.empty}
+            {t("empty")}
           </li>
         ) : (
           newsletters.map((n) => (
@@ -72,7 +40,7 @@ export default async function NewslettersIndexPage({
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <p className="truncate font-medium">{n.subject || t.untitled}</p>
+                    <p className="truncate font-medium">{n.subject || t("untitled")}</p>
                     <Badge
                       variant={
                         n.status === "sent"
@@ -108,11 +76,11 @@ export default async function NewslettersIndexPage({
         <table className="w-full text-sm">
           <thead className="bg-muted text-xs uppercase tracking-wide text-muted-foreground">
             <tr>
-              <th className="px-4 py-3 text-left">{t.subject}</th>
-              <th className="px-4 py-3 text-left">{t.status}</th>
-              <th className="px-4 py-3 text-left">{t.locale}</th>
-              <th className="px-4 py-3 text-right">{t.recipients}</th>
-              <th className="px-4 py-3 text-left">{t.sentUpdated}</th>
+              <th className="px-4 py-3 text-left">{t("subject")}</th>
+              <th className="px-4 py-3 text-left">{t("status")}</th>
+              <th className="px-4 py-3 text-left">{t("locale")}</th>
+              <th className="px-4 py-3 text-right">{t("recipients")}</th>
+              <th className="px-4 py-3 text-left">{t("sentUpdated")}</th>
             </tr>
           </thead>
           <tbody>
@@ -122,7 +90,7 @@ export default async function NewslettersIndexPage({
                   colSpan={5}
                   className="px-4 py-10 text-center text-muted-foreground"
                 >
-                  {t.empty}
+                  {t("empty")}
                 </td>
               </tr>
             )}
@@ -133,7 +101,7 @@ export default async function NewslettersIndexPage({
                     href={`/${locale}/newsletters/${n.id}`}
                     className="font-medium hover:underline"
                   >
-                    {n.subject || t.untitled}
+                    {n.subject || t("untitled")}
                   </Link>
                 </td>
                 <td className="px-4 py-3">

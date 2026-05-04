@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { createServerClient } from "@dbc/supabase/server";
 import type { FunnelContent, FunnelCtaType } from "@dbc/types";
 import { FunnelHero } from "@/components/funnel/funnel-hero";
@@ -30,6 +31,28 @@ export const revalidate = 60;
 
 type PageLocale = "en" | "de" | "fr";
 
+// Resolve every label this page needs from the i18n catalogue. Centralised
+// so the JSX below stays declarative and tsc can keep narrow types.
+async function loadFunnelPageLabels(locale: PageLocale) {
+  const t = await getTranslations({
+    locale,
+    namespace: "site.funnel.bySlug",
+  });
+  return {
+    story: {
+      problem: t("storyLabels.problem"),
+      agitation: t("storyLabels.agitation"),
+      solution: t("storyLabels.solution"),
+    },
+    pricing: {
+      eyebrow: t("pricingLabels.eyebrow"),
+      title: t("pricingLabels.title"),
+    },
+    countdownEyebrow: t("countdownEyebrow"),
+    startingPrice: (price: string) => t("startingPriceLabel", { price }),
+  };
+}
+
 type FunnelRow = {
   id: string;
   slug: string;
@@ -50,33 +73,6 @@ type LinkedEvent = {
   slug: string;
   starts_at: string;
   tiers: FunnelTier[];
-};
-
-const STORY_LABELS: Record<
-  PageLocale,
-  { problem: string; agitation: string; solution: string }
-> = {
-  en: { problem: "The problem", agitation: "The cost", solution: "The room" },
-  de: { problem: "Das Problem", agitation: "Die Kosten", solution: "Der Raum" },
-  fr: { problem: "Le problème", agitation: "Le coût", solution: "La salle" },
-};
-
-const PRICING_LABELS: Record<PageLocale, { eyebrow: string; title: string }> = {
-  en: { eyebrow: "Choose your seat", title: "Three ways to be in the room." },
-  de: { eyebrow: "Wähle deinen Platz", title: "Drei Wege in den Raum." },
-  fr: { eyebrow: "Choisis ta place", title: "Trois façons d'être dans la salle." },
-};
-
-const COUNTDOWN_EYEBROW: Record<PageLocale, string> = {
-  en: "Doors open in",
-  de: "Türen öffnen in",
-  fr: "Ouverture dans",
-};
-
-const STARTING_PRICE_LABEL: Record<PageLocale, (price: string) => string> = {
-  en: (p) => `From ${p}`,
-  de: (p) => `Ab ${p}`,
-  fr: (p) => `Dès ${p}`,
 };
 
 function formatPriceFrom(
@@ -240,6 +236,8 @@ export default async function FunnelBySlugPage({
     ? await loadLinkedEvent(row.linked_event_id, l)
     : null;
 
+  const labels = await loadFunnelPageLabels(l);
+
   const ticketsOrigin =
     process.env.NEXT_PUBLIC_TICKETS_URL || "https://tickets.dbc-germany.com";
 
@@ -307,7 +305,7 @@ export default async function FunnelBySlugPage({
           problem={content.story.problem}
           agitation={content.story.agitation}
           solution={content.story.solution}
-          labels={STORY_LABELS[l]}
+          labels={labels.story}
         />
       )}
 
@@ -315,7 +313,7 @@ export default async function FunnelBySlugPage({
         <FunnelCountdown
           startsAt={linkedEvent.starts_at}
           locale={l}
-          eyebrow={COUNTDOWN_EYEBROW[l]}
+          eyebrow={labels.countdownEyebrow}
         />
       )}
 
@@ -335,8 +333,8 @@ export default async function FunnelBySlugPage({
           funnelId={row.id}
           ticketsOrigin={ticketsOrigin}
           locale={l}
-          eyebrow={PRICING_LABELS[l].eyebrow}
-          title={PRICING_LABELS[l].title}
+          eyebrow={labels.pricing.eyebrow}
+          title={labels.pricing.title}
         />
       ) : (
         <section id={scrollAnchor} className="scroll-mt-24">
@@ -388,7 +386,7 @@ export default async function FunnelBySlugPage({
 
       {linkedEvent && cheapestTier ? (
         <FunnelStickyCta
-          startingPriceLabel={STARTING_PRICE_LABEL[l](
+          startingPriceLabel={labels.startingPrice(
             formatPriceFrom(
               cheapestTier.priceCents,
               cheapestTier.currency,

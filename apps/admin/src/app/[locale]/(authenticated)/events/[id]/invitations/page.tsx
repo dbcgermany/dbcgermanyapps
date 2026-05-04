@@ -7,58 +7,13 @@ import { InviteForm } from "./invite-form";
 import { Card, Badge } from "@dbc/ui";
 import { PageHeader } from "@/components/page-header";
 
-const T = {
-  en: {
-    title: "Invitations",
-    description:
-      "Comped tickets — guests receive a branded PDF and are tagged invited_guests in Contacts.",
-    bulkImport: "Bulk import CSV →",
-    filterNote: "Filter reports by",
-    newInvitation: "New invitation",
-    invited: "Invited",
-    empty: "No invitations yet for this event.",
-    ticketFallback: "Ticket",
-    attended: "Attended",
-    sent: "Sent",
-    emailPending: "Email pending",
-  },
-  de: {
-    title: "Einladungen",
-    description:
-      "Freitickets — Gäste erhalten ein gebrandetes PDF und werden in Kontakten als eingeladene Gäste getaggt.",
-    bulkImport: "CSV-Import →",
-    filterNote: "Berichte filtern nach",
-    newInvitation: "Neue Einladung",
-    invited: "Eingeladen",
-    empty: "Noch keine Einladungen für diese Veranstaltung.",
-    ticketFallback: "Ticket",
-    attended: "Teilgenommen",
-    sent: "Gesendet",
-    emailPending: "E-Mail ausstehend",
-  },
-  fr: {
-    title: "Invitations",
-    description:
-      "Billets offerts — les invités reçoivent un PDF personnalisé et sont étiquetés invited_guests dans Contacts.",
-    bulkImport: "Import CSV →",
-    filterNote: "Filtrer les rapports par",
-    newInvitation: "Nouvelle invitation",
-    invited: "Invités",
-    empty: "Aucune invitation pour cet événement.",
-    ticketFallback: "Billet",
-    attended: "Présent",
-    sent: "Envoyé",
-    emailPending: "E-mail en attente",
-  },
-} as const;
-
 export default async function EventInvitationsPage({
   params,
 }: {
   params: Promise<{ locale: string; id: string }>;
 }) {
   const { locale, id } = await params;
-  const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
+  const t = await getTranslations({ locale, namespace: "admin.events.invitations" });
   const tBack = await getTranslations({ locale, namespace: "admin.back" });
   const [invitations, tiers] = await Promise.all([
     listInvitationsForEvent(id),
@@ -68,26 +23,26 @@ export default async function EventInvitationsPage({
   return (
     <div>
       <PageHeader
-        title={t.title}
-        description={t.description}
+        title={t("title")}
+        description={t("description")}
         back={{ href: `/${locale}/events/${id}`, label: tBack("event") }}
         cta={
           <Link
             href={`/${locale}/events/${id}/invitations/bulk`}
             className="rounded-md border border-border px-3 py-1.5 text-sm font-medium hover:bg-muted"
           >
-            {t.bulkImport}
+            {t("bulkImport")}
           </Link>
         }
       />
       <p className="mt-1 text-sm text-muted-foreground">
-        {t.filterNote}{" "}
+        {t("filterNote")}{" "}
         <code className="rounded bg-muted px-1 py-0.5 text-xs">acquisition_type = invited</code>.
       </p>
 
       <div className="mt-8 space-y-10">
         <section>
-          <h2 className="font-heading text-lg font-bold">{t.newInvitation}</h2>
+          <h2 className="font-heading text-lg font-bold">{t("newInvitation")}</h2>
           <InviteForm
             eventId={id}
             locale={locale}
@@ -104,11 +59,11 @@ export default async function EventInvitationsPage({
 
         <section>
           <h2 className="font-heading text-lg font-bold">
-            {t.invited} ({invitations.length})
+            {t("invited")} ({invitations.length})
           </h2>
           <div className="mt-4 space-y-2">
             {invitations.length === 0 ? (
-              <p className="text-sm text-muted-foreground">{t.empty}</p>
+              <p className="text-sm text-muted-foreground">{t("empty")}</p>
             ) : (
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               (invitations as any[]).map((inv) => {
@@ -123,17 +78,17 @@ export default async function EventInvitationsPage({
                       <p className="font-medium">{inv.recipient_name}</p>
                       <p className="text-xs text-muted-foreground">
                         {inv.recipient_email} ·{" "}
-                        {ticket?.tier?.name_en ?? t.ticketFallback} ·{" "}
+                        {ticket?.tier?.name_en ?? t("ticketFallback")} ·{" "}
                         {new Date(inv.created_at).toLocaleDateString(locale)}
                       </p>
                     </div>
                     <div className="text-right">
                       {ticket?.checked_in_at ? (
-                        <Badge variant="success"><Check className="mr-1 inline h-3 w-3" strokeWidth={2} /> {t.attended}</Badge>
+                        <Badge variant="success"><Check className="mr-1 inline h-3 w-3" strokeWidth={2} /> {t("attended")}</Badge>
                       ) : inv.email_sent_at ? (
-                        <Badge variant="default">{t.sent}</Badge>
+                        <Badge variant="default">{t("sent")}</Badge>
                       ) : (
-                        <Badge variant="error">{t.emailPending}</Badge>
+                        <Badge variant="error">{t("emailPending")}</Badge>
                       )}
                     </div>
                   </Card>

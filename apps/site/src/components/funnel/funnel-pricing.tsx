@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useFunnelCtaTracker } from "./funnel-analytics";
 
 // Each tier is a card; the middle tier gets the "Most popular" ribbon,
@@ -19,33 +20,6 @@ export type FunnelTier = {
   seatsLeft: number | null;
   maxQuantity: number | null;
 };
-
-const LABELS = {
-  en: {
-    mostPopular: "Most popular",
-    onlyLeft: (n: number) => `Only ${n} left`,
-    seats: "seats",
-    buy: "Get ",
-    freeLabel: "Free",
-    soldOut: "Sold out",
-  },
-  de: {
-    mostPopular: "Am beliebtesten",
-    onlyLeft: (n: number) => `Nur ${n} übrig`,
-    seats: "Plätze",
-    buy: "Hol dir ",
-    freeLabel: "Kostenlos",
-    soldOut: "Ausverkauft",
-  },
-  fr: {
-    mostPopular: "Le plus choisi",
-    onlyLeft: (n: number) => `Plus que ${n}`,
-    seats: "places",
-    buy: "Obtenir ",
-    freeLabel: "Gratuit",
-    soldOut: "Épuisé",
-  },
-} as const;
 
 function formatPrice(cents: number, currency: string, locale: string, free: string) {
   if (cents === 0) return free;
@@ -76,7 +50,7 @@ export function FunnelPricing({
   eyebrow?: string;
   title?: string;
 }) {
-  const t = LABELS[locale];
+  const t = useTranslations("site.funnel.pricing");
   const tracker = useFunnelCtaTracker(funnelId, locale);
   const mostPopularIdx = tiers.length >= 3 ? 1 : -1;
 
@@ -103,7 +77,7 @@ export function FunnelPricing({
               tier.seatsLeft > 0 &&
               tier.seatsLeft <= SCARCITY_THRESHOLD;
             const href = `${ticketsOrigin}/${locale}/checkout/${eventSlug}?tier=${tier.slug}&fn=${funnelSlug}`;
-            const price = formatPrice(tier.priceCents, tier.currency, locale, t.freeLabel);
+            const price = formatPrice(tier.priceCents, tier.currency, locale, t("freeLabel"));
 
             return (
               <div
@@ -116,7 +90,7 @@ export function FunnelPricing({
               >
                 {isPopular ? (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-primary-foreground shadow-sm">
-                    {t.mostPopular}
+                    {t("mostPopular")}
                   </div>
                 ) : null}
 
@@ -134,18 +108,18 @@ export function FunnelPricing({
 
                 {lowStock ? (
                   <p className="mt-4 inline-flex w-fit items-center rounded-full bg-danger-soft px-3 py-1 text-xs font-semibold text-danger">
-                    {t.onlyLeft(tier.seatsLeft!)}
+                    {t("onlyLeft", { n: tier.seatsLeft! })}
                   </p>
                 ) : tier.maxQuantity !== null ? (
                   <p className="mt-4 text-xs text-muted-foreground">
-                    {tier.maxQuantity} {t.seats}
+                    {tier.maxQuantity} {t("seats")}
                   </p>
                 ) : null}
 
                 <div className="mt-auto pt-6">
                   {isSoldOut ? (
                     <div className="inline-flex min-h-12 w-full items-center justify-center rounded-full border border-border bg-muted px-6 text-sm font-semibold text-muted-foreground">
-                      {t.soldOut}
+                      {t("soldOut")}
                     </div>
                   ) : (
                     <a
@@ -157,7 +131,7 @@ export function FunnelPricing({
                           : "border border-border bg-background text-foreground hover:bg-muted"
                       }`}
                     >
-                      {t.buy}
+                      {t("buy")}
                       {tier.name}
                       <span aria-hidden className="ml-2">
                         &rarr;

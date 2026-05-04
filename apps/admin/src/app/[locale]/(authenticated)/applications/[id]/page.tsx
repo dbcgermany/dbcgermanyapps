@@ -14,24 +14,6 @@ const STATUS_VARIANT: Record<string, "default" | "success" | "warning" | "error"
   rejected: "error",
 };
 
-const T = {
-  en: {
-    incubationFrom: "Incubation application from",
-    unknownPosition: "Unknown position",
-    applicationFor: "Application for",
-  },
-  de: {
-    incubationFrom: "Inkubations-Bewerbung von",
-    unknownPosition: "Unbekannte Stelle",
-    applicationFor: "Bewerbung für",
-  },
-  fr: {
-    incubationFrom: "Candidature incubation de",
-    unknownPosition: "Poste inconnu",
-    applicationFor: "Candidature pour",
-  },
-} as const;
-
 export default async function ApplicationDetailPage({
   params,
   searchParams,
@@ -40,7 +22,7 @@ export default async function ApplicationDetailPage({
   searchParams: Promise<{ type?: string }>;
 }) {
   const { locale, id } = await params;
-  const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
+  const t = await getTranslations({ locale, namespace: "admin.applications.detail" });
   const tBack = await getTranslations({ locale, namespace: "admin.back" });
   const { type } = await searchParams;
   const appType = type === "job" ? "job" : "incubation";
@@ -57,7 +39,7 @@ export default async function ApplicationDetailPage({
       <div>
         <PageHeader
           title={data.company_name || data.founder_name}
-          description={`${t.incubationFrom} ${data.founder_name}`}
+          description={`${t("incubationFrom")} ${data.founder_name}`}
           back={{ href: `/${locale}/applications`, label: tBack("applications") }}
           cta={
             <Badge variant={STATUS_VARIANT[data.status] ?? "default"}>
@@ -86,14 +68,14 @@ export default async function ApplicationDetailPage({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const jobOffers = data.job_offers as any;
   const jobTitle = Array.isArray(jobOffers)
-    ? jobOffers[0]?.title_en ?? t.unknownPosition
-    : jobOffers?.title_en ?? t.unknownPosition;
+    ? jobOffers[0]?.title_en ?? t("unknownPosition")
+    : jobOffers?.title_en ?? t("unknownPosition");
 
   return (
     <div>
       <PageHeader
         title={data.applicant_name}
-        description={`${t.applicationFor} ${jobTitle}`}
+        description={`${t("applicationFor")} ${jobTitle}`}
         back={{ href: `/${locale}/applications?tab=jobs`, label: tBack("applications") }}
         cta={
           <Badge variant={STATUS_VARIANT[data.status] ?? "default"}>

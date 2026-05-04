@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { createServerClient } from "@dbc/supabase/server";
 import { RecoveryPanel } from "./recovery-panel";
 
@@ -43,6 +44,10 @@ export default async function ConfirmationPage({
 }) {
   const { locale, orderId } = await params;
   const supabase = await createServerClient();
+  const t = await getTranslations({
+    locale,
+    namespace: "tickets.confirmation.page",
+  });
 
   const { data: order } = await supabase
     .from("orders")
@@ -74,50 +79,6 @@ export default async function ConfirmationPage({
 
   const isPaid = order.status === "paid" || order.status === "comped";
 
-  const t = {
-    en: {
-      confirmed: "Order Confirmed!",
-      pending: "Order Pending",
-      subtitle: "Your tickets have been sent to each attendee\u2019s email.",
-      pendingSubtitle: "Your payment is being processed. This page will update once confirmed.",
-      orderNumber: "Order",
-      event: "Event",
-      date: "Date",
-      tickets: "Tickets",
-      total: "Total",
-      backToEvents: "Back to events",
-      downloadPdf: "Download PDF",
-    },
-    de: {
-      confirmed: "Bestellung best\u00E4tigt!",
-      pending: "Bestellung ausstehend",
-      subtitle: "Ihre Tickets wurden an die E-Mail-Adresse jedes Teilnehmers gesendet.",
-      pendingSubtitle: "Ihre Zahlung wird verarbeitet. Diese Seite wird aktualisiert, sobald die Zahlung best\u00E4tigt ist.",
-      orderNumber: "Bestellung",
-      event: "Veranstaltung",
-      date: "Datum",
-      tickets: "Tickets",
-      total: "Gesamt",
-      backToEvents: "Zur\u00FCck zu Veranstaltungen",
-      downloadPdf: "PDF herunterladen",
-    },
-    fr: {
-      confirmed: "Commande confirm\u00E9e !",
-      pending: "Commande en attente",
-      subtitle: "Vos billets ont \u00E9t\u00E9 envoy\u00E9s \u00E0 l\u2019e-mail de chaque participant.",
-      pendingSubtitle: "Votre paiement est en cours de traitement. Cette page sera mise \u00E0 jour une fois confirm\u00E9.",
-      orderNumber: "Commande",
-      event: "\u00C9v\u00E9nement",
-      date: "Date",
-      tickets: "Billets",
-      total: "Total",
-      backToEvents: "Retour aux \u00E9v\u00E9nements",
-      downloadPdf: "T\u00E9l\u00E9charger le PDF",
-    },
-  }[locale] ?? {
-    confirmed: "Order Confirmed!", pending: "Order Pending", subtitle: "", pendingSubtitle: "", orderNumber: "Order", event: "Event", date: "Date", tickets: "Tickets", total: "Total", backToEvents: "Back to events", downloadPdf: "Download PDF",
-  };
-
   const ticketCountUnsent = (tickets ?? []).filter(
     (x) => !x.email_sent_at
   ).length;
@@ -138,26 +99,26 @@ export default async function ConfirmationPage({
           {isPaid ? "\u2713" : "\u23F3"}
         </div>
         <h1 className="mt-4 font-heading text-3xl font-bold">
-          {isPaid ? t.confirmed : t.pending}
+          {isPaid ? t("confirmed") : t("pending")}
         </h1>
         <p className="mt-2 text-muted-foreground">
-          {isPaid ? t.subtitle : t.pendingSubtitle}
+          {isPaid ? t("subtitle") : t("pendingSubtitle")}
         </p>
       </div>
 
       {/* Order details */}
       <div className="mt-10 rounded-xl border border-border p-6 space-y-4">
         <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">{t.orderNumber}</span>
+          <span className="text-muted-foreground">{t("orderNumber")}</span>
           <span className="font-mono">{orderId.slice(0, 8).toUpperCase()}</span>
         </div>
         <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">{t.event}</span>
+          <span className="text-muted-foreground">{t("event")}</span>
           <span className="font-medium">{eventTitle}</span>
         </div>
         {event && (
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">{t.date}</span>
+            <span className="text-muted-foreground">{t("date")}</span>
             <span>
               {new Date(event.starts_at).toLocaleDateString(locale, {
                 year: "numeric",
@@ -168,11 +129,11 @@ export default async function ConfirmationPage({
           </div>
         )}
         <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">{t.tickets}</span>
+          <span className="text-muted-foreground">{t("tickets")}</span>
           <span>{tickets?.length ?? 0}</span>
         </div>
         <div className="border-t border-border pt-3 flex justify-between font-medium">
-          <span>{t.total}</span>
+          <span>{t("total")}</span>
           <span>
             {order.total_cents === 0
               ? locale === "de"
@@ -200,7 +161,7 @@ export default async function ConfirmationPage({
       {/* Ticket list */}
       {tickets && tickets.length > 0 && (
         <div className="mt-8">
-          <h2 className="font-heading text-lg font-semibold">{t.tickets}</h2>
+          <h2 className="font-heading text-lg font-semibold">{t("tickets")}</h2>
           <div className="mt-4 space-y-3">
             {tickets.map((ticket) => (
               <div
@@ -224,7 +185,7 @@ export default async function ConfirmationPage({
                       rel="noopener noreferrer"
                       className="rounded-md border border-border bg-background px-2.5 py-1 text-xs font-medium hover:bg-accent"
                     >
-                      {t.downloadPdf}
+                      {t("downloadPdf")}
                     </a>
                   )}
                 </div>
@@ -239,7 +200,7 @@ export default async function ConfirmationPage({
           href={`/${locale}`}
           className="text-sm font-medium text-primary hover:text-primary/80"
         >
-          &larr; {t.backToEvents}
+          &larr; {t("backToEvents")}
         </Link>
       </div>
     </main>

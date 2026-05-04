@@ -1,13 +1,8 @@
+import { getTranslations } from "next-intl/server";
 import { getDoorSaleEvents, getEventTiers } from "@/actions/door-sale";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
 import { DoorSaleClient } from "./door-sale-client";
-
-const TITLES = {
-  en: { door: "Door Sale", advance: "Advance Sale" },
-  de: { door: "Abendkasse", advance: "Vorverkauf" },
-  fr: { door: "Vente sur place", advance: "Pr\u00E9vente" },
-} as const;
 
 export default async function DoorSalePage({
   params,
@@ -19,28 +14,19 @@ export default async function DoorSalePage({
   const { locale } = await params;
   const sp = await searchParams;
   const mode = sp.mode === "advance" ? "advance" : "door";
-  const l = (locale === "de" || locale === "fr" ? locale : "en") as "en" | "de" | "fr";
+  const t = await getTranslations({ locale, namespace: "admin.doorSale.page" });
 
   const events = await getDoorSaleEvents(mode);
   const selectedEventId = sp.event ?? events[0]?.id ?? null;
   const tiers = selectedEventId ? await getEventTiers(selectedEventId) : [];
 
-  const emptyMsg = {
-    en: mode === "door"
-      ? "No upcoming events in the next 30 days."
-      : "No upcoming events.",
-    de: mode === "door"
-      ? "Keine bevorstehenden Veranstaltungen in den n\u00E4chsten 30 Tagen."
-      : "Keine bevorstehenden Veranstaltungen.",
-    fr: mode === "door"
-      ? "Aucun \u00E9v\u00E9nement \u00E0 venir dans les 30 prochains jours."
-      : "Aucun \u00E9v\u00E9nement \u00E0 venir.",
-  }[l];
+  const emptyMsg =
+    mode === "door" ? t("emptyDoor") : t("emptyAdvance");
 
   return (
     <div>
       <div className="mx-auto max-w-2xl">
-        <PageHeader title={TITLES[l][mode]} />
+        <PageHeader title={mode === "door" ? t("door") : t("advance")} />
 
         {/* Mode toggle */}
         <div className="mt-4 flex gap-1 rounded-md border border-border p-1 w-fit">
@@ -54,7 +40,7 @@ export default async function DoorSalePage({
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              {TITLES[l][m]}
+              {m === "door" ? t("door") : t("advance")}
             </a>
           ))}
         </div>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { getIncubationApplications } from "@/actions/applications";
 import { getJobApplications } from "@/actions/job-applications";
 import { CsvExportButton } from "@/components/csv-export-button";
@@ -8,54 +9,6 @@ import { StatusSelect } from "./status-select";
 import { JobApplicationStatusSelect } from "./job-application-status-select";
 import { ApplicationTabs } from "./application-tabs";
 
-const T = {
-  en: {
-    title: "Applications",
-    description: "Incubation and job applications.",
-    emptyIncubation: "No incubation applications yet.",
-    emptyJobs: "No job applications yet.",
-    csvId: "ID", csvReceived: "Received", csvFounder: "Founder",
-    csvEmail: "Email", csvPhone: "Phone", csvCountry: "Country",
-    csvLocale: "Locale", csvCompany: "Company", csvWebsite: "Website",
-    csvStage: "Stage", csvFunding: "Funding sought (EUR)", csvStatus: "Status",
-    csvNotes: "Notes", csvPitch: "Pitch",
-    founder: "Founder", company: "Company", stage: "Stage", pitch: "Pitch",
-    received: "Received", status: "Status",
-    applicant: "Applicant", job: "Job", coverLetter: "Cover letter",
-    unknownPosition: "Unknown position",
-  },
-  de: {
-    title: "Bewerbungen",
-    description: "Inkubations- und Stellenbewerbungen.",
-    emptyIncubation: "Noch keine Inkubations-Bewerbungen.",
-    emptyJobs: "Noch keine Stellenbewerbungen.",
-    csvId: "ID", csvReceived: "Eingegangen", csvFounder: "Gründer:in",
-    csvEmail: "E-Mail", csvPhone: "Telefon", csvCountry: "Land",
-    csvLocale: "Sprache", csvCompany: "Unternehmen", csvWebsite: "Website",
-    csvStage: "Phase", csvFunding: "Finanzierungsbedarf (EUR)", csvStatus: "Status",
-    csvNotes: "Notizen", csvPitch: "Pitch",
-    founder: "Gründer:in", company: "Unternehmen", stage: "Phase", pitch: "Pitch",
-    received: "Eingegangen", status: "Status",
-    applicant: "Bewerber:in", job: "Stelle", coverLetter: "Anschreiben",
-    unknownPosition: "Unbekannte Stelle",
-  },
-  fr: {
-    title: "Candidatures",
-    description: "Candidatures incubation et emploi.",
-    emptyIncubation: "Aucune candidature incubation pour le moment.",
-    emptyJobs: "Aucune candidature d’emploi pour le moment.",
-    csvId: "ID", csvReceived: "Reçue", csvFounder: "Fondateur",
-    csvEmail: "E-mail", csvPhone: "Téléphone", csvCountry: "Pays",
-    csvLocale: "Langue", csvCompany: "Société", csvWebsite: "Site web",
-    csvStage: "Phase", csvFunding: "Financement recherché (EUR)", csvStatus: "Statut",
-    csvNotes: "Notes", csvPitch: "Pitch",
-    founder: "Fondateur", company: "Société", stage: "Phase", pitch: "Pitch",
-    received: "Reçue", status: "Statut",
-    applicant: "Candidat(e)", job: "Poste", coverLetter: "Lettre de motivation",
-    unknownPosition: "Poste inconnu",
-  },
-} as const;
-
 export default async function ApplicationsPage({
   params,
   searchParams,
@@ -64,7 +17,7 @@ export default async function ApplicationsPage({
   searchParams: Promise<{ tab?: string }>;
 }) {
   const { locale } = await params;
-  const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
+  const t = await getTranslations({ locale, namespace: "admin.applications.list" });
   const { tab } = await searchParams;
   const activeTab = tab === "jobs" ? "jobs" : "incubation";
 
@@ -94,28 +47,28 @@ export default async function ApplicationsPage({
   return (
     <div>
       <PageHeader
-        title={t.title}
-        description={t.description}
+        title={t("title")}
+        description={t("description")}
         cta={
           activeTab === "incubation" ? (
             <CsvExportButton
               rows={csvRows}
               filename={`applications-${new Date().toISOString().slice(0, 10)}.csv`}
               headers={[
-                { key: "id", label: t.csvId },
-                { key: "created_at", label: t.csvReceived },
-                { key: "founder_name", label: t.csvFounder },
-                { key: "founder_email", label: t.csvEmail },
-                { key: "founder_phone", label: t.csvPhone },
-                { key: "country", label: t.csvCountry },
-                { key: "locale", label: t.csvLocale },
-                { key: "company_name", label: t.csvCompany },
-                { key: "company_website", label: t.csvWebsite },
-                { key: "company_stage", label: t.csvStage },
-                { key: "funding_needed_eur", label: t.csvFunding },
-                { key: "status", label: t.csvStatus },
-                { key: "reviewer_notes", label: t.csvNotes },
-                { key: "pitch", label: t.csvPitch },
+                { key: "id", label: t("csvId") },
+                { key: "created_at", label: t("csvReceived") },
+                { key: "founder_name", label: t("csvFounder") },
+                { key: "founder_email", label: t("csvEmail") },
+                { key: "founder_phone", label: t("csvPhone") },
+                { key: "country", label: t("csvCountry") },
+                { key: "locale", label: t("csvLocale") },
+                { key: "company_name", label: t("csvCompany") },
+                { key: "company_website", label: t("csvWebsite") },
+                { key: "company_stage", label: t("csvStage") },
+                { key: "funding_needed_eur", label: t("csvFunding") },
+                { key: "status", label: t("csvStatus") },
+                { key: "reviewer_notes", label: t("csvNotes") },
+                { key: "pitch", label: t("csvPitch") },
               ]}
             />
           ) : undefined
@@ -127,18 +80,18 @@ export default async function ApplicationsPage({
       {activeTab === "incubation" ? (
         <>
           {apps.length === 0 ? (
-            <EmptyState message={t.emptyIncubation} className="mt-8" />
+            <EmptyState message={t("emptyIncubation")} className="mt-8" />
           ) : (
             <div className="mt-4 overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead className="text-xs uppercase tracking-wider text-muted-foreground">
                   <tr>
-                    <th className="px-4 py-3">{t.founder}</th>
-                    <th className="px-4 py-3">{t.company}</th>
-                    <th className="px-4 py-3">{t.stage}</th>
-                    <th className="px-4 py-3">{t.pitch}</th>
-                    <th className="px-4 py-3">{t.received}</th>
-                    <th className="px-4 py-3">{t.status}</th>
+                    <th className="px-4 py-3">{t("founder")}</th>
+                    <th className="px-4 py-3">{t("company")}</th>
+                    <th className="px-4 py-3">{t("stage")}</th>
+                    <th className="px-4 py-3">{t("pitch")}</th>
+                    <th className="px-4 py-3">{t("received")}</th>
+                    <th className="px-4 py-3">{t("status")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -212,17 +165,17 @@ export default async function ApplicationsPage({
       ) : (
         <>
           {jobApps.length === 0 ? (
-            <EmptyState message={t.emptyJobs} className="mt-8" />
+            <EmptyState message={t("emptyJobs")} className="mt-8" />
           ) : (
             <div className="mt-4 overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead className="text-xs uppercase tracking-wider text-muted-foreground">
                   <tr>
-                    <th className="px-4 py-3">{t.applicant}</th>
-                    <th className="px-4 py-3">{t.job}</th>
-                    <th className="px-4 py-3">{t.coverLetter}</th>
-                    <th className="px-4 py-3">{t.received}</th>
-                    <th className="px-4 py-3">{t.status}</th>
+                    <th className="px-4 py-3">{t("applicant")}</th>
+                    <th className="px-4 py-3">{t("job")}</th>
+                    <th className="px-4 py-3">{t("coverLetter")}</th>
+                    <th className="px-4 py-3">{t("received")}</th>
+                    <th className="px-4 py-3">{t("status")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -230,7 +183,7 @@ export default async function ApplicationsPage({
                     const offers = a.job_offers as
                       | { title_en: string; title_de: string | null; title_fr: string | null }[]
                       | null;
-                    const jobTitle = offers?.[0]?.title_en ?? t.unknownPosition;
+                    const jobTitle = offers?.[0]?.title_en ?? t("unknownPosition");
                     return (
                       <tr key={a.id} className="align-top">
                         <td className="px-4 py-4">

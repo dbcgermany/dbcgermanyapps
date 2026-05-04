@@ -9,73 +9,13 @@ import { CoverImageUpload } from "@/components/cover-image-upload";
 import { PageHeader } from "@/components/page-header";
 import { PaymentMethodsSelect } from "@/components/payment-methods-select";
 
-const T = {
-  en: {
-    pageTitle: "Create Event",
-    eventType: "Event type",
-    conference: "Conference",
-    masterclass: "Masterclass",
-    title: "Title",
-    description: "Description",
-    trilingual: "(trilingual)",
-    english: "English", deutsch: "Deutsch", francais: "Français",
-    venueName: "Venue name",
-    city: "City",
-    venueAddress: "Venue address",
-    startDate: "Start date & time",
-    endDate: "End date & time",
-    capacity: "Capacity",
-    maxPerOrder: "Max tickets per order",
-    creating: "Creating…",
-    createEvent: "Create Event",
-  },
-  de: {
-    pageTitle: "Veranstaltung anlegen",
-    eventType: "Veranstaltungstyp",
-    conference: "Konferenz",
-    masterclass: "Masterclass",
-    title: "Titel",
-    description: "Beschreibung",
-    trilingual: "(dreisprachig)",
-    english: "English", deutsch: "Deutsch", francais: "Français",
-    venueName: "Veranstaltungsort",
-    city: "Stadt",
-    venueAddress: "Adresse",
-    startDate: "Beginn (Datum & Uhrzeit)",
-    endDate: "Ende (Datum & Uhrzeit)",
-    capacity: "Kapazität",
-    maxPerOrder: "Max. Tickets pro Bestellung",
-    creating: "Wird erstellt…",
-    createEvent: "Veranstaltung erstellen",
-  },
-  fr: {
-    pageTitle: "Créer un événement",
-    eventType: "Type d’événement",
-    conference: "Conférence",
-    masterclass: "Masterclass",
-    title: "Titre",
-    description: "Description",
-    trilingual: "(trilingue)",
-    english: "English", deutsch: "Deutsch", francais: "Français",
-    venueName: "Nom du lieu",
-    city: "Ville",
-    venueAddress: "Adresse",
-    startDate: "Début (date & heure)",
-    endDate: "Fin (date & heure)",
-    capacity: "Capacité",
-    maxPerOrder: "Max. billets par commande",
-    creating: "Création…",
-    createEvent: "Créer l’événement",
-  },
-} as const;
-
 export default function NewEventPage({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = use(params);
-  const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
+  const t = useTranslations("admin.events.new");
   const tBack = useTranslations("admin.back");
 
   const [state, formAction, isPending] = useActionState(
@@ -89,7 +29,7 @@ export default function NewEventPage({
   return (
     <div>
       <PageHeader
-        title={t.pageTitle}
+        title={t("pageTitle")}
         back={{ href: `/${locale}/events`, label: tBack("events") }}
       />
 
@@ -102,7 +42,7 @@ export default function NewEventPage({
 
         {/* Event Type */}
         <fieldset>
-          <legend className="text-sm font-medium mb-2">{t.eventType}</legend>
+          <legend className="text-sm font-medium mb-2">{t("eventType")}</legend>
           <div className="flex gap-4">
             {EVENT_TYPE_VALUES.map((value, i) => (
               <label
@@ -116,7 +56,7 @@ export default function NewEventPage({
                   defaultChecked={i === 0}
                   className="accent-primary"
                 />
-                {t[value as EventType]}
+                {t(value as EventType)}
               </label>
             ))}
           </div>
@@ -125,12 +65,12 @@ export default function NewEventPage({
         {/* Titles (trilingual) */}
         <div className="space-y-4">
           <h2 className="text-sm font-medium">
-            {t.title} <span className="text-muted-foreground">{t.trilingual}</span>
+            {t("title")} <span className="text-muted-foreground">{t("trilingual")}</span>
           </h2>
           {[
-            { name: "title_en", label: t.english, required: true },
-            { name: "title_de", label: t.deutsch },
-            { name: "title_fr", label: t.francais },
+            { name: "title_en", label: t("english"), required: true },
+            { name: "title_de", label: t("deutsch") },
+            { name: "title_fr", label: t("francais") },
           ].map((field) => (
             <div key={field.name}>
               <label htmlFor={field.name} className="block text-xs text-muted-foreground mb-1">
@@ -150,12 +90,12 @@ export default function NewEventPage({
         {/* Descriptions (trilingual) */}
         <div className="space-y-4">
           <h2 className="text-sm font-medium">
-            {t.description} <span className="text-muted-foreground">{t.trilingual}</span>
+            {t("description")} <span className="text-muted-foreground">{t("trilingual")}</span>
           </h2>
           {[
-            { name: "description_en", label: t.english },
-            { name: "description_de", label: t.deutsch },
-            { name: "description_fr", label: t.francais },
+            { name: "description_en", label: t("english") },
+            { name: "description_de", label: t("deutsch") },
+            { name: "description_fr", label: t("francais") },
           ].map((field) => (
             <div key={field.name}>
               <label htmlFor={field.name} className="block text-xs text-muted-foreground mb-1">
@@ -175,7 +115,7 @@ export default function NewEventPage({
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label htmlFor="venue_name" className="block text-sm font-medium mb-1">
-              {t.venueName}
+              {t("venueName")}
             </label>
             <input
               id="venue_name"
@@ -186,7 +126,7 @@ export default function NewEventPage({
           </div>
           <div>
             <label htmlFor="city" className="block text-sm font-medium mb-1">
-              {t.city}
+              {t("city")}
             </label>
             <input
               id="city"
@@ -200,7 +140,7 @@ export default function NewEventPage({
 
         <div>
           <label htmlFor="venue_address" className="block text-sm font-medium mb-1">
-            {t.venueAddress}
+            {t("venueAddress")}
           </label>
           <input
             id="venue_address"
@@ -214,7 +154,7 @@ export default function NewEventPage({
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label htmlFor="starts_at" className="block text-sm font-medium mb-1">
-              {t.startDate}
+              {t("startDate")}
             </label>
             <input
               id="starts_at"
@@ -226,7 +166,7 @@ export default function NewEventPage({
           </div>
           <div>
             <label htmlFor="ends_at" className="block text-sm font-medium mb-1">
-              {t.endDate}
+              {t("endDate")}
             </label>
             <input
               id="ends_at"
@@ -242,7 +182,7 @@ export default function NewEventPage({
             the sum of each tier's max_quantity once tiers are added. */}
         <div>
           <label htmlFor="max_tickets_per_order" className="block text-sm font-medium mb-1">
-            {t.maxPerOrder}
+            {t("maxPerOrder")}
           </label>
           <input
             id="max_tickets_per_order"
@@ -262,7 +202,7 @@ export default function NewEventPage({
 
         <div className="flex gap-3 pt-4">
           <Button type="submit" disabled={isPending}>
-            {isPending ? t.creating : t.createEvent}
+            {isPending ? t("creating") : t("createEvent")}
           </Button>
         </div>
       </form>

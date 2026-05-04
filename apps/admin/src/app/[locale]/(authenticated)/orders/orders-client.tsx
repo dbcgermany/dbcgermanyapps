@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Badge, ConfirmDialog } from "@dbc/ui";
 import { toast } from "sonner";
 import { ORDER_STATUS_VALUES } from "@dbc/types";
@@ -46,6 +47,7 @@ export function OrdersClient({
   total: number;
 }) {
   const router = useRouter();
+  const t = useTranslations("admin.orders.client");
   const [refundingId, setRefundingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -79,62 +81,9 @@ export function OrdersClient({
       setError(res.error);
       toast.error(res.error);
     } else {
-      toast.success(t.refund);
+      toast.success(t("refund"));
     }
   }
-
-  const t = {
-    en: {
-      event: "Event", status: "Status", customer: "Customer", total: "Total", date: "Date", actions: "Actions",
-      refund: "Refund", refunding: "Refunding…",
-      refundConfirm: "Refund this order? This restores ticket inventory and processes a Stripe refund.",
-      all: "All events", allStatus: "All statuses",
-      pending: "Pending", paid: "Paid", comped: "Complimentary", refunded: "Refunded", cancelled: "Cancelled",
-      purchased: "Purchased", invited: "Invited", assigned: "Assigned", door_sale: "Door sale",
-      noOrders: "No orders match your filters.",
-      csvOrderId: "Order ID", csvEvent: "Event", csvRecipient: "Recipient",
-      csvEmail: "Email", csvStatus: "Status", csvAcquisition: "Acquisition",
-      csvPayment: "Payment", csvTotal: "Total (€)", csvStripe: "Stripe PI",
-      csvCreated: "Created at", csvEmailSent: "Email sent at",
-    },
-    de: {
-      event: "Veranstaltung", status: "Status", customer: "Kund:in", total: "Gesamt", date: "Datum", actions: "Aktionen",
-      refund: "Erstatten", refunding: "Wird erstattet…",
-      refundConfirm: "Diese Bestellung erstatten? Das Ticket-Kontingent wird wiederhergestellt und eine Stripe-Rückerstattung ausgelöst.",
-      all: "Alle Veranstaltungen", allStatus: "Alle Status",
-      pending: "Ausstehend", paid: "Bezahlt", comped: "Kostenlos", refunded: "Erstattet", cancelled: "Storniert",
-      purchased: "Gekauft", invited: "Eingeladen", assigned: "Zugewiesen", door_sale: "Abendkasse",
-      noOrders: "Keine Bestellungen gefunden.",
-      csvOrderId: "Bestell-ID", csvEvent: "Veranstaltung", csvRecipient: "Empfänger:in",
-      csvEmail: "E-Mail", csvStatus: "Status", csvAcquisition: "Erhalten durch",
-      csvPayment: "Zahlung", csvTotal: "Gesamt (€)", csvStripe: "Stripe PI",
-      csvCreated: "Erstellt am", csvEmailSent: "E-Mail gesendet am",
-    },
-    fr: {
-      event: "Événement", status: "Statut", customer: "Client", total: "Total", date: "Date", actions: "Actions",
-      refund: "Rembourser", refunding: "Remboursement…",
-      refundConfirm: "Rembourser cette commande ? Le stock de billets est rétabli et un remboursement Stripe est déclenché.",
-      all: "Tous les événements", allStatus: "Tous les statuts",
-      pending: "En attente", paid: "Payé", comped: "Gratuit", refunded: "Remboursé", cancelled: "Annulé",
-      purchased: "Acheté", invited: "Invité", assigned: "Attribué", door_sale: "Sur place",
-      noOrders: "Aucune commande.",
-      csvOrderId: "ID commande", csvEvent: "Événement", csvRecipient: "Destinataire",
-      csvEmail: "E-mail", csvStatus: "Statut", csvAcquisition: "Acquisition",
-      csvPayment: "Paiement", csvTotal: "Total (€)", csvStripe: "Stripe PI",
-      csvCreated: "Créée le", csvEmailSent: "E-mail envoyé le",
-    },
-  }[locale] ?? {
-    event: "Event", status: "Status", customer: "Customer", total: "Total", date: "Date", actions: "Actions",
-    refund: "Refund", refunding: "…", refundConfirm: "Refund?",
-    all: "All", allStatus: "All",
-    pending: "Pending", paid: "Paid", comped: "Comped", refunded: "Refunded", cancelled: "Cancelled",
-    purchased: "Purchased", invited: "Invited", assigned: "Assigned", door_sale: "Door sale",
-    noOrders: "No orders",
-    csvOrderId: "Order ID", csvEvent: "Event", csvRecipient: "Recipient",
-    csvEmail: "Email", csvStatus: "Status", csvAcquisition: "Acquisition",
-    csvPayment: "Payment", csvTotal: "Total (€)", csvStripe: "Stripe PI",
-    csvCreated: "Created at", csvEmailSent: "Email sent at",
-  };
 
   return (
     <div className="mt-6">
@@ -146,7 +95,7 @@ export function OrdersClient({
             onChange={(e) => updateFilters(e.target.value, undefined)}
             className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           >
-            <option value="">{t.all}</option>
+            <option value="">{t("all")}</option>
             {events.map((e) => (
               <option key={e.id} value={e.id}>
                 {e.title}
@@ -160,7 +109,7 @@ export function OrdersClient({
           >
             {STATUS_OPTIONS.map((s) => (
               <option key={s || "all"} value={s}>
-                {s === "" ? t.allStatus : t[s as keyof typeof t]}
+                {s === "" ? t("allStatus") : t(s)}
               </option>
             ))}
           </select>
@@ -181,17 +130,17 @@ export function OrdersClient({
             email_sent_at: o.emailSentAt ?? "",
           }))}
           headers={[
-            { key: "id", label: t.csvOrderId },
-            { key: "event", label: t.csvEvent },
-            { key: "recipient_name", label: t.csvRecipient },
-            { key: "recipient_email", label: t.csvEmail },
-            { key: "status", label: t.csvStatus },
-            { key: "acquisition_type", label: t.csvAcquisition },
-            { key: "payment_method", label: t.csvPayment },
-            { key: "total_eur", label: t.csvTotal },
-            { key: "stripe_payment_intent", label: t.csvStripe },
-            { key: "created_at", label: t.csvCreated },
-            { key: "email_sent_at", label: t.csvEmailSent },
+            { key: "id", label: t("csvOrderId") },
+            { key: "event", label: t("csvEvent") },
+            { key: "recipient_name", label: t("csvRecipient") },
+            { key: "recipient_email", label: t("csvEmail") },
+            { key: "status", label: t("csvStatus") },
+            { key: "acquisition_type", label: t("csvAcquisition") },
+            { key: "payment_method", label: t("csvPayment") },
+            { key: "total_eur", label: t("csvTotal") },
+            { key: "stripe_payment_intent", label: t("csvStripe") },
+            { key: "created_at", label: t("csvCreated") },
+            { key: "email_sent_at", label: t("csvEmailSent") },
           ]}
         />
       </div>
@@ -205,14 +154,14 @@ export function OrdersClient({
       {/* Table (desktop) + iOS-style cell list (mobile) */}
       {orders.length === 0 ? (
         <p className="mt-8 text-center text-sm text-muted-foreground">
-          {t.noOrders}
+          {t("noOrders")}
         </p>
       ) : (
         <>
         {/* Mobile: grouped-list cells, each a tap target to the order detail */}
         <ul className="mt-6 divide-y divide-border overflow-hidden rounded-xl border border-border bg-card md:hidden">
           {orders.map((o) => {
-            const statusLabel = t[o.status as keyof typeof t] ?? o.status;
+            const statusLabel = t.has(o.status) ? t(o.status) : o.status;
             return (
               <li key={o.id}>
                 <Link
@@ -270,15 +219,15 @@ export function OrdersClient({
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/50">
-                <th className="px-4 py-3 text-left font-medium">{t.event}</th>
+                <th className="px-4 py-3 text-left font-medium">{t("event")}</th>
                 <th className="px-4 py-3 text-left font-medium">
-                  {t.customer}
+                  {t("customer")}
                 </th>
-                <th className="px-4 py-3 text-left font-medium">{t.status}</th>
-                <th className="px-4 py-3 text-right font-medium">{t.total}</th>
-                <th className="px-4 py-3 text-left font-medium">{t.date}</th>
+                <th className="px-4 py-3 text-left font-medium">{t("status")}</th>
+                <th className="px-4 py-3 text-right font-medium">{t("total")}</th>
+                <th className="px-4 py-3 text-left font-medium">{t("date")}</th>
                 <th className="px-4 py-3 text-right font-medium">
-                  {t.actions}
+                  {t("actions")}
                 </th>
               </tr>
             </thead>
@@ -287,8 +236,8 @@ export function OrdersClient({
                 const canRefund =
                   (o.status === "paid" || o.status === "comped") &&
                   o.status !== ("refunded" as string);
-                const statusLabel = t[o.status as keyof typeof t] ?? o.status;
-                const acqLabel = t[o.acquisitionType as keyof typeof t] ?? o.acquisitionType;
+                const statusLabel = t.has(o.status) ? t(o.status) : o.status;
+                const acqLabel = t.has(o.acquisitionType) ? t(o.acquisitionType) : o.acquisitionType;
 
                 return (
                   <tr
@@ -361,14 +310,14 @@ export function OrdersClient({
                                 className="text-xs text-danger hover:opacity-80 disabled:opacity-50"
                               >
                                 {isPending && refundingId === o.id
-                                  ? t.refunding
-                                  : t.refund}
+                                  ? t("refunding")
+                                  : t("refund")}
                               </button>
                             }
-                            title={t.refund}
-                            description={t.refundConfirm}
+                            title={t("refund")}
+                            description={t("refundConfirm")}
                             variant="danger"
-                            confirmLabel={t.refund}
+                            confirmLabel={t("refund")}
                             onConfirm={() => startTransition(() => runRefund(o.id))}
                           />
                         )}

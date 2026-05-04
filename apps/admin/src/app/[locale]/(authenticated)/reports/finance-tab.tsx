@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { formatMoney } from "@dbc/ui";
 import { StatCard } from "@/components/stat-card";
 import { buildCsv, isoDate } from "@/lib/csv";
@@ -18,158 +19,6 @@ import {
 // shareable and history-friendly. CSV exports fire new server-action calls
 // using the current URL filters, then build the file client-side via the
 // shared csv helper so the BOM + delimiter toggle stays consistent.
-
-type Strings = typeof T.en;
-
-const T = {
-  en: {
-    title: "Finance & Accounting",
-    filters: "Filters",
-    from: "From",
-    to: "To",
-    channel: "Channel",
-    allChannels: "All channels",
-    online: "Online",
-    door: "Door",
-    comped: "Comped",
-    event: "Event",
-    allEvents: "All events",
-    clear: "Clear",
-    channelSummary: "Sales by channel",
-    onlineSub: "Self-serve via Stripe",
-    doorSub: "Sold at the venue",
-    compedSub: "Invited / assigned — zero revenue",
-    channelMix: "Paid vs free",
-    channelMixSub: "Attendance mix",
-    paid: "Paid",
-    free: "Free",
-    gross: "Gross",
-    net: "Net",
-    refunds: "Refunds",
-    orders: "Orders",
-    tickets: "Tickets",
-    paymentMethods: "Payment-method breakdown",
-    method: "Method",
-    noMethodRows: "No orders match this filter yet.",
-    total: "Total",
-    perEvent: "Per-event breakdown",
-    noEvents: "No events touched in this range.",
-    starts: "Starts",
-    deferredRevenue: "Deferred revenue",
-    deferredRevenueSub: "Paid tickets for events not yet held",
-    stripeFee: "Stripe fee estimate",
-    stripeFeeSub: "1.5% of online gross + €0.25/txn — reconcile with Stripe",
-    vatNote:
-      "VAT reminder: for physical events held in Germany, place-of-supply = place-of-event, so 19% DE VAT applies regardless of buyer country. Compute from gross on your side.",
-    exports: "Exports",
-    exportOrders: "Orders CSV",
-    exportOrdersSub: "One row per order — import-ready for DATEV / Xero / Lexware",
-    exportSummary: "Summary CSV",
-    exportSummarySub: "Pivot by date / channel / method — for monthly VAT filings",
-    exportRefunds: "Refunds CSV",
-    exportRefundsSub: "One row per refunded order",
-    semicolon: "Semicolon delimiter (Excel-DE)",
-    downloading: "Downloading…",
-  },
-  de: {
-    title: "Finanzen & Buchhaltung",
-    filters: "Filter",
-    from: "Von",
-    to: "Bis",
-    channel: "Kanal",
-    allChannels: "Alle Kanäle",
-    online: "Online",
-    door: "Vor Ort",
-    comped: "Freikarten",
-    event: "Veranstaltung",
-    allEvents: "Alle Veranstaltungen",
-    clear: "Zurücksetzen",
-    channelSummary: "Verkäufe nach Kanal",
-    onlineSub: "Selbstbedienung über Stripe",
-    doorSub: "Am Einlass verkauft",
-    compedSub: "Eingeladen / zugewiesen — kein Umsatz",
-    channelMix: "Bezahlt vs. gratis",
-    channelMixSub: "Besuchermix",
-    paid: "Bezahlt",
-    free: "Gratis",
-    gross: "Brutto",
-    net: "Netto",
-    refunds: "Erstattungen",
-    orders: "Bestellungen",
-    tickets: "Tickets",
-    paymentMethods: "Zahlungsmethoden-Übersicht",
-    method: "Methode",
-    noMethodRows: "Keine Bestellungen im Zeitraum.",
-    total: "Gesamt",
-    perEvent: "Pro Veranstaltung",
-    noEvents: "Keine Veranstaltungen im Zeitraum.",
-    starts: "Beginnt",
-    deferredRevenue: "Abgegrenzte Erlöse",
-    deferredRevenueSub: "Bezahlte Tickets für künftige Events",
-    stripeFee: "Stripe-Gebühren (geschätzt)",
-    stripeFeeSub: "1,5 % vom Online-Brutto + €0,25/Trx — mit Stripe abgleichen",
-    vatNote:
-      "USt-Hinweis: für Präsenz-Events in Deutschland gilt der Veranstaltungsort als Leistungsort, also 19 % deutsche USt unabhängig vom Käufer-Land. Aus dem Brutto zu berechnen.",
-    exports: "Exporte",
-    exportOrders: "Bestellungen-CSV",
-    exportOrdersSub: "Eine Zeile pro Bestellung — DATEV / Xero / Lexware",
-    exportSummary: "Übersicht-CSV",
-    exportSummarySub: "Pivot nach Datum / Kanal / Methode — Monats-USt",
-    exportRefunds: "Erstattungen-CSV",
-    exportRefundsSub: "Eine Zeile pro erstatteter Bestellung",
-    semicolon: "Semikolon (Excel-DE)",
-    downloading: "Wird geladen…",
-  },
-  fr: {
-    title: "Finance & Comptabilité",
-    filters: "Filtres",
-    from: "Du",
-    to: "Au",
-    channel: "Canal",
-    allChannels: "Tous les canaux",
-    online: "En ligne",
-    door: "Sur place",
-    comped: "Invitations",
-    event: "Événement",
-    allEvents: "Tous les événements",
-    clear: "Réinitialiser",
-    channelSummary: "Ventes par canal",
-    onlineSub: "Achat direct via Stripe",
-    doorSub: "Vendus au guichet",
-    compedSub: "Invités / attribués — sans revenu",
-    channelMix: "Payants vs gratuits",
-    channelMixSub: "Répartition des entrées",
-    paid: "Payants",
-    free: "Gratuits",
-    gross: "Brut",
-    net: "Net",
-    refunds: "Remboursements",
-    orders: "Commandes",
-    tickets: "Billets",
-    paymentMethods: "Répartition par moyen de paiement",
-    method: "Méthode",
-    noMethodRows: "Aucune commande sur la période.",
-    total: "Total",
-    perEvent: "Par événement",
-    noEvents: "Aucun événement sur la période.",
-    starts: "Début",
-    deferredRevenue: "Revenus différés",
-    deferredRevenueSub: "Billets payés pour événements à venir",
-    stripeFee: "Frais Stripe (estim.)",
-    stripeFeeSub: "1,5 % du brut en ligne + €0,25/trx — réconciliez avec Stripe",
-    vatNote:
-      "TVA : pour un événement physique en Allemagne, le lieu de prestation est le lieu de l’événement, donc TVA DE 19 % quel que soit le pays de l’acheteur. À calculer à partir du brut.",
-    exports: "Exports",
-    exportOrders: "CSV Commandes",
-    exportOrdersSub: "Une ligne par commande — DATEV / Xero / Lexware",
-    exportSummary: "CSV Synthèse",
-    exportSummarySub: "Pivot par date / canal / méthode — déclarations TVA",
-    exportRefunds: "CSV Remboursements",
-    exportRefundsSub: "Une ligne par commande remboursée",
-    semicolon: "Délimiteur point-virgule (Excel-DE)",
-    downloading: "Téléchargement…",
-  },
-} as const;
 
 interface EventOption {
   id: string;
@@ -214,7 +63,7 @@ const METHOD_LABELS: Record<string, string> = {
 
 export function FinanceTab({ locale, summary, events, filters }: FinanceTabProps) {
   const router = useRouter();
-  const t: Strings = (T[locale as keyof typeof T] ?? T.en) as Strings;
+  const t = useTranslations("admin.reports.financeTab");
   const currency = summary.currency || "EUR";
   const [semicolon, setSemicolon] = useState(locale === "de");
   const [pending, startTransition] = useTransition();
@@ -326,11 +175,11 @@ export function FinanceTab({ locale, summary, events, filters }: FinanceTabProps
       {/* Filters */}
       <div className="rounded-lg border border-border p-4">
         <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          {t.filters}
+          {t("filters")}
         </p>
         <div className="flex flex-wrap items-center gap-3">
           <label className="flex items-center gap-2 text-xs text-muted-foreground">
-            {t.from}
+            {t("from")}
             <input
               type="date"
               value={filters.from}
@@ -339,7 +188,7 @@ export function FinanceTab({ locale, summary, events, filters }: FinanceTabProps
             />
           </label>
           <label className="flex items-center gap-2 text-xs text-muted-foreground">
-            {t.to}
+            {t("to")}
             <input
               type="date"
               value={filters.to}
@@ -354,17 +203,17 @@ export function FinanceTab({ locale, summary, events, filters }: FinanceTabProps
             }
             className="rounded-md border border-input bg-background px-3 py-2 text-sm"
           >
-            <option value="">{t.allChannels}</option>
-            <option value="online">{t.online}</option>
-            <option value="door">{t.door}</option>
-            <option value="comped">{t.comped}</option>
+            <option value="">{t("allChannels")}</option>
+            <option value="online">{t("online")}</option>
+            <option value="door">{t("door")}</option>
+            <option value="comped">{t("comped")}</option>
           </select>
           <select
             value={filters.eventId}
             onChange={(e) => updateFilter({ eventId: e.target.value })}
             className="rounded-md border border-input bg-background px-3 py-2 text-sm"
           >
-            <option value="">{t.allEvents}</option>
+            <option value="">{t("allEvents")}</option>
             {events.map((e) => (
               <option key={e.id} value={e.id}>
                 {e.title}
@@ -377,7 +226,7 @@ export function FinanceTab({ locale, summary, events, filters }: FinanceTabProps
             }
             className="ml-auto rounded-md border border-border px-3 py-2 text-sm text-muted-foreground hover:bg-muted"
           >
-            {t.clear}
+            {t("clear")}
           </button>
         </div>
         {pending && (
@@ -390,23 +239,23 @@ export function FinanceTab({ locale, summary, events, filters }: FinanceTabProps
           without repeating the Online / Door / Comped values. */}
       <section>
         <h2 className="font-heading text-lg font-semibold">
-          {t.channelSummary}
+          {t("channelSummary")}
         </h2>
         <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
-            label={t.online}
+            label={t("online")}
             value={fmt(summary.online.netCents, currency, locale)}
-            sub={`${summary.online.orders} ${t.orders} · ${summary.online.tickets} ${t.tickets} · ${t.onlineSub}`}
+            sub={`${summary.online.orders} ${t("orders")} · ${summary.online.tickets} ${t("tickets")} · ${t("onlineSub")}`}
           />
           <StatCard
-            label={t.door}
+            label={t("door")}
             value={fmt(summary.door.netCents, currency, locale)}
-            sub={`${summary.door.orders} ${t.orders} · ${summary.door.tickets} ${t.tickets} · ${t.doorSub}`}
+            sub={`${summary.door.orders} ${t("orders")} · ${summary.door.tickets} ${t("tickets")} · ${t("doorSub")}`}
           />
           <StatCard
-            label={t.comped}
-            value={`${summary.comped.tickets.toLocaleString(locale)} ${t.tickets}`}
-            sub={`${summary.comped.orders} ${t.orders} · ${t.compedSub}`}
+            label={t("comped")}
+            value={`${summary.comped.tickets.toLocaleString(locale)} ${t("tickets")}`}
+            sub={`${summary.comped.orders} ${t("orders")} · ${t("compedSub")}`}
           />
           {(() => {
             const paid = summary.online.tickets + summary.door.tickets;
@@ -416,13 +265,13 @@ export function FinanceTab({ locale, summary, events, filters }: FinanceTabProps
             const freePct = total === 0 ? 0 : 100 - paidPct;
             return (
               <StatCard
-                label={t.channelMix}
+                label={t("channelMix")}
                 value={
                   total === 0
                     ? "—"
                     : `${paidPct.toFixed(0)}% / ${freePct.toFixed(0)}%`
                 }
-                sub={`${t.paid} ${paid} · ${t.free} ${free} · ${t.channelMixSub}`}
+                sub={`${t("paid")} ${paid} · ${t("free")} ${free} · ${t("channelMixSub")}`}
               />
             );
           })()}
@@ -432,11 +281,11 @@ export function FinanceTab({ locale, summary, events, filters }: FinanceTabProps
       {/* Payment-method breakdown */}
       <section>
         <h2 className="font-heading text-lg font-semibold">
-          {t.paymentMethods}
+          {t("paymentMethods")}
         </h2>
         {summary.paymentMethods.length === 0 ? (
           <p className="mt-4 rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-            {t.noMethodRows}
+            {t("noMethodRows")}
           </p>
         ) : (
           <div className="mt-4 overflow-x-auto rounded-lg border border-border">
@@ -444,21 +293,21 @@ export function FinanceTab({ locale, summary, events, filters }: FinanceTabProps
               <thead>
                 <tr className="border-b border-border bg-muted/50">
                   <th className="px-4 py-3 text-left font-medium">
-                    {t.method}
+                    {t("method")}
                   </th>
                   <th className="px-4 py-3 text-right font-medium">
-                    {t.orders}
+                    {t("orders")}
                   </th>
                   <th className="px-4 py-3 text-right font-medium">
-                    {t.tickets}
+                    {t("tickets")}
                   </th>
                   <th className="px-4 py-3 text-right font-medium">
-                    {t.gross}
+                    {t("gross")}
                   </th>
                   <th className="px-4 py-3 text-right font-medium">
-                    {t.refunds}
+                    {t("refunds")}
                   </th>
-                  <th className="px-4 py-3 text-right font-medium">{t.net}</th>
+                  <th className="px-4 py-3 text-right font-medium">{t("net")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -490,7 +339,7 @@ export function FinanceTab({ locale, summary, events, filters }: FinanceTabProps
                   </tr>
                 ))}
                 <tr className="bg-muted/40 font-semibold">
-                  <td className="px-4 py-3">{t.total}</td>
+                  <td className="px-4 py-3">{t("total")}</td>
                   <td className="px-4 py-3 text-right">{methodTotal.orders}</td>
                   <td className="px-4 py-3 text-right">
                     {methodTotal.tickets}
@@ -515,34 +364,34 @@ export function FinanceTab({ locale, summary, events, filters }: FinanceTabProps
 
       {/* Per-event breakdown */}
       <section>
-        <h2 className="font-heading text-lg font-semibold">{t.perEvent}</h2>
+        <h2 className="font-heading text-lg font-semibold">{t("perEvent")}</h2>
         {summary.perEvent.length === 0 ? (
           <p className="mt-4 rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-            {t.noEvents}
+            {t("noEvents")}
           </p>
         ) : (
           <div className="mt-4 overflow-x-auto rounded-lg border border-border">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border bg-muted/50">
-                  <th className="px-4 py-3 text-left font-medium">{t.event}</th>
+                  <th className="px-4 py-3 text-left font-medium">{t("event")}</th>
                   <th className="px-4 py-3 text-left font-medium">
-                    {t.starts}
+                    {t("starts")}
                   </th>
                   <th className="px-4 py-3 text-right font-medium">
-                    {t.online}
+                    {t("online")}
                   </th>
-                  <th className="px-4 py-3 text-right font-medium">{t.door}</th>
+                  <th className="px-4 py-3 text-right font-medium">{t("door")}</th>
                   <th className="px-4 py-3 text-right font-medium">
-                    {t.comped}
-                  </th>
-                  <th className="px-4 py-3 text-right font-medium">
-                    {t.gross}
+                    {t("comped")}
                   </th>
                   <th className="px-4 py-3 text-right font-medium">
-                    {t.refunds}
+                    {t("gross")}
                   </th>
-                  <th className="px-4 py-3 text-right font-medium">{t.net}</th>
+                  <th className="px-4 py-3 text-right font-medium">
+                    {t("refunds")}
+                  </th>
+                  <th className="px-4 py-3 text-right font-medium">{t("net")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -564,17 +413,17 @@ export function FinanceTab({ locale, summary, events, filters }: FinanceTabProps
                     <td className="px-4 py-3 text-right">
                       {fmt(r.online.grossCents, currency, locale)}
                       <span className="block text-[11px] text-muted-foreground">
-                        {r.online.tickets} {t.tickets}
+                        {r.online.tickets} {t("tickets")}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">
                       {fmt(r.door.grossCents, currency, locale)}
                       <span className="block text-[11px] text-muted-foreground">
-                        {r.door.tickets} {t.tickets}
+                        {r.door.tickets} {t("tickets")}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      {r.comped.tickets} {t.tickets}
+                      {r.comped.tickets} {t("tickets")}
                     </td>
                     <td className="px-4 py-3 text-right">
                       {fmt(r.totalGrossCents, currency, locale)}
@@ -598,26 +447,26 @@ export function FinanceTab({ locale, summary, events, filters }: FinanceTabProps
       {/* Deferred revenue + Stripe fee estimate */}
       <section className="grid gap-4 sm:grid-cols-2">
         <StatCard
-          label={t.deferredRevenue}
+          label={t("deferredRevenue")}
           value={fmt(summary.deferredRevenueCents, currency, locale)}
-          sub={t.deferredRevenueSub}
+          sub={t("deferredRevenueSub")}
         />
         <StatCard
-          label={t.stripeFee}
+          label={t("stripeFee")}
           value={fmt(summary.stripeFeeEstimateCents, currency, locale)}
-          sub={t.stripeFeeSub}
+          sub={t("stripeFeeSub")}
         />
       </section>
 
       {/* VAT note */}
       <section className="rounded-lg border border-dashed border-border bg-muted/20 p-4 text-sm text-muted-foreground">
-        {t.vatNote}
+        {t("vatNote")}
       </section>
 
       {/* Exports */}
       <section>
         <div className="flex items-center justify-between">
-          <h2 className="font-heading text-lg font-semibold">{t.exports}</h2>
+          <h2 className="font-heading text-lg font-semibold">{t("exports")}</h2>
           <label className="flex items-center gap-2 text-xs text-muted-foreground">
             <input
               type="checkbox"
@@ -625,15 +474,15 @@ export function FinanceTab({ locale, summary, events, filters }: FinanceTabProps
               onChange={(e) => setSemicolon(e.target.checked)}
               className="h-4 w-4"
             />
-            {t.semicolon}
+            {t("semicolon")}
           </label>
         </div>
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
           <ExportCard
-            title={t.exportOrders}
-            sub={t.exportOrdersSub}
+            title={t("exportOrders")}
+            sub={t("exportOrdersSub")}
             loading={downloading === "orders"}
-            loadingLabel={t.downloading}
+            loadingLabel={t("downloading")}
             onClick={() =>
               download(
                 "orders",
@@ -644,10 +493,10 @@ export function FinanceTab({ locale, summary, events, filters }: FinanceTabProps
             }
           />
           <ExportCard
-            title={t.exportSummary}
-            sub={t.exportSummarySub}
+            title={t("exportSummary")}
+            sub={t("exportSummarySub")}
             loading={downloading === "summary"}
-            loadingLabel={t.downloading}
+            loadingLabel={t("downloading")}
             onClick={() =>
               download(
                 "summary",
@@ -658,10 +507,10 @@ export function FinanceTab({ locale, summary, events, filters }: FinanceTabProps
             }
           />
           <ExportCard
-            title={t.exportRefunds}
-            sub={t.exportRefundsSub}
+            title={t("exportRefunds")}
+            sub={t("exportRefundsSub")}
             loading={downloading === "refunds"}
-            loadingLabel={t.downloading}
+            loadingLabel={t("downloading")}
             onClick={() =>
               download(
                 "refunds",

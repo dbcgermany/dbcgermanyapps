@@ -15,9 +15,11 @@
   "devDependencies": {
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "next-intl": "^4.9.0",
     "typescript": "^5"
   },
   "peerDependencies": {
+    "next-intl": "^4.0.0",
     "react": "^19",
     "react-dom": "^19"
   }

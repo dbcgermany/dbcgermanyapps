@@ -1,55 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button, LinkButton } from "@dbc/ui";
-
-const T = {
-  en: {
-    title: "Event PDF report",
-    desc: "Selected event:",
-    descTail: "Tick only the sections you need — the report will contain just those.",
-    kpis: "Summary KPIs",
-    kpisHint: "Tickets sold, revenue, check-in rate, channel mix",
-    tiers: "Revenue by tier",
-    tiersHint: "Per-tier price, sold, capacity, revenue",
-    demographics: "Demographics",
-    demographicsHint: "Country, gender, occupation, source breakdowns",
-    attendees: "Attendee list",
-    attendeesHint: "Full name + email + tier + country + check-in",
-    download: "Download PDF",
-    selectAtLeast: "Select at least one section",
-  },
-  de: {
-    title: "Event-PDF-Bericht",
-    desc: "Ausgewählte Veranstaltung:",
-    descTail: "Nur die benötigten Abschnitte ankreuzen — der Bericht enthält dann nur diese.",
-    kpis: "Kennzahlen-Übersicht",
-    kpisHint: "Verkaufte Tickets, Umsatz, Check-in-Rate, Kanalmix",
-    tiers: "Umsatz nach Kategorie",
-    tiersHint: "Preis, Verkauf, Kapazität und Umsatz pro Kategorie",
-    demographics: "Demografie",
-    demographicsHint: "Aufschlüsselung nach Land, Geschlecht, Beruf, Quelle",
-    attendees: "Teilnehmerliste",
-    attendeesHint: "Vollname + E-Mail + Kategorie + Land + Check-in",
-    download: "PDF herunterladen",
-    selectAtLeast: "Mindestens einen Abschnitt auswählen",
-  },
-  fr: {
-    title: "Rapport PDF de l’événement",
-    desc: "Événement sélectionné :",
-    descTail: "Cochez uniquement les sections nécessaires — le rapport contiendra celles-ci.",
-    kpis: "KPI synthèse",
-    kpisHint: "Billets vendus, revenus, taux d’enregistrement, mix canal",
-    tiers: "Revenus par catégorie",
-    tiersHint: "Prix, vendus, capacité, revenus par catégorie",
-    demographics: "Démographie",
-    demographicsHint: "Répartition par pays, genre, profession, source",
-    attendees: "Liste des participants",
-    attendeesHint: "Nom complet + e-mail + catégorie + pays + enregistrement",
-    download: "Télécharger le PDF",
-    selectAtLeast: "Sélectionnez au moins une section",
-  },
-} as const;
 
 export function EventPdfPanel({
   locale,
@@ -60,7 +13,7 @@ export function EventPdfPanel({
   eventId: string;
   eventTitle: string;
 }) {
-  const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
+  const t = useTranslations("admin.reports.eventPdfPanel");
   const [kpis, setKpis] = useState(true);
   const [tiers, setTiers] = useState(true);
   const [demographics, setDemographics] = useState(true);
@@ -79,25 +32,25 @@ export function EventPdfPanel({
 
   return (
     <section className="mt-8 rounded-lg border border-border p-5">
-      <h2 className="font-heading text-lg font-bold">{t.title}</h2>
+      <h2 className="font-heading text-lg font-bold">{t("title")}</h2>
       <p className="mt-1 text-xs text-muted-foreground">
-        {t.desc} <span className="font-medium">{eventTitle}</span>. {t.descTail}
+        {t("desc")} <span className="font-medium">{eventTitle}</span>. {t("descTail")}
       </p>
       <div className="mt-4 grid gap-2 sm:grid-cols-2">
-        <Toggle label={t.kpis} checked={kpis} onChange={setKpis} hint={t.kpisHint} />
-        <Toggle label={t.tiers} checked={tiers} onChange={setTiers} hint={t.tiersHint} />
-        <Toggle label={t.demographics} checked={demographics} onChange={setDemographics} hint={t.demographicsHint} />
-        <Toggle label={t.attendees} checked={attendees} onChange={setAttendees} hint={t.attendeesHint} />
+        <Toggle label={t("kpis")} checked={kpis} onChange={setKpis} hint={t("kpisHint")} />
+        <Toggle label={t("tiers")} checked={tiers} onChange={setTiers} hint={t("tiersHint")} />
+        <Toggle label={t("demographics")} checked={demographics} onChange={setDemographics} hint={t("demographicsHint")} />
+        <Toggle label={t("attendees")} checked={attendees} onChange={setAttendees} hint={t("attendeesHint")} />
       </div>
       <div className="mt-4">
         {anySelected ? (
           <LinkButton href={url}>
-            {t.download}
+            {t("download")}
           </LinkButton>
         ) : (
           <Button type="button"
             disabled>
-            {t.selectAtLeast}
+            {t("selectAtLeast")}
           </Button>
         )}
       </div>

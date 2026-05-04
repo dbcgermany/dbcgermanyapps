@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button, Card, Input, Textarea } from "@dbc/ui";
 import type { AboutSections } from "@dbc/types";
@@ -98,117 +99,6 @@ function fromLocaleState(s: LocaleState): Partial<AboutSections> {
   return out;
 }
 
-const T = {
-  en: {
-    tabs: { en: "English", de: "Deutsch", fr: "Français" },
-    heading: "About page sections",
-    help:
-      "Everything below appears on /about. Leave a section empty to hide it; fill the EN tab first — DE and FR fall back to EN on the public page when empty.",
-    saving: "Saving…",
-    save: "Save About sections",
-    saved: "About sections saved.",
-    mission: "Mission",
-    missionTitleField: "Title",
-    missionBodyField: "Body",
-    story: "Story",
-    storyTitleField: "Title",
-    storyBodyField: "Body",
-    values: "Values",
-    valuesTitleField: "Section title (optional)",
-    addValue: "Add value",
-    valueTitle: "Title",
-    valueDesc: "Description",
-    metrics: "Numbers strip",
-    addMetric: "Add metric",
-    metricValue: "Value (e.g. 900)",
-    metricLabel: "Label (e.g. seats · one day)",
-    press: "Press / partner logos",
-    pressTitleField: "Section title (optional)",
-    addPress: "Add logo",
-    pressName: "Name",
-    pressLogoUrl: "Logo URL",
-    pressHref: "Link URL (optional)",
-    finalCta: "Final CTA band",
-    finalCtaTitleField: "Title",
-    finalCtaSubtitleField: "Subtitle (optional)",
-    finalCtaPrimaryField: "Button label",
-    finalCtaHrefField: "Button URL",
-    remove: "Remove",
-  },
-  de: {
-    tabs: { en: "English", de: "Deutsch", fr: "Français" },
-    heading: "About-Seiten-Abschnitte",
-    help:
-      "Alles hier erscheint auf /about. Abschnitt leer lassen = wird ausgeblendet. EN zuerst ausfüllen — DE und FR fallen bei leeren Feldern auf EN zurück.",
-    saving: "Wird gespeichert…",
-    save: "About-Abschnitte speichern",
-    saved: "About-Abschnitte gespeichert.",
-    mission: "Mission",
-    missionTitleField: "Titel",
-    missionBodyField: "Text",
-    story: "Geschichte",
-    storyTitleField: "Titel",
-    storyBodyField: "Text",
-    values: "Werte",
-    valuesTitleField: "Abschnittstitel (optional)",
-    addValue: "Wert hinzufügen",
-    valueTitle: "Titel",
-    valueDesc: "Beschreibung",
-    metrics: "Zahlen-Streifen",
-    addMetric: "Kennzahl hinzufügen",
-    metricValue: "Wert (z. B. 900)",
-    metricLabel: "Label (z. B. Plätze · ein Tag)",
-    press: "Presse / Partner-Logos",
-    pressTitleField: "Abschnittstitel (optional)",
-    addPress: "Logo hinzufügen",
-    pressName: "Name",
-    pressLogoUrl: "Logo-URL",
-    pressHref: "Link-URL (optional)",
-    finalCta: "Abschluss-CTA",
-    finalCtaTitleField: "Titel",
-    finalCtaSubtitleField: "Untertitel (optional)",
-    finalCtaPrimaryField: "Button-Text",
-    finalCtaHrefField: "Button-URL",
-    remove: "Entfernen",
-  },
-  fr: {
-    tabs: { en: "English", de: "Deutsch", fr: "Français" },
-    heading: "Sections de la page À propos",
-    help:
-      "Tout ce qui suit apparaît sur /about. Laisser une section vide = masquée. Remplir EN d'abord — DE et FR retombent sur EN quand c'est vide.",
-    saving: "Enregistrement…",
-    save: "Enregistrer les sections",
-    saved: "Sections À propos enregistrées.",
-    mission: "Mission",
-    missionTitleField: "Titre",
-    missionBodyField: "Texte",
-    story: "Histoire",
-    storyTitleField: "Titre",
-    storyBodyField: "Texte",
-    values: "Valeurs",
-    valuesTitleField: "Titre de section (optionnel)",
-    addValue: "Ajouter une valeur",
-    valueTitle: "Titre",
-    valueDesc: "Description",
-    metrics: "Bande de chiffres",
-    addMetric: "Ajouter une métrique",
-    metricValue: "Valeur (p. ex. 900)",
-    metricLabel: "Libellé (p. ex. places · une journée)",
-    press: "Presse / logos partenaires",
-    pressTitleField: "Titre de section (optionnel)",
-    addPress: "Ajouter un logo",
-    pressName: "Nom",
-    pressLogoUrl: "URL du logo",
-    pressHref: "URL du lien (optionnel)",
-    finalCta: "Bandeau CTA final",
-    finalCtaTitleField: "Titre",
-    finalCtaSubtitleField: "Sous-titre (optionnel)",
-    finalCtaPrimaryField: "Libellé du bouton",
-    finalCtaHrefField: "URL du bouton",
-    remove: "Retirer",
-  },
-} as const;
-
 export function AboutSectionsForm({
   info,
   locale,
@@ -216,8 +106,8 @@ export function AboutSectionsForm({
   info: CompanyInfo;
   locale: string;
 }) {
-  const l = (locale === "de" || locale === "fr" ? locale : "en") as "en" | "de" | "fr";
-  const t = T[l];
+  void locale;
+  const t = useTranslations("admin.companyInfo.about");
   const [activeTab, setActiveTab] = useState<LocaleKey>("en");
   const [state, setState] = useState<Record<LocaleKey, LocaleState>>({
     en: toLocaleState(info.about_sections_en),
@@ -239,15 +129,15 @@ export function AboutSectionsForm({
         fr: fromLocaleState(state.fr),
       });
       if ("error" in result && result.error) toast.error(result.error);
-      else toast.success(t.saved);
+      else toast.success(t("saved"));
     });
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <h3 className="font-heading text-lg font-semibold">{t.heading}</h3>
-        <p className="mt-1 text-xs text-muted-foreground">{t.help}</p>
+        <h3 className="font-heading text-lg font-semibold">{t("heading")}</h3>
+        <p className="mt-1 text-xs text-muted-foreground">{t("help")}</p>
       </div>
 
       <div role="tablist" className="flex gap-2 border-b border-border">
@@ -264,7 +154,7 @@ export function AboutSectionsForm({
                 : "border-transparent text-muted-foreground hover:text-foreground"
             }`}
           >
-            {t.tabs[k]}
+            {t(`tabs.${k}`)}
           </button>
         ))}
       </div>
@@ -272,7 +162,6 @@ export function AboutSectionsForm({
       {(["en", "de", "fr"] as const).map((k) => (
         <div key={k} hidden={activeTab !== k} className="space-y-6">
           <LocaleSectionEditor
-            t={t}
             value={state[k]}
             patch={(p) => patch(k, p)}
           />
@@ -281,36 +170,33 @@ export function AboutSectionsForm({
 
       <div className="flex justify-end">
         <Button type="submit" disabled={isPending}>
-          {isPending ? t.saving : t.save}
+          {isPending ? t("saving") : t("save")}
         </Button>
       </div>
     </form>
   );
 }
 
-type TCopy = (typeof T)[keyof typeof T];
-
 function LocaleSectionEditor({
-  t,
   value,
   patch,
 }: {
-  t: TCopy;
   value: LocaleState;
   patch: (p: Partial<LocaleState>) => void;
 }) {
+  const t = useTranslations("admin.companyInfo.about");
   return (
     <div className="space-y-6">
       {/* Mission */}
       <Card padding="md" className="space-y-3">
-        <legend className="text-sm font-semibold">{t.mission}</legend>
-        <Labelled label={t.missionTitleField}>
+        <legend className="text-sm font-semibold">{t("mission")}</legend>
+        <Labelled label={t("missionTitleField")}>
           <Input
             value={value.missionTitle}
             onChange={(e) => patch({ missionTitle: e.target.value })}
           />
         </Labelled>
-        <Labelled label={t.missionBodyField}>
+        <Labelled label={t("missionBodyField")}>
           <Textarea
             rows={3}
             value={value.missionBody}
@@ -321,14 +207,14 @@ function LocaleSectionEditor({
 
       {/* Story */}
       <Card padding="md" className="space-y-3">
-        <legend className="text-sm font-semibold">{t.story}</legend>
-        <Labelled label={t.storyTitleField}>
+        <legend className="text-sm font-semibold">{t("story")}</legend>
+        <Labelled label={t("storyTitleField")}>
           <Input
             value={value.storyTitle}
             onChange={(e) => patch({ storyTitle: e.target.value })}
           />
         </Labelled>
-        <Labelled label={t.storyBodyField}>
+        <Labelled label={t("storyBodyField")}>
           <Textarea
             rows={5}
             value={value.storyBody}
@@ -339,8 +225,8 @@ function LocaleSectionEditor({
 
       {/* Values */}
       <Card padding="md" className="space-y-3">
-        <legend className="text-sm font-semibold">{t.values}</legend>
-        <Labelled label={t.valuesTitleField}>
+        <legend className="text-sm font-semibold">{t("values")}</legend>
+        <Labelled label={t("valuesTitleField")}>
           <Input
             value={value.valuesTitle}
             onChange={(e) => patch({ valuesTitle: e.target.value })}
@@ -353,7 +239,7 @@ function LocaleSectionEditor({
               className="rounded-md border border-border bg-background p-3 space-y-2"
             >
               <Input
-                placeholder={t.valueTitle}
+                placeholder={t("valueTitle")}
                 value={v.title}
                 onChange={(e) =>
                   patch({
@@ -365,7 +251,7 @@ function LocaleSectionEditor({
               />
               <Textarea
                 rows={2}
-                placeholder={t.valueDesc}
+                placeholder={t("valueDesc")}
                 value={v.desc}
                 onChange={(e) =>
                   patch({
@@ -382,7 +268,7 @@ function LocaleSectionEditor({
                 }
                 className="text-xs text-danger hover:opacity-80"
               >
-                {t.remove}
+                {t("remove")}
               </button>
             </div>
           ))}
@@ -396,14 +282,14 @@ function LocaleSectionEditor({
               })
             }
           >
-            {t.addValue}
+            {t("addValue")}
           </Button>
         </div>
       </Card>
 
       {/* Metrics */}
       <Card padding="md" className="space-y-3">
-        <legend className="text-sm font-semibold">{t.metrics}</legend>
+        <legend className="text-sm font-semibold">{t("metrics")}</legend>
         <div className="space-y-3">
           {value.metrics.map((m, i) => (
             <div
@@ -411,7 +297,7 @@ function LocaleSectionEditor({
               className="rounded-md border border-border bg-background p-3 grid grid-cols-[140px_1fr_auto] gap-2 items-center"
             >
               <Input
-                placeholder={t.metricValue}
+                placeholder={t("metricValue")}
                 value={m.value}
                 onChange={(e) =>
                   patch({
@@ -422,7 +308,7 @@ function LocaleSectionEditor({
                 }
               />
               <Input
-                placeholder={t.metricLabel}
+                placeholder={t("metricLabel")}
                 value={m.label}
                 onChange={(e) =>
                   patch({
@@ -439,7 +325,7 @@ function LocaleSectionEditor({
                 }
                 className="text-xs text-danger hover:opacity-80"
               >
-                {t.remove}
+                {t("remove")}
               </button>
             </div>
           ))}
@@ -453,15 +339,15 @@ function LocaleSectionEditor({
               })
             }
           >
-            {t.addMetric}
+            {t("addMetric")}
           </Button>
         </div>
       </Card>
 
       {/* Press */}
       <Card padding="md" className="space-y-3">
-        <legend className="text-sm font-semibold">{t.press}</legend>
-        <Labelled label={t.pressTitleField}>
+        <legend className="text-sm font-semibold">{t("press")}</legend>
+        <Labelled label={t("pressTitleField")}>
           <Input
             value={value.pressTitle}
             onChange={(e) => patch({ pressTitle: e.target.value })}
@@ -474,7 +360,7 @@ function LocaleSectionEditor({
               className="rounded-md border border-border bg-background p-3 space-y-2"
             >
               <Input
-                placeholder={t.pressName}
+                placeholder={t("pressName")}
                 value={p.name}
                 onChange={(e) =>
                   patch({
@@ -486,7 +372,7 @@ function LocaleSectionEditor({
               />
               <Input
                 type="url"
-                placeholder={t.pressLogoUrl}
+                placeholder={t("pressLogoUrl")}
                 value={p.logoUrl}
                 onChange={(e) =>
                   patch({
@@ -498,7 +384,7 @@ function LocaleSectionEditor({
               />
               <Input
                 type="url"
-                placeholder={t.pressHref}
+                placeholder={t("pressHref")}
                 value={p.href}
                 onChange={(e) =>
                   patch({
@@ -515,7 +401,7 @@ function LocaleSectionEditor({
                 }
                 className="text-xs text-danger hover:opacity-80"
               >
-                {t.remove}
+                {t("remove")}
               </button>
             </div>
           ))}
@@ -532,21 +418,21 @@ function LocaleSectionEditor({
               })
             }
           >
-            {t.addPress}
+            {t("addPress")}
           </Button>
         </div>
       </Card>
 
       {/* Final CTA */}
       <Card padding="md" className="space-y-3">
-        <legend className="text-sm font-semibold">{t.finalCta}</legend>
-        <Labelled label={t.finalCtaTitleField}>
+        <legend className="text-sm font-semibold">{t("finalCta")}</legend>
+        <Labelled label={t("finalCtaTitleField")}>
           <Input
             value={value.finalCtaTitle}
             onChange={(e) => patch({ finalCtaTitle: e.target.value })}
           />
         </Labelled>
-        <Labelled label={t.finalCtaSubtitleField}>
+        <Labelled label={t("finalCtaSubtitleField")}>
           <Textarea
             rows={2}
             value={value.finalCtaSubtitle}
@@ -554,13 +440,13 @@ function LocaleSectionEditor({
           />
         </Labelled>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <Labelled label={t.finalCtaPrimaryField}>
+          <Labelled label={t("finalCtaPrimaryField")}>
             <Input
               value={value.finalCtaPrimaryCta}
               onChange={(e) => patch({ finalCtaPrimaryCta: e.target.value })}
             />
           </Labelled>
-          <Labelled label={t.finalCtaHrefField}>
+          <Labelled label={t("finalCtaHrefField")}>
             <Input
               type="url"
               value={value.finalCtaPrimaryCtaHref}

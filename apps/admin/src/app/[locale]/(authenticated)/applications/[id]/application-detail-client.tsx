@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@dbc/ui";
 import { type IncubationApplicationStatus } from "@dbc/types";
@@ -33,83 +34,7 @@ export function ApplicationDetailClient({
   const [isPending, startTransition] = useTransition();
   const [notes, setNotes] = useState<string>(data.reviewer_notes ?? "");
 
-  const t = {
-    en: {
-      pitch: "Pitch",
-      coverLetter: "Cover letter",
-      companyDetails: "Company details",
-      contact: "Contact",
-      review: "Review",
-      status: "Status",
-      notes: "Reviewer notes",
-      save: "Save",
-      saving: "Saving...",
-      stage: "Stage",
-      website: "Website",
-      country: "Country",
-      funding: "Funding needed",
-      email: "Email",
-      phone: "Phone",
-      linkedin: "LinkedIn",
-      portfolio: "Portfolio",
-      received: "Received",
-      updated: "Last updated",
-      reviewer: "Reviewed by",
-      jobTitle: "Position",
-    },
-    de: {
-      pitch: "Pitch",
-      coverLetter: "Anschreiben",
-      companyDetails: "Unternehmensdaten",
-      contact: "Kontakt",
-      review: "Bewertung",
-      status: "Status",
-      notes: "Notizen",
-      save: "Speichern",
-      saving: "Wird gespeichert...",
-      stage: "Phase",
-      website: "Website",
-      country: "Land",
-      funding: "Finanzierungsbedarf",
-      email: "E-Mail",
-      phone: "Telefon",
-      linkedin: "LinkedIn",
-      portfolio: "Portfolio",
-      received: "Eingegangen",
-      updated: "Zuletzt aktualisiert",
-      reviewer: "Bewertet von",
-      jobTitle: "Position",
-    },
-    fr: {
-      pitch: "Pitch",
-      coverLetter: "Lettre de motivation",
-      companyDetails: "D\u00E9tails de l\u2019entreprise",
-      contact: "Contact",
-      review: "\u00C9valuation",
-      status: "Statut",
-      notes: "Notes du r\u00E9viseur",
-      save: "Enregistrer",
-      saving: "Enregistrement...",
-      stage: "\u00C9tape",
-      website: "Site web",
-      country: "Pays",
-      funding: "Financement recherch\u00E9",
-      email: "E-mail",
-      phone: "T\u00E9l\u00E9phone",
-      linkedin: "LinkedIn",
-      portfolio: "Portfolio",
-      received: "Re\u00E7u",
-      updated: "Derni\u00E8re mise \u00E0 jour",
-      reviewer: "\u00C9valu\u00E9 par",
-      jobTitle: "Poste",
-    },
-  }[locale] ?? {
-    pitch: "Pitch", coverLetter: "Cover letter", companyDetails: "Company", contact: "Contact",
-    review: "Review", status: "Status", notes: "Notes", save: "Save", saving: "...",
-    stage: "Stage", website: "Website", country: "Country", funding: "Funding",
-    email: "Email", phone: "Phone", linkedin: "LinkedIn", portfolio: "Portfolio",
-    received: "Received", updated: "Updated", reviewer: "Reviewer", jobTitle: "Position",
-  };
+  const t = useTranslations("admin.applications.detail");
 
   function handleSave(newStatus: Status) {
     startTransition(async () => {
@@ -119,7 +44,7 @@ export function ApplicationDetailClient({
       if (res.error) {
         toast.error(res.error);
       } else {
-        toast.success(t.save);
+        toast.success(t("save"));
         router.refresh();
       }
     });
@@ -131,12 +56,12 @@ export function ApplicationDetailClient({
         {/* Contact */}
         <section className="rounded-lg border border-border p-5">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            {t.contact}
+            {t("contact")}
           </h2>
           <dl className="mt-3 space-y-2 text-sm">
-            <Row label={t.email} value={data.founder_email} />
-            {data.founder_phone && <Row label={t.phone} value={data.founder_phone} />}
-            {data.country && <Row label={t.country} value={data.country} />}
+            <Row label={t("email")} value={data.founder_email} />
+            {data.founder_phone && <Row label={t("phone")} value={data.founder_phone} />}
+            {data.country && <Row label={t("country")} value={data.country} />}
             {data.founder_age != null && (
               <Row label="Age" value={String(data.founder_age)} />
             )}
@@ -147,7 +72,7 @@ export function ApplicationDetailClient({
               <Row label="Birthday" value={String(data.founder_birthday)} />
             )}
             <Row
-              label={t.received}
+              label={t("received")}
               value={new Date(data.created_at).toLocaleDateString(locale, {
                 year: "numeric",
                 month: "long",
@@ -299,14 +224,14 @@ export function ApplicationDetailClient({
         {(data.pitch || data.company_name || data.company_stage) && (
           <section className="rounded-lg border border-border p-5">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-              {t.companyDetails}
+              {t("companyDetails")}
             </h2>
             <dl className="mt-3 space-y-2 text-sm">
               {data.company_name && <Row label="Company" value={data.company_name} />}
-              {data.company_stage && <Row label={t.stage} value={data.company_stage} />}
+              {data.company_stage && <Row label={t("stage")} value={data.company_stage} />}
               {data.company_website && (
                 <div className="flex justify-between">
-                  <dt className="text-muted-foreground">{t.website}</dt>
+                  <dt className="text-muted-foreground">{t("website")}</dt>
                   <dd>
                     <a
                       href={data.company_website}
@@ -321,7 +246,7 @@ export function ApplicationDetailClient({
               )}
               {data.funding_needed_cents != null && (
                 <Row
-                  label={t.funding}
+                  label={t("funding")}
                   value={`\u20AC${(data.funding_needed_cents / 100).toLocaleString()}`}
                 />
               )}
@@ -329,7 +254,7 @@ export function ApplicationDetailClient({
             {data.pitch && (
               <div className="mt-4">
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  {t.pitch}
+                  {t("pitch")}
                 </p>
                 <p className="mt-2 whitespace-pre-wrap text-sm leading-6">
                   {data.pitch}
@@ -341,7 +266,6 @@ export function ApplicationDetailClient({
 
         {/* Reviewer */}
         <ReviewSection
-          t={t}
           status={data.status}
           notes={notes}
           onNotesChange={setNotes}
@@ -365,7 +289,7 @@ export function ApplicationDetailClient({
       {/* Full cover letter */}
       <section className="rounded-lg border border-border p-5">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          {t.coverLetter}
+          {t("coverLetter")}
         </h2>
         <p className="mt-3 whitespace-pre-wrap text-sm leading-6">
           {data.cover_letter || "\u2014"}
@@ -375,17 +299,17 @@ export function ApplicationDetailClient({
       {/* Contact & links */}
       <section className="rounded-lg border border-border p-5">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-          {t.contact}
+          {t("contact")}
         </h2>
         <dl className="mt-3 space-y-2 text-sm">
-          <Row label={t.jobTitle} value={jobTitle} />
-          <Row label={t.email} value={data.applicant_email} />
+          <Row label={t("jobTitle")} value={jobTitle} />
+          <Row label={t("email")} value={data.applicant_email} />
           {data.applicant_phone && (
-            <Row label={t.phone} value={data.applicant_phone} />
+            <Row label={t("phone")} value={data.applicant_phone} />
           )}
           {data.linkedin_url && (
             <div className="flex justify-between">
-              <dt className="text-muted-foreground">{t.linkedin}</dt>
+              <dt className="text-muted-foreground">{t("linkedin")}</dt>
               <dd>
                 <a
                   href={data.linkedin_url}
@@ -400,7 +324,7 @@ export function ApplicationDetailClient({
           )}
           {data.portfolio_url && (
             <div className="flex justify-between">
-              <dt className="text-muted-foreground">{t.portfolio}</dt>
+              <dt className="text-muted-foreground">{t("portfolio")}</dt>
               <dd>
                 <a
                   href={data.portfolio_url}
@@ -414,7 +338,7 @@ export function ApplicationDetailClient({
             </div>
           )}
           <Row
-            label={t.received}
+            label={t("received")}
             value={new Date(data.created_at).toLocaleDateString(locale, {
               year: "numeric",
               month: "long",
@@ -426,7 +350,6 @@ export function ApplicationDetailClient({
 
       {/* Reviewer */}
       <ReviewSection
-        t={t}
         status={data.status}
         notes={notes}
         onNotesChange={setNotes}
@@ -463,7 +386,6 @@ function humanize(raw: string): string {
 }
 
 function ReviewSection({
-  t,
   status,
   notes,
   onNotesChange,
@@ -471,7 +393,6 @@ function ReviewSection({
   isPending,
   reviewerName,
 }: {
-  t: Record<string, string>;
   status: string;
   notes: string;
   onNotesChange: (v: string) => void;
@@ -479,6 +400,7 @@ function ReviewSection({
   isPending: boolean;
   reviewerName?: string | null;
 }) {
+  const t = useTranslations("admin.applications.detail");
   const [selectedStatus, setSelectedStatus] = useState<Status>(
     status as Status
   );
@@ -486,16 +408,16 @@ function ReviewSection({
   return (
     <section className="rounded-lg border border-border p-5">
       <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-        {t.review}
+        {t("review")}
       </h2>
       <div className="mt-3 space-y-4">
         {reviewerName && (
           <p className="text-xs text-muted-foreground">
-            {t.reviewer}: {reviewerName}
+            {t("reviewer")}: {reviewerName}
           </p>
         )}
         <div>
-          <label className="mb-1 block text-sm font-medium">{t.status}</label>
+          <label className="mb-1 block text-sm font-medium">{t("status")}</label>
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value as Status)}
@@ -509,7 +431,7 @@ function ReviewSection({
           </select>
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium">{t.notes}</label>
+          <label className="mb-1 block text-sm font-medium">{t("notes")}</label>
           <textarea
             value={notes}
             onChange={(e) => onNotesChange(e.target.value)}
@@ -518,7 +440,7 @@ function ReviewSection({
           />
         </div>
         <Button onClick={() => onSave(selectedStatus)} disabled={isPending}>
-          {isPending ? t.saving : t.save}
+          {isPending ? t("saving") : t("save")}
         </Button>
       </div>
     </section>

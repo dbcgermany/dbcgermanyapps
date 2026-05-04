@@ -1,85 +1,15 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { subscribeToNewsletter } from "@/actions/newsletter";
 
 type Locale = "en" | "de" | "fr";
 
-const COPY = {
-  en: {
-    emailLabel: "Email",
-    firstNameLabel: "First name (optional)",
-    interestsLabel: "What brings you here? (optional)",
-    consentLabel:
-      "I agree to receive the DBC Germany newsletter. I can unsubscribe at any time using the link in every email.",
-    submit: "Subscribe",
-    sending: "Sending…",
-    success:
-      "Thanks! We've sent a confirmation email. Click the link inside to finish subscribing.",
-    already: "You're already subscribed — thanks!",
-  },
-  de: {
-    emailLabel: "E-Mail",
-    firstNameLabel: "Vorname (optional)",
-    interestsLabel: "Was f\u00fchrt Sie zu uns? (optional)",
-    consentLabel:
-      "Ich m\u00f6chte den DBC Germany Newsletter erhalten. Ich kann mich jederzeit \u00fcber den Link in jeder E-Mail abmelden.",
-    submit: "Abonnieren",
-    sending: "Wird gesendet…",
-    success:
-      "Danke! Wir haben Ihnen eine Best\u00e4tigungs-E-Mail geschickt. Klicken Sie den Link darin, um die Anmeldung abzuschlie\u00dfen.",
-    already: "Sie sind bereits angemeldet — vielen Dank!",
-  },
-  fr: {
-    emailLabel: "E-mail",
-    firstNameLabel: "Pr\u00e9nom (optionnel)",
-    interestsLabel: "Qu'est-ce qui vous am\u00e8ne ? (optionnel)",
-    consentLabel:
-      "J'accepte de recevoir la newsletter DBC Germany. Je peux me d\u00e9sabonner \u00e0 tout moment via le lien pr\u00e9sent dans chaque e-mail.",
-    submit: "S'abonner",
-    sending: "Envoi…",
-    success:
-      "Merci ! Nous vous avons envoy\u00e9 un e-mail de confirmation. Cliquez sur le lien pour finaliser.",
-    already: "Vous \u00eates d\u00e9j\u00e0 abonn\u00e9\u00b7e — merci !",
-  },
-} satisfies Record<Locale, Record<string, string>>;
-
-const INTERESTS: Array<{
-  slug: string;
-  labels: Record<Locale, string>;
-}> = [
-  {
-    slug: "founders",
-    labels: {
-      en: "Founders & Entrepreneurs",
-      de: "Gr\u00fcnder:innen & Unternehmer:innen",
-      fr: "Fondateur\u00b7ice\u00b7s & entrepreneur\u00b7e\u00b7s",
-    },
-  },
-  {
-    slug: "investors",
-    labels: {
-      en: "Investors & LPs",
-      de: "Investor:innen",
-      fr: "Investisseur\u00b7euse\u00b7s",
-    },
-  },
-  {
-    slug: "press",
-    labels: { en: "Press & Media", de: "Presse & Medien", fr: "Presse & m\u00e9dias" },
-  },
-  {
-    slug: "diaspora",
-    labels: {
-      en: "Diaspora community",
-      de: "Diaspora-Community",
-      fr: "Communaut\u00e9 de la diaspora",
-    },
-  },
-];
+const INTEREST_SLUGS = ["founders", "investors", "press", "diaspora"] as const;
 
 export function NewsletterSignupForm({ locale }: { locale: Locale }) {
-  const t = COPY[locale];
+  const t = useTranslations("site.newsletter.form");
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
   const [interests, setInterests] = useState<string[]>([]);
@@ -106,9 +36,9 @@ export function NewsletterSignupForm({ locale }: { locale: Locale }) {
           if ("error" in res && res.error) {
             setMessage({ type: "err", text: res.error });
           } else if ("success" in res && res.alreadySubscribed) {
-            setMessage({ type: "ok", text: t.already });
+            setMessage({ type: "ok", text: t("already") });
           } else {
-            setMessage({ type: "ok", text: t.success });
+            setMessage({ type: "ok", text: t("success") });
             setEmail("");
             setFirstName("");
             setInterests([]);
@@ -119,7 +49,7 @@ export function NewsletterSignupForm({ locale }: { locale: Locale }) {
       className="space-y-5"
     >
       <div>
-        <label className="block text-sm font-medium">{t.emailLabel}</label>
+        <label className="block text-sm font-medium">{t("emailLabel")}</label>
         <input
           type="email"
           required
@@ -130,7 +60,7 @@ export function NewsletterSignupForm({ locale }: { locale: Locale }) {
         />
       </div>
       <div>
-        <label className="block text-sm font-medium">{t.firstNameLabel}</label>
+        <label className="block text-sm font-medium">{t("firstNameLabel")}</label>
         <input
           type="text"
           value={firstName}
@@ -140,25 +70,29 @@ export function NewsletterSignupForm({ locale }: { locale: Locale }) {
         />
       </div>
       <div>
-        <p className="text-sm font-medium">{t.interestsLabel}</p>
+        <p className="text-sm font-medium">{t("interestsLabel")}</p>
         <div className="mt-2 grid gap-2 sm:grid-cols-2">
-          {INTERESTS.map((opt) => (
+          {INTEREST_SLUGS.map((slug) => (
             <label
-              key={opt.slug}
+              key={slug}
               className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm"
             >
               <input
                 type="checkbox"
-                checked={interests.includes(opt.slug)}
+                checked={interests.includes(slug)}
                 onChange={(e) =>
                   setInterests((prev) =>
                     e.target.checked
-                      ? [...prev, opt.slug]
-                      : prev.filter((s) => s !== opt.slug)
+                      ? [...prev, slug]
+                      : prev.filter((s) => s !== slug)
                   )
                 }
               />
-              {opt.labels[locale]}
+              {t(`interests.${slug}` as
+                | "interests.founders"
+                | "interests.investors"
+                | "interests.press"
+                | "interests.diaspora")}
             </label>
           ))}
         </div>
@@ -171,14 +105,14 @@ export function NewsletterSignupForm({ locale }: { locale: Locale }) {
           onChange={(e) => setConsent(e.target.checked)}
           className="mt-0.5"
         />
-        <span>{t.consentLabel}</span>
+        <span>{t("consentLabel")}</span>
       </label>
       <button
         type="submit"
         disabled={isPending || !consent}
         className="rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground disabled:opacity-50"
       >
-        {isPending ? t.sending : t.submit}
+        {isPending ? t("sending") : t("submit")}
       </button>
       {message && (
         <p

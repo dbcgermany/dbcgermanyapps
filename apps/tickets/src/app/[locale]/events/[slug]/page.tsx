@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { getEventBySlug, getPublicTiers, getEventSchedule } from "@/lib/queries";
 import { getEventTriggers, TRIGGER_POLICY } from "@/actions/triggers";
 import { getCompanyInfo } from "@/lib/company-info";
@@ -68,6 +69,10 @@ export default async function EventDetailPage({
 
   const event = eventOrNull;
   const company = await getCompanyInfo();
+  const t = await getTranslations({
+    locale,
+    namespace: "tickets.events.detail",
+  });
 
   const triggerLocale = (locale === "de" || locale === "fr" ? locale : "en") as
     | "en"
@@ -81,7 +86,7 @@ export default async function EventDetailPage({
   ]);
 
   const minPrice = tiers.length > 0
-    ? Math.min(...tiers.map((t) => t.price_cents)) / 100
+    ? Math.min(...tiers.map((tier) => tier.price_cents)) / 100
     : null;
 
   const eventJsonLd = {
@@ -137,141 +142,16 @@ export default async function EventDetailPage({
   const startsAt = new Date(event.starts_at);
   const endsAt = new Date(event.ends_at);
 
-  const t = {
-    en: {
-      back: "All events",
-      when: "Date & time",
-      venue: "Venue",
-      about: "About the masterclass",
-      schedule: "Schedule",
-      tickets: "Tickets",
-      noTickets: "No tickets available yet.",
-      free: "Free",
-      soldOut: "Sold out",
-      salesStart: "Sales open",
-      salesEnded: "Sales closed",
-      remaining: "left",
-      available: "Available",
-      getTickets: "Get tickets",
-      organizer: "Organizer",
-      viewOnMap: "View on map",
-      scarcityOnly: "Only",
-      scarcityHurry: "Hurry, only",
-      scarcityLeft: "left",
-      socialProofSuffix: "people secured their spot in the last 24 hours",
-      saveLabel: "Save",
-      deadlinePrefix: "Ends in",
-      dayAbbr: "d",
-      hourAbbr: "h",
-      minAbbr: "m",
-      tickerPrefixCity: "Someone from",
-      tickerMiddleCity: "just bought a",
-      tickerPrefixAnon: "Someone just bought a",
-      tickerTicket: "ticket",
-      tickerJustNow: "just now",
-    },
-    de: {
-      back: "Alle Veranstaltungen",
-      when: "Datum & Zeit",
-      venue: "Veranstaltungsort",
-      about: "Über die Masterclass",
-      schedule: "Programm",
-      tickets: "Tickets",
-      noTickets: "Noch keine Tickets verfügbar.",
-      free: "Kostenlos",
-      soldOut: "Ausverkauft",
-      salesStart: "Verkauf startet",
-      salesEnded: "Verkauf beendet",
-      remaining: "verbleibend",
-      available: "Verfügbar",
-      getTickets: "Tickets kaufen",
-      organizer: "Veranstalter",
-      viewOnMap: "Auf Karte anzeigen",
-      scarcityOnly: "Nur noch",
-      scarcityHurry: "Schnell sein — nur noch",
-      scarcityLeft: "verfügbar",
-      socialProofSuffix:
-        "Personen haben sich in den letzten 24 Stunden ihren Platz gesichert",
-      saveLabel: "Sparen",
-      deadlinePrefix: "Endet in",
-      dayAbbr: "T",
-      hourAbbr: "Std",
-      minAbbr: "Min",
-      tickerPrefixCity: "Jemand aus",
-      tickerMiddleCity: "hat gerade ein",
-      tickerPrefixAnon: "Jemand hat gerade ein",
-      tickerTicket: "Ticket gekauft",
-      tickerJustNow: "gerade eben",
-    },
-    fr: {
-      back: "Tous les événements",
-      when: "Date & heure",
-      venue: "Lieu",
-      about: "À propos de la masterclass",
-      schedule: "Programme",
-      tickets: "Billets",
-      noTickets: "Aucun billet disponible pour le moment.",
-      free: "Gratuit",
-      soldOut: "Complet",
-      salesStart: "Vente à partir du",
-      salesEnded: "Vente terminée",
-      remaining: "restants",
-      available: "Disponible",
-      getTickets: "Réserver ma place",
-      organizer: "Organisateur",
-      viewOnMap: "Voir sur la carte",
-      scarcityOnly: "Plus que",
-      scarcityHurry: "Vite, plus que",
-      scarcityLeft: "disponibles",
-      socialProofSuffix:
-        "personnes ont réservé leur place dans les dernières 24 heures",
-      saveLabel: "Économisez",
-      deadlinePrefix: "Fin dans",
-      dayAbbr: "j",
-      hourAbbr: "h",
-      minAbbr: "min",
-      tickerPrefixCity: "Quelqu’un à",
-      tickerMiddleCity: "vient d’acheter un billet",
-      tickerPrefixAnon: "Quelqu’un vient d’acheter un billet",
-      tickerTicket: "",
-      tickerJustNow: "à l’instant",
-    },
-  }[locale] ?? {
-    back: "All events", when: "Date & time", venue: "Venue",
-    about: "About", schedule: "Schedule", tickets: "Tickets",
-    noTickets: "No tickets", free: "Free", soldOut: "Sold out",
-    salesStart: "Sales open", salesEnded: "Sales closed",
-    remaining: "left", available: "Available", getTickets: "Get tickets",
-    organizer: "Organizer", viewOnMap: "View on map",
-    scarcityOnly: "Only", scarcityHurry: "Hurry, only", scarcityLeft: "left",
-    socialProofSuffix: "people secured their spot in the last 24 hours",
-    saveLabel: "Save",
-    deadlinePrefix: "Ends in", dayAbbr: "d", hourAbbr: "h", minAbbr: "m",
-    tickerPrefixCity: "Someone from", tickerMiddleCity: "just bought a",
-    tickerPrefixAnon: "Someone just bought a", tickerTicket: "ticket",
-    tickerJustNow: "just now",
-  };
-
   const tickerLabels = {
-    prefixWithCity: t.tickerPrefixCity,
-    prefixAnon: t.tickerPrefixAnon,
-    middleKnownCity: t.tickerMiddleCity,
-    middleAnon: t.tickerPrefixAnon,
-    ticketSuffix: t.tickerTicket,
+    prefixWithCity: t("tickerPrefixCity"),
+    prefixAnon: t("tickerPrefixAnon"),
+    middleKnownCity: t("tickerMiddleCity"),
+    middleAnon: t("tickerPrefixAnon"),
+    ticketSuffix: t("tickerTicket"),
     ago: {
-      justNow: t.tickerJustNow,
-      minutes: (n: number) =>
-        locale === "de"
-          ? `vor ${n} Min`
-          : locale === "fr"
-            ? `il y a ${n} min`
-            : `${n} min ago`,
-      hours: (n: number) =>
-        locale === "de"
-          ? `vor ${n} Std`
-          : locale === "fr"
-            ? `il y a ${n} h`
-            : `${n}h ago`,
+      justNow: t("tickerJustNow"),
+      minutes: (n: number) => t("tickerAgoMinutes", { n }),
+      hours: (n: number) => t("tickerAgoHours", { n }),
     },
   };
 
@@ -286,7 +166,7 @@ export default async function EventDetailPage({
           href={`/${locale}`}
           className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
         >
-          <span aria-hidden>&larr;</span> {t.back}
+          <span aria-hidden>&larr;</span> {t("back")}
         </Link>
 
         {/* HERO IMAGE — boxed */}
@@ -313,7 +193,7 @@ export default async function EventDetailPage({
           </h1>
           <div className="mt-6 grid gap-5 text-sm sm:grid-cols-2 sm:text-base">
             <InfoBlock
-              label={t.when}
+              label={t("when")}
               primary={startsAt.toLocaleDateString(locale, {
                 weekday: "long",
                 year: "numeric",
@@ -330,7 +210,7 @@ export default async function EventDetailPage({
             />
             <div>
               <InfoBlock
-                label={t.venue}
+                label={t("venue")}
                 primary={event.venue_name ?? ""}
                 secondary={[event.venue_address, event.city]
                   .filter(Boolean)
@@ -343,7 +223,7 @@ export default async function EventDetailPage({
                   rel="noopener noreferrer"
                   className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80"
                 >
-                  {t.viewOnMap} &rarr;
+                  {t("viewOnMap")} &rarr;
                 </a>
               )}
             </div>
@@ -362,7 +242,7 @@ export default async function EventDetailPage({
             )}
             <div>
               <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                {t.organizer}
+                {t("organizer")}
               </p>
               <p className="text-sm font-medium">
                 {company?.brand_name ?? "DBC Germany"}
@@ -396,7 +276,7 @@ export default async function EventDetailPage({
             {loc("description") && (
               <section>
                 <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-                  {t.about}
+                  {t("about")}
                 </h2>
                 <div className="prose-dbc mt-4 max-w-none whitespace-pre-wrap text-base leading-7 text-foreground sm:text-lg sm:leading-8">
                   {loc("description")}
@@ -407,7 +287,7 @@ export default async function EventDetailPage({
             {schedule.length > 0 && (
               <section>
                 <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-                  {t.schedule}
+                  {t("schedule")}
                 </h2>
                 <ol className="mt-4 space-y-3">
                   {schedule.map((item) => (
@@ -447,7 +327,7 @@ export default async function EventDetailPage({
             <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-lg">
               <div className="border-b border-border bg-gradient-to-r from-primary/10 via-primary/5 to-accent/10 px-6 py-5">
                 <h2 className="font-heading text-lg font-bold">
-                  {t.tickets}
+                  {t("tickets")}
                 </h2>
               </div>
 
@@ -456,7 +336,7 @@ export default async function EventDetailPage({
                   <SocialProofBadge
                     displayed={triggers.socialProof.displayed}
                     floored={triggers.socialProof.floored}
-                    label={t.socialProofSuffix}
+                    label={t("socialProofSuffix")}
                   />
                   {triggers.recentBuyers.length > 0 && (
                     <RecentBuyerTicker
@@ -469,7 +349,7 @@ export default async function EventDetailPage({
 
               {tiers.length === 0 ? (
                 <p className="px-6 py-10 text-center text-sm text-muted-foreground">
-                  {t.noTickets}
+                  {t("noTickets")}
                 </p>
               ) : (
                 <div className="divide-y divide-border">
@@ -504,7 +384,7 @@ export default async function EventDetailPage({
                           </p>
                           {isFree ? (
                             <p className="font-heading text-2xl font-bold text-primary sm:text-3xl">
-                              {t.free}
+                              {t("free")}
                             </p>
                           ) : (
                             <PriceAnchor
@@ -512,7 +392,7 @@ export default async function EventDetailPage({
                               originalPriceCents={tier.original_price_cents}
                               currency={tier.currency}
                               locale={locale}
-                              saveLabel={t.saveLabel}
+                              saveLabel={t("saveLabel")}
                             />
                           )}
                         </div>
@@ -527,7 +407,7 @@ export default async function EventDetailPage({
                           {soldOut ? (
                             <div className="w-full space-y-2">
                               <span className="inline-flex items-center rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground">
-                                {t.soldOut}
+                                {t("soldOut")}
                               </span>
                               <WaitlistButton
                                 eventId={event.id}
@@ -538,7 +418,7 @@ export default async function EventDetailPage({
                             </div>
                           ) : notOnSaleYet ? (
                             <span className="inline-flex items-center rounded-full bg-muted/60 px-3 py-1 text-xs font-medium text-muted-foreground">
-                              {t.salesStart}{" "}
+                              {t("salesStart")}{" "}
                               {new Date(
                                 tier.sales_start_at!
                               ).toLocaleDateString(locale, {
@@ -548,7 +428,7 @@ export default async function EventDetailPage({
                             </span>
                           ) : salesEnded ? (
                             <span className="inline-flex items-center rounded-full bg-muted/60 px-3 py-1 text-xs font-medium text-muted-foreground">
-                              {t.salesEnded}
+                              {t("salesEnded")}
                             </span>
                           ) : (
                             <>
@@ -557,25 +437,25 @@ export default async function EventDetailPage({
                                   displayRemaining={tierStats.displayRemaining}
                                   capacity={tierStats.capacity}
                                   labels={{
-                                    only: t.scarcityOnly,
-                                    hurry: t.scarcityHurry,
-                                    left: t.scarcityLeft,
+                                    only: t("scarcityOnly"),
+                                    hurry: t("scarcityHurry"),
+                                    left: t("scarcityLeft"),
                                   }}
                                 />
                               ) : (
                                 <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
                                   <span className="h-1.5 w-1.5 rounded-full bg-success-strong" />
-                                  {t.available}
+                                  {t("available")}
                                 </span>
                               )}
                               <TierDeadlineCountdown
                                 salesEndAt={tierStats?.salesEndAt ?? null}
                                 warnHours={TRIGGER_POLICY.DEADLINE_WARN_HOURS}
                                 labels={{
-                                  prefix: t.deadlinePrefix,
-                                  d: t.dayAbbr,
-                                  h: t.hourAbbr,
-                                  m: t.minAbbr,
+                                  prefix: t("deadlinePrefix"),
+                                  d: t("dayAbbr"),
+                                  h: t("hourAbbr"),
+                                  m: t("minAbbr"),
                                 }}
                               />
                             </>
@@ -592,7 +472,7 @@ export default async function EventDetailPage({
                   href={`/${locale}/checkout/${slug}`}
                   className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-lg"
                 >
-                  {t.getTickets}
+                  {t("getTickets")}
                   <span aria-hidden>&rarr;</span>
                 </Link>
               </div>

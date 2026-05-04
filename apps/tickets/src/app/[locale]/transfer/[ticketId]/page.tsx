@@ -15,6 +15,10 @@ export default async function TransferPage({
     locale,
     namespace: "tickets.transfer",
   });
+  const t = await getTranslations({
+    locale,
+    namespace: "tickets.transfer.page",
+  });
 
   const {
     data: { user },
@@ -78,40 +82,11 @@ export default async function TransferPage({
     ? ((tier[`name_${locale}` as keyof typeof tier] as string) || tier.name_en)
     : "";
 
-  const t = {
-    en: {
-      title: "Transfer ticket",
-      description: "Transfer this ticket to a new attendee. The current QR code will be invalidated immediately and a new ticket PDF will be sent to the new attendee.",
-      currentAttendee: "Current attendee",
-      blockedCheckedIn: "This ticket has already been checked in and cannot be transferred.",
-      blockedEnded: "This event has already ended.",
-      back: "Back to orders",
-    },
-    de: {
-      title: "Ticket \u00FCbertragen",
-      description: "\u00DCbertragen Sie dieses Ticket auf einen neuen Teilnehmer. Der aktuelle QR-Code wird sofort ung\u00FCltig und ein neues Ticket-PDF wird an den neuen Teilnehmer gesendet.",
-      currentAttendee: "Aktueller Teilnehmer",
-      blockedCheckedIn: "Dieses Ticket wurde bereits eingecheckt und kann nicht \u00FCbertragen werden.",
-      blockedEnded: "Diese Veranstaltung ist bereits vorbei.",
-      back: "Zur\u00FCck zu Bestellungen",
-    },
-    fr: {
-      title: "Transf\u00E9rer le billet",
-      description: "Transf\u00E9rez ce billet \u00E0 un nouveau participant. Le code QR actuel sera imm\u00E9diatement invalid\u00E9 et un nouveau PDF de billet sera envoy\u00E9 au nouveau participant.",
-      currentAttendee: "Participant actuel",
-      blockedCheckedIn: "Ce billet a d\u00E9j\u00E0 \u00E9t\u00E9 enregistr\u00E9 et ne peut pas \u00EAtre transf\u00E9r\u00E9.",
-      blockedEnded: "Cet \u00E9v\u00E9nement est d\u00E9j\u00E0 termin\u00E9.",
-      back: "Retour aux commandes",
-    },
-  }[locale] ?? {
-    title: "Transfer ticket", description: "", currentAttendee: "Current attendee", blockedCheckedIn: "Already checked in.", blockedEnded: "Event ended.", back: "Back",
-  };
-
   const blocked = Boolean(ticket.checked_in_at) || eventEnded;
   const blockedReason = ticket.checked_in_at
-    ? t.blockedCheckedIn
+    ? t("blockedCheckedIn")
     : eventEnded
-      ? t.blockedEnded
+      ? t("blockedEnded")
       : null;
 
   return (
@@ -120,16 +95,16 @@ export default async function TransferPage({
         href={`/${locale}/orders`}
         className="text-sm text-muted-foreground hover:text-foreground"
       >
-        &larr; {t.back}
+        &larr; {t("back")}
       </Link>
 
-      <h1 className="mt-4 font-heading text-2xl font-bold">{t.title}</h1>
-      <p className="mt-2 text-sm text-muted-foreground">{t.description}</p>
+      <h1 className="mt-4 font-heading text-2xl font-bold">{t("title")}</h1>
+      <p className="mt-2 text-sm text-muted-foreground">{t("description")}</p>
 
       {/* Current ticket card */}
       <div className="mt-6 rounded-lg border border-border p-4">
         <p className="text-xs uppercase tracking-wider text-muted-foreground">
-          {t.currentAttendee}
+          {t("currentAttendee")}
         </p>
         <p className="mt-1 font-medium">{ticket.attendee_name}</p>
         <p className="text-sm text-muted-foreground">{ticket.attendee_email}</p>

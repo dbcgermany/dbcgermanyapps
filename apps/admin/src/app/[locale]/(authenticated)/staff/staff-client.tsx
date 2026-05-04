@@ -3,6 +3,7 @@
 import { Fragment, useState, useTransition } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import type { UserRole } from "@dbc/types";
 import { Button, Card, ConfirmDialog } from "@dbc/ui";
 import {
@@ -47,6 +48,7 @@ export function StaffClient({
   staff: StaffMember[];
   events: EventOption[];
 }) {
+  const t = useTranslations("admin.staff.client");
   const [expandedStaffId, setExpandedStaffId] = useState<string | null>(null);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteError, setInviteError] = useState<string | null>(null);
@@ -95,137 +97,38 @@ export function StaffClient({
     startTransition(async () => {
       const res = await resendStaffInvite(staffId, locale);
       if (res.error) toast.error(res.error);
-      else toast.success(t.resendInvite);
+      else toast.success(t("resendInvite"));
     });
   }
 
   async function runRevokeInvite(staffId: string) {
     const res = await revokeStaffInvite(staffId, locale);
     if (res.error) toast.error(res.error);
-    else toast.success(t.revoke);
+    else toast.success(t("revoke"));
   }
-
-  const t = {
-    en: {
-      invite: "Invite staff",
-      inviteEmail: "Email address",
-      inviteName: "Display name (optional)",
-      inviteRole: "Role",
-      sendInvite: "Send invite",
-      sending: "Sending…",
-      inviteSuccess: "Invite sent. They’ll receive a branded email with a sign-in link.",
-      cancel: "Cancel",
-      email: "Email",
-      role: "Role",
-      events: "Assigned events",
-      actions: "Actions",
-      assignEvents: "Assign events",
-      remove: "Remove",
-      resendInvite: "Resend invite",
-      revoke: "Revoke",
-      revokeConfirm: "Revoke this pending invite? The user record will be deleted.",
-      removeConfirm:
-        "Remove this person from staff? They will be demoted to buyer role and unassigned from all events.",
-      noStaff: "No staff members yet. Invite someone to get started.",
-      noEvents: "No events to assign.",
-      member: "member",
-      members: "members",
-      teamMember: "Team member",
-      manager: "Manager",
-      admin: "Admin",
-      super_admin: "Super admin",
-    },
-    de: {
-      invite: "Mitarbeiter einladen",
-      inviteEmail: "E-Mail-Adresse",
-      inviteName: "Anzeigename (optional)",
-      inviteRole: "Rolle",
-      sendInvite: "Einladung senden",
-      sending: "Wird gesendet…",
-      inviteSuccess: "Einladung gesendet. Die Person erhält eine gebrandete E-Mail mit Anmeldelink.",
-      cancel: "Abbrechen",
-      email: "E-Mail",
-      role: "Rolle",
-      events: "Zugewiesene Veranstaltungen",
-      actions: "Aktionen",
-      assignEvents: "Veranstaltungen zuweisen",
-      remove: "Entfernen",
-      resendInvite: "Einladung erneut senden",
-      revoke: "Widerrufen",
-      revokeConfirm:
-        "Diese offene Einladung widerrufen? Der Benutzereintrag wird gelöscht.",
-      removeConfirm:
-        "Diese Person aus dem Team entfernen? Sie wird auf die Rolle „Käufer“ herabgestuft und allen Veranstaltungen entzogen.",
-      noStaff: "Noch keine Mitarbeiter.",
-      noEvents: "Keine Veranstaltungen zum Zuweisen.",
-      member: "Mitglied",
-      members: "Mitglieder",
-      teamMember: "Teammitglied",
-      manager: "Manager",
-      admin: "Admin",
-      super_admin: "Super Admin",
-    },
-    fr: {
-      invite: "Inviter un membre",
-      inviteEmail: "Adresse e-mail",
-      inviteName: "Nom d’affichage (optionnel)",
-      inviteRole: "Rôle",
-      sendInvite: "Envoyer l’invitation",
-      sending: "Envoi…",
-      inviteSuccess:
-        "Invitation envoyée. La personne recevra un e-mail personnalisé avec un lien de connexion.",
-      cancel: "Annuler",
-      email: "E-mail",
-      role: "Rôle",
-      events: "Événements attribués",
-      actions: "Actions",
-      assignEvents: "Attribuer des événements",
-      remove: "Retirer",
-      resendInvite: "Renvoyer l’invitation",
-      revoke: "Révoquer",
-      revokeConfirm:
-        "Révoquer cette invitation en attente ? Le compte utilisateur sera supprimé.",
-      removeConfirm:
-        "Retirer cette personne de l’équipe ? Son rôle repassera à « acheteur » et elle sera désassignée de tous les événements.",
-      noStaff: "Aucun membre pour le moment.",
-      noEvents: "Aucun événement à attribuer.",
-      member: "membre",
-      members: "membres",
-      teamMember: "Membre",
-      manager: "Manager",
-      admin: "Admin",
-      super_admin: "Super admin",
-    },
-  }[locale] ?? {
-    invite: "Invite staff", inviteEmail: "Email", inviteName: "Name", inviteRole: "Role", sendInvite: "Send", sending: "…", inviteSuccess: "Sent", cancel: "Cancel",
-    email: "Email", role: "Role", events: "Events", actions: "Actions", assignEvents: "Assign", remove: "Remove",
-    resendInvite: "Resend invite", revoke: "Revoke", revokeConfirm: "Revoke?", removeConfirm: "Remove?",
-    noStaff: "No staff", noEvents: "No events", member: "member", members: "members",
-    teamMember: "Team", manager: "Manager", admin: "Admin", super_admin: "Super admin",
-  };
 
   const roleLabels: Record<UserRole, string> = {
     buyer: "Buyer",
-    team_member: t.teamMember,
-    manager: t.manager,
-    admin: t.admin,
-    super_admin: t.super_admin,
+    team_member: t("teamMember"),
+    manager: t("manager"),
+    admin: t("admin"),
+    super_admin: t("super_admin"),
   };
 
   return (
     <div className="mt-6">
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          {staff.length} {staff.length === 1 ? t.member : t.members}
+          {staff.length} {staff.length === 1 ? t("member") : t("members")}
         </p>
         <Button onClick={() => setInviteOpen((o) => !o)}>
-          {t.invite}
+          {t("invite")}
         </Button>
       </div>
 
       {inviteSuccess && (
         <div className="mt-4 rounded-md bg-success-soft p-4 text-sm text-success">
-          &#x2713; {t.inviteSuccess}
+          &#x2713; {t("inviteSuccess")}
         </div>
       )}
 
@@ -242,7 +145,7 @@ export function StaffClient({
           <div className="grid gap-3 sm:grid-cols-3">
             <div>
               <label className="block text-xs text-muted-foreground mb-1">
-                {t.inviteEmail}
+                {t("inviteEmail")}
               </label>
               <input
                 type="email"
@@ -253,7 +156,7 @@ export function StaffClient({
             </div>
             <div>
               <label className="block text-xs text-muted-foreground mb-1">
-                {t.inviteName}
+                {t("inviteName")}
               </label>
               <input
                 type="text"
@@ -263,7 +166,7 @@ export function StaffClient({
             </div>
             <div>
               <label className="block text-xs text-muted-foreground mb-1">
-                {t.inviteRole}
+                {t("inviteRole")}
               </label>
               <select
                 name="role"
@@ -282,14 +185,14 @@ export function StaffClient({
           <div className="flex gap-2">
             <Button type="submit"
               disabled={isPending}>
-              {isPending ? t.sending : t.sendInvite}
+              {isPending ? t("sending") : t("sendInvite")}
             </Button>
             <button
               type="button"
               onClick={() => setInviteOpen(false)}
               className="rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
             >
-              {t.cancel}
+              {t("cancel")}
             </button>
           </div>
           </form>
@@ -298,17 +201,17 @@ export function StaffClient({
 
       {/* Staff list */}
       {staff.length === 0 ? (
-        <EmptyState message={t.noStaff} className="mt-12" />
+        <EmptyState message={t("noStaff")} className="mt-12" />
       ) : (
         <div className="mt-6 overflow-x-auto rounded-lg border border-border">
           <table className="w-full min-w-160 text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/50">
-                <th className="px-4 py-3 text-left font-medium">{t.email}</th>
-                <th className="px-4 py-3 text-left font-medium">{t.role}</th>
-                <th className="px-4 py-3 text-left font-medium">{t.events}</th>
+                <th className="px-4 py-3 text-left font-medium">{t("email")}</th>
+                <th className="px-4 py-3 text-left font-medium">{t("role")}</th>
+                <th className="px-4 py-3 text-left font-medium">{t("events")}</th>
                 <th className="px-4 py-3 text-right font-medium">
-                  {t.actions}
+                  {t("actions")}
                 </th>
               </tr>
             </thead>
@@ -360,7 +263,7 @@ export function StaffClient({
                           }
                           className="text-xs text-primary hover:text-primary/80"
                         >
-                          {t.assignEvents}
+                          {t("assignEvents")}
                         </button>
                         {!s.lastSignInAt ? (
                           <>
@@ -369,7 +272,7 @@ export function StaffClient({
                               disabled={isPending}
                               className="text-xs text-warning hover:opacity-80"
                             >
-                              {t.resendInvite}
+                              {t("resendInvite")}
                             </button>
                             <ConfirmDialog
                               trigger={
@@ -378,13 +281,13 @@ export function StaffClient({
                                   disabled={isPending}
                                   className="text-xs text-danger hover:opacity-80"
                                 >
-                                  {t.revoke}
+                                  {t("revoke")}
                                 </button>
                               }
-                              title={t.revoke}
-                              description={t.revokeConfirm}
+                              title={t("revoke")}
+                              description={t("revokeConfirm")}
                               variant="danger"
-                              confirmLabel={t.revoke}
+                              confirmLabel={t("revoke")}
                               onConfirm={() =>
                                 startTransition(() => runRevokeInvite(s.id))
                               }
@@ -398,13 +301,13 @@ export function StaffClient({
                                 disabled={isPending}
                                 className="text-xs text-danger hover:opacity-80"
                               >
-                                {t.remove}
+                                {t("remove")}
                               </button>
                             }
-                            title={t.remove}
-                            description={t.removeConfirm}
+                            title={t("remove")}
+                            description={t("removeConfirm")}
                             variant="danger"
-                            confirmLabel={t.remove}
+                            confirmLabel={t("remove")}
                             onConfirm={() =>
                               startTransition(() => runRemove(s.id))
                             }
@@ -417,7 +320,7 @@ export function StaffClient({
                         <td colSpan={4} className="px-4 py-4">
                           {events.length === 0 ? (
                             <p className="text-xs text-muted-foreground">
-                              {t.noEvents}
+                              {t("noEvents")}
                             </p>
                           ) : (
                             <div className="grid gap-2 sm:grid-cols-2">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { joinWaitlist } from "@/actions/waitlist";
 
 export function WaitlistButton({
@@ -19,6 +20,7 @@ export function WaitlistButton({
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const t = useTranslations("tickets.events.waitlist");
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -36,34 +38,10 @@ export function WaitlistButton({
     });
   }
 
-  const t = {
-    en: {
-      join: "Join waitlist",
-      email: "your@email.com",
-      submit: "Notify me",
-      submitting: "...",
-      done: "\u2713 You\u2019re on the waitlist",
-    },
-    de: {
-      join: "Warteliste beitreten",
-      email: "ihre@email.de",
-      submit: "Benachrichtigen",
-      submitting: "...",
-      done: "\u2713 Sie sind auf der Warteliste",
-    },
-    fr: {
-      join: "Rejoindre la liste d\u2019attente",
-      email: "votre@email.fr",
-      submit: "Me notifier",
-      submitting: "...",
-      done: "\u2713 Vous \u00EAtes sur la liste d\u2019attente",
-    },
-  }[locale] ?? { join: "Join waitlist", email: "email", submit: "Notify me", submitting: "...", done: "On waitlist" };
-
   if (done) {
     return (
       <p className="mt-2 text-xs font-medium text-success">
-        {t.done}
+        {t("done")}
       </p>
     );
   }
@@ -74,7 +52,7 @@ export function WaitlistButton({
         onClick={() => setExpanded(true)}
         className="mt-2 text-xs font-medium text-primary hover:text-primary/80"
       >
-        {t.join} &rarr;
+        {t("join")} &rarr;
       </button>
     );
   }
@@ -86,7 +64,7 @@ export function WaitlistButton({
         required
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        placeholder={t.email}
+        placeholder={t("email")}
         className="flex-1 rounded border border-input bg-background px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-ring"
       />
       <button
@@ -94,7 +72,7 @@ export function WaitlistButton({
         disabled={isPending}
         className="rounded bg-primary px-3 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
       >
-        {isPending ? t.submitting : t.submit}
+        {isPending ? t("submitting") : t("submit")}
       </button>
       {error && (
         <p className="absolute mt-8 text-xs text-danger" role="alert">

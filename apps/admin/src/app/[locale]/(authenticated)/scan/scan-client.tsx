@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, useTransition } from "react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { checkInTicket, getScanStats, type ScanResult } from "@/actions/scan";
 import { searchAttendees, manualCheckIn, resendTicketPdf, type AttendeeSearchResult } from "@/actions/tickets";
 import { Button } from "@dbc/ui";
@@ -25,6 +26,7 @@ export function ScanClient({
   initialEventId: string;
   initialStats: { total: number; checkedIn: number };
 }) {
+  const t = useTranslations("admin.scan.client");
   const [eventId, setEventId] = useState(initialEventId);
   const [stats, setStats] = useState(initialStats);
   const [status, setStatus] = useState<Status>({ kind: "idle" });
@@ -185,62 +187,6 @@ export function ScanClient({
     setManualToken("");
   }
 
-  const t = {
-    en: {
-      selectEvent: "Select event",
-      startScan: "Start scanning",
-      checkedIn: "Checked in!",
-      alreadyScanned: "Already checked in",
-      invalid: "Invalid ticket",
-      wrongEvent: "Wrong event",
-      at: "at",
-      by: "by",
-      manual: "Manual entry",
-      enterToken: "Enter ticket code",
-      submit: "Check in",
-      progress: "checked in",
-      startingCamera: "Starting camera...",
-      nextTicket: "Next ticket",
-      tapOrEnter: "Tap to continue or press Enter",
-    },
-    de: {
-      selectEvent: "Veranstaltung ausw\u00E4hlen",
-      startScan: "Scannen starten",
-      checkedIn: "Eingecheckt!",
-      alreadyScanned: "Bereits eingecheckt",
-      invalid: "Ung\u00FCltiges Ticket",
-      wrongEvent: "Falsche Veranstaltung",
-      at: "um",
-      by: "von",
-      manual: "Manuelle Eingabe",
-      enterToken: "Ticket-Code eingeben",
-      submit: "Einchecken",
-      progress: "eingecheckt",
-      startingCamera: "Kamera wird gestartet...",
-      nextTicket: "N\u00E4chstes Ticket",
-      tapOrEnter: "Tippen zum Fortfahren oder Enter dr\u00FCcken",
-    },
-    fr: {
-      selectEvent: "S\u00E9lectionner l\u2019\u00E9v\u00E9nement",
-      startScan: "Commencer le scan",
-      checkedIn: "Enregistr\u00E9 !",
-      alreadyScanned: "D\u00E9j\u00E0 enregistr\u00E9",
-      invalid: "Billet invalide",
-      wrongEvent: "Mauvais \u00E9v\u00E9nement",
-      at: "\u00E0",
-      by: "par",
-      manual: "Saisie manuelle",
-      enterToken: "Entrer le code du billet",
-      submit: "Enregistrer",
-      progress: "enregistr\u00E9s",
-      startingCamera: "D\u00E9marrage de la cam\u00E9ra...",
-      nextTicket: "Billet suivant",
-      tapOrEnter: "Appuyer pour continuer ou Entr\u00E9e",
-    },
-  }[locale] ?? {
-    selectEvent: "Select event", startScan: "Start", checkedIn: "Checked in!", alreadyScanned: "Already", invalid: "Invalid", wrongEvent: "Wrong", at: "at", by: "by", manual: "Manual", enterToken: "Enter code", submit: "Check in", progress: "checked in", startingCamera: "Starting...", nextTicket: "Next ticket", tapOrEnter: "Tap to continue",
-  };
-
   const rate = stats.total > 0 ? Math.round((stats.checkedIn / stats.total) * 100) : 0;
 
   return (
@@ -248,7 +194,7 @@ export function ScanClient({
       {/* Event selector */}
       <div>
         <label className="block text-sm font-medium mb-1.5">
-          {t.selectEvent}
+          {t("selectEvent")}
         </label>
         <select
           value={eventId}
@@ -278,7 +224,7 @@ export function ScanClient({
                 {stats.total}
               </span>
             </p>
-            <p className="text-sm text-muted-foreground">{t.progress}</p>
+            <p className="text-sm text-muted-foreground">{t("progress")}</p>
           </div>
           <p className="font-heading text-2xl font-bold text-primary">
             {rate}%
@@ -300,7 +246,7 @@ export function ScanClient({
           disabled={!eventId}
           className="w-full"
         >
-          {t.startScan}
+          {t("startScan")}
         </Button>
       ) : (
         <div>
@@ -310,7 +256,7 @@ export function ScanClient({
           />
           {status.kind === "scanning" && (
             <p className="mt-2 text-center text-sm text-muted-foreground">
-              {t.startingCamera}
+              {t("startingCamera")}
             </p>
           )}
         </div>
@@ -339,7 +285,7 @@ export function ScanClient({
               autoFocus
             >
               <p className="font-heading text-4xl font-bold text-success">
-                ✓ {t.checkedIn}
+                ✓ {t("checkedIn")}
               </p>
               <p className="mt-3 text-xl font-semibold text-foreground">
                 {status.result.attendeeName}
@@ -349,10 +295,10 @@ export function ScanClient({
               </p>
               <div className="mt-6 flex items-center justify-between border-t border-success-border pt-4 text-sm">
                 <span className="text-success">
-                  {t.tapOrEnter}
+                  {t("tapOrEnter")}
                 </span>
                 <span className="rounded-md bg-success-strong px-4 py-2 font-semibold text-white shadow">
-                  {t.nextTicket} →
+                  {t("nextTicket")} →
                 </span>
               </div>
             </button>
@@ -366,10 +312,10 @@ export function ScanClient({
               <p className="font-heading text-4xl font-bold text-danger">
                 ✕{" "}
                 {status.result.error
-                  ? t.invalid
+                  ? t("invalid")
                   : status.result.alreadyCheckedInAt
-                    ? t.alreadyScanned
-                    : t.invalid}
+                    ? t("alreadyScanned")
+                    : t("invalid")}
               </p>
               {status.result.attendeeName && (
                 <p className="mt-3 text-xl font-semibold text-foreground">
@@ -378,22 +324,22 @@ export function ScanClient({
               )}
               {status.result.alreadyCheckedInAt && (
                 <p className="mt-1 text-sm text-muted-foreground">
-                  {t.at}{" "}
+                  {t("at")}{" "}
                   {new Date(
                     status.result.alreadyCheckedInAt
                   ).toLocaleTimeString(locale, {
                     hour: "2-digit",
                     minute: "2-digit",
                   })}{" "}
-                  {t.by} {status.result.alreadyCheckedInBy}
+                  {t("by")} {status.result.alreadyCheckedInBy}
                 </p>
               )}
               <div className="mt-6 flex items-center justify-between border-t border-danger-border pt-4 text-sm">
                 <span className="text-danger">
-                  {t.tapOrEnter}
+                  {t("tapOrEnter")}
                 </span>
                 <span className="rounded-md bg-danger-strong px-4 py-2 font-semibold text-white shadow">
-                  {t.nextTicket} →
+                  {t("nextTicket")} →
                 </span>
               </div>
             </button>
@@ -406,7 +352,7 @@ export function ScanClient({
         onSubmit={handleManualCheckIn}
         className="rounded-lg border border-border p-4"
       >
-        <p className="text-sm font-medium mb-2">{t.manual}</p>
+        <p className="text-sm font-medium mb-2">{t("manual")}</p>
         <div className="flex gap-2">
           <input
             type="text"
@@ -417,11 +363,11 @@ export function ScanClient({
             spellCheck={false}
             value={manualToken}
             onChange={(e) => setManualToken(e.target.value)}
-            placeholder={t.enterToken}
+            placeholder={t("enterToken")}
             className="min-w-0 flex-1 rounded-md border border-input bg-background px-3 py-3 text-base font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-ring"
           />
           <Button type="submit">
-            {t.submit}
+            {t("submit")}
           </Button>
         </div>
       </form>
@@ -438,58 +384,16 @@ export function ScanClient({
   }
 }
 
-const FIND_T = {
-  en: {
-    heading: "Can’t scan? Find by name",
-    placeholder: "Type a name, email, or surname…",
-    searching: "Searching…",
-    invited: "Invited", door: "Door", paid: "Paid",
-    checkedInTag: "✓ Checked in",
-    checkIn: "Check in",
-    resendPdf: "Resend PDF",
-    checkedInToast: "Checked in: {name}",
-    resendToast: "Ticket sent to {email}.",
-    searchFailed: "Search failed. Try again.",
-    actionFailed: "Action failed. Try again.",
-  },
-  de: {
-    heading: "Scan nicht möglich? Namen suchen",
-    placeholder: "Name, E-Mail oder Nachname eingeben…",
-    searching: "Wird gesucht…",
-    invited: "Eingeladen", door: "Abendkasse", paid: "Bezahlt",
-    checkedInTag: "✓ Eingecheckt",
-    checkIn: "Einchecken",
-    resendPdf: "PDF erneut senden",
-    checkedInToast: "Eingecheckt: {name}",
-    resendToast: "Ticket gesendet an {email}.",
-    searchFailed: "Suche fehlgeschlagen. Bitte erneut versuchen.",
-    actionFailed: "Aktion fehlgeschlagen. Bitte erneut versuchen.",
-  },
-  fr: {
-    heading: "Impossible de scanner ? Rechercher par nom",
-    placeholder: "Tapez un nom, un e-mail ou un prénom…",
-    searching: "Recherche…",
-    invited: "Invité", door: "Entrée", paid: "Payé",
-    checkedInTag: "✓ Enregistré",
-    checkIn: "Enregistrer",
-    resendPdf: "Renvoyer le PDF",
-    checkedInToast: "Enregistré : {name}",
-    resendToast: "Billet envoyé à {email}.",
-    searchFailed: "Échec de la recherche. Réessayez.",
-    actionFailed: "Action échouée. Réessayez.",
-  },
-} as const;
-
 function NameFindPanel({
   eventId,
-  locale,
+  locale: _locale,
   onCheckedIn,
 }: {
   eventId: string;
   locale: string;
   onCheckedIn: () => void;
 }) {
-  const ft = FIND_T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof FIND_T];
+  const ft = useTranslations("admin.scan.find");
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<AttendeeSearchResult[]>([]);
   const [searching, startSearch] = useTransition();
@@ -505,12 +409,12 @@ function NameFindPanel({
         } catch (err) {
           console.error("[scan] attendee search failed:", err);
           setResults([]);
-          toast.error(ft.searchFailed);
+          toast.error(ft("searchFailed"));
         }
       });
     }, 250);
     return () => clearTimeout(handle);
-  }, [query, eventId, ft.searchFailed]);
+  }, [query, eventId, ft]);
 
   // Derive empty state from query length rather than mutating in an effect.
   const shouldShowResults = query.trim().length >= 2;
@@ -526,7 +430,7 @@ function NameFindPanel({
         result = await manualCheckIn(r.ticket_token, eventId);
       } catch (err) {
         console.error("[scan] manual check-in failed:", err);
-        result = { error: ft.actionFailed };
+        result = { error: ft("actionFailed") };
       }
       if ("error" in result) {
         toast.error(
@@ -537,7 +441,7 @@ function NameFindPanel({
           }`
         );
       } else {
-        toast.success(ft.checkedInToast.replace("{name}", result.attendee_name));
+        toast.success(ft("checkedInToast", { name: result.attendee_name }));
         onCheckedIn();
         setResults((rs) =>
           rs.map((row) =>
@@ -557,25 +461,25 @@ function NameFindPanel({
         result = await resendTicketPdf(r.ticket_id);
       } catch (err) {
         console.error("[scan] resend ticket failed:", err);
-        result = { error: ft.actionFailed };
+        result = { error: ft("actionFailed") };
       }
       if ("error" in result) toast.error(result.error);
-      else toast.success(ft.resendToast.replace("{email}", r.attendee_email));
+      else toast.success(ft("resendToast", { email: r.attendee_email }));
     });
   }
 
   return (
     <div className="rounded-lg border border-border p-4">
-      <p className="text-sm font-medium mb-2">{ft.heading}</p>
+      <p className="text-sm font-medium mb-2">{ft("heading")}</p>
       <input
         type="search"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder={ft.placeholder}
+        placeholder={ft("placeholder")}
         className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
       />
       {searching && shouldShowResults && (
-        <p className="mt-2 text-xs text-muted-foreground">{ft.searching}</p>
+        <p className="mt-2 text-xs text-muted-foreground">{ft("searching")}</p>
       )}
       {visibleResults.length > 0 && (
         <ul className="mt-3 space-y-2">
@@ -594,16 +498,16 @@ function NameFindPanel({
                   {r.attendee_email} · {r.tier_name} ·{" "}
                   {r.acquisition_type === "invited" ||
                   r.acquisition_type === "assigned"
-                    ? ft.invited
+                    ? ft("invited")
                     : r.acquisition_type === "door_sale"
-                      ? ft.door
-                      : ft.paid}
+                      ? ft("door")
+                      : ft("paid")}
                 </p>
               </div>
               <div className="flex items-center gap-2">
                 {r.checked_in_at ? (
                   <span className="text-xs font-medium text-success">
-                    {ft.checkedInTag}
+                    {ft("checkedInTag")}
                   </span>
                 ) : (
                   <Button
@@ -612,7 +516,7 @@ function NameFindPanel({
                     onClick={() => handleCheckIn(r)}
                     disabled={actionPending}
                   >
-                    {ft.checkIn}
+                    {ft("checkIn")}
                   </Button>
                 )}
                 <Button
@@ -622,7 +526,7 @@ function NameFindPanel({
                   onClick={() => handleResend(r)}
                   disabled={actionPending}
                 >
-                  {ft.resendPdf}
+                  {ft("resendPdf")}
                 </Button>
               </div>
             </li>

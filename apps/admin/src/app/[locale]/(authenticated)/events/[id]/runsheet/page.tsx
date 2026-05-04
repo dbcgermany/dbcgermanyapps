@@ -8,52 +8,13 @@ import { getAssignableStaff } from "@/actions/staff";
 import { RunsheetSortable } from "./runsheet-sortable";
 import { RunsheetForm } from "./runsheet-form";
 
-const T = {
-  en: {
-    back: "Event",
-    title: "Run Sheet",
-    description:
-      "Minute-by-minute event-day plan. Drag to reorder, click any row to edit.",
-    addTitle: "Add item",
-    noItems: "No run sheet items yet. Add your first one below or populate from the template.",
-    populate: "Populate from template",
-    downloadPdf: "Download PDF",
-  },
-  de: {
-    back: "Event",
-    title: "Ablaufplan",
-    description:
-      "Minutengenauer Plan f\u00FCr den Veranstaltungstag. Ziehen zum Umsortieren, klicken zum Bearbeiten.",
-    addTitle: "Eintrag hinzuf\u00FCgen",
-    noItems:
-      "Noch keine Eintr\u00E4ge. F\u00FCgen Sie unten den ersten hinzu oder laden Sie das Template.",
-    populate: "Aus Vorlage laden",
-    downloadPdf: "PDF herunterladen",
-  },
-  fr: {
-    back: "\u00C9v\u00E9nement",
-    title: "Feuille de route",
-    description:
-      "Plan minute par minute. Glissez pour r\u00E9ordonner, cliquez pour \u00E9diter.",
-    addTitle: "Ajouter un \u00E9l\u00E9ment",
-    noItems:
-      "Aucun \u00E9l\u00E9ment. Ajoutez-en un ci-dessous ou chargez depuis le mod\u00E8le.",
-    populate: "Charger depuis le mod\u00E8le",
-    downloadPdf: "T\u00E9l\u00E9charger le PDF",
-  },
-} as const;
-
 export default async function RunsheetPage({
   params,
 }: {
   params: Promise<{ locale: string; id: string }>;
 }) {
   const { locale, id: eventId } = await params;
-  const l = (locale === "de" || locale === "fr" ? locale : "en") as
-    | "en"
-    | "de"
-    | "fr";
-  const t = T[l];
+  const t = await getTranslations({ locale, namespace: "admin.events.runsheet" });
   const tBack = await getTranslations({ locale, namespace: "admin.back" });
 
   const eventOrNull = await getEvent(eventId).catch(() => null);
@@ -79,8 +40,8 @@ export default async function RunsheetPage({
   return (
     <div>
       <PageHeader
-        title={t.title}
-        description={t.description}
+        title={t("title")}
+        description={t("description")}
         back={{ href: `/${locale}/events/${eventId}`, label: tBack("event") }}
         cta={
           <a
@@ -89,7 +50,7 @@ export default async function RunsheetPage({
             rel="noopener noreferrer"
             className="rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
           >
-            {t.downloadPdf}
+            {t("downloadPdf")}
           </a>
         }
         className="mt-2"
@@ -97,10 +58,10 @@ export default async function RunsheetPage({
 
       {items.length === 0 ? (
         <div className="mt-6 space-y-3 rounded-lg border border-dashed border-border p-6 text-center">
-          <p className="text-sm text-muted-foreground">{t.noItems}</p>
+          <p className="text-sm text-muted-foreground">{t("noItems")}</p>
           <form action={handlePopulate}>
             <Button type="submit">
-              {t.populate}
+              {t("populate")}
             </Button>
           </form>
         </div>
@@ -117,7 +78,7 @@ export default async function RunsheetPage({
 
       {/* Add item form */}
       <Card padding="md" className="mt-8">
-        <h2 className="font-heading text-lg font-semibold">{t.addTitle}</h2>
+        <h2 className="font-heading text-lg font-semibold">{t("addTitle")}</h2>
         <div className="mt-4">
           <RunsheetForm eventId={eventId} locale={locale} staff={staff} />
         </div>

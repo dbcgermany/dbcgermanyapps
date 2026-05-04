@@ -1,67 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Badge } from "@dbc/ui";
 import type { CrossEventAttendee } from "@/actions/attendees";
-
-const T = {
-  en: {
-    search: "Search by name, email or ticket ID",
-    all: "All",
-    checkedIn: "Checked in",
-    notCheckedIn: "Not checked in",
-    export: "Export CSV",
-    name: "Name",
-    event: "Event",
-    tier: "Tier",
-    status: "Status",
-    purchased: "Purchased",
-    invited: "Invited",
-    assigned: "Assigned",
-    doorSale: "Door sale",
-    notScanned: "Not scanned",
-    noResults: "No attendees match your search.",
-    allEvents: "All events",
-  },
-  de: {
-    search: "Nach Name, E-Mail oder Ticket-ID suchen",
-    all: "Alle",
-    checkedIn: "Eingecheckt",
-    notCheckedIn: "Nicht eingecheckt",
-    export: "CSV exportieren",
-    name: "Name",
-    event: "Veranstaltung",
-    tier: "Tarif",
-    status: "Status",
-    purchased: "Gekauft",
-    invited: "Eingeladen",
-    assigned: "Zugewiesen",
-    doorSale: "Abendkasse",
-    notScanned: "Nicht gescannt",
-    noResults: "Keine Teilnehmer gefunden.",
-    allEvents: "Alle Veranstaltungen",
-  },
-  fr: {
-    search: "Rechercher par nom, e-mail ou ID du billet",
-    all: "Tous",
-    checkedIn: "Enregistrés",
-    notCheckedIn: "Non enregistrés",
-    export: "Exporter CSV",
-    name: "Nom",
-    event: "Événement",
-    tier: "Tarif",
-    status: "Statut",
-    purchased: "Acheté",
-    invited: "Invité",
-    assigned: "Attribué",
-    doorSale: "Sur place",
-    notScanned: "Non scanné",
-    noResults: "Aucun participant trouvé.",
-    allEvents: "Tous les événements",
-  },
-} as const;
-
-type Locale = keyof typeof T;
 
 export function AttendeesTab({
   locale,
@@ -74,7 +16,7 @@ export function AttendeesTab({
   events: Array<{ id: string; title_en: string }>;
   selectedEventId: string;
 }) {
-  const t = T[(locale === "de" || locale === "fr" ? locale : "en") as Locale];
+  const t = useTranslations("admin.contacts.attendeesTab");
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<"all" | "checked_in" | "not_checked_in">(
     "all"
@@ -97,10 +39,10 @@ export function AttendeesTab({
   }, [attendees, query, filter]);
 
   const acqLabels: Record<string, string> = {
-    purchased: t.purchased,
-    invited: t.invited,
-    assigned: t.assigned,
-    door_sale: t.doorSale,
+    purchased: t("purchased"),
+    invited: t("invited"),
+    assigned: t("assigned"),
+    door_sale: t("doorSale"),
   };
 
   function exportCsv() {
@@ -159,7 +101,7 @@ export function AttendeesTab({
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder={t.search}
+          placeholder={t("search")}
           className={`${filterInput} w-full flex-1 sm:min-w-60`}
         />
         <select
@@ -167,7 +109,7 @@ export function AttendeesTab({
           onChange={onEventChange}
           className={filterInput}
         >
-          <option value="">{t.allEvents}</option>
+          <option value="">{t("allEvents")}</option>
           {events.map((ev) => (
             <option key={ev.id} value={ev.id}>
               {ev.title_en}
@@ -177,9 +119,9 @@ export function AttendeesTab({
         <div className="flex gap-1 rounded-md border border-border p-1">
           {(
             [
-              { value: "all", label: t.all },
-              { value: "checked_in", label: t.checkedIn },
-              { value: "not_checked_in", label: t.notCheckedIn },
+              { value: "all", label: t("all") },
+              { value: "checked_in", label: t("checkedIn") },
+              { value: "not_checked_in", label: t("notCheckedIn") },
             ] as const
           ).map((f) => (
             <button
@@ -199,23 +141,23 @@ export function AttendeesTab({
           onClick={exportCsv}
           className="rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-muted"
         >
-          {t.export}
+          {t("export")}
         </button>
       </div>
 
       {filtered.length === 0 ? (
         <p className="mt-8 text-center text-sm text-muted-foreground">
-          {t.noResults}
+          {t("noResults")}
         </p>
       ) : (
         <div className="mt-6 overflow-hidden rounded-lg border border-border">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/50">
-                <th className="px-4 py-3 text-left font-medium">{t.name}</th>
-                <th className="px-4 py-3 text-left font-medium">{t.event}</th>
-                <th className="px-4 py-3 text-left font-medium">{t.tier}</th>
-                <th className="px-4 py-3 text-left font-medium">{t.status}</th>
+                <th className="px-4 py-3 text-left font-medium">{t("name")}</th>
+                <th className="px-4 py-3 text-left font-medium">{t("event")}</th>
+                <th className="px-4 py-3 text-left font-medium">{t("tier")}</th>
+                <th className="px-4 py-3 text-left font-medium">{t("status")}</th>
               </tr>
             </thead>
             <tbody>
@@ -256,7 +198,7 @@ export function AttendeesTab({
                         })}
                       </Badge>
                     ) : (
-                      <Badge variant="default">{t.notScanned}</Badge>
+                      <Badge variant="default">{t("notScanned")}</Badge>
                     )}
                   </td>
                 </tr>

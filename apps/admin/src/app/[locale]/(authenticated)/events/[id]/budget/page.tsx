@@ -12,42 +12,6 @@ import {
   CHART_COLORS,
 } from "@/components/charts";
 
-const T = {
-  en: {
-    back: "Back to event",
-    title: "Budget & Expenses",
-    desc: "Track event costs and vendor payments.",
-    totalExpenses: "Total expenses",
-    lineItems: "Line items",
-    revenue: "Revenue",
-    netProfit: "Net profit",
-    byCategory: "Expenses by category",
-    total: "Total",
-  },
-  de: {
-    back: "Zur\u00FCck zum Event",
-    title: "Budget & Ausgaben",
-    desc: "Veranstaltungskosten und Lieferantenzahlungen verfolgen.",
-    totalExpenses: "Gesamtausgaben",
-    lineItems: "Positionen",
-    revenue: "Einnahmen",
-    netProfit: "Nettogewinn",
-    byCategory: "Ausgaben nach Kategorie",
-    total: "Gesamt",
-  },
-  fr: {
-    back: "Retour \u00E0 l\u2019\u00E9v\u00E9nement",
-    title: "Budget & D\u00E9penses",
-    desc: "Suivre les co\u00FBts et paiements fournisseurs.",
-    totalExpenses: "D\u00E9penses totales",
-    lineItems: "\u00C9l\u00E9ments",
-    revenue: "Revenus",
-    netProfit: "B\u00E9n\u00E9fice net",
-    byCategory: "D\u00E9penses par cat\u00E9gorie",
-    total: "Total",
-  },
-} as const;
-
 export default async function BudgetPage({
   params,
 }: {
@@ -58,7 +22,7 @@ export default async function BudgetPage({
     | "en"
     | "de"
     | "fr";
-  const t = T[l];
+  const t = await getTranslations({ locale, namespace: "admin.events.budget" });
   const tBack = await getTranslations({ locale, namespace: "admin.back" });
 
   const [{ expenses, totalCents, count }, financial] = await Promise.all([
@@ -89,37 +53,37 @@ export default async function BudgetPage({
   return (
     <div>
       <PageHeader
-        title={t.title}
-        description={t.desc}
+        title={t("title")}
+        description={t("desc")}
         back={{ href: `/${locale}/events/${eventId}`, label: tBack("event") }}
       />
 
       {/* Summary cards — 4 KPIs */}
       <div className="mt-6">
         <StatGrid cols={4}>
-          <StatCard label={t.revenue} value={fmt(financial.revenueCents)} dense />
+          <StatCard label={t("revenue")} value={fmt(financial.revenueCents)} dense />
           <StatCard
-            label={t.totalExpenses}
+            label={t("totalExpenses")}
             value={fmt(totalCents)}
             dense
           />
           <StatCard
-            label={t.netProfit}
+            label={t("netProfit")}
             value={fmt(financial.profitCents)}
             dense
             sub={financial.profitCents < 0 ? "Operating at a loss" : undefined}
           />
-          <StatCard label={t.lineItems} value={String(count)} dense />
+          <StatCard label={t("lineItems")} value={String(count)} dense />
         </StatGrid>
       </div>
 
       {/* Expenses-by-category donut (only if we have expenses) */}
       {categoryData.length > 0 && (
         <div className="mt-6">
-          <ChartCard title={t.byCategory} height={280}>
+          <ChartCard title={t("byCategory")} height={280}>
             <DonutChart
               data={categoryData}
-              centerLabel={t.total}
+              centerLabel={t("total")}
               centerValue={fmt(totalCents)}
               valueFormatter={(v) =>
                 `\u20AC${Math.round(v).toLocaleString()}`

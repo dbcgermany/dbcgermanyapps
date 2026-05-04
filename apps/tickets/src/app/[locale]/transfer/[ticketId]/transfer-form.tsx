@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { transferTicket } from "@/actions/transfer";
 
 export function TransferForm({
@@ -17,6 +18,7 @@ export function TransferForm({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const t = useTranslations("tickets.transfer.form");
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -38,39 +40,12 @@ export function TransferForm({
     });
   }
 
-  const t = {
-    en: {
-      newName: "New attendee name",
-      newEmail: "New attendee email",
-      confirm: "Transfer ticket",
-      transferring: "Transferring...",
-      success: "Ticket transferred. A new PDF has been sent to the new attendee.",
-      confirmWarning: "This action cannot be undone. The current QR code will stop working immediately.",
-    },
-    de: {
-      newName: "Name des neuen Teilnehmers",
-      newEmail: "E-Mail des neuen Teilnehmers",
-      confirm: "Ticket \u00FCbertragen",
-      transferring: "Wird \u00FCbertragen...",
-      success: "Ticket \u00FCbertragen. Ein neues PDF wurde an den neuen Teilnehmer gesendet.",
-      confirmWarning: "Diese Aktion kann nicht r\u00FCckg\u00E4ngig gemacht werden. Der aktuelle QR-Code wird sofort ung\u00FCltig.",
-    },
-    fr: {
-      newName: "Nom du nouveau participant",
-      newEmail: "E-mail du nouveau participant",
-      confirm: "Transf\u00E9rer le billet",
-      transferring: "Transfert en cours...",
-      success: "Billet transf\u00E9r\u00E9. Un nouveau PDF a \u00E9t\u00E9 envoy\u00E9 au nouveau participant.",
-      confirmWarning: "Cette action est irr\u00E9versible. Le code QR actuel cessera imm\u00E9diatement de fonctionner.",
-    },
-  }[locale] ?? { newName: "Name", newEmail: "Email", confirm: "Transfer", transferring: "...", success: "Done", confirmWarning: "" };
-
   if (success) {
     return (
       <div className="mt-6 rounded-md bg-success-soft p-6 text-center">
         <p className="text-2xl">&#x2713;</p>
         <p className="mt-2 font-medium text-success">
-          {t.success}
+          {t("success")}
         </p>
       </div>
     );
@@ -85,7 +60,7 @@ export function TransferForm({
       )}
 
       <div>
-        <label className="block text-sm font-medium mb-1.5">{t.newName}</label>
+        <label className="block text-sm font-medium mb-1.5">{t("newName")}</label>
         <input
           type="text"
           required
@@ -97,7 +72,7 @@ export function TransferForm({
 
       <div>
         <label className="block text-sm font-medium mb-1.5">
-          {t.newEmail}
+          {t("newEmail")}
         </label>
         <input
           type="email"
@@ -109,7 +84,7 @@ export function TransferForm({
       </div>
 
       <p className="rounded-md bg-warning-soft p-3 text-xs text-warning">
-        {t.confirmWarning}
+        {t("confirmWarning")}
       </p>
 
       <button
@@ -117,7 +92,7 @@ export function TransferForm({
         disabled={isPending}
         className="w-full rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 disabled:opacity-50"
       >
-        {isPending ? t.transferring : t.confirm}
+        {isPending ? t("transferring") : t("confirm")}
       </button>
     </form>
   );

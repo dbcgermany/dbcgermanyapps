@@ -27,6 +27,7 @@ export function JobApplicationForm({
   jobOfferId: string;
 }) {
   const tPerson = useTranslations("person");
+  const t = useTranslations("site.careers.form");
   const [title, setTitle] = useState<Title | "">("");
   const [gender, setGender] = useState<Gender | "">("");
   const [birthday, setBirthday] = useState("");
@@ -68,48 +69,6 @@ export function JobApplicationForm({
     prefer_not_to_say: tPerson("genderPreferNotToSay"),
   };
 
-  const t = {
-    en: {
-      email: "Email",
-      phone: "Phone (optional)",
-      coverLetter: "Cover letter",
-      resume: "Resume link (optional)",
-      resumePlaceholder: "Google Drive, Dropbox, etc.",
-      linkedin: "LinkedIn URL (optional)",
-      portfolio: "Portfolio URL (optional)",
-      submit: "Send application",
-      sending: "Sending\u2026",
-      success:
-        "Thanks \u2014 your application has been submitted. We\u2019ll be in touch soon.",
-    },
-    de: {
-      email: "E-Mail",
-      phone: "Telefon (optional)",
-      coverLetter: "Anschreiben",
-      resume: "Lebenslauf-Link (optional)",
-      resumePlaceholder: "Google Drive, Dropbox, etc.",
-      linkedin: "LinkedIn URL (optional)",
-      portfolio: "Portfolio URL (optional)",
-      submit: "Bewerbung absenden",
-      sending: "Wird gesendet\u2026",
-      success:
-        "Danke \u2014 Ihre Bewerbung wurde eingereicht. Wir melden uns in K\u00fcrze.",
-    },
-    fr: {
-      email: "E-mail",
-      phone: "T\u00e9l\u00e9phone (optionnel)",
-      coverLetter: "Lettre de motivation",
-      resume: "Lien CV (optionnel)",
-      resumePlaceholder: "Google Drive, Dropbox, etc.",
-      linkedin: "URL LinkedIn (optionnel)",
-      portfolio: "URL Portfolio (optionnel)",
-      submit: "Envoyer la candidature",
-      sending: "Envoi\u2026",
-      success:
-        "Merci \u2014 votre candidature a \u00e9t\u00e9 envoy\u00e9e. Nous reviendrons vers vous rapidement.",
-    },
-  }[locale];
-
   return (
     <form action={formAction} className="mt-6 space-y-5">
       {state?.error && (
@@ -119,7 +78,7 @@ export function JobApplicationForm({
       )}
       {state?.success && (
         <div className="rounded-md bg-success-soft p-4 text-sm text-success">
-          {t.success}
+          {t("success")}
         </div>
       )}
 
@@ -143,10 +102,10 @@ export function JobApplicationForm({
       />
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <FormField label={t.email} required>
+        <FormField label={t("email")} required>
           <Input name="applicant_email" type="email" required autoComplete="email" />
         </FormField>
-        <FormField label={t.phone}>
+        <FormField label={t("phone")}>
           <Input name="applicant_phone" type="tel" autoComplete="tel" />
         </FormField>
         <BirthdayField
@@ -165,27 +124,27 @@ export function JobApplicationForm({
             onChange={(e) => setCountry(e.target.value)}
           />
         </div>
-        <FormField label={t.resume}>
+        <FormField label={t("resume")}>
           <Input
             name="resume_url"
             type="url"
-            placeholder={t.resumePlaceholder}
+            placeholder={t("resumePlaceholder")}
           />
         </FormField>
-        <FormField label={t.linkedin}>
+        <FormField label={t("linkedin")}>
           <Input name="linkedin_url" type="url" placeholder="https://" />
         </FormField>
-        <FormField label={t.portfolio}>
+        <FormField label={t("portfolio")}>
           <Input name="portfolio_url" type="url" placeholder="https://" />
         </FormField>
       </div>
 
-      <FormField label={t.coverLetter} required>
+      <FormField label={t("coverLetter")} required>
         <Textarea name="cover_letter" rows={8} required />
       </FormField>
 
       <Button type="submit" disabled={isPending || state?.success}>
-        {isPending ? t.sending : t.submit}
+        {isPending ? t("sending") : t("submit")}
       </Button>
     </form>
   );

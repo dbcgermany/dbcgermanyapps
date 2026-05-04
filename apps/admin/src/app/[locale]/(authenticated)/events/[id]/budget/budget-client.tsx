@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Badge, Button, ConfirmDialog } from "@dbc/ui";
 import { createExpense, deleteExpense } from "@/actions/expenses";
 
@@ -28,45 +29,6 @@ const CATEGORY_OPTIONS = [
   "other",
 ] as const;
 
-const T = {
-  en: {
-    description: "Description",
-    category: "Category",
-    amount: "Amount (\u20AC)",
-    vendor: "Vendor",
-    vendorContact: "Vendor contact",
-    paidAt: "Paid on",
-    add: "Add expense",
-    adding: "Adding...",
-    delete: "Delete",
-    noExpenses: "No expenses recorded yet.",
-  },
-  de: {
-    description: "Beschreibung",
-    category: "Kategorie",
-    amount: "Betrag (\u20AC)",
-    vendor: "Lieferant",
-    vendorContact: "Kontakt",
-    paidAt: "Bezahlt am",
-    add: "Ausgabe hinzuf\u00FCgen",
-    adding: "Wird hinzugef\u00FCgt...",
-    delete: "L\u00F6schen",
-    noExpenses: "Noch keine Ausgaben erfasst.",
-  },
-  fr: {
-    description: "Description",
-    category: "Cat\u00E9gorie",
-    amount: "Montant (\u20AC)",
-    vendor: "Fournisseur",
-    vendorContact: "Contact",
-    paidAt: "Pay\u00E9 le",
-    add: "Ajouter",
-    adding: "Ajout...",
-    delete: "Supprimer",
-    noExpenses: "Aucune d\u00E9pense enregistr\u00E9e.",
-  },
-} as const;
-
 export function BudgetClient({
   expenses,
   eventId,
@@ -78,9 +40,10 @@ export function BudgetClient({
   locale: string;
   l: "en" | "de" | "fr";
 }) {
+  void l;
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const t = T[l];
+  const t = useTranslations("admin.events.budget.client");
 
   function handleAdd(formData: FormData) {
     startTransition(async () => {
@@ -107,17 +70,17 @@ export function BudgetClient({
   return (
     <div className="space-y-6">
       {expenses.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{t.noExpenses}</p>
+        <p className="text-sm text-muted-foreground">{t("noExpenses")}</p>
       ) : (
         <div className="overflow-hidden rounded-lg border border-border">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/50">
-                <th className="px-4 py-3 text-left font-medium">{t.description}</th>
-                <th className="px-4 py-3 text-left font-medium">{t.category}</th>
-                <th className="px-4 py-3 text-right font-medium">{t.amount}</th>
-                <th className="px-4 py-3 text-left font-medium">{t.vendor}</th>
-                <th className="px-4 py-3 text-left font-medium">{t.paidAt}</th>
+                <th className="px-4 py-3 text-left font-medium">{t("description")}</th>
+                <th className="px-4 py-3 text-left font-medium">{t("category")}</th>
+                <th className="px-4 py-3 text-right font-medium">{t("amount")}</th>
+                <th className="px-4 py-3 text-left font-medium">{t("vendor")}</th>
+                <th className="px-4 py-3 text-left font-medium">{t("paidAt")}</th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>
@@ -150,12 +113,12 @@ export function BudgetClient({
                           disabled={isPending}
                           className="text-xs text-danger hover:opacity-80 disabled:opacity-50"
                         >
-                          {t.delete}
+                          {t("delete")}
                         </button>
                       }
                       title="Delete this expense?"
                       description={`${e.description ?? ""} ${fmtAmount(e.amount_cents, e.currency ?? "EUR")}`}
-                      confirmLabel={t.delete}
+                      confirmLabel={t("delete")}
                       cancelLabel="Cancel"
                       variant="danger"
                       onConfirm={() => handleDelete(e.id)}
@@ -176,7 +139,7 @@ export function BudgetClient({
         <div className="grid gap-3 sm:grid-cols-2">
           <input
             name="description"
-            placeholder={t.description}
+            placeholder={t("description")}
             required
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
           />
@@ -198,13 +161,13 @@ export function BudgetClient({
             type="number"
             step="0.01"
             min="0"
-            placeholder={t.amount}
+            placeholder={t("amount")}
             required
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
           />
           <input
             name="vendor_name"
-            placeholder={t.vendor}
+            placeholder={t("vendor")}
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
           />
           <input
@@ -215,7 +178,7 @@ export function BudgetClient({
         </div>
         <Button type="submit"
           disabled={isPending}>
-          {isPending ? t.adding : t.add}
+          {isPending ? t("adding") : t("add")}
         </Button>
       </form>
     </div>

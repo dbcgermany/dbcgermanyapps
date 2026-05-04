@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Card, ConfirmDialog } from "@dbc/ui";
 import type { DomainCheckResult } from "@dbc/email";
 import {
@@ -41,101 +42,8 @@ const DEFAULT: ComposerState = {
   exclude_category_slugs: [],
 };
 
-const T = {
-  en: {
-    saved: "Saved.",
-    saveFirst: "Save the draft first, then enter a test email.",
-    saveFirstPlain: "Save the draft first.",
-    testSent: "Test sent to {email}",
-    confirmSend: "Send to {n} recipient{s}? This cannot be undone.",
-    sentReport: "Sent: {s}, failed: {f}.",
-    subject: "Subject",
-    preheader: "Preheader (preview text)",
-    fromName: "From name", fromEmail: "From email", replyTo: "Reply-to",
-    localeLabel: "Locale",
-    bodyLabel: "Body (plain text; blank lines split paragraphs)",
-    saveDraft: "Save draft",
-    targeting: "Targeting",
-    targetingHint:
-      "Include — at least one tag must match. Exclude — skip if any match. No includes = everyone with marketing consent.",
-    include: "Include", exclude: "Exclude",
-    previewCount: "Preview recipient count",
-    willReceive1: "contact will receive this.",
-    willReceiveMany: "contacts will receive this.",
-    sendTest: "Send test", sendTestBtn: "Send test email", testPh: "you@example.com",
-    sendBroadcast: "Send broadcast",
-    sendBroadcastHint:
-      "One-way. Saves the draft first, then dispatches to the resolved recipient list.",
-    sendNow: "Send now",
-    cancel: "Cancel",
-    domainUnverifiedTitle: "Sender domain is not verified",
-    domainUnverifiedBody:
-      "Resend hasn't verified dbc-germany.com yet, so real broadcasts are blocked. Add the 3 DNS records listed in cred/dns-email-setup.md at Strato and wait 5-30 min. Test sends to the Resend account owner still work (from onboarding@resend.dev).",
-  },
-  de: {
-    saved: "Gespeichert.",
-    saveFirst: "Speichern Sie zuerst den Entwurf, dann geben Sie eine Test-E-Mail ein.",
-    saveFirstPlain: "Speichern Sie zuerst den Entwurf.",
-    testSent: "Testmail gesendet an {email}",
-    confirmSend: "An {n} Empfänger{s} senden? Diese Aktion kann nicht rückgängig gemacht werden.",
-    sentReport: "Gesendet: {s}, fehlgeschlagen: {f}.",
-    subject: "Betreff",
-    preheader: "Preheader (Vorschautext)",
-    fromName: "Absendername", fromEmail: "Absender-E-Mail", replyTo: "Antwortadresse",
-    localeLabel: "Sprache",
-    bodyLabel: "Inhalt (Text; Leerzeilen trennen Absätze)",
-    saveDraft: "Entwurf speichern",
-    targeting: "Zielgruppe",
-    targetingHint:
-      "Einschließen — mindestens ein Tag muss passen. Ausschließen — überspringen, wenn eines passt. Keine Einschlüsse = alle mit Marketing-Einwilligung.",
-    include: "Einschließen", exclude: "Ausschließen",
-    previewCount: "Empfängerzahl anzeigen",
-    willReceive1: "Kontakt erhält diesen Newsletter.",
-    willReceiveMany: "Kontakte erhalten diesen Newsletter.",
-    sendTest: "Test senden", sendTestBtn: "Test-E-Mail senden", testPh: "sie@beispiel.de",
-    sendBroadcast: "Broadcast senden",
-    sendBroadcastHint:
-      "Einseitig. Speichert den Entwurf zuerst und versendet dann an die aufgelöste Empfängerliste.",
-    sendNow: "Jetzt senden",
-    cancel: "Abbrechen",
-    domainUnverifiedTitle: "Absender-Domain nicht verifiziert",
-    domainUnverifiedBody:
-      "Resend hat dbc-germany.com noch nicht verifiziert — echte Broadcasts sind deshalb blockiert. Fügen Sie bei Strato die 3 DNS-Einträge aus cred/dns-email-setup.md hinzu und warten Sie 5-30 Min. Tests an den Resend-Inhaber funktionieren weiterhin (von onboarding@resend.dev).",
-  },
-  fr: {
-    saved: "Enregistré.",
-    saveFirst: "Enregistrez d’abord le brouillon, puis saisissez un e-mail de test.",
-    saveFirstPlain: "Enregistrez d’abord le brouillon.",
-    testSent: "Test envoyé à {email}",
-    confirmSend: "Envoyer à {n} destinataire{s} ? Cette action est irréversible.",
-    sentReport: "Envoyés : {s}, échoués : {f}.",
-    subject: "Objet",
-    preheader: "Pré-en-tête (texte d’aperçu)",
-    fromName: "Nom d’expéditeur", fromEmail: "E-mail d’expéditeur", replyTo: "Répondre à",
-    localeLabel: "Langue",
-    bodyLabel: "Contenu (texte brut ; lignes vides séparent les paragraphes)",
-    saveDraft: "Enregistrer le brouillon",
-    targeting: "Ciblage",
-    targetingHint:
-      "Inclure — au moins une étiquette doit correspondre. Exclure — ignorer si une correspond. Aucune inclusion = tous les consentants marketing.",
-    include: "Inclure", exclude: "Exclure",
-    previewCount: "Prévisualiser le nombre de destinataires",
-    willReceive1: "contact recevra cette newsletter.",
-    willReceiveMany: "contacts recevront cette newsletter.",
-    sendTest: "Envoi test", sendTestBtn: "Envoyer un test", testPh: "vous@exemple.com",
-    sendBroadcast: "Envoyer en masse",
-    sendBroadcastHint:
-      "Action unidirectionnelle. Enregistre d’abord le brouillon puis diffuse à la liste résolue.",
-    sendNow: "Envoyer maintenant",
-    cancel: "Annuler",
-    domainUnverifiedTitle: "Domaine d’expéditeur non vérifié",
-    domainUnverifiedBody:
-      "Resend n’a pas encore vérifié dbc-germany.com — l’envoi en masse est bloqué. Ajoutez les 3 enregistrements DNS listés dans cred/dns-email-setup.md chez Strato et attendez 5 à 30 min. Les envois test vers le titulaire du compte Resend fonctionnent toujours (depuis onboarding@resend.dev).",
-  },
-} as const;
-
 export function NewsletterComposer({
-  uiLocale = "en",
+  uiLocale: _uiLocale = "en",
   categories,
   initial,
   readOnly = false,
@@ -148,7 +56,7 @@ export function NewsletterComposer({
   domainStatus?: DomainCheckResult;
 }) {
   const router = useRouter();
-  const t = T[(uiLocale === "de" || uiLocale === "fr" ? uiLocale : "en") as keyof typeof T];
+  const t = useTranslations("admin.newsletters.composer");
   const [state, setState] = useState<ComposerState>(initial ?? DEFAULT);
   const [recipientCount, setRecipientCount] = useState<number | null>(null);
   const [testEmail, setTestEmail] = useState("");
@@ -183,7 +91,7 @@ export function NewsletterComposer({
       if ("error" in res && res.error) {
         setMsg({ type: "err", text: res.error });
       } else if ("success" in res) {
-        setMsg({ type: "ok", text: t.saved });
+        setMsg({ type: "ok", text: t("saved") });
         setState({ ...state, id: res.id });
         after?.(res.id);
       }
@@ -202,19 +110,19 @@ export function NewsletterComposer({
 
   function handleSendTest() {
     if (!state.id || !testEmail) {
-      setMsg({ type: "err", text: t.saveFirst });
+      setMsg({ type: "err", text: t("saveFirst") });
       return;
     }
     startTransition(async () => {
       const res = await sendTestNewsletter(state.id!, testEmail);
       if ("error" in res && res.error) setMsg({ type: "err", text: res.error });
-      else setMsg({ type: "ok", text: t.testSent.replace("{email}", testEmail) });
+      else setMsg({ type: "ok", text: t("testSent", { email: testEmail }) });
     });
   }
 
   function handleSendReal() {
     if (!state.id) {
-      setMsg({ type: "err", text: t.saveFirstPlain });
+      setMsg({ type: "err", text: t("saveFirstPlain") });
       return;
     }
     // Confirmation now lives in the surrounding ConfirmDialog — this fn is
@@ -226,7 +134,7 @@ export function NewsletterComposer({
       } else if ("success" in res) {
         setMsg({
           type: "ok",
-          text: t.sentReport.replace("{s}", String(res.sent ?? 0)).replace("{f}", String(res.failed ?? 0)),
+          text: t("sentReport", { s: String(res.sent ?? 0), f: String(res.failed ?? 0) }),
         });
         router.refresh();
       }
@@ -242,8 +150,8 @@ export function NewsletterComposer({
           role="alert"
           className="lg:col-span-2 rounded-lg border border-warning-border bg-warning-soft p-4 text-sm text-warning"
         >
-          <p className="font-semibold">{t.domainUnverifiedTitle}</p>
-          <p className="mt-1 leading-relaxed">{t.domainUnverifiedBody}</p>
+          <p className="font-semibold">{t("domainUnverifiedTitle")}</p>
+          <p className="mt-1 leading-relaxed">{t("domainUnverifiedBody")}</p>
           {domainStatus?.message && (
             <p className="mt-2 font-mono text-xs opacity-80">
               Resend: {domainStatus.message}
@@ -253,14 +161,14 @@ export function NewsletterComposer({
       )}
       <div className="space-y-4">
         <fieldset disabled={readOnly} className="space-y-4">
-          <Field label={t.subject} required>
+          <Field label={t("subject")} required>
             <input
               value={state.subject}
               onChange={(e) => update("subject", e.target.value)}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             />
           </Field>
-          <Field label={t.preheader}>
+          <Field label={t("preheader")}>
             <input
               value={state.preheader}
               onChange={(e) => update("preheader", e.target.value)}
@@ -268,21 +176,21 @@ export function NewsletterComposer({
             />
           </Field>
           <div className="grid gap-3 sm:grid-cols-3">
-            <Field label={t.fromName}>
+            <Field label={t("fromName")}>
               <input
                 value={state.from_name}
                 onChange={(e) => update("from_name", e.target.value)}
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               />
             </Field>
-            <Field label={t.fromEmail}>
+            <Field label={t("fromEmail")}>
               <input
                 value={state.from_email}
                 onChange={(e) => update("from_email", e.target.value)}
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               />
             </Field>
-            <Field label={t.replyTo}>
+            <Field label={t("replyTo")}>
               <input
                 value={state.reply_to}
                 onChange={(e) => update("reply_to", e.target.value)}
@@ -290,7 +198,7 @@ export function NewsletterComposer({
               />
             </Field>
           </div>
-          <Field label={t.localeLabel}>
+          <Field label={t("localeLabel")}>
             <select
               value={state.locale}
               onChange={(e) => update("locale", e.target.value)}
@@ -302,7 +210,7 @@ export function NewsletterComposer({
               <option value="multi">multi</option>
             </select>
           </Field>
-          <Field label={t.bodyLabel}>
+          <Field label={t("bodyLabel")}>
             <textarea
               rows={14}
               value={state.body_mdx}
@@ -352,7 +260,7 @@ export function NewsletterComposer({
               disabled={isPending}
               className="rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-muted disabled:opacity-50"
             >
-              {t.saveDraft}
+              {t("saveDraft")}
             </button>
           </div>
         )}
@@ -360,13 +268,13 @@ export function NewsletterComposer({
 
       <aside className="space-y-4">
         <Card padding="sm">
-          <p className="text-sm font-semibold">{t.targeting}</p>
+          <p className="text-sm font-semibold">{t("targeting")}</p>
           <p className="mt-1 text-xs text-muted-foreground">
-            {t.targetingHint}
+            {t("targetingHint")}
           </p>
           <div className="mt-3">
             <p className="text-xs font-medium uppercase tracking-wide">
-              {t.include}
+              {t("include")}
             </p>
             <div className="mt-2 grid grid-cols-2 gap-2">
               {categories.map((c) => (
@@ -387,7 +295,7 @@ export function NewsletterComposer({
           </div>
           <div className="mt-4">
             <p className="text-xs font-medium uppercase tracking-wide">
-              {t.exclude}
+              {t("exclude")}
             </p>
             <div className="mt-2 grid grid-cols-2 gap-2">
               {categories.map((c) => (
@@ -412,24 +320,24 @@ export function NewsletterComposer({
             disabled={isPending}
             className="mt-4 text-sm font-medium text-primary hover:opacity-80"
           >
-            {t.previewCount}
+            {t("previewCount")}
           </button>
           {recipientCount !== null && (
             <p className="mt-2 text-sm">
               <strong>{recipientCount}</strong>{" "}
-              {recipientCount === 1 ? t.willReceive1 : t.willReceiveMany}
+              {recipientCount === 1 ? t("willReceive1") : t("willReceiveMany")}
             </p>
           )}
         </Card>
 
         {!readOnly && (
           <Card padding="sm">
-            <p className="text-sm font-semibold">{t.sendTest}</p>
+            <p className="text-sm font-semibold">{t("sendTest")}</p>
             <input
               type="email"
               value={testEmail}
               onChange={(e) => setTestEmail(e.target.value)}
-              placeholder={t.testPh}
+              placeholder={t("testPh")}
               className="mt-2 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             />
             <button
@@ -438,7 +346,7 @@ export function NewsletterComposer({
               disabled={isPending}
               className="mt-2 w-full rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-muted disabled:opacity-50"
             >
-              {t.sendTestBtn}
+              {t("sendTestBtn")}
             </button>
           </Card>
         )}
@@ -446,10 +354,10 @@ export function NewsletterComposer({
         {!readOnly && (
           <div className="rounded-lg border border-danger-border bg-danger-soft p-4">
             <p className="text-sm font-semibold text-danger">
-              {t.sendBroadcast}
+              {t("sendBroadcast")}
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
-              {t.sendBroadcastHint}
+              {t("sendBroadcastHint")}
             </p>
             <ConfirmDialog
               trigger={
@@ -458,14 +366,15 @@ export function NewsletterComposer({
                   disabled={isPending || !state.id || domainUnverified}
                   className="mt-2 w-full rounded-md bg-danger-strong px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
                 >
-                  {t.sendNow}
+                  {t("sendNow")}
                 </button>
               }
-              title={t.confirmSend
-                .replace("{n}", String(recipientCount ?? 0))
-                .replace("{s}", (recipientCount ?? 0) === 1 ? "" : "s")}
-              confirmLabel={t.sendNow}
-              cancelLabel={t.cancel}
+              title={t("confirmSend", {
+                n: String(recipientCount ?? 0),
+                s: (recipientCount ?? 0) === 1 ? "" : "s",
+              })}
+              confirmLabel={t("sendNow")}
+              cancelLabel={t("cancel")}
               variant="danger"
               onConfirm={handleSendReal}
             />

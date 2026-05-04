@@ -6,31 +6,13 @@ import {
 import { PageHeader } from "@/components/page-header";
 import { NewsletterComposer } from "../composer";
 
-const T = {
-  en: {
-    title: "New newsletter",
-    description:
-      "Save as a draft, preview the recipient count, and send when ready.",
-  },
-  de: {
-    title: "Neuer Newsletter",
-    description:
-      "Als Entwurf speichern, Empfängerzahl anzeigen und bei Bereitschaft senden.",
-  },
-  fr: {
-    title: "Nouvelle newsletter",
-    description:
-      "Enregistrez en brouillon, prévisualisez le nombre de destinataires, puis envoyez.",
-  },
-} as const;
-
 export default async function NewNewsletterPage({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
+  const t = await getTranslations({ locale, namespace: "admin.newsletters.new" });
   const tBack = await getTranslations({ locale, namespace: "admin.back" });
   const [categories, domainStatus] = await Promise.all([
     listContactCategories(),
@@ -39,8 +21,8 @@ export default async function NewNewsletterPage({
   return (
     <div>
       <PageHeader
-        title={t.title}
-        description={t.description}
+        title={t("title")}
+        description={t("description")}
         back={{ href: `/${locale}/newsletters`, label: tBack("newsletters") }}
       />
       <div className="mt-8 max-w-3xl">

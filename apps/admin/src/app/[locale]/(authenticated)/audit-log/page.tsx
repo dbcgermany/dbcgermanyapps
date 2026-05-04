@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { getAuditLog } from "@/actions/audit";
 import { PageHeader } from "@/components/page-header";
 import { AuditLogClient } from "./audit-log-client";
@@ -64,6 +65,7 @@ export default async function AuditLogPage({
 }) {
   const { locale } = await params;
   const sp = await searchParams;
+  const t = await getTranslations({ locale, namespace: "admin.auditLog.page" });
 
   const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
   const offset = (page - 1) * PAGE_SIZE;
@@ -83,13 +85,7 @@ export default async function AuditLogPage({
 
   return (
     <div>
-      <PageHeader
-        title={locale === "de"
-          ? "Audit-Protokoll"
-          : locale === "fr"
-            ? "Journal d\u2019audit"
-            : "Audit Log"}
-      />
+      <PageHeader title={t("title")} />
 
       <AuditLogClient
         locale={locale}

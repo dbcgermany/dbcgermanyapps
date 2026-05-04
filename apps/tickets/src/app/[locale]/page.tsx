@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { getPublishedEvents } from "@/lib/queries";
 
 export const revalidate = 60;
@@ -10,43 +11,10 @@ export default async function EventListingPage({
 }) {
   const { locale } = await params;
   const events = await getPublishedEvents();
-
-  const t = {
-    en: {
-      tag: "International incubator · Europe chapter",
-      title: "Richesses d'Afrique · Live events.",
-      subtitle:
-        "Masterclasses, conferences and meet-ups for founders, investors and operators building the EU ↔ Africa corridor.",
-      noEvents: "No upcoming events at the moment. Check back soon.",
-      cta: "Reserve your seat",
-      soldOut: "Sold out",
-    },
-    de: {
-      tag: "Internationaler Inkubator · Europa-Chapter",
-      title: "Richesses d'Afrique · Live-Events.",
-      subtitle:
-        "Masterclasses, Konferenzen und Meet-ups für Gründer:innen, Investor:innen und Operator:innen, die den EU ↔ Afrika-Korridor gestalten.",
-      noEvents: "Derzeit keine bevorstehenden Veranstaltungen. Schauen Sie bald wieder vorbei.",
-      cta: "Platz reservieren",
-      soldOut: "Ausverkauft",
-    },
-    fr: {
-      tag: "Incubateur international · Chapitre Europe",
-      title: "Richesses d'Afrique · Événements live.",
-      subtitle:
-        "Masterclasses, conférences et meet-ups pour les fondateur·ice·s, investisseur·euse·s et opérateur·ice·s qui bâtissent le corridor UE ↔ Afrique.",
-      noEvents: "Aucun événement à venir pour le moment. Revenez bientôt.",
-      cta: "Réserver ma place",
-      soldOut: "Complet",
-    },
-  }[locale] ?? {
-    tag: "",
-    title: "Live events",
-    subtitle: "",
-    noEvents: "No upcoming events.",
-    cta: "Reserve",
-    soldOut: "Sold out",
-  };
+  const t = await getTranslations({
+    locale,
+    namespace: "tickets.events.list",
+  });
 
   function getLocalized(
     item: Record<string, unknown>,
@@ -72,17 +40,17 @@ export default async function EventListingPage({
           }}
         />
         <div className="mx-auto max-w-6xl px-5 py-14 sm:px-8 sm:py-20 lg:py-24">
-          {t.tag && (
+          {t("tag") && (
             <p className="inline-flex items-center gap-2 rounded-full border border-border bg-background/80 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur">
               <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-              {t.tag}
+              {t("tag")}
             </p>
           )}
           <h1 className="mt-5 font-heading text-[2.25rem] leading-[1.1] font-bold tracking-tight sm:text-5xl lg:text-6xl">
-            {t.title}
+            {t("title")}
           </h1>
           <p className="mt-5 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
-            {t.subtitle}
+            {t("subtitle")}
           </p>
         </div>
       </section>
@@ -91,7 +59,7 @@ export default async function EventListingPage({
       <section className="mx-auto max-w-6xl px-5 py-14 sm:px-8 sm:py-20">
         {events.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground sm:p-16">
-            {t.noEvents}
+            {t("noEvents")}
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -106,7 +74,7 @@ export default async function EventListingPage({
                 city={event.city ?? ""}
                 startsAt={event.starts_at}
                 cover={event.cover_image_url}
-                cta={t.cta}
+                cta={t("cta")}
               />
             ))}
           </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
 import { Button, FormField, Input, Textarea } from "@dbc/ui";
 import { fireFunnelConversion } from "./funnel-analytics";
 
@@ -23,15 +24,13 @@ export function FunnelContactForm({
   const [submitted, setSubmitted] = useState(false);
   const [isPending, startTransition] = useTransition();
 
-  const labels = LABELS[
-    (locale === "de" || locale === "fr" ? locale : "en") as keyof typeof LABELS
-  ];
+  const t = useTranslations("site.funnel.contactForm");
 
   if (submitted) {
     return (
       <div className="mx-auto max-w-xl rounded-2xl border border-border bg-card p-6 text-center">
-        <p className="font-heading text-lg font-semibold">{labels.thanks}</p>
-        <p className="mt-1 text-sm text-muted-foreground">{labels.thanksBody}</p>
+        <p className="font-heading text-lg font-semibold">{t("thanks")}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{t("thanksBody")}</p>
       </div>
     );
   }
@@ -47,10 +46,10 @@ export function FunnelContactForm({
         });
       }}
     >
-      <FormField label={labels.name} required>
+      <FormField label={t("name")} required>
         <Input value={name} onChange={(e) => setName(e.target.value)} required />
       </FormField>
-      <FormField label={labels.email} required>
+      <FormField label={t("email")} required>
         <Input
           type="email"
           value={email}
@@ -58,7 +57,7 @@ export function FunnelContactForm({
           required
         />
       </FormField>
-      <FormField label={labels.message}>
+      <FormField label={t("message")}>
         <Textarea
           rows={4}
           value={message}
@@ -71,27 +70,3 @@ export function FunnelContactForm({
     </form>
   );
 }
-
-const LABELS = {
-  en: {
-    name: "Name",
-    email: "Email",
-    message: "Message (optional)",
-    thanks: "Thanks — we got it.",
-    thanksBody: "Someone from the team will reach out within 2 business days.",
-  },
-  de: {
-    name: "Name",
-    email: "E-Mail",
-    message: "Nachricht (optional)",
-    thanks: "Danke \u2014 haben wir erhalten.",
-    thanksBody: "Das Team meldet sich innerhalb von 2 Werktagen.",
-  },
-  fr: {
-    name: "Nom",
-    email: "E-mail",
-    message: "Message (optionnel)",
-    thanks: "Merci \u2014 bien re\u00e7u.",
-    thanksBody: "L'\u00e9quipe te recontacte sous 2 jours ouvr\u00e9s.",
-  },
-} as const;
