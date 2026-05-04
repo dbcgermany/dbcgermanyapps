@@ -7,7 +7,11 @@ import Link from "next/link";
 // Until 2026-05-02 the tickets app linked the Impressum from no page; this
 // footer closes that gap.
 export function TicketsFooter({ locale }: { locale: string }) {
-  const t = useTranslations("nav");
+  // Reads from `site.footer` so the Impressum / Privacy / Terms / Cookie
+  // labels stay in sync with the marketing site. The previous `nav`
+  // namespace doesn't exist in the messages tree — every link rendered
+  // its dotted path verbatim.
+  const t = useTranslations("site.footer");
   const year = new Date().getFullYear();
 
   return (
@@ -25,7 +29,7 @@ export function TicketsFooter({ locale }: { locale: string }) {
             {t("terms")}
           </Link>
           <Link href={`/${locale}/cookies`} className="hover:text-foreground">
-            {t("cookies")}
+            {t("cookiePolicy")}
           </Link>
         </nav>
       </div>
