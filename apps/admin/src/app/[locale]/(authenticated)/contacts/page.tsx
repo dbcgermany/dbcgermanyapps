@@ -224,52 +224,90 @@ async function ContactsTabContent({
                 </td>
               </tr>
             ) : (
-              contacts.map((c) => (
-                <tr key={c.id} className="hover:bg-muted/20">
-                  <td className="px-4 py-3">
-                    <Link
-                      href={`contacts/${c.id}`}
-                      className="font-medium text-foreground hover:text-primary"
-                    >
-                      {[c.first_name, c.last_name].filter(Boolean).join(" ") ||
-                        "—"}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">{c.email}</td>
-                  <td className="px-4 py-3">{c.country ?? "—"}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex flex-wrap gap-1">
-                      {c.categories.map((cat) => (
-                        <span
-                          key={cat.slug}
-                          className="rounded-full px-2 py-0.5 text-xs font-medium"
-                          style={{
-                            backgroundColor: (cat.color ?? "#888") + "22",
-                            color: cat.color ?? undefined,
-                          }}
-                        >
-                          {cat.name_en}
-                        </span>
-                      ))}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    {c.unsubscribed_at ? (
-                      <span className="text-xs text-muted-foreground">
-                        {t("unsubscribed")}
-                      </span>
-                    ) : c.marketing_consent ? (
-                      <span className="text-xs font-medium text-green-600">
-                        {t("subscribed")}
-                      </span>
-                    ) : (
-                      <span className="text-xs text-muted-foreground">—</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-right">{c.orders_count}</td>
-                  <td className="px-4 py-3 text-right">{c.tickets_count}</td>
-                </tr>
-              ))
+              contacts.map((c) => {
+                const profileHref = `/${locale}/contacts/${c.id}`;
+                // Each cell wraps its content in a Link to the same target.
+                // Multiple anchors per <tr> is valid HTML (vs. a nested-link
+                // antipattern), and it gives every column a click target —
+                // the user can hit any pixel of the row to open the profile.
+                const cell =
+                  "block px-4 py-3 hover:bg-muted/30 focus:bg-muted/40 focus:outline-none";
+                return (
+                  <tr
+                    key={c.id}
+                    className="group transition-colors hover:bg-muted/10"
+                  >
+                    <td className="p-0">
+                      <Link
+                        href={profileHref}
+                        className={`${cell} font-medium text-foreground group-hover:text-primary`}
+                      >
+                        {[c.first_name, c.last_name]
+                          .filter(Boolean)
+                          .join(" ") || "—"}
+                      </Link>
+                    </td>
+                    <td className="p-0">
+                      <Link
+                        href={profileHref}
+                        className={`${cell} text-muted-foreground`}
+                      >
+                        {c.email}
+                      </Link>
+                    </td>
+                    <td className="p-0">
+                      <Link href={profileHref} className={cell}>
+                        {c.country ?? "—"}
+                      </Link>
+                    </td>
+                    <td className="p-0">
+                      <Link href={profileHref} className={cell}>
+                        <div className="flex flex-wrap gap-1">
+                          {c.categories.map((cat) => (
+                            <span
+                              key={cat.slug}
+                              className="rounded-full px-2 py-0.5 text-xs font-medium"
+                              style={{
+                                backgroundColor: (cat.color ?? "#888") + "22",
+                                color: cat.color ?? undefined,
+                              }}
+                            >
+                              {cat.name_en}
+                            </span>
+                          ))}
+                        </div>
+                      </Link>
+                    </td>
+                    <td className="p-0">
+                      <Link href={profileHref} className={cell}>
+                        {c.unsubscribed_at ? (
+                          <span className="text-xs text-muted-foreground">
+                            {t("unsubscribed")}
+                          </span>
+                        ) : c.marketing_consent ? (
+                          <span className="text-xs font-medium text-green-600">
+                            {t("subscribed")}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">
+                            —
+                          </span>
+                        )}
+                      </Link>
+                    </td>
+                    <td className="p-0 text-right">
+                      <Link href={profileHref} className={`${cell} text-right`}>
+                        {c.orders_count}
+                      </Link>
+                    </td>
+                    <td className="p-0 text-right">
+                      <Link href={profileHref} className={`${cell} text-right`}>
+                        {c.tickets_count}
+                      </Link>
+                    </td>
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
