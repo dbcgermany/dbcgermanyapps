@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import QRCode from "qrcode";
 import { getTranslations } from "next-intl/server";
-import { PageBack } from "@dbc/ui";
+import { PageBack, BRAND_HEX } from "@dbc/ui";
 import { getEvent } from "@/actions/events";
 import { getEventTiers } from "@/actions/door-sale";
 import { getPosterConfig } from "@/actions/poster";
@@ -92,7 +92,7 @@ export default async function EventPosterPage({
     width: 720,
     margin: 1,
     errorCorrectionLevel: "M",
-    color: { dark: "#111111", light: "#ffffff" },
+    color: { dark: BRAND_HEX.ink, light: BRAND_HEX.paper },
   });
 
   const d = DEFAULTS[key];
@@ -117,7 +117,7 @@ export default async function EventPosterPage({
     day: "numeric",
   });
   const brandName = companyInfo?.brand_name ?? "DBC Germany";
-  const primary = companyInfo?.primary_color ?? "#c8102e";
+  const primary = companyInfo?.primary_color ?? BRAND_HEX.red;
 
   const priceLine = freeTierExists
     ? d.free

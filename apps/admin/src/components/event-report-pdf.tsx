@@ -1,15 +1,20 @@
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import { BRAND_HEX } from "@dbc/ui";
 import type {
   EventReportData,
   EventReportSections,
 } from "@/actions/event-report";
 
+// PDF rendering happens inside @react-pdf/renderer (Node, no DOM, no CSS
+// vars) — the SSOT-approved pattern is to source hex literals from
+// BRAND_HEX rather than redeclare them here.
 const COLORS = {
-  text: "#111111",
-  textMuted: "#737373",
-  border: "#e5e5e5",
-  bg: "#ffffff",
-  bgSubtle: "#fafafa",
+  text: BRAND_HEX.ink,
+  textMuted: BRAND_HEX.inkMuted,
+  border: BRAND_HEX.border,
+  bg: BRAND_HEX.paper,
+  bgSubtle: BRAND_HEX.paperSoft,
+  primary: BRAND_HEX.red,
 };
 
 const styles = StyleSheet.create({
@@ -23,7 +28,7 @@ const styles = StyleSheet.create({
   header: {
     paddingBottom: 12,
     marginBottom: 18,
-    borderBottom: `2pt solid #c8102e`,
+    borderBottom: `2pt solid ${COLORS.primary}`,
   },
   brand: { fontSize: 14, fontWeight: "bold" },
   title: { fontSize: 20, fontWeight: "bold", marginTop: 6 },
@@ -294,7 +299,7 @@ function DemographicsBlock({
               <View
                 style={{
                   width: `${(r.count / max) * 100}%`,
-                  backgroundColor: "#c8102e",
+                  backgroundColor: COLORS.primary,
                   height: "100%",
                 }}
               />

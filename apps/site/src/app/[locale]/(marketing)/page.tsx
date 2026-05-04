@@ -392,7 +392,7 @@ export default async function HomePage({
       <section className="relative overflow-hidden">
         <div
           aria-hidden
-          className="absolute inset-0 bg-gradient-to-br from-primary via-primary/90 to-[#8d0a20]"
+          className="absolute inset-0 bg-gradient-to-br from-primary via-primary/90 to-brand-red-hover"
         />
         <div
           aria-hidden

@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Montserrat, Ubuntu, DM_Sans } from "next/font/google";
-import { ThemeProvider, CookieConsent } from "@dbc/ui";
+import { ThemeProvider, CookieConsent, BRAND_HEX } from "@dbc/ui";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { getCompanyInfo } from "@/lib/company-info";
@@ -88,8 +88,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+    { media: "(prefers-color-scheme: light)", color: BRAND_HEX.paper },
+    { media: "(prefers-color-scheme: dark)", color: BRAND_HEX.paperDark },
   ],
 };
 

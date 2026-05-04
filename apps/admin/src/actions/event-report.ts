@@ -1,6 +1,7 @@
 "use server";
 
 import { createServerClient, requireRole } from "@dbc/supabase/server";
+import { BRAND_HEX } from "@dbc/ui";
 
 export interface EventReportSections {
   kpis: boolean;
@@ -120,7 +121,7 @@ export async function getEventReportData(opts: {
             .join(" ")
         : null,
       logoUrl: companyInfo?.logo_light_url ?? null,
-      primaryColor: companyInfo?.primary_color ?? "#c8102e",
+      primaryColor: companyInfo?.primary_color ?? BRAND_HEX.red,
       supportEmail: companyInfo?.support_email ?? null,
     },
   };

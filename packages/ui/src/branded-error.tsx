@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { cn } from "./utils";
+import { BRAND_HEX } from "./brand";
 
 export interface BrandedErrorProps {
   eyebrow?: React.ReactNode;
@@ -157,9 +158,9 @@ export function BrandedErrorFallback({
   digest,
   digestLabel = "Error digest",
   onReset,
-  primary = "#c8102e",
-  foreground = "#111111",
-  background = "#fafafa",
+  primary = BRAND_HEX.red,
+  foreground = BRAND_HEX.ink,
+  background = BRAND_HEX.paperSoft,
 }: BrandedErrorFallbackProps) {
   return (
     <html lang="en">
@@ -214,7 +215,7 @@ export function BrandedErrorFallback({
             style={{
               fontSize: "1rem",
               lineHeight: 1.5,
-              color: "#525252",
+              color: BRAND_HEX.inkSecondary,
               margin: "0 0 1rem",
             }}
           >
@@ -224,7 +225,7 @@ export function BrandedErrorFallback({
             <p
               style={{
                 fontSize: "0.75rem",
-                color: "#737373",
+                color: BRAND_HEX.inkMuted,
                 margin: "0 0 1.5rem",
               }}
             >
@@ -247,7 +248,7 @@ export function BrandedErrorFallback({
                 padding: "0.75rem 1.5rem",
                 borderRadius: "9999px",
                 background: primary,
-                color: "#ffffff",
+                color: BRAND_HEX.paper,
                 fontWeight: 600,
                 fontSize: "0.875rem",
                 border: "none",

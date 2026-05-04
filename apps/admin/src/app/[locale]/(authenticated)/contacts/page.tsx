@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LinkButton } from "@dbc/ui";
+import { LinkButton, BRAND_HEX } from "@dbc/ui";
 import { getTranslations } from "next-intl/server";
 import {
   listContacts,
@@ -268,7 +268,7 @@ async function ContactsTabContent({
                               key={cat.slug}
                               className="rounded-full px-2 py-0.5 text-xs font-medium"
                               style={{
-                                backgroundColor: (cat.color ?? "#888") + "22",
+                                backgroundColor: (cat.color ?? BRAND_HEX.inkMuted) + "22",
                                 color: cat.color ?? undefined,
                               }}
                             >

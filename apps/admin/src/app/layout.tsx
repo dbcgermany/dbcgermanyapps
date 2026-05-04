@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
 import { Montserrat, Ubuntu, DM_Sans } from "next/font/google";
-import { ThemeProvider, NO_FLASH_THEME_SCRIPT } from "@dbc/ui";
+import { ThemeProvider, NO_FLASH_THEME_SCRIPT, BRAND_HEX } from "@dbc/ui";
 import { Toaster } from "sonner";
 import "./globals.css";
 
@@ -47,8 +47,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+    { media: "(prefers-color-scheme: light)", color: BRAND_HEX.paper },
+    { media: "(prefers-color-scheme: dark)", color: BRAND_HEX.paperDark },
   ],
 };
 

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Card, formatEurCompact } from "@dbc/ui";
+import { Card, formatEurCompact, BRAND_HEX } from "@dbc/ui";
 import {
   DateRangeSelect,
   type DateRange,
@@ -307,7 +307,7 @@ export function DashboardClient({
             <BarChart
               data={checkInData}
               xKey="date"
-              series={[{ key: "count", label: t.checkIns, color: "#d4a017" }]}
+              series={[{ key: "count", label: t.checkIns, color: BRAND_HEX.gold }]}
             />
           </ChartCard>
         )}

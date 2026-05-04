@@ -6,7 +6,7 @@ import { renderEmailPreview } from "@/actions/email-preview";
 import { requireRole } from "@dbc/supabase/server";
 import { createServerClient } from "@dbc/supabase/server";
 import { PageHeader } from "@/components/page-header";
-import { Card, LinkButton } from "@dbc/ui";
+import { Card, LinkButton, BRAND_HEX } from "@dbc/ui";
 import { EmailPreviewClient } from "./preview-client";
 
 /**
@@ -57,7 +57,7 @@ export default async function TicketPreviewPage({
     | "fr";
   const title =
     (event[`title_${l}` as keyof typeof event] as string) || event.title_en;
-  const primary = company?.primary_color ?? "#c8102e";
+  const primary = company?.primary_color ?? BRAND_HEX.red;
   const brandName = company?.brand_name ?? "DBC Germany";
   const legalName = company
     ? [company.legal_name, company.legal_form].filter(Boolean).join(" ")

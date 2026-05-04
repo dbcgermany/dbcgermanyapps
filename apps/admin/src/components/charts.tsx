@@ -16,21 +16,28 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { Card } from "@dbc/ui";
+import { Card, BRAND_HEX } from "@dbc/ui";
 
 /**
- * DBC brand palette for charts. Primary red anchors everything; supporting
- * hues picked to be distinguishable and readable in both light and dark mode.
+ * Chart series palette. The first six entries are the brand-aligned
+ * colors (primary, accent, plus the four alert tokens) — sourced from
+ * BRAND_HEX so any token change in `tokens/base.css` propagates
+ * automatically. The two trailing entries are an SSOT-acknowledged
+ * extension for high-cardinality charts where the brand-aligned six
+ * are exhausted; chart series colors are decorative-by-necessity.
+ *
+ * If a series count exceeds 8, switch to a categorical encoding
+ * (icons, patterns) rather than adding more colors.
  */
 export const CHART_COLORS = [
-  "#c8102e", // DBC primary red
-  "#d4a017", // DBC accent gold
-  "#0ea5e9", // Sky blue
-  "#16a34a", // Green
-  "#a855f7", // Purple
-  "#f59e0b", // Orange
-  "#64748b", // Slate
-  "#ec4899", // Pink
+  BRAND_HEX.red,
+  BRAND_HEX.gold,
+  BRAND_HEX.info,
+  BRAND_HEX.success,
+  BRAND_HEX.warning,
+  BRAND_HEX.error,
+  "#a855f7", // Extended series (purple) — see comment above
+  "#ec4899", // Extended series (pink) — see comment above
 ];
 
 const AXIS_STYLE = {
@@ -39,14 +46,17 @@ const AXIS_STYLE = {
   opacity: 0.6,
 };
 
+// Inline styles need string colours; var() falls back to a hex literal
+// so the chart still renders during SSR / before the stylesheet hydrates.
+// The hex values mirror tokens/base.css.
 const TOOLTIP_STYLE: React.CSSProperties = {
-  background: "var(--color-card, #ffffff)",
-  border: "1px solid var(--color-border, #e5e5e5)",
+  background: `var(--color-card, ${BRAND_HEX.paper})`,
+  border: `1px solid var(--color-border, ${BRAND_HEX.border})`,
   borderRadius: 8,
   padding: "8px 12px",
   fontSize: 12,
   boxShadow: "0 1px 3px rgba(0,0,0,.08)",
-  color: "var(--color-foreground, #111111)",
+  color: `var(--color-foreground, ${BRAND_HEX.ink})`,
 };
 
 // ---------------------------------------------------------------------------
@@ -263,7 +273,7 @@ export function DonutChart({
         innerRadius="60%"
         outerRadius="85%"
         paddingAngle={2}
-        stroke="var(--color-card, #ffffff)"
+        stroke={`var(--color-card, ${BRAND_HEX.paper})`}
         strokeWidth={2}
       >
         {data.map((entry, i) => (

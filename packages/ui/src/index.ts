@@ -1,5 +1,5 @@
 export { cn } from "./utils";
-export { BRAND } from "./brand";
+export { BRAND, BRAND_HEX } from "./brand";
 export {
   ThemeProvider,
   useTheme,

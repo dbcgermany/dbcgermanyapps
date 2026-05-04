@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { isAuthorisedCronRequest } from "@dbc/supabase/server";
 import { createEmailClient } from "@dbc/email";
+import { BRAND_HEX } from "@dbc/ui";
 
 /**
  * Cron endpoint that dispatches due post-event email sequences.
@@ -127,7 +128,7 @@ export async function GET(request: Request) {
           from: fromAddress,
           to: order.recipient_email,
           subject,
-          html: `<div style="font-family:system-ui,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#111;"><p>Hi ${safeName},</p><div style="white-space:pre-wrap;line-height:1.6;">${safeBody}</div><hr style="margin:24px 0;border:none;border-top:1px solid #e5e5e5;"/><p style="font-size:12px;color:#737373;">DBC Germany (UG i.G.)</p></div>`,
+          html: `<div style="font-family:system-ui,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:${BRAND_HEX.ink};"><p>Hi ${safeName},</p><div style="white-space:pre-wrap;line-height:1.6;">${safeBody}</div><hr style="margin:24px 0;border:none;border-top:1px solid ${BRAND_HEX.border};"/><p style="font-size:12px;color:${BRAND_HEX.inkMuted};">DBC Germany (UG i.G.)</p></div>`,
         });
         if (result.error) {
           totalFailed += 1;
