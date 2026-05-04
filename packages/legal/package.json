@@ -4,11 +4,17 @@
   "private": true,
   "main": "./src/index.ts",
   "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/client.ts"
+  },
   "scripts": {
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@dbc/supabase": "workspace:*"
+    "@dbc/supabase": "workspace:*",
+    "marked": "^15.0.0",
+    "isomorphic-dompurify": "^2.20.0"
   },
   "devDependencies": {
     "@types/react": "^19",

@@ -1,5 +1,11 @@
 import type { Metadata } from "next";
-import { getCompanyInfo, PrivacyPolicy, LegalPageShell, type LegalLocale } from "@dbc/legal";
+import {
+  getCompanyInfo,
+  PrivacyPolicy,
+  LegalPageShell,
+  MaybeDbLegalDoc,
+  type LegalLocale,
+} from "@dbc/legal";
 
 const titles: Record<string, string> = {
   en: "Privacy Policy — DBC Germany Tickets",
@@ -25,15 +31,26 @@ export default async function PrivacyPage({
   const company = await getCompanyInfo();
   const l = (locale === "de" || locale === "fr" ? locale : "en") as LegalLocale;
 
+  const dbDoc = await MaybeDbLegalDoc({
+    documentType: "privacy",
+    company,
+    locale: l,
+    siteUrl: "https://tickets.dbc-germany.com",
+    marketingSiteUrl: "https://dbc-germany.com",
+    ticketsSiteUrl: "https://tickets.dbc-germany.com",
+  });
+
   return (
     <LegalPageShell locale={l} homeHref={`/${locale}`}>
-      <PrivacyPolicy
-        company={company}
-        locale={l}
-        siteUrl="https://tickets.dbc-germany.com"
-        marketingSiteUrl="https://dbc-germany.com"
-        ticketsSiteUrl="https://tickets.dbc-germany.com"
-      />
+      {dbDoc ?? (
+        <PrivacyPolicy
+          company={company}
+          locale={l}
+          siteUrl="https://tickets.dbc-germany.com"
+          marketingSiteUrl="https://dbc-germany.com"
+          ticketsSiteUrl="https://tickets.dbc-germany.com"
+        />
+      )}
     </LegalPageShell>
   );
 }

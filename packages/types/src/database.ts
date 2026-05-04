@@ -1915,6 +1915,45 @@ export type Database = {
           },
         ]
       }
+      legal_pages: {
+        Row: {
+          body_markdown: string
+          document_type: string
+          draft_updated_at: string
+          draft_updated_by: string | null
+          locale: string
+          published_at: string | null
+          published_body_markdown: string | null
+          published_by: string | null
+          published_title: string | null
+          title: string
+        }
+        Insert: {
+          body_markdown?: string
+          document_type: string
+          draft_updated_at?: string
+          draft_updated_by?: string | null
+          locale: string
+          published_at?: string | null
+          published_body_markdown?: string | null
+          published_by?: string | null
+          published_title?: string | null
+          title?: string
+        }
+        Update: {
+          body_markdown?: string
+          document_type?: string
+          draft_updated_at?: string
+          draft_updated_by?: string | null
+          locale?: string
+          published_at?: string | null
+          published_body_markdown?: string | null
+          published_by?: string | null
+          published_title?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
       mfa_backup_codes: {
         Row: {
           code_hash: string
@@ -3234,3 +3273,4 @@ export const Constants = {
     },
   },
 } as const
+

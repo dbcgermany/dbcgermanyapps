@@ -1,0 +1,183 @@
+// Server-side markdown rendering pipeline for legal documents.
+//
+// Used by the public legal pages (site + tickets) and by the admin
+// preview pane. Three jobs:
+//   1. Replace {{template}} variables with values pulled from
+//      company_info (so admin doesn't have to retype the legal name
+//      in 15 places — they'd drift, and one Rechtsanwalt note can
+//      sync them all at once via the company_info form instead).
+//   2. Run the body through `marked` to produce HTML.
+//   3. Sanitize the HTML with DOMPurify to defang any accidental
+//      script/iframe/onerror payloads. Admin is trusted but XSS-by-
+//      typo is a real concern with rich text.
+//
+// The pipeline is server-only — DOMPurify needs a DOM, so we use
+// isomorphic-dompurify which lazy-loads jsdom on the server side.
+
+import { marked } from "marked";
+import DOMPurify from "isomorphic-dompurify";
+import type { PublicCompanyInfo } from "./company";
+import {
+  formatRegisteredAddress,
+  formatOfficeAddress,
+  formatFrenchAddress,
+  formatParentAddress,
+} from "./company";
+import { TEMPLATE_VARIABLES } from "./template-variables";
+
+// Re-export so render.ts is still the canonical place to read it from
+// the server side, but template-variables.ts is the actual source of
+// truth that admin clients import without dragging marked + dompurify.
+export { TEMPLATE_VARIABLES };
+
+marked.setOptions({
+  gfm: true,
+  breaks: false,
+  pedantic: false,
+});
+
+const ALLOWED_TAGS = [
+  "p", "br", "hr", "h1", "h2", "h3", "h4", "h5", "h6",
+  "strong", "em", "b", "i", "u", "code", "pre",
+  "ul", "ol", "li",
+  "a", "abbr",
+  "table", "thead", "tbody", "tr", "th", "td",
+  "blockquote",
+  "div", "span", "address",
+];
+
+const ALLOWED_ATTR = [
+  "href", "title", "target", "rel", "class", "lang",
+  "colspan", "rowspan", "align",
+];
+
+export interface TemplateContext {
+  company: PublicCompanyInfo | null;
+  locale: "en" | "de" | "fr";
+  privacyEmail: string;
+  legalEmail: string;
+  supportEmail: string;
+  marketingSiteUrl: string;
+  ticketsSiteUrl: string;
+}
+
+function buildTemplateContext(
+  company: PublicCompanyInfo | null,
+  locale: "en" | "de" | "fr",
+  marketingSiteUrl: string,
+  ticketsSiteUrl: string
+): TemplateContext {
+  return {
+    company,
+    locale,
+    privacyEmail:
+      company?.privacy_email ?? company?.primary_email ?? "",
+    legalEmail: company?.legal_email ?? company?.primary_email ?? "",
+    supportEmail: company?.support_email ?? company?.primary_email ?? "",
+    marketingSiteUrl,
+    ticketsSiteUrl,
+  };
+}
+
+// Available {{placeholders}} the admin can use in the markdown body.
+// Keep this list narrow — every placeholder is contract: rename one
+// and every published page breaks until the admin re-saves.
+function resolveTemplate(key: string, ctx: TemplateContext): string {
+  const c = ctx.company;
+  switch (key) {
+    case "legal_name":
+      return c?.legal_name ?? "";
+    case "legal_form":
+      return c?.legal_form ?? "";
+    case "legal_name_with_form":
+      return c
+        ? `${c.legal_name}${c.legal_form ? ` (${c.legal_form})` : ""}`
+        : "";
+    case "trade_name":
+      return c?.trade_name ?? "";
+    case "brand_name":
+      return c?.brand_name ?? "";
+    case "registered_address":
+      return formatRegisteredAddress(c, { oneLine: true });
+    case "office_address":
+      return formatOfficeAddress(c, { oneLine: true });
+    case "fr_address":
+      return formatFrenchAddress(c, { oneLine: true });
+    case "parent_address":
+      return formatParentAddress(c, { oneLine: true });
+    case "primary_email":
+      return c?.primary_email ?? "";
+    case "privacy_email":
+      return ctx.privacyEmail;
+    case "legal_email":
+      return ctx.legalEmail;
+    case "support_email":
+      return ctx.supportEmail;
+    case "phone":
+      return c?.phone ?? "";
+    case "vat_id":
+      return c?.vat_id ?? "";
+    case "tax_id":
+      return c?.tax_id ?? "";
+    case "hrb":
+      return c
+        ? [c.hrb_number, c.hrb_court].filter(Boolean).join(", ")
+        : "";
+    case "managing_directors":
+      return c?.managing_directors ?? "";
+    case "responsible_person":
+      return c?.responsible_person ?? "";
+    case "supervisory_authority":
+      return c?.supervisory_authority ?? "";
+    case "marketing_site_url":
+      return ctx.marketingSiteUrl;
+    case "tickets_site_url":
+      return ctx.ticketsSiteUrl;
+    case "privacy_url":
+      return `${ctx.marketingSiteUrl}/${ctx.locale}/privacy`;
+    case "cookies_url":
+      return `${ctx.marketingSiteUrl}/${ctx.locale}/cookies`;
+    case "terms_url":
+      return `${ctx.marketingSiteUrl}/${ctx.locale}/terms`;
+    case "imprint_url":
+      return `${ctx.marketingSiteUrl}/${ctx.locale}/imprint`;
+    default:
+      // Unknown placeholder — leave as-is so the admin spots the typo
+      // in preview rather than ending up with a quiet empty string in
+      // the published version.
+      return `{{${key}}}`;
+  }
+}
+
+function applyTemplates(body: string, ctx: TemplateContext): string {
+  return body.replace(/\{\{\s*([a-z_]+)\s*\}\}/gi, (_match, key) =>
+    resolveTemplate(key as string, ctx)
+  );
+}
+
+export interface RenderOptions {
+  body_markdown: string;
+  company: PublicCompanyInfo | null;
+  locale: "en" | "de" | "fr";
+  marketingSiteUrl: string;
+  ticketsSiteUrl: string;
+}
+
+export async function renderLegalMarkdown(
+  options: RenderOptions
+): Promise<string> {
+  const ctx = buildTemplateContext(
+    options.company,
+    options.locale,
+    options.marketingSiteUrl,
+    options.ticketsSiteUrl
+  );
+  const interpolated = applyTemplates(options.body_markdown, ctx);
+  const html = await marked.parse(interpolated, { async: true });
+  const sanitized = DOMPurify.sanitize(html, {
+    ALLOWED_TAGS,
+    ALLOWED_ATTR,
+  });
+  return sanitized;
+}
+

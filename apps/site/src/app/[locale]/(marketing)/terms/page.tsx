@@ -1,5 +1,11 @@
 import type { Metadata } from "next";
-import { getCompanyInfo, TermsOfService, LegalPageShell, type LegalLocale } from "@dbc/legal";
+import {
+  getCompanyInfo,
+  TermsOfService,
+  LegalPageShell,
+  MaybeDbLegalDoc,
+  type LegalLocale,
+} from "@dbc/legal";
 
 const titles: Record<string, string> = {
   en: "Terms of Service — DBC Germany",
@@ -25,15 +31,26 @@ export default async function TermsPage({
   const company = await getCompanyInfo();
   const l = (locale === "de" || locale === "fr" ? locale : "en") as LegalLocale;
 
+  const dbDoc = await MaybeDbLegalDoc({
+    documentType: "terms",
+    company,
+    locale: l,
+    siteUrl: "https://dbc-germany.com",
+    marketingSiteUrl: "https://dbc-germany.com",
+    ticketsSiteUrl: "https://tickets.dbc-germany.com",
+  });
+
   return (
     <LegalPageShell locale={l} homeHref={`/${locale}`}>
-      <TermsOfService
-        company={company}
-        locale={l}
-        siteUrl="https://dbc-germany.com"
-        marketingSiteUrl="https://dbc-germany.com"
-        ticketsSiteUrl="https://tickets.dbc-germany.com"
-      />
+      {dbDoc ?? (
+        <TermsOfService
+          company={company}
+          locale={l}
+          siteUrl="https://dbc-germany.com"
+          marketingSiteUrl="https://dbc-germany.com"
+          ticketsSiteUrl="https://tickets.dbc-germany.com"
+        />
+      )}
     </LegalPageShell>
   );
 }

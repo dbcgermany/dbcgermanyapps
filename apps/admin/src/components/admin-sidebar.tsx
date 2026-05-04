@@ -21,6 +21,7 @@ import {
   Megaphone,
   Mail,
   Newspaper,
+  Scale,
   ScanLine,
   ScrollText,
   Settings,
@@ -68,6 +69,7 @@ const NAV_ITEMS: NavItem[] = [
   { labelKey: "staff", href: "/staff", icon: Users, minRole: "admin" },
 
   { labelKey: "companyInfo", href: "/company-info", icon: Building2, minRole: "manager", dividerAbove: true },
+  { labelKey: "legalPages", href: "/legal-pages", icon: Scale, minRole: "manager" },
   { labelKey: "settings", href: "/settings", icon: Settings, minRole: "admin" },
   { labelKey: "ads", href: "/ads", icon: Megaphone, minRole: "super_admin" },
   { labelKey: "auditLog", href: "/audit-log", icon: ScrollText, minRole: "super_admin" },

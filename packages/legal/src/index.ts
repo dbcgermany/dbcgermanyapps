@@ -18,3 +18,15 @@ export type { PublicCompanyInfo } from "./company";
 export type { LegalContext, LegalLocale, LegalCopy } from "./types";
 export { t } from "./types";
 export { LEGAL_VERSION, LEGAL_LAST_UPDATED } from "./version";
+export {
+  getPublishedLegalPage,
+  type LegalDocumentType,
+  type PublishedLegalPage,
+} from "./db";
+export {
+  renderLegalMarkdown,
+  TEMPLATE_VARIABLES,
+  type RenderOptions,
+  type TemplateContext,
+} from "./render";
+export { MaybeDbLegalDoc } from "./db-rendered-doc";
