@@ -5,7 +5,6 @@ import {
   LegalPageShell,
   type LegalLocale,
 } from "@dbc/legal";
-import { MaybeDbLegalDoc } from "@dbc/legal/server";
 
 const titles: Record<string, string> = {
   en: "Privacy Policy — DBC Germany",
@@ -33,26 +32,15 @@ export default async function PrivacyPage({
 
   // Try the DB-published version first; if the admin has never published
   // anything, fall back to the JSX component baked into @dbc/legal.
-  const dbDoc = await MaybeDbLegalDoc({
-    documentType: "privacy",
-    company,
-    locale: l,
-    siteUrl: "https://dbc-germany.com",
-    marketingSiteUrl: "https://dbc-germany.com",
-    ticketsSiteUrl: "https://tickets.dbc-germany.com",
-  });
-
   return (
     <LegalPageShell locale={l} homeHref={`/${locale}`}>
-      {dbDoc ?? (
-        <PrivacyPolicy
+      <PrivacyPolicy
           company={company}
           locale={l}
           siteUrl="https://dbc-germany.com"
           marketingSiteUrl="https://dbc-germany.com"
           ticketsSiteUrl="https://tickets.dbc-germany.com"
         />
-      )}
     </LegalPageShell>
   );
 }
