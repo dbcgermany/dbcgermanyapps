@@ -136,8 +136,14 @@
       "discount": "Discount",
       "orderTotal": "Total",
       "payNow": "Pay {amount}",
-      "free": "Free",
-      "processing": "Processing payment..."
+      "free": "Kostenlos",
+      "processing": "Processing payment...",
+      "pageTitle": "Kasse",
+      "removeAttendee": "Entfernen",
+      "ticketType": "Ticketart",
+      "addAnotherTicket": "Weiteres Ticket hinzufügen",
+      "couponCode": "Gutscheincode",
+      "summary": "Zusammenfassung"
     },
     "confirmation": {
       "title": "Order confirmed!",
@@ -152,7 +158,9 @@
       "newName": "New attendee name",
       "newEmail": "New attendee email",
       "confirm": "Transfer ticket",
-      "success": "Ticket transferred successfully. A new ticket has been sent to {email}."
+      "success": "Ticket transferred successfully. A new ticket has been sent to {email}.",
+      "notAuthorized": "Nicht autorisiert",
+      "notAuthorizedDescription": "Sie sind nicht berechtigt, dieses Ticket zu übertragen."
     },
     "pdf": {
       "title": "Your Ticket",
@@ -162,6 +170,9 @@
       "attendeeLabel": "Attendee",
       "tierLabel": "Ticket Type",
       "scanNote": "Present this QR code at the entrance"
+    },
+    "gallery": {
+      "close": "Schließen"
     }
   },
   "orders": {
@@ -269,7 +280,15 @@
       "unpublish": "Unpublish",
       "manageTiers": "Manage Tiers",
       "manageCoupons": "Manage Coupons",
-      "manageSchedule": "Manage Schedule"
+      "manageSchedule": "Manage Schedule",
+      "attendees": {
+        "pageTitle": "Teilnehmer",
+        "checkedIn": "eingecheckt"
+      },
+      "editPageTitle": "Veranstaltung bearbeiten",
+      "mediaPageTitle": "Medien",
+      "addMedia": "Medien hinzufügen",
+      "mediaDescription": "Fügen Sie Fotos, Videos und Links nach der Veranstaltung hinzu."
     },
     "sendTicket": {
       "title": "Send Tickets",
@@ -512,6 +531,20 @@
       "staff": "Team (intern)",
       "invitations": "Einladungen",
       "settings": "Einstellungen"
+    },
+    "scan": {
+      "pageTitle": "Tickets scannen",
+      "notAssignedMessage": "Sie sind keiner Veranstaltung zugewiesen."
+    },
+    "account": {
+      "pageTitle": "Mein Konto",
+      "description": "Ihr persönliches Profil, Einstellungen und Sicherheit. Unternehmensweite Einstellungen finden Sie unter Unternehmensdaten."
+    },
+    "reports": {
+      "pageTitle": "Berichte"
+    },
+    "auditLog": {
+      "userColumn": "Nutzer"
     }
   },
   "gdpr": {
@@ -744,7 +777,11 @@
       "error": "Etwas ist schiefgelaufen. Bitte erneut versuchen oder info@dbc-germany.com schreiben.",
       "emailDirect": "Oder per E-Mail an info@dbc-germany.com",
       "office": "Büro",
-      "officeAddress": "DBC Germany · Speditionstraße 15a · 40221 Düsseldorf"
+      "officeAddress": "DBC Germany · Speditionstraße 15a · 40221 Düsseldorf",
+      "phoneLabel": "Telefon",
+      "hoursLabel": "Öffnungszeiten",
+      "supportLabel": "Support",
+      "pressLabel": "Presse"
     },
     "footer": {
       "tagline": "Internationaler Inkubator. Europa-Chapter.",

@@ -12,17 +12,16 @@ export default async function MediaPage({
 }) {
   const { locale, id: eventId } = await params;
   const media = await getEventMedia(eventId);
-  const tBack = await getTranslations({ locale, namespace: "admin.back" });
+  const [tBack, t] = await Promise.all([
+    getTranslations({ locale, namespace: "admin.back" }),
+    getTranslations({ locale, namespace: "admin.events" }),
+  ]);
 
   return (
     <div>
       <PageHeader
-        title={locale === "de" ? "Medien" : locale === "fr" ? "Médias" : "Media"}
-        description={locale === "de"
-          ? "Fügen Sie Fotos, Videos und Links nach der Veranstaltung hinzu."
-          : locale === "fr"
-            ? "Ajoutez des photos, vidéos et liens après l’événement."
-            : "Add post-event photos, videos, and links."}
+        title={t("mediaPageTitle")}
+        description={t("mediaDescription")}
         back={{ href: `/${locale}/events/${eventId}`, label: tBack("event") }}
       />
 
@@ -35,9 +34,7 @@ export default async function MediaPage({
 
       {/* Add form */}
       <Card padding="md" className="mt-8">
-        <h2 className="font-heading text-lg font-semibold">
-          {locale === "de" ? "Medien hinzufügen" : locale === "fr" ? "Ajouter un média" : "Add Media"}
-        </h2>
+        <h2 className="font-heading text-lg font-semibold">{t("addMedia")}</h2>
         <MediaForm eventId={eventId} locale={locale} />
       </Card>
     </div>

@@ -10,15 +10,15 @@ export default async function EditEventPage({
 }) {
   const { locale, id } = await params;
   const event = await getEvent(id);
-  const tBack = await getTranslations({ locale, namespace: "admin.back" });
-
-  const pageTitle =
-    locale === "de" ? "Veranstaltung bearbeiten" : locale === "fr" ? "Modifier l’événement" : "Edit event";
+  const [tBack, t] = await Promise.all([
+    getTranslations({ locale, namespace: "admin.back" }),
+    getTranslations({ locale, namespace: "admin.events" }),
+  ]);
 
   return (
     <div>
       <PageHeader
-        title={pageTitle}
+        title={t("editPageTitle")}
         description={event.title_en}
         back={{ href: `/${locale}/events/${id}`, label: tBack("event") }}
       />

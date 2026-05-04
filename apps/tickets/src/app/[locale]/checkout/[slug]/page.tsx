@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { getEventBySlug, getPublicTiers } from "@/lib/queries";
 import { CheckoutForm } from "./checkout-form";
 
@@ -25,6 +26,10 @@ export default async function CheckoutPage({
 }) {
   const { locale, slug } = await params;
   const { src, tier, fn, code } = await searchParams;
+  const tCheckout = await getTranslations({
+    locale,
+    namespace: "tickets.checkout",
+  });
   const source = src && ALLOWED_SOURCES.has(src) ? src : null;
   const funnelSlug = fn && FUNNEL_SLUG_RE.test(fn) ? fn : null;
   const COUPON_CODE_RE = /^[A-Z0-9_-]{3,40}$/i;
@@ -54,9 +59,7 @@ export default async function CheckoutPage({
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-12">
-      <h1 className="font-heading text-2xl font-bold">
-        {locale === "de" ? "Kasse" : locale === "fr" ? "Paiement" : "Checkout"}
-      </h1>
+      <h1 className="font-heading text-2xl font-bold">{tCheckout("pageTitle")}</h1>
       <p className="mt-1 text-muted-foreground">{title}</p>
 
       <CheckoutForm

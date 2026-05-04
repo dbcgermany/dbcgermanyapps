@@ -137,7 +137,13 @@
       "orderTotal": "Total",
       "payNow": "Pay {amount}",
       "free": "Free",
-      "processing": "Processing payment..."
+      "processing": "Processing payment...",
+      "pageTitle": "Checkout",
+      "removeAttendee": "Remove",
+      "ticketType": "Ticket type",
+      "addAnotherTicket": "Add another ticket",
+      "couponCode": "Coupon code",
+      "summary": "Summary"
     },
     "confirmation": {
       "title": "Order confirmed!",
@@ -152,7 +158,9 @@
       "newName": "New attendee name",
       "newEmail": "New attendee email",
       "confirm": "Transfer ticket",
-      "success": "Ticket transferred successfully. A new ticket has been sent to {email}."
+      "success": "Ticket transferred successfully. A new ticket has been sent to {email}.",
+      "notAuthorized": "Not authorized",
+      "notAuthorizedDescription": "You are not authorized to transfer this ticket."
     },
     "pdf": {
       "title": "Your Ticket",
@@ -162,6 +170,9 @@
       "attendeeLabel": "Attendee",
       "tierLabel": "Ticket Type",
       "scanNote": "Present this QR code at the entrance"
+    },
+    "gallery": {
+      "close": "Close"
     }
   },
   "orders": {
@@ -269,7 +280,15 @@
       "unpublish": "Unpublish",
       "manageTiers": "Manage Tiers",
       "manageCoupons": "Manage Coupons",
-      "manageSchedule": "Manage Schedule"
+      "manageSchedule": "Manage Schedule",
+      "attendees": {
+        "pageTitle": "Attendees",
+        "checkedIn": "checked in"
+      },
+      "editPageTitle": "Edit event",
+      "mediaPageTitle": "Media",
+      "addMedia": "Add media",
+      "mediaDescription": "Add post-event photos, videos, and links."
     },
     "sendTicket": {
       "title": "Send Tickets",
@@ -512,6 +531,20 @@
       "staff": "Staff",
       "invitations": "Invitations",
       "settings": "Settings"
+    },
+    "scan": {
+      "pageTitle": "Scan Tickets",
+      "notAssignedMessage": "You are not assigned to any events."
+    },
+    "account": {
+      "pageTitle": "My account",
+      "description": "Your personal profile, preferences, and security. Company-wide settings live under Company Info."
+    },
+    "reports": {
+      "pageTitle": "Reports"
+    },
+    "auditLog": {
+      "userColumn": "User"
     }
   },
   "gdpr": {
@@ -744,7 +777,11 @@
       "error": "Something went wrong. Please try again or email info@dbc-germany.com.",
       "emailDirect": "Or email info@dbc-germany.com",
       "office": "Office",
-      "officeAddress": "DBC Germany · Speditionstraße 15a · 40221 Düsseldorf"
+      "officeAddress": "DBC Germany · Speditionstraße 15a · 40221 Düsseldorf",
+      "phoneLabel": "Phone",
+      "hoursLabel": "Office hours",
+      "supportLabel": "Support",
+      "pressLabel": "Press"
     },
     "footer": {
       "tagline": "International incubator. Europe chapter.",

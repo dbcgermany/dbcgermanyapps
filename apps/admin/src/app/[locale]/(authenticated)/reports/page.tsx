@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import {
   getOrdersReport,
   getAttendeesReport,
@@ -63,8 +64,7 @@ export default async function ReportsPage({
   const sp = await searchParams;
   const tab = parseTab(sp.tab);
 
-  const pageTitle =
-    locale === "de" ? "Berichte" : locale === "fr" ? "Rapports" : "Reports";
+  const t = await getTranslations({ locale, namespace: "admin.reports" });
 
   const events = await getReportsEvents();
   const eventOptions = events.map((e) => ({
@@ -75,7 +75,7 @@ export default async function ReportsPage({
 
   return (
     <div>
-      <PageHeader title={pageTitle} />
+      <PageHeader title={t("pageTitle")} />
       <ReportsTabs locale={locale} current={tab} />
 
       {tab === "finance" && (

@@ -20,6 +20,11 @@ const COPY = {
     de: "Dieser Hinweis ergänzt unsere Datenschutzerklärung und gilt für personenbezogene Daten, die wir von US-Einwohnern über unsere Websites und Dienste erheben.",
     fr: "Cet avis complète notre Politique de confidentialité et s'applique aux données personnelles collectées auprès des résidents des États-Unis via nos sites web et services.",
   } satisfies LegalCopy<string>,
+  privacyLinkLabel: {
+    en: "Privacy Policy",
+    de: "Datenschutzerklärung",
+    fr: "Politique de confidentialité",
+  } satisfies LegalCopy<string>,
   categoriesH: {
     en: "Categories of personal information we collect",
     de: "Kategorien der erhobenen personenbezogenen Daten",
@@ -283,7 +288,7 @@ export function UsPrivacyNotice({
       <h2>{t(COPY.scopeH, locale)}</h2>
       <p>
         {t(COPY.scopeText, locale)}{" "}
-        <a href={privacyUrl}>{locale === "de" ? "Datenschutzerklärung" : locale === "fr" ? "Politique de confidentialité" : "Privacy Policy"}</a>.
+        <a href={privacyUrl}>{t(COPY.privacyLinkLabel, locale)}</a>.
       </p>
 
       <h2>{t(COPY.categoriesH, locale)}</h2>

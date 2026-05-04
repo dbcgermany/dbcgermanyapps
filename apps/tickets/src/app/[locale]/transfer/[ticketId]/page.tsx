@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { createServerClient } from "@dbc/supabase/server";
 import { TransferForm } from "./transfer-form";
 
@@ -10,6 +11,10 @@ export default async function TransferPage({
 }) {
   const { locale, ticketId } = await params;
   const supabase = await createServerClient();
+  const tTransfer = await getTranslations({
+    locale,
+    namespace: "tickets.transfer",
+  });
 
   const {
     data: { user },
@@ -41,14 +46,10 @@ export default async function TransferPage({
     return (
       <main className="mx-auto max-w-md px-4 py-16 text-center">
         <h1 className="font-heading text-2xl font-bold">
-          {locale === "de" ? "Nicht autorisiert" : locale === "fr" ? "Non autoris\u00E9" : "Not authorized"}
+          {tTransfer("notAuthorized")}
         </h1>
         <p className="mt-3 text-muted-foreground">
-          {locale === "de"
-            ? "Sie sind nicht berechtigt, dieses Ticket zu \u00FCbertragen."
-            : locale === "fr"
-              ? "Vous n\u2019\u00EAtes pas autoris\u00E9 \u00E0 transf\u00E9rer ce billet."
-              : "You are not authorized to transfer this ticket."}
+          {tTransfer("notAuthorizedDescription")}
         </p>
       </main>
     );

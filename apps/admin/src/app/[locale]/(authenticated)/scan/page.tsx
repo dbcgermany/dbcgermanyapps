@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { getAssignedEvents, getScanStats } from "@/actions/scan";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
@@ -12,6 +13,7 @@ export default async function ScanPage({
 }) {
   const { locale } = await params;
   const sp = await searchParams;
+  const t = await getTranslations({ locale, namespace: "admin.scan" });
   const events = await getAssignedEvents();
 
   // Default to first event or the one in the URL query
@@ -25,19 +27,10 @@ export default async function ScanPage({
   return (
     <div>
       <div className="mx-auto max-w-2xl">
-        <PageHeader
-          title={locale === "de" ? "Tickets scannen" : locale === "fr" ? "Scanner les billets" : "Scan Tickets"}
-        />
+        <PageHeader title={t("pageTitle")} />
 
         {events.length === 0 ? (
-          <EmptyState
-            message={locale === "de"
-              ? "Sie sind keiner Veranstaltung zugewiesen."
-              : locale === "fr"
-                ? "Vous n\u2019\u00EAtes affect\u00E9 \u00E0 aucun \u00E9v\u00E9nement."
-                : "You are not assigned to any events."}
-            className="mt-8"
-          />
+          <EmptyState message={t("notAssignedMessage")} className="mt-8" />
         ) : (
           <ScanClient
             locale={locale}

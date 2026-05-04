@@ -25,10 +25,10 @@ export default async function ContactPage({
   const company = await getCompanyInfo();
   const officeAddress = formatOfficeAddress(company);
   const brandName = company?.brand_name ?? "DBC Germany";
-  const phoneLabel = locale === "de" ? "Telefon" : locale === "fr" ? "Téléphone" : "Phone";
-  const hoursLabel = locale === "de" ? "Öffnungszeiten" : locale === "fr" ? "Horaires" : "Office hours";
-  const supportLabel = locale === "de" ? "Support" : locale === "fr" ? "Support" : "Support";
-  const pressLabel = locale === "de" ? "Presse" : "Press";
+  const phoneLabel = t("phoneLabel");
+  const hoursLabel = t("hoursLabel");
+  const supportLabel = t("supportLabel");
+  const pressLabel = t("pressLabel");
 
   const topicOptions = [
     { value: "general", label: t("topicOptions.general") },

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 interface MediaItem {
   id: string;
@@ -18,6 +19,7 @@ export function MediaGallery({
   media: MediaItem[];
   labels: { photo: string; video: string; link: string; open: string };
 }) {
+  const tGallery = useTranslations("tickets.gallery");
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const photos = media.filter((m) => m.type === "photo");
@@ -127,7 +129,7 @@ export function MediaGallery({
               setLightboxIndex(null);
             }}
             className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
-            aria-label={locale === "de" ? "Schlie\u00DFen" : locale === "fr" ? "Fermer" : "Close"}
+            aria-label={tGallery("close")}
           >
             &times;
           </button>

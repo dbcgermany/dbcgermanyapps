@@ -10,15 +10,18 @@ export default async function AttendeesPage({
 }) {
   const { locale, id: eventId } = await params;
   const attendees = await getEventAttendees(eventId);
-  const tBack = await getTranslations({ locale, namespace: "admin.back" });
+  const [tBack, t] = await Promise.all([
+    getTranslations({ locale, namespace: "admin.back" }),
+    getTranslations({ locale, namespace: "admin.events.attendees" }),
+  ]);
 
   const checkedIn = attendees.filter((a) => a.checked_in_at).length;
 
   return (
     <div>
       <PageHeader
-        title={locale === "de" ? "Teilnehmer" : locale === "fr" ? "Participants" : "Attendees"}
-        description={`${checkedIn} / ${attendees.length} ${locale === "de" ? "eingecheckt" : locale === "fr" ? "enregistr\u00E9s" : "checked in"}`}
+        title={t("pageTitle")}
+        description={`${checkedIn} / ${attendees.length} ${t("checkedIn")}`}
         back={{ href: `/${locale}/events/${eventId}`, label: tBack("event") }}
       />
 

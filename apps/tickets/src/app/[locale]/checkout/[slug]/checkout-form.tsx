@@ -102,6 +102,7 @@ export function CheckoutForm({
   initialCouponCode?: string | null;
 }) {
   const tPerson = useTranslations("person");
+  const tCheckout = useTranslations("tickets.checkout");
   const [attendees, setAttendees] = useState<Attendee[]>([
     emptyAttendee(initialTierId ?? tiers[0]?.id ?? ""),
   ]);
@@ -288,7 +289,7 @@ export function CheckoutForm({
                   onClick={() => removeAttendee(index)}
                   className="text-xs text-danger hover:text-danger/80"
                 >
-                  {locale === "de" ? "Entfernen" : locale === "fr" ? "Supprimer" : "Remove"}
+                  {tCheckout("removeAttendee")}
                 </button>
               )}
             </div>
@@ -296,7 +297,7 @@ export function CheckoutForm({
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
               <div>
                 <label className="block text-xs text-muted-foreground mb-1">
-                  {locale === "de" ? "Ticketart" : locale === "fr" ? "Type de billet" : "Ticket type"}
+                  {tCheckout("ticketType")}
                 </label>
                 <select
                   value={attendee.tierId}
@@ -307,7 +308,7 @@ export function CheckoutForm({
                 >
                   {tiers.map((tier) => (
                     <option key={tier.id} value={tier.id}>
-                      {tier.name} &mdash; {tier.priceCents === 0 ? (locale === "de" ? "Kostenlos" : locale === "fr" ? "Gratuit" : "Free") : `\u20AC${(tier.priceCents / 100).toFixed(2)}`}
+                      {tier.name} &mdash; {tier.priceCents === 0 ? tCheckout("free") : `\u20AC${(tier.priceCents / 100).toFixed(2)}`}
                     </option>
                   ))}
                 </select>
@@ -512,7 +513,7 @@ export function CheckoutForm({
             onClick={addAttendee}
             className="text-sm font-medium text-primary hover:text-primary/80"
           >
-            + {locale === "de" ? "Weiteres Ticket hinzuf\u00fcgen" : locale === "fr" ? "Ajouter un billet" : "Add another ticket"}
+            + {tCheckout("addAnotherTicket")}
           </button>
         )}
       </div>
@@ -520,7 +521,7 @@ export function CheckoutForm({
       {/* Coupon */}
       <div>
         <label className="block text-sm font-medium mb-1">
-          {locale === "de" ? "Gutscheincode" : locale === "fr" ? "Code promo" : "Coupon code"}
+          {tCheckout("couponCode")}
         </label>
         <input
           type="text"
@@ -540,7 +541,7 @@ export function CheckoutForm({
       {/* Order Summary */}
       <div className="rounded-lg border border-border p-6">
         <h3 className="font-heading text-lg font-semibold">
-          {locale === "de" ? "Zusammenfassung" : locale === "fr" ? "R\u00e9sum\u00e9" : "Summary"}
+          {tCheckout("summary")}
         </h3>
         <div className="mt-4 space-y-2 text-sm">
           {attendees.map((a, i) => {
@@ -557,7 +558,7 @@ export function CheckoutForm({
                 <span>
                   {tier
                     ? tier.priceCents === 0
-                      ? locale === "de" ? "Kostenlos" : locale === "fr" ? "Gratuit" : "Free"
+                      ? tCheckout("free")
                       : `\u20AC${(tier.priceCents / 100).toFixed(2)}`
                     : ""}
                 </span>
@@ -568,7 +569,7 @@ export function CheckoutForm({
             <span>Total</span>
             <span>
               {subtotalCents === 0
-                ? locale === "de" ? "Kostenlos" : locale === "fr" ? "Gratuit" : "Free"
+                ? tCheckout("free")
                 : `\u20AC${(subtotalCents / 100).toFixed(2)}`}
             </span>
           </div>

@@ -3,13 +3,6 @@
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Badge, Button, ConfirmDialog, CountrySelect, GENDER_VALUES, PhoneInput, TITLE_VALUES, type Gender } from "@dbc/ui";
-
-const GENDER_LABELS: Record<Gender, string> = {
-  female: "Female",
-  male: "Male",
-  non_binary: "Non-binary",
-  prefer_not_to_say: "Prefer not to say",
-};
 import {
   addInvolvement,
   removeInvolvement,
@@ -25,6 +18,19 @@ import {
 } from "@/lib/involvements";
 import { resendTicketPdf, manualCheckIn } from "@/actions/tickets";
 import { useTranslations } from "next-intl";
+
+// Gender enum labels are sourced from the shared i18n `person.*` namespace
+// (already populated for the checkout form). Keeping a local mapping object
+// here would re-introduce hardcoded English strings — Rule 21.
+function useGenderLabels(): Record<Gender, string> {
+  const tPerson = useTranslations("person");
+  return {
+    female: tPerson("genderFemale"),
+    male: tPerson("genderMale"),
+    non_binary: tPerson("genderNonBinary"),
+    prefer_not_to_say: tPerson("genderPreferNotToSay"),
+  };
+}
 
 type Tab =
   | "profile"
@@ -389,6 +395,7 @@ function ApplicationsList({
 function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) {
   const [isPending, startTransition] = useTransition();
   const [phone, setPhone] = useState(contact.phone ?? "");
+  const genderLabels = useGenderLabels();
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -463,7 +470,7 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
               <option value="">—</option>
               {GENDER_VALUES.map((v) => (
                 <option key={v} value={v}>
-                  {GENDER_LABELS[v]}
+                  {genderLabels[v]}
                 </option>
               ))}
             </select>
