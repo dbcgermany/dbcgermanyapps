@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { after } from "next/server";
 import Stripe from "stripe";
 import { sendTicketsForOrder } from "@/lib/send-tickets-for-order";
+import { captureServerError } from "@/lib/observe";
 import {
   filterToActive,
   getActivePaymentMethodTypes,
@@ -525,6 +526,10 @@ export async function createCheckoutSession(input: CheckoutInput) {
       try {
         await sendTicketsForOrder(serviceClient, orderIdForEmail);
       } catch (err) {
+        captureServerError(err, {
+          scope: "free_order_send_tickets",
+          data: { order_id: orderIdForEmail },
+        });
         console.error(
           `Failed to send free-order tickets for ${orderIdForEmail}:`,
           err
@@ -595,6 +600,13 @@ export async function createCheckoutSession(input: CheckoutInput) {
       .from("orders")
       .update({ status: "cancelled", reservation_expires_at: null })
       .eq("id", order.id);
+    captureServerError(
+      new Error("[checkout] no active payment methods on Stripe account"),
+      {
+        scope: "checkout_no_active_methods",
+        data: { requested: requestedMethods, active: activeMethods },
+      }
+    );
     console.error("[checkout] no active payment methods", {
       requested: requestedMethods,
       active: activeMethods,
@@ -658,6 +670,17 @@ export async function createCheckoutSession(input: CheckoutInput) {
       message?: string;
       requestId?: string;
     };
+    captureServerError(err, {
+      scope: "stripe_checkout_session_create",
+      data: {
+        order_id: order.id,
+        event_id: event.id,
+        type: stripeErr?.type,
+        code: stripeErr?.code,
+        param: stripeErr?.param,
+        request_id: stripeErr?.requestId,
+      },
+    });
     console.error("[stripe] checkout.sessions.create failed:", {
       type: stripeErr?.type,
       code: stripeErr?.code,
