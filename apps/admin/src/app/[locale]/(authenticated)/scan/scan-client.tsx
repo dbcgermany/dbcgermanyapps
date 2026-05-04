@@ -36,6 +36,18 @@ export function ScanClient({
 
   const processToken = useCallback(
     async (token: string) => {
+      // Operator gate: while a result modal is showing, refuse to accept
+      // new scans. The camera keeps decoding frames in the background but
+      // we drop them so the operator has time to read the result and
+      // physically wave the next ticket up. Released on modal dismiss.
+      // Read via ref to avoid restarting the camera on every status change.
+      if (
+        statusRef.current.kind === "success" ||
+        statusRef.current.kind === "error"
+      ) {
+        return;
+      }
+
       // Debounce: ignore if same token scanned within cooldown
       const now = Date.now();
       if (
@@ -62,15 +74,12 @@ export function ScanClient({
       setStatus({ kind: result.success ? "success" : "error", result });
 
       // Stats refresh runs out-of-band: a stats failure must not affect
-      // the result banner the staff just saw.
+      // the result modal the staff just saw.
       getScanStats(eventId)
         .then(setStats)
         .catch((err) => console.error("[scan] stats refresh failed:", err));
 
-      // Reset status after 3 seconds
-      setTimeout(() => setStatus({ kind: "scanning" }), 3000);
-
-      // Haptic feedback on success
+      // Haptic feedback. Modal stays up until the operator dismisses.
       if (result.success && "vibrate" in navigator) {
         navigator.vibrate?.(150);
       } else if (!result.success && "vibrate" in navigator) {
@@ -79,6 +88,38 @@ export function ScanClient({
     },
     [eventId]
   );
+
+  // Mirror status into a ref so processToken can read its current value
+  // without re-creating the callback on every status change (which would
+  // tear down + restart the camera scanner).
+  const statusRef = useRef<Status>({ kind: "idle" });
+  useEffect(() => {
+    statusRef.current = status;
+  }, [status]);
+
+  function dismissResult() {
+    setStatus({ kind: "scanning" });
+    lastScanRef.current = null;
+  }
+
+  // Allow the operator to dismiss with a tap on the modal backdrop OR by
+  // pressing Enter / Space. Same-screen UX as a confirmation dialog.
+  useEffect(() => {
+    if (status.kind !== "success" && status.kind !== "error") return;
+    const onKey = (e: KeyboardEvent) => {
+      if (
+        e.key === "Enter" ||
+        e.key === " " ||
+        e.key === "Escape" ||
+        e.key === "Spacebar"
+      ) {
+        e.preventDefault();
+        dismissResult();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [status.kind]);
 
   // Start camera scanner
   useEffect(() => {
@@ -159,6 +200,8 @@ export function ScanClient({
       submit: "Check in",
       progress: "checked in",
       startingCamera: "Starting camera...",
+      nextTicket: "Next ticket",
+      tapOrEnter: "Tap to continue or press Enter",
     },
     de: {
       selectEvent: "Veranstaltung ausw\u00E4hlen",
@@ -174,6 +217,8 @@ export function ScanClient({
       submit: "Einchecken",
       progress: "eingecheckt",
       startingCamera: "Kamera wird gestartet...",
+      nextTicket: "N\u00E4chstes Ticket",
+      tapOrEnter: "Tippen zum Fortfahren oder Enter dr\u00FCcken",
     },
     fr: {
       selectEvent: "S\u00E9lectionner l\u2019\u00E9v\u00E9nement",
@@ -189,9 +234,11 @@ export function ScanClient({
       submit: "Enregistrer",
       progress: "enregistr\u00E9s",
       startingCamera: "D\u00E9marrage de la cam\u00E9ra...",
+      nextTicket: "Billet suivant",
+      tapOrEnter: "Appuyer pour continuer ou Entr\u00E9e",
     },
   }[locale] ?? {
-    selectEvent: "Select event", startScan: "Start", checkedIn: "Checked in!", alreadyScanned: "Already", invalid: "Invalid", wrongEvent: "Wrong", at: "at", by: "by", manual: "Manual", enterToken: "Enter code", submit: "Check in", progress: "checked in", startingCamera: "Starting...",
+    selectEvent: "Select event", startScan: "Start", checkedIn: "Checked in!", alreadyScanned: "Already", invalid: "Invalid", wrongEvent: "Wrong", at: "at", by: "by", manual: "Manual", enterToken: "Enter code", submit: "Check in", progress: "checked in", startingCamera: "Starting...", nextTicket: "Next ticket", tapOrEnter: "Tap to continue",
   };
 
   const rate = stats.total > 0 ? Math.round((stats.checkedIn / stats.total) * 100) : 0;
@@ -269,45 +316,87 @@ export function ScanClient({
         </div>
       )}
 
-      {/* Scan result banner — large so staff can read it across a loud room */}
-      {status.kind === "success" && (
-        <div className="rounded-xl border-2 border-green-500 bg-green-50 p-5 dark:bg-green-900/20">
-          <p className="font-heading text-2xl font-bold text-green-700 dark:text-green-400 sm:text-xl">
-            &#x2713; {t.checkedIn}
-          </p>
-          <p className="mt-2 text-base font-semibold sm:text-sm">
-            {status.result.attendeeName}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            {status.result.tierName}
-          </p>
-        </div>
-      )}
-
-      {status.kind === "error" && (
-        <div className="rounded-xl border-2 border-red-500 bg-red-50 p-5 dark:bg-red-900/20">
-          <p className="font-heading text-2xl font-bold text-red-700 dark:text-red-400 sm:text-xl">
-            &#x2715;{" "}
-            {status.result.error
-              ? t.invalid
-              : status.result.alreadyCheckedInAt
-                ? t.alreadyScanned
-                : t.invalid}
-          </p>
-          {status.result.attendeeName && (
-            <p className="mt-2 text-base font-semibold sm:text-sm">
-              {status.result.attendeeName}
-            </p>
-          )}
-          {status.result.alreadyCheckedInAt && (
-            <p className="text-xs text-muted-foreground">
-              {t.at}{" "}
-              {new Date(status.result.alreadyCheckedInAt).toLocaleTimeString(
-                locale,
-                { hour: "2-digit", minute: "2-digit" }
-              )}{" "}
-              {t.by} {status.result.alreadyCheckedInBy}
-            </p>
+      {/* Scan result modal — blocks new scans until operator dismisses.
+          Tap-anywhere or Enter/Space to continue. Full-screen on mobile,
+          centered card on tablet/desktop. */}
+      {(status.kind === "success" || status.kind === "error") && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-live="assertive"
+          className="fixed inset-0 z-60 flex items-center justify-center p-4"
+          onClick={dismissResult}
+        >
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            aria-hidden
+          />
+          {status.kind === "success" ? (
+            <button
+              type="button"
+              onClick={dismissResult}
+              className="relative z-10 w-full max-w-md rounded-2xl border-4 border-green-500 bg-green-50 p-8 text-left shadow-2xl transition-transform hover:scale-[1.01] focus:outline-none focus:ring-4 focus:ring-green-300 dark:bg-green-900/40"
+              autoFocus
+            >
+              <p className="font-heading text-4xl font-bold text-green-700 dark:text-green-300">
+                ✓ {t.checkedIn}
+              </p>
+              <p className="mt-3 text-xl font-semibold text-foreground">
+                {status.result.attendeeName}
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {status.result.tierName}
+              </p>
+              <div className="mt-6 flex items-center justify-between border-t border-green-300/50 pt-4 text-sm">
+                <span className="text-green-800 dark:text-green-300">
+                  {t.tapOrEnter}
+                </span>
+                <span className="rounded-md bg-green-600 px-4 py-2 font-semibold text-white shadow">
+                  {t.nextTicket} →
+                </span>
+              </div>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={dismissResult}
+              className="relative z-10 w-full max-w-md rounded-2xl border-4 border-red-500 bg-red-50 p-8 text-left shadow-2xl transition-transform hover:scale-[1.01] focus:outline-none focus:ring-4 focus:ring-red-300 dark:bg-red-900/40"
+              autoFocus
+            >
+              <p className="font-heading text-4xl font-bold text-red-700 dark:text-red-300">
+                ✕{" "}
+                {status.result.error
+                  ? t.invalid
+                  : status.result.alreadyCheckedInAt
+                    ? t.alreadyScanned
+                    : t.invalid}
+              </p>
+              {status.result.attendeeName && (
+                <p className="mt-3 text-xl font-semibold text-foreground">
+                  {status.result.attendeeName}
+                </p>
+              )}
+              {status.result.alreadyCheckedInAt && (
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {t.at}{" "}
+                  {new Date(
+                    status.result.alreadyCheckedInAt
+                  ).toLocaleTimeString(locale, {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}{" "}
+                  {t.by} {status.result.alreadyCheckedInBy}
+                </p>
+              )}
+              <div className="mt-6 flex items-center justify-between border-t border-red-300/50 pt-4 text-sm">
+                <span className="text-red-800 dark:text-red-300">
+                  {t.tapOrEnter}
+                </span>
+                <span className="rounded-md bg-red-600 px-4 py-2 font-semibold text-white shadow">
+                  {t.nextTicket} →
+                </span>
+              </div>
+            </button>
           )}
         </div>
       )}

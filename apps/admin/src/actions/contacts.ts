@@ -30,6 +30,14 @@ export interface Contact {
   marketing_consent_source: string | null;
   unsubscribed_at: string | null;
   admin_notes: string | null;
+  title: string | null;
+  organization: string | null;
+  linkedin_url: string | null;
+  address_line_1: string | null;
+  address_line_2: string | null;
+  postal_code: string | null;
+  city: string | null;
+  state_region: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -411,8 +419,13 @@ export async function updateContactProfile(id: string, formData: FormData) {
   const user = await requireRole("manager");
   const supabase = await createServerClient();
 
+  // All fields the admin can edit on a contact profile. Email is
+  // included because legitimate use cases exist (typo correction,
+  // post-event consolidation of duplicates) but it is normalized to
+  // lowercase + trimmed before write so the lower(email) unique index
+  // catches collisions explicitly via the returned error.
   const patch: Record<string, string | null> = {};
-  const fields = [
+  const textFields = [
     "first_name",
     "last_name",
     "country",
@@ -421,15 +434,39 @@ export async function updateContactProfile(id: string, formData: FormData) {
     "occupation",
     "phone",
     "admin_notes",
+    "title",
+    "organization",
+    "linkedin_url",
+    "address_line_1",
+    "address_line_2",
+    "postal_code",
+    "city",
+    "state_region",
   ];
-  for (const f of fields) {
+  for (const f of textFields) {
     const raw = formData.get(f);
     const val = typeof raw === "string" ? raw.trim() : "";
     patch[f] = val === "" ? null : val;
   }
 
+  const emailRaw = formData.get("email");
+  if (typeof emailRaw === "string") {
+    const email = emailRaw.trim().toLowerCase();
+    if (email !== "") {
+      patch.email = email;
+    }
+  }
+
   const { error } = await supabase.from("contacts").update(patch).eq("id", id);
-  if (error) return { error: error.message };
+  if (error) {
+    if (error.code === "23505") {
+      return {
+        error:
+          "Another contact already uses this email address. Merge or pick a different one.",
+      };
+    }
+    return { error: error.message };
+  }
 
   await supabase.from("audit_log").insert({
     user_id: user.userId,

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { Badge, Button, ConfirmDialog, CountrySelect, GENDER_VALUES, PhoneInput, type Gender } from "@dbc/ui";
+import { Badge, Button, ConfirmDialog, CountrySelect, GENDER_VALUES, PhoneInput, TITLE_VALUES, type Gender } from "@dbc/ui";
 
 const GENDER_LABELS: Record<Gender, string> = {
   female: "Female",
@@ -404,89 +404,215 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
     "w-full rounded-md border border-border bg-background px-3 py-2 text-sm";
 
   return (
-    <form onSubmit={onSubmit} className="max-w-xl space-y-4">
-      <div className="grid grid-cols-2 gap-3">
+    <form onSubmit={onSubmit} className="max-w-2xl space-y-6">
+      {/* Identity */}
+      <fieldset className="space-y-4 rounded-lg border border-border p-4">
+        <legend className="px-2 text-xs font-semibold uppercase text-muted-foreground">
+          Identity
+        </legend>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <label className="block">
+            <span className="mb-1 block text-sm font-medium">Title</span>
+            <select
+              name="title"
+              defaultValue={contact.title ?? ""}
+              className={input}
+            >
+              <option value="">—</option>
+              {TITLE_VALUES.map((v) => (
+                <option key={v} value={v}>
+                  {v}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-sm font-medium">First name</span>
+            <input
+              name="first_name"
+              defaultValue={contact.first_name ?? ""}
+              className={input}
+            />
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-sm font-medium">Last name</span>
+            <input
+              name="last_name"
+              defaultValue={contact.last_name ?? ""}
+              className={input}
+            />
+          </label>
+        </div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <label className="block">
+            <span className="mb-1 block text-sm font-medium">Birthday</span>
+            <input
+              name="birthday"
+              type="date"
+              defaultValue={contact.birthday ?? ""}
+              className={input}
+            />
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-sm font-medium">Gender</span>
+            <select
+              name="gender"
+              defaultValue={contact.gender ?? ""}
+              className={input}
+            >
+              <option value="">—</option>
+              {GENDER_VALUES.map((v) => (
+                <option key={v} value={v}>
+                  {GENDER_LABELS[v]}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+      </fieldset>
+
+      {/* Contact channels */}
+      <fieldset className="space-y-4 rounded-lg border border-border p-4">
+        <legend className="px-2 text-xs font-semibold uppercase text-muted-foreground">
+          Contact
+        </legend>
         <label className="block">
-          <span className="mb-1 block text-sm font-medium">First name</span>
+          <span className="mb-1 block text-sm font-medium">Email</span>
           <input
-            name="first_name"
-            defaultValue={contact.first_name ?? ""}
+            name="email"
+            type="email"
+            defaultValue={contact.email}
+            className={input}
+            required
+          />
+          <span className="mt-1 block text-[11px] text-muted-foreground">
+            Lowercased on save. Editing this rewires which orders, tickets and newsletter consents the row owns.
+          </span>
+        </label>
+        <div className="block">
+          <span className="mb-1 block text-sm font-medium">Phone</span>
+          <PhoneInput
+            name="phone"
+            value={phone}
+            onChange={setPhone}
+            size="sm"
+            className="h-auto! py-2 text-sm"
+          />
+        </div>
+        <label className="block">
+          <span className="mb-1 block text-sm font-medium">LinkedIn URL</span>
+          <input
+            name="linkedin_url"
+            type="url"
+            placeholder="https://www.linkedin.com/in/…"
+            defaultValue={contact.linkedin_url ?? ""}
+            className={input}
+          />
+        </label>
+      </fieldset>
+
+      {/* Professional */}
+      <fieldset className="space-y-4 rounded-lg border border-border p-4">
+        <legend className="px-2 text-xs font-semibold uppercase text-muted-foreground">
+          Professional
+        </legend>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <label className="block">
+            <span className="mb-1 block text-sm font-medium">Organization</span>
+            <input
+              name="organization"
+              defaultValue={contact.organization ?? ""}
+              className={input}
+            />
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-sm font-medium">Occupation</span>
+            <input
+              name="occupation"
+              defaultValue={contact.occupation ?? ""}
+              className={input}
+            />
+          </label>
+        </div>
+      </fieldset>
+
+      {/* Address */}
+      <fieldset className="space-y-4 rounded-lg border border-border p-4">
+        <legend className="px-2 text-xs font-semibold uppercase text-muted-foreground">
+          Address
+        </legend>
+        <label className="block">
+          <span className="mb-1 block text-sm font-medium">Address line 1</span>
+          <input
+            name="address_line_1"
+            defaultValue={contact.address_line_1 ?? ""}
             className={input}
           />
         </label>
         <label className="block">
-          <span className="mb-1 block text-sm font-medium">Last name</span>
+          <span className="mb-1 block text-sm font-medium">Address line 2</span>
           <input
-            name="last_name"
-            defaultValue={contact.last_name ?? ""}
+            name="address_line_2"
+            defaultValue={contact.address_line_2 ?? ""}
             className={input}
           />
         </label>
-      </div>
-      <div className="block">
-        <span className="mb-1 block text-sm font-medium">Country</span>
-        <CountrySelect
-          name="country"
-          defaultValue={contact.country ?? ""}
-          locale={locale}
-          placeholder="—"
-          size="sm"
-          className="h-auto! py-2 text-sm"
-        />
-      </div>
-      <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <label className="block">
+            <span className="mb-1 block text-sm font-medium">Postal code</span>
+            <input
+              name="postal_code"
+              defaultValue={contact.postal_code ?? ""}
+              className={input}
+            />
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-sm font-medium">City</span>
+            <input
+              name="city"
+              defaultValue={contact.city ?? ""}
+              className={input}
+            />
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-sm font-medium">State / region</span>
+            <input
+              name="state_region"
+              defaultValue={contact.state_region ?? ""}
+              className={input}
+            />
+          </label>
+        </div>
+        <div className="block">
+          <span className="mb-1 block text-sm font-medium">Country</span>
+          <CountrySelect
+            name="country"
+            defaultValue={contact.country ?? ""}
+            locale={locale}
+            placeholder="—"
+            size="sm"
+            className="h-auto! py-2 text-sm"
+          />
+        </div>
+      </fieldset>
+
+      {/* Internal */}
+      <fieldset className="space-y-4 rounded-lg border border-border p-4">
+        <legend className="px-2 text-xs font-semibold uppercase text-muted-foreground">
+          Internal notes (admin only)
+        </legend>
         <label className="block">
-          <span className="mb-1 block text-sm font-medium">Birthday</span>
-          <input
-            name="birthday"
-            type="date"
-            defaultValue={contact.birthday ?? ""}
+          <span className="mb-1 block text-sm font-medium">Admin notes</span>
+          <textarea
+            name="admin_notes"
+            defaultValue={contact.admin_notes ?? ""}
+            rows={4}
             className={input}
+            placeholder="Context for the team — relationship history, do-not-contact flags, follow-up reminders…"
           />
         </label>
-        <label className="block">
-          <span className="mb-1 block text-sm font-medium">Gender</span>
-          <select
-            name="gender"
-            defaultValue={contact.gender ?? ""}
-            className={input}
-          >
-            <option value="">—</option>
-            {GENDER_VALUES.map((v) => (
-              <option key={v} value={v}>
-                {GENDER_LABELS[v]}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-      <label className="block">
-        <span className="mb-1 block text-sm font-medium">Occupation</span>
-        <input
-          name="occupation"
-          defaultValue={contact.occupation ?? ""}
-          className={input}
-        />
-      </label>
-      <div className="block">
-        <span className="mb-1 block text-sm font-medium">Phone</span>
-        <PhoneInput
-          name="phone"
-          value={phone}
-          onChange={setPhone}
-          size="sm"
-          className="h-auto! py-2 text-sm"
-        />
-      </div>
-      <label className="block">
-        <span className="mb-1 block text-sm font-medium">Admin notes</span>
-        <textarea
-          name="admin_notes"
-          defaultValue={contact.admin_notes ?? ""}
-          rows={3}
-          className={input}
-        />
-      </label>
+      </fieldset>
+
       <div className="flex justify-end">
         <Button type="submit"
           disabled={isPending}>
