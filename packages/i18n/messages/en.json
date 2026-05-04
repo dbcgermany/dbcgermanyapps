@@ -150,7 +150,29 @@
       "subtitle": "Your tickets have been sent to each attendee's email.",
       "orderNumber": "Order #{orderId}",
       "downloadAll": "Download all tickets",
-      "viewOrder": "View order details"
+      "viewOrder": "View order details",
+      "recovery": {
+        "allSent": "Tickets emailed to each attendee.",
+        "someUnsent": "Some tickets haven't been emailed yet. You can retry now or download the PDF directly below.",
+        "resend": "Resend tickets to attendee emails",
+        "sending": "Sending…",
+        "sent": "{count, plural, one {1 ticket re-sent.} other {# tickets re-sent.}}",
+        "nothingToResend": "Nothing to resend — every ticket already shows as sent.",
+        "error": "Something went wrong. Please try again or contact support."
+      },
+      "page": {
+        "confirmed": "Order Confirmed!",
+        "pending": "Order Pending",
+        "subtitle": "Your tickets have been sent to each attendee’s email.",
+        "pendingSubtitle": "Your payment is being processed. This page will update once confirmed.",
+        "orderNumber": "Order",
+        "event": "Event",
+        "date": "Date",
+        "tickets": "Tickets",
+        "total": "Total",
+        "backToEvents": "Back to events",
+        "downloadPdf": "Download PDF"
+      }
     },
     "transfer": {
       "title": "Transfer ticket",
@@ -160,7 +182,23 @@
       "confirm": "Transfer ticket",
       "success": "Ticket transferred successfully. A new ticket has been sent to {email}.",
       "notAuthorized": "Not authorized",
-      "notAuthorizedDescription": "You are not authorized to transfer this ticket."
+      "notAuthorizedDescription": "You are not authorized to transfer this ticket.",
+      "form": {
+        "newName": "New attendee name",
+        "newEmail": "New attendee email",
+        "confirm": "Transfer ticket",
+        "transferring": "Transferring...",
+        "success": "Ticket transferred. A new PDF has been sent to the new attendee.",
+        "confirmWarning": "This action cannot be undone. The current QR code will stop working immediately."
+      },
+      "page": {
+        "title": "Transfer ticket",
+        "description": "Transfer this ticket to a new attendee. The current QR code will be invalidated immediately and a new ticket PDF will be sent to the new attendee.",
+        "currentAttendee": "Current attendee",
+        "blockedCheckedIn": "This ticket has already been checked in and cannot be transferred.",
+        "blockedEnded": "This event has already ended.",
+        "back": "Back to orders"
+      }
     },
     "pdf": {
       "title": "Your Ticket",
@@ -172,7 +210,114 @@
       "scanNote": "Present this QR code at the entrance"
     },
     "gallery": {
-      "close": "Close"
+      "close": "Close",
+      "page": {
+        "back": "Back to event",
+        "title": "Gallery",
+        "subtitle": "Photos, videos and highlights from the event",
+        "empty": "No media has been shared yet. Check back soon.",
+        "photo": "Photo",
+        "video": "Video",
+        "link": "Link",
+        "open": "Open"
+      }
+    },
+    "notFound": {
+      "eyebrow": "Not found",
+      "title": "We can't find that ticket page.",
+      "description": "The event or order you're looking for may have ended, been moved, or the link may have expired. You can still browse the active events.",
+      "events": "Browse events",
+      "orders": "My orders"
+    },
+    "events": {
+      "share": {
+        "share": "Share",
+        "copied": "Link copied!"
+      },
+      "countdown": {
+        "startsIn": "Starts in",
+        "days": "d",
+        "hours": "h",
+        "minutes": "m",
+        "seconds": "s"
+      },
+      "waitlist": {
+        "join": "Join waitlist",
+        "email": "your@email.com",
+        "submit": "Notify me",
+        "submitting": "...",
+        "done": "✓ You’re on the waitlist"
+      },
+      "list": {
+        "tag": "International incubator · Europe chapter",
+        "title": "Richesses d'Afrique · Live events.",
+        "subtitle": "Masterclasses, conferences and meet-ups for founders, investors and operators building the EU ↔ Africa corridor.",
+        "noEvents": "No upcoming events at the moment. Check back soon.",
+        "cta": "Reserve your seat",
+        "soldOut": "Sold out"
+      },
+      "detail": {
+        "back": "All events",
+        "when": "Date & time",
+        "venue": "Venue",
+        "about": "About the masterclass",
+        "schedule": "Schedule",
+        "tickets": "Tickets",
+        "noTickets": "No tickets available yet.",
+        "free": "Free",
+        "soldOut": "Sold out",
+        "salesStart": "Sales open",
+        "salesEnded": "Sales closed",
+        "remaining": "left",
+        "available": "Available",
+        "getTickets": "Get tickets",
+        "organizer": "Organizer",
+        "viewOnMap": "View on map",
+        "scarcityOnly": "Only",
+        "scarcityHurry": "Hurry, only",
+        "scarcityLeft": "left",
+        "socialProofSuffix": "people secured their spot in the last 24 hours",
+        "saveLabel": "Save",
+        "deadlinePrefix": "Ends in",
+        "dayAbbr": "d",
+        "hourAbbr": "h",
+        "minAbbr": "m",
+        "tickerPrefixCity": "Someone from",
+        "tickerMiddleCity": "just bought a",
+        "tickerPrefixAnon": "Someone just bought a",
+        "tickerTicket": "ticket",
+        "tickerJustNow": "just now",
+        "tickerAgoMinutes": "{n} min ago",
+        "tickerAgoHours": "{n}h ago"
+      }
+    },
+    "auth": {
+      "page": {
+        "title": "Sign in with email",
+        "description": "Enter your email and we’ll send you a sign-in link.",
+        "placeholder": "your@email.com",
+        "submit": "Send magic link",
+        "sent": "Check your email for a sign-in link.",
+        "expiry": "The link expires in 10 minutes.",
+        "error": "Something went wrong. Please try again."
+      }
+    },
+    "orders": {
+      "list": {
+        "title": "My Orders",
+        "subtitle": "Tickets you've purchased on DBC Germany.",
+        "signInRequired": "Please sign in to view your orders.",
+        "empty": "You don't have any orders yet.",
+        "emptyCta": "Browse events",
+        "free": "Free",
+        "status": {
+          "pending": "Pending",
+          "paid": "Paid",
+          "comped": "Complimentary",
+          "refunded": "Refunded",
+          "cancelled": "Cancelled"
+        }
+      }
     }
   },
   "orders": {
@@ -271,6 +416,50 @@
         "errorDigest": "Error digest",
         "tryAgain": "Try again",
         "back": "Go back"
+      },
+      "page": {
+        "welcome": "Welcome back",
+        "totalRevenue": "Total revenue",
+        "ticketsSold": "Tickets sold",
+        "activeEvents": "Active events",
+        "checkInRate": "Check-in rate",
+        "revenue": "Revenue",
+        "checkIns": "Check-ins by day",
+        "topEvents": "Top events",
+        "sold": "sold",
+        "viewAll": "View all events",
+        "noData": "No data in this range yet.",
+        "noEvents": "No events yet.",
+        "aov": "AOV",
+        "aovSub": "Avg order value",
+        "arpa": "ARPA",
+        "arpaSub": "Avg revenue / attendee",
+        "netRevenue": "Net revenue",
+        "netRevenueSub": "Gross − refunds",
+        "refundRate": "Refund rate",
+        "refundRateSub": "Refunded / paid",
+        "velocity": "Velocity",
+        "velocitySub": "Tickets/day (7d avg)",
+        "vsPrior": "vs prior period",
+        "sellThrough": "Sell-through",
+        "sellThroughSub": "Sold of capacity per active event",
+        "capacity": "capacity",
+        "abandonedCheckouts": "Abandoned checkouts",
+        "abandonedCheckoutsSub": "Reached Stripe, never paid",
+        "abandonedRevenue": "Abandoned value",
+        "abandonedRevenueSub": "Potential revenue lost",
+        "salesByChannel": "Sales by channel",
+        "online": "Online",
+        "onlineSub": "Self-serve via Stripe",
+        "door": "Door",
+        "doorSub": "Sold at the venue",
+        "comped": "Comped",
+        "compedSub": "Invited / assigned — zero revenue",
+        "tickets": "tickets",
+        "channelMix": "Paid vs free",
+        "channelMixSub": "Attendance mix",
+        "paid": "Paid",
+        "free": "Free"
       }
     },
     "events": {
@@ -288,7 +477,158 @@
       "editPageTitle": "Edit event",
       "mediaPageTitle": "Media",
       "addMedia": "Add media",
-      "mediaDescription": "Add post-event photos, videos, and links."
+      "mediaDescription": "Add post-event photos, videos, and links.",
+      "new": {
+        "pageTitle": "Create Event",
+        "eventType": "Event type",
+        "conference": "Conference",
+        "masterclass": "Masterclass",
+        "title": "Title",
+        "description": "Description",
+        "trilingual": "(trilingual)",
+        "english": "English",
+        "deutsch": "Deutsch",
+        "francais": "Français",
+        "venueName": "Venue name",
+        "city": "City",
+        "venueAddress": "Venue address",
+        "startDate": "Start date & time",
+        "endDate": "End date & time",
+        "capacity": "Capacity",
+        "maxPerOrder": "Max tickets per order",
+        "creating": "Creating…",
+        "createEvent": "Create Event"
+      },
+      "detail": {
+        "publish": "Publish",
+        "unpublish": "Unpublish",
+        "duplicate": "Duplicate",
+        "duplicateTitle": "Duplicate this event as a new draft (dates shifted +1 year)",
+        "edit": "Edit",
+        "published": "Published",
+        "draft": "Draft",
+        "ticketsSold": "Tickets sold",
+        "salesByTier": "Sales by tier",
+        "salesByTierEmpty": "No paid tickets yet — breakdown will appear here once sales start.",
+        "tierName": "Tier",
+        "tierTickets": "Tickets",
+        "tierRevenue": "Revenue",
+        "ofCapacity": "of {n} capacity",
+        "revenue": "Revenue",
+        "checkedIn": "Checked in",
+        "startsIn": "Starts in",
+        "ended": "Ended",
+        "today": "Today",
+        "dayAgo": "day ago",
+        "daysAgo": "days ago",
+        "day": "day",
+        "days": "days",
+        "dateTime": "Date & Time",
+        "venue": "Venue",
+        "venueNotSet": "Not set",
+        "capacity": "Capacity",
+        "attendees": "attendees",
+        "maxPerOrder": "Max {n} tickets per order",
+        "salesTarget": "Sales target",
+        "tickets": "tickets",
+        "paymentMethods": "Payment Methods",
+        "description": "Description",
+        "noDescription": "No description yet.",
+        "setup": "Setup",
+        "marketing": "Marketing",
+        "operations": "Operations",
+        "postEvent": "Post-event",
+        "ticketTiers": "Ticket Tiers",
+        "ticketTiersDesc": "Create and manage ticket pricing",
+        "couponCodes": "Coupon Codes",
+        "couponCodesDesc": "Create discount codes for this event",
+        "scheduleSpeakers": "Schedule & Speakers",
+        "scheduleSpeakersDesc": "Manage the event agenda and speakers",
+        "ticketPreview": "Ticket Preview",
+        "ticketPreviewDesc": "Preview the PDF ticket design",
+        "emailSequences": "Email Sequences",
+        "emailSequencesDesc": "Automated post-event email campaigns",
+        "invitations": "Invitations",
+        "invitationsDesc": "Send formal invitations with comped tickets",
+        "bulkInvitations": "Bulk Invitations",
+        "bulkInvitationsDesc": "Import a CSV of invitees",
+        "checklist": "Checklist",
+        "checklistOverdueSuffix": "overdue",
+        "runSheet": "Run Sheet",
+        "runSheetDesc": "Minute-by-minute event day plan",
+        "sponsors": "Sponsors",
+        "sponsorsDesc": "Manage sponsorship deals and partners",
+        "budgetExpenses": "Budget & Expenses",
+        "budgetExpensesDesc": "Track costs and calculate profit",
+        "liveDashboard": "Live Dashboard",
+        "liveDashboardDesc": "Real-time check-in and sales during event",
+        "attendeesHub": "Attendees",
+        "attendeesHubDesc": "View registrations and check-in status",
+        "media": "Media",
+        "mediaDesc": "Upload photos and videos after the event",
+        "posterDoor": "Door-sale Poster",
+        "posterDoorDesc": "Printable QR poster for venue entrance",
+        "dangerZone": "Danger zone",
+        "dangerDesc": "Deleting an event is irreversible and removes all associated tickets, orders, and data."
+      },
+      "coupons": {
+        "title": "Coupon Codes",
+        "addCoupon": "Add Coupon"
+      },
+      "live": {
+        "title": "Live Event"
+      },
+      "runsheet": {
+        "title": "Run Sheet",
+        "description": "Minute-by-minute event-day plan. Drag to reorder, click any row to edit.",
+        "addTitle": "Add item",
+        "noItems": "No run sheet items yet. Add your first one below or populate from the template.",
+        "populate": "Populate from template",
+        "downloadPdf": "Download PDF"
+      },
+      "schedule": {
+        "title": "Schedule & Speakers",
+        "addItem": "Add Schedule Item"
+      },
+      "tiers": {
+        "title": "Ticket Tiers",
+        "addTier": "Add Tier"
+      },
+      "invitations": {
+        "title": "Invitations",
+        "description": "Comped tickets — guests receive a branded PDF and are tagged invited_guests in Contacts.",
+        "bulkImport": "Bulk import CSV →",
+        "filterNote": "Filter reports by",
+        "newInvitation": "New invitation",
+        "invited": "Invited",
+        "empty": "No invitations yet for this event.",
+        "ticketFallback": "Ticket",
+        "attended": "Attended",
+        "sent": "Sent",
+        "emailPending": "Email pending"
+      },
+      "budget": {
+        "title": "Budget & Expenses",
+        "desc": "Track event costs and vendor payments.",
+        "totalExpenses": "Total expenses",
+        "lineItems": "Line items",
+        "revenue": "Revenue",
+        "netProfit": "Net profit",
+        "byCategory": "Expenses by category",
+        "total": "Total",
+        "client": {
+          "description": "Description",
+          "category": "Category",
+          "amount": "Amount (€)",
+          "vendor": "Vendor",
+          "vendorContact": "Vendor contact",
+          "paidAt": "Paid on",
+          "add": "Add expense",
+          "adding": "Adding...",
+          "delete": "Delete",
+          "noExpenses": "No expenses recorded yet."
+        }
+      }
     },
     "sendTicket": {
       "title": "Send Tickets",
@@ -312,14 +652,54 @@
       "attendeeName": "Attendee name",
       "attendeeEmail": "Attendee email (optional)",
       "markPaid": "Mark as paid (cash)",
-      "created": "Ticket created and ready for entry"
+      "created": "Ticket created and ready for entry",
+      "page": {
+        "door": "Door Sale",
+        "advance": "Advance Sale",
+        "emptyDoor": "No upcoming events in the next 30 days.",
+        "emptyAdvance": "No upcoming events."
+      }
     },
     "staff": {
       "title": "Staff Management",
       "invite": "Invite staff",
       "assignEvents": "Assign events",
       "role": "Role",
-      "noStaff": "No staff members yet."
+      "noStaff": "No staff members yet.",
+      "list": {
+        "title": "Staff Management"
+      },
+      "client": {
+        "invite": "Invite staff",
+        "inviteEmail": "Email address",
+        "inviteName": "Display name (optional)",
+        "inviteRole": "Role",
+        "sendInvite": "Send invite",
+        "sending": "Sending…",
+        "inviteSuccess": "Invite sent. They’ll receive a branded email with a sign-in link.",
+        "cancel": "Cancel",
+        "email": "Email",
+        "role": "Role",
+        "events": "Assigned events",
+        "actions": "Actions",
+        "assignEvents": "Assign events",
+        "remove": "Remove",
+        "resendInvite": "Resend invite",
+        "revoke": "Revoke",
+        "revokeConfirm": "Revoke this pending invite? The user record will be deleted.",
+        "removeConfirm": "Remove this person from staff? They will be demoted to buyer role and unassigned from all events.",
+        "noStaff": "No staff members yet. Invite someone to get started.",
+        "noEvents": "No events to assign.",
+        "member": "member",
+        "members": "members",
+        "teamMember": "Team member",
+        "manager": "Manager",
+        "admin": "Admin",
+        "super_admin": "Super admin"
+      },
+      "detail": {
+        "teamProfile": "Team profile →"
+      }
     },
     "refund": {
       "title": "Issue Refund",
@@ -456,7 +836,44 @@
       "acquisition": "Acquired",
       "created": "Created",
       "exportCsv": "Export CSV",
-      "noOrders": "No orders match your filters."
+      "noOrders": "No orders match your filters.",
+      "client": {
+        "event": "Event",
+        "status": "Status",
+        "customer": "Customer",
+        "total": "Total",
+        "date": "Date",
+        "actions": "Actions",
+        "refund": "Refund",
+        "refunding": "Refunding…",
+        "refundConfirm": "Refund this order? This restores ticket inventory and processes a Stripe refund.",
+        "all": "All events",
+        "allStatus": "All statuses",
+        "pending": "Pending",
+        "paid": "Paid",
+        "comped": "Complimentary",
+        "refunded": "Refunded",
+        "cancelled": "Cancelled",
+        "purchased": "Purchased",
+        "invited": "Invited",
+        "assigned": "Assigned",
+        "door_sale": "Door sale",
+        "noOrders": "No orders match your filters.",
+        "csvOrderId": "Order ID",
+        "csvEvent": "Event",
+        "csvRecipient": "Recipient",
+        "csvEmail": "Email",
+        "csvStatus": "Status",
+        "csvAcquisition": "Acquisition",
+        "csvPayment": "Payment",
+        "csvTotal": "Total (€)",
+        "csvStripe": "Stripe PI",
+        "csvCreated": "Created at",
+        "csvEmailSent": "Email sent at"
+      },
+      "detail": {
+        "order": "Order"
+      }
     },
     "contacts": {
       "title": "Contacts",
@@ -514,7 +931,38 @@
       "sectionProfessional": "Professional",
       "sectionAddress": "Address",
       "sectionInvolvement": "Event involvement",
-      "sectionInternal": "Internal"
+      "sectionInternal": "Internal",
+      "list": {
+        "tabs": {
+          "contacts": "Contacts",
+          "attendees": "Attendees"
+        }
+      },
+      "attendeesTab": {
+        "search": "Search by name, email or ticket ID",
+        "all": "All",
+        "checkedIn": "Checked in",
+        "notCheckedIn": "Not checked in",
+        "export": "Export CSV",
+        "name": "Name",
+        "event": "Event",
+        "tier": "Tier",
+        "status": "Status",
+        "purchased": "Purchased",
+        "invited": "Invited",
+        "assigned": "Assigned",
+        "doorSale": "Door sale",
+        "notScanned": "Not scanned",
+        "noResults": "No attendees match your search.",
+        "allEvents": "All events"
+      },
+      "detail": {
+        "invited": "Invited",
+        "door": "Door",
+        "buyer": "Buyer",
+        "subscriber": "Subscriber",
+        "messageHistory": "Message history"
+      }
     },
     "back": {
       "dashboard": "Dashboard",
@@ -534,17 +982,510 @@
     },
     "scan": {
       "pageTitle": "Scan Tickets",
-      "notAssignedMessage": "You are not assigned to any events."
+      "notAssignedMessage": "You are not assigned to any events.",
+      "client": {
+        "selectEvent": "Select event",
+        "startScan": "Start scanning",
+        "checkedIn": "Checked in!",
+        "alreadyScanned": "Already checked in",
+        "invalid": "Invalid ticket",
+        "wrongEvent": "Wrong event",
+        "at": "at",
+        "by": "by",
+        "manual": "Manual entry",
+        "enterToken": "Enter ticket code",
+        "submit": "Check in",
+        "progress": "checked in",
+        "startingCamera": "Starting camera...",
+        "nextTicket": "Next ticket",
+        "tapOrEnter": "Tap to continue or press Enter"
+      },
+      "find": {
+        "heading": "Can’t scan? Find by name",
+        "placeholder": "Type a name, email, or surname…",
+        "searching": "Searching…",
+        "invited": "Invited",
+        "door": "Door",
+        "paid": "Paid",
+        "checkedInTag": "✓ Checked in",
+        "checkIn": "Check in",
+        "resendPdf": "Resend PDF",
+        "checkedInToast": "Checked in: {name}",
+        "resendToast": "Ticket sent to {email}.",
+        "searchFailed": "Search failed. Try again.",
+        "actionFailed": "Action failed. Try again."
+      }
     },
     "account": {
       "pageTitle": "My account",
       "description": "Your personal profile, preferences, and security. Company-wide settings live under Company Info."
     },
     "reports": {
-      "pageTitle": "Reports"
+      "pageTitle": "Reports",
+      "tabs": {
+        "finance": "Finance",
+        "marketing": "Marketing",
+        "operations": "Operations",
+        "visitors": "Visitors",
+        "hr": "HR",
+        "it": "IT",
+        "general": "General"
+      },
+      "eventPdfPanel": {
+        "title": "Event PDF report",
+        "desc": "Selected event:",
+        "descTail": "Tick only the sections you need — the report will contain just those.",
+        "kpis": "Summary KPIs",
+        "kpisHint": "Tickets sold, revenue, check-in rate, channel mix",
+        "tiers": "Revenue by tier",
+        "tiersHint": "Per-tier price, sold, capacity, revenue",
+        "demographics": "Demographics",
+        "demographicsHint": "Country, gender, occupation, source breakdowns",
+        "attendees": "Attendee list",
+        "attendeesHint": "Full name + email + tier + country + check-in",
+        "download": "Download PDF",
+        "selectAtLeast": "Select at least one section"
+      },
+      "financeTab": {
+        "title": "Finance & Accounting",
+        "filters": "Filters",
+        "from": "From",
+        "to": "To",
+        "channel": "Channel",
+        "allChannels": "All channels",
+        "online": "Online",
+        "door": "Door",
+        "comped": "Comped",
+        "event": "Event",
+        "allEvents": "All events",
+        "clear": "Clear",
+        "channelSummary": "Sales by channel",
+        "onlineSub": "Self-serve via Stripe",
+        "doorSub": "Sold at the venue",
+        "compedSub": "Invited / assigned — zero revenue",
+        "channelMix": "Paid vs free",
+        "channelMixSub": "Attendance mix",
+        "paid": "Paid",
+        "free": "Free",
+        "gross": "Gross",
+        "net": "Net",
+        "refunds": "Refunds",
+        "orders": "Orders",
+        "tickets": "Tickets",
+        "paymentMethods": "Payment-method breakdown",
+        "method": "Method",
+        "noMethodRows": "No orders match this filter yet.",
+        "total": "Total",
+        "perEvent": "Per-event breakdown",
+        "noEvents": "No events touched in this range.",
+        "starts": "Starts",
+        "deferredRevenue": "Deferred revenue",
+        "deferredRevenueSub": "Paid tickets for events not yet held",
+        "stripeFee": "Stripe fee estimate",
+        "stripeFeeSub": "1.5% of online gross + €0.25/txn — reconcile with Stripe",
+        "vatNote": "VAT reminder: for physical events held in Germany, place-of-supply = place-of-event, so 19% DE VAT applies regardless of buyer country. Compute from gross on your side.",
+        "exports": "Exports",
+        "exportOrders": "Orders CSV",
+        "exportOrdersSub": "One row per order — import-ready for DATEV / Xero / Lexware",
+        "exportSummary": "Summary CSV",
+        "exportSummarySub": "Pivot by date / channel / method — for monthly VAT filings",
+        "exportRefunds": "Refunds CSV",
+        "exportRefundsSub": "One row per refunded order",
+        "semicolon": "Semicolon delimiter (Excel-DE)",
+        "downloading": "Downloading…"
+      }
     },
     "auditLog": {
-      "userColumn": "User"
+      "userColumn": "User",
+      "page": {
+        "title": "Audit Log"
+      },
+      "client": {
+        "filters": "Filters",
+        "action": "Action",
+        "entity": "Entity",
+        "user": "User email",
+        "userDisplay": "User",
+        "userPlaceholder": "Search by email",
+        "from": "From",
+        "to": "To",
+        "apply": "Apply",
+        "clear": "Clear filters",
+        "allActions": "All actions",
+        "allEntities": "All entities",
+        "timestamp": "Timestamp",
+        "entityId": "Entity ID",
+        "ip": "IP",
+        "details": "Details",
+        "view": "View",
+        "hide": "Hide",
+        "noRows": "No audit log entries match your filters.",
+        "showing": "Showing",
+        "to_word": "to",
+        "of": "of",
+        "prev": "Previous",
+        "next": "Next",
+        "page": "Page"
+      }
+    },
+    "ads": {
+      "page": {
+        "title": "Dashboard ads",
+        "description": "Sponsored banner rotator shown at the top of the admin dashboard. Only super admins can edit."
+      },
+      "client": {
+        "preview": "Live preview",
+        "previewHint": "This is exactly what staff will see on the dashboard. Only active, in-window ads appear here.",
+        "newAd": "New ad",
+        "editAd": "Edit ad",
+        "allAds": "All ads",
+        "noAds": "No ads yet. Create the first one below.",
+        "createFirst": "Create first ad",
+        "titleRequired": "Title (EN)",
+        "titleDe": "Title (DE)",
+        "titleFr": "Title (FR)",
+        "subtitleEn": "Subtitle (EN)",
+        "subtitleDe": "Subtitle (DE)",
+        "subtitleFr": "Subtitle (FR)",
+        "ctaEn": "CTA label (EN)",
+        "ctaDe": "CTA label (DE)",
+        "ctaFr": "CTA label (FR)",
+        "ctaUrl": "CTA URL (clicked button target)",
+        "imageUrl": "Image URL — the ad background image",
+        "imageHint": "Paste a fully qualified URL (https://…). Landscape / banner ratio works best (≈ 1600 × 400 px).",
+        "accent": "Accent color (optional hex, e.g. #b81838)",
+        "sortOrder": "Sort order (lower shows first)",
+        "startsAt": "Starts at (optional)",
+        "endsAt": "Ends at (optional)",
+        "active": "Active",
+        "save": "Save",
+        "saving": "Saving…",
+        "create": "Create ad",
+        "creating": "Creating…",
+        "cancel": "Cancel",
+        "edit": "Edit",
+        "activate": "Activate",
+        "deactivate": "Deactivate",
+        "delete": "Delete",
+        "deleteConfirm": "Delete this ad permanently?",
+        "saved": "Saved.",
+        "created": "Ad created.",
+        "deleted": "Ad deleted."
+      }
+    },
+    "applications": {
+      "list": {
+        "title": "Applications",
+        "description": "Incubation and job applications.",
+        "emptyIncubation": "No incubation applications yet.",
+        "emptyJobs": "No job applications yet.",
+        "csvId": "ID",
+        "csvReceived": "Received",
+        "csvFounder": "Founder",
+        "csvEmail": "Email",
+        "csvPhone": "Phone",
+        "csvCountry": "Country",
+        "csvLocale": "Locale",
+        "csvCompany": "Company",
+        "csvWebsite": "Website",
+        "csvStage": "Stage",
+        "csvFunding": "Funding sought (EUR)",
+        "csvStatus": "Status",
+        "csvNotes": "Notes",
+        "csvPitch": "Pitch",
+        "founder": "Founder",
+        "company": "Company",
+        "stage": "Stage",
+        "pitch": "Pitch",
+        "received": "Received",
+        "status": "Status",
+        "applicant": "Applicant",
+        "job": "Job",
+        "coverLetter": "Cover letter",
+        "unknownPosition": "Unknown position"
+      },
+      "detail": {
+        "incubationFrom": "Incubation application from",
+        "unknownPosition": "Unknown position",
+        "applicationFor": "Application for",
+        "pitch": "Pitch",
+        "coverLetter": "Cover letter",
+        "companyDetails": "Company details",
+        "contact": "Contact",
+        "review": "Review",
+        "status": "Status",
+        "notes": "Reviewer notes",
+        "save": "Save",
+        "saving": "Saving...",
+        "stage": "Stage",
+        "website": "Website",
+        "country": "Country",
+        "funding": "Funding needed",
+        "email": "Email",
+        "phone": "Phone",
+        "linkedin": "LinkedIn",
+        "portfolio": "Portfolio",
+        "received": "Received",
+        "updated": "Last updated",
+        "reviewer": "Reviewed by",
+        "jobTitle": "Position"
+      }
+    },
+    "companyInfo": {
+      "page": {
+        "title": "Company Info",
+        "description": "The single source of truth for everything public-facing — footer, Impressum, privacy/terms pages, SEO defaults, social links, and brand assets.",
+        "empty": "No company info row yet. The company_info table has no row with id = 1. Seed it by running the initial Supabase migration, then refresh this page.",
+        "legalReadiness": "Legal readiness",
+        "allGood": "All fields required for Impressum, Privacy Policy, and Terms are populated.",
+        "missingHint": "The following fields are still missing. Fill them in before making legal pages public:"
+      },
+      "form": {
+        "tabs": {
+          "legal": "Legal · Impressum",
+          "parent": "Parent org",
+          "france": "France entity",
+          "contact": "Contact",
+          "privacy": "Data protection",
+          "brand": "Brand assets",
+          "social": "Social links",
+          "seo": "SEO defaults",
+          "banking": "Banking",
+          "about": "About page"
+        },
+        "shared": {
+          "orPasteUrl": "Or paste a CDN URL",
+          "urlHint": "The uploader writes the URL here automatically. Click Save to commit a pasted URL.",
+          "saved": "Saved.",
+          "assetUploaded": "Asset uploaded.",
+          "saving": "Saving…",
+          "save": "Save"
+        }
+      },
+      "about": {
+        "tabs": {
+          "en": "English",
+          "de": "Deutsch",
+          "fr": "Français"
+        },
+        "heading": "About page sections",
+        "help": "Everything below appears on /about. Leave a section empty to hide it; fill the EN tab first — DE and FR fall back to EN on the public page when empty.",
+        "saving": "Saving…",
+        "save": "Save About sections",
+        "saved": "About sections saved.",
+        "mission": "Mission",
+        "missionTitleField": "Title",
+        "missionBodyField": "Body",
+        "story": "Story",
+        "storyTitleField": "Title",
+        "storyBodyField": "Body",
+        "values": "Values",
+        "valuesTitleField": "Section title (optional)",
+        "addValue": "Add value",
+        "valueTitle": "Title",
+        "valueDesc": "Description",
+        "metrics": "Numbers strip",
+        "addMetric": "Add metric",
+        "metricValue": "Value (e.g. 900)",
+        "metricLabel": "Label (e.g. seats · one day)",
+        "press": "Press / partner logos",
+        "pressTitleField": "Section title (optional)",
+        "addPress": "Add logo",
+        "pressName": "Name",
+        "pressLogoUrl": "Logo URL",
+        "pressHref": "Link URL (optional)",
+        "finalCta": "Final CTA band",
+        "finalCtaTitleField": "Title",
+        "finalCtaSubtitleField": "Subtitle (optional)",
+        "finalCtaPrimaryField": "Button label",
+        "finalCtaHrefField": "Button URL",
+        "remove": "Remove"
+      }
+    },
+    "newsletters": {
+      "list": {
+        "title": "Newsletters",
+        "description": "Broadcasts to confirmed, non-unsubscribed contacts. Every email includes a one-click unsubscribe link.",
+        "newNewsletter": "+ New newsletter",
+        "subject": "Subject",
+        "status": "Status",
+        "locale": "Locale",
+        "recipients": "Recipients",
+        "sentUpdated": "Sent / updated",
+        "empty": "No newsletters yet. Create the first one.",
+        "untitled": "(untitled)"
+      },
+      "detail": {
+        "untitled": "(untitled)",
+        "statusLabel": "Status",
+        "analytics": "Delivery analytics",
+        "delivered": "Delivered",
+        "opened": "Opened",
+        "clicked": "Clicked",
+        "bouncedFailed": "Bounced / Failed",
+        "unsubscribe": "unsubscribe since send",
+        "unsubscribes": "unsubscribes since send"
+      },
+      "new": {
+        "title": "New newsletter",
+        "description": "Save as a draft, preview the recipient count, and send when ready."
+      },
+      "composer": {
+        "saved": "Saved.",
+        "saveFirst": "Save the draft first, then enter a test email.",
+        "saveFirstPlain": "Save the draft first.",
+        "testSent": "Test sent to {email}",
+        "confirmSend": "Send to {n} recipient{s}? This cannot be undone.",
+        "sentReport": "Sent: {s}, failed: {f}.",
+        "subject": "Subject",
+        "preheader": "Preheader (preview text)",
+        "fromName": "From name",
+        "fromEmail": "From email",
+        "replyTo": "Reply-to",
+        "localeLabel": "Locale",
+        "bodyLabel": "Body (plain text; blank lines split paragraphs)",
+        "saveDraft": "Save draft",
+        "targeting": "Targeting",
+        "targetingHint": "Include — at least one tag must match. Exclude — skip if any match. No includes = everyone with marketing consent.",
+        "include": "Include",
+        "exclude": "Exclude",
+        "previewCount": "Preview recipient count",
+        "willReceive1": "contact will receive this.",
+        "willReceiveMany": "contacts will receive this.",
+        "sendTest": "Send test",
+        "sendTestBtn": "Send test email",
+        "testPh": "you@example.com",
+        "sendBroadcast": "Send broadcast",
+        "sendBroadcastHint": "One-way. Saves the draft first, then dispatches to the resolved recipient list.",
+        "sendNow": "Send now",
+        "cancel": "Cancel",
+        "domainUnverifiedTitle": "Sender domain is not verified",
+        "domainUnverifiedBody": "Resend hasn't verified dbc-germany.com yet, so real broadcasts are blocked. Add the 3 DNS records listed in cred/dns-email-setup.md at Strato and wait 5-30 min. Test sends to the Resend account owner still work (from onboarding@resend.dev)."
+      }
+    },
+    "notifications": {
+      "list": {
+        "title": "Notifications",
+        "markAll": "Mark all as read",
+        "empty": "No notifications yet.",
+        "unread": "unread"
+      }
+    },
+    "team": {
+      "list": {
+        "title": "Team profiles",
+        "description": "Public team page content. Drag rows to reorder; the order here is the order shown on dbc-germany.com/team. Set visibility per member: public shows on the public team page, internal is admin-only, hidden archives the row.",
+        "newMember": "New team member",
+        "empty": "No team members yet."
+      },
+      "detail": {
+        "linked": "Linked to staff account",
+        "notLinked": "No staff account linked",
+        "viewStaff": "View staff profile →",
+        "delete": "Delete",
+        "visibility": {
+          "public": "Public",
+          "internal": "Internal",
+          "hidden": "Hidden"
+        }
+      },
+      "new": {
+        "title": "New team member"
+      }
+    },
+    "news": {
+      "list": {
+        "title": "News",
+        "newPost": "New post",
+        "empty": "No posts yet. Create the first one.",
+        "published": "Published",
+        "draft": "Draft",
+        "edit": "Edit",
+        "publish": "Publish",
+        "unpublish": "Unpublish"
+      },
+      "new": {
+        "title": "New news post",
+        "titleEn": "Title (EN)",
+        "titleDe": "Title (DE)",
+        "titleFr": "Title (FR)",
+        "excerptEn": "Excerpt (EN)",
+        "excerptDe": "Excerpt (DE)",
+        "excerptFr": "Excerpt (FR)",
+        "bodyEn": "Body (EN)",
+        "bodyDe": "Body (DE)",
+        "bodyFr": "Body (FR)",
+        "author": "Author (optional)",
+        "saving": "Saving…",
+        "saveDraft": "Save draft"
+      }
+    },
+    "funnels": {
+      "list": {
+        "title": "Funnels",
+        "newFunnel": "New funnel",
+        "empty": "No funnels yet. Create the first one.",
+        "published": "Published",
+        "draft": "Draft",
+        "archived": "Archived",
+        "views7d": "Views 7d",
+        "clicks7d": "Clicks 7d",
+        "ctr7d": "CTR 7d",
+        "ctaType": {
+          "external_link": "External",
+          "incubation_wizard": "Wizard",
+          "contact_form": "Contact"
+        }
+      },
+      "new": {
+        "title": "New funnel"
+      }
+    },
+    "jobOffers": {
+      "list": {
+        "title": "Job Offers",
+        "newJob": "New job offer",
+        "create": "Create job offer",
+        "empty": "No job offers yet.",
+        "colTitle": "Title",
+        "location": "Location",
+        "type": "Type",
+        "status": "Status",
+        "actions": "Actions",
+        "published": "Published",
+        "draft": "Draft",
+        "edit": "Edit",
+        "publish": "Publish",
+        "unpublish": "Unpublish",
+        "types": {
+          "full_time": "Full-time",
+          "part_time": "Part-time",
+          "freelance": "Freelance",
+          "internship": "Internship"
+        }
+      },
+      "new": {
+        "title": "New job offer",
+        "titleEn": "Title (EN)",
+        "titleDe": "Title (DE)",
+        "titleFr": "Title (FR)",
+        "descEn": "Description (EN)",
+        "descDe": "Description (DE)",
+        "descFr": "Description (FR)",
+        "reqEn": "Requirements (EN)",
+        "reqDe": "Requirements (DE)",
+        "reqFr": "Requirements (FR)",
+        "location": "Location",
+        "employmentType": "Employment type",
+        "selectType": "Select type",
+        "fullTime": "Full-time",
+        "partTime": "Part-time",
+        "freelance": "Freelance",
+        "internship": "Internship",
+        "department": "Department",
+        "saving": "Saving…",
+        "saveDraft": "Save draft"
+      }
     }
   },
   "gdpr": {
@@ -753,7 +1694,17 @@
       "conviction": "The most powerful ideas deserve solid structures to grow into enduring companies.",
       "convictionAttribution": "Dr. Jean-Clément Diambilay, Founder",
       "ctaFounder": "Meet the founder",
-      "ctaCareers": "Join the team"
+      "ctaCareers": "Join the team",
+      "teamPreview": {
+        "eyebrow": "Meet the team",
+        "title": "Operators behind every line you've read.",
+        "viewAll": "See the full team →"
+      },
+      "storyTeaser": {
+        "eyebrow": "Our story",
+        "body": "Behind every face above is the company story that brought them here — the mission, the years across Lubumbashi, Düsseldorf, and Paris, and the operators who bet on it before anyone else.",
+        "cta": "Read how DBC Germany came to be"
+      }
     },
     "contact": {
       "eyebrow": "Contact",
@@ -899,6 +1850,111 @@
       "news": "The DBC Germany journal covers the African-rooted business community in Europe — founder stories, policy briefs, capital updates, and long-form pieces on the companies shaping the diaspora economy. Expect notes from the ground in Düsseldorf, Berlin, Paris, and Lubumbashi, alongside reporting on Richesses d'Afrique Germany 2026 and our programmes. We publish in three languages; German and French versions usually follow the English one within a few days. Subscribe to the newsletter on /newsletter to get one curated brief per week — the archive lives below.",
       "team": "Meet the operators behind DBC Germany. The Düsseldorf office runs incubation, investment prep, courses, mentorship, and the annual Richesses d'Afrique conference. The names below are the people you'll actually work with if you apply to a programme, pitch a partnership, or come to an event. Each profile links to the person's professional background and the programmes they lead. If you don't see the role you need, contact us — we hire for operator-grade generalists more often than titles suggest.",
       "contact": "Reach DBC Germany via whichever channel matches your query. Press and media enquiries go to the press desk; we respond within 24 hours on weekdays. Incubation and programme applications live on /services/incubation/apply and land directly in our review queue. Partnership and sponsorship conversations — including Richesses d'Afrique Germany 2026 packages — go through the form below or to jay@dbc-germany.com. For everything else (general questions, speaker suggestions, non-urgent media queries) the form below reaches the right person the same day."
+    },
+    "notFound": {
+      "eyebrow": "Lost the trail",
+      "title": "We can't find that page.",
+      "description": "The page you're after may have moved, been archived, or never existed. Here's where to go next.",
+      "home": "Home",
+      "events": "Events",
+      "contact": "Contact us"
+    },
+    "careers": {
+      "form": {
+        "email": "Email",
+        "phone": "Phone (optional)",
+        "coverLetter": "Cover letter",
+        "resume": "Resume link (optional)",
+        "resumePlaceholder": "Google Drive, Dropbox, etc.",
+        "linkedin": "LinkedIn URL (optional)",
+        "portfolio": "Portfolio URL (optional)",
+        "submit": "Send application",
+        "sending": "Sending…",
+        "success": "Thanks — your application has been submitted. We’ll be in touch soon."
+      }
+    },
+    "newsletter": {
+      "form": {
+        "emailLabel": "Email",
+        "firstNameLabel": "First name (optional)",
+        "interestsLabel": "What brings you here? (optional)",
+        "consentLabel": "I agree to receive the DBC Germany newsletter. I can unsubscribe at any time using the link in every email.",
+        "submit": "Subscribe",
+        "sending": "Sending…",
+        "success": "Thanks! We've sent a confirmation email. Click the link inside to finish subscribing.",
+        "already": "You're already subscribed — thanks!",
+        "interests": {
+          "founders": "Founders & Entrepreneurs",
+          "investors": "Investors & LPs",
+          "press": "Press & Media",
+          "diaspora": "Diaspora community"
+        }
+      },
+      "page": {
+        "eyebrow": "Stay in the loop",
+        "title": "DBC Germany newsletter",
+        "body": "Curated updates on Richesses d'Afrique Germany, incubation calls, and diaspora-economy briefs for business leaders in Europe and Africa. One email at most per week, unsubscribe in one click."
+      },
+      "confirm": {
+        "successTitle": "You're subscribed — welcome!",
+        "successBody": "Thanks for confirming. We'll send updates about Richesses d'Afrique Germany and the rest of our work to your inbox.",
+        "errorTitle": "Link is invalid",
+        "errorBody": "This confirmation link has expired or was already used. You can request a new one from the newsletter page.",
+        "home": "Back to home",
+        "signup": "Go to signup"
+      },
+      "unsubscribe": {
+        "title": "You've been unsubscribed",
+        "body": "We won't send you any more newsletters. If this was a mistake, you can re-subscribe anytime.",
+        "errorTitle": "Invalid unsubscribe link",
+        "errorBody": "The link is missing or malformed. If you keep receiving emails, reply to any of them and we'll remove you manually.",
+        "home": "Back to home",
+        "signup": "Re-subscribe"
+      },
+      "footerSignup": {
+        "label": "Newsletter",
+        "hint": "Event drops, incubation calls, diaspora-economy briefs. Unsubscribe in one click.",
+        "placeholder": "you@example.com",
+        "consent": "I agree to receive the DBC Germany newsletter.",
+        "submit": "Subscribe",
+        "sending": "Sending…",
+        "success": "Almost done — check your inbox to confirm.",
+        "already": "You're already subscribed."
+      }
+    },
+    "funnel": {
+      "stickyCta": {
+        "scrollToBuy": "Reserve your seat",
+        "daysLeft": "d"
+      },
+      "pricing": {
+        "mostPopular": "Most popular",
+        "onlyLeft": "Only {n} left",
+        "seats": "seats",
+        "buy": "Get ",
+        "freeLabel": "Free",
+        "soldOut": "Sold out"
+      },
+      "contactForm": {
+        "name": "Name",
+        "email": "Email",
+        "message": "Message (optional)",
+        "thanks": "Thanks — we got it.",
+        "thanksBody": "Someone from the team will reach out within 2 business days."
+      },
+      "bySlug": {
+        "storyLabels": {
+          "problem": "The problem",
+          "agitation": "The cost",
+          "solution": "The room"
+        },
+        "pricingLabels": {
+          "eyebrow": "Choose your seat",
+          "title": "Three ways to be in the room."
+        },
+        "countdownEyebrow": "Doors open in",
+        "startingPriceLabel": "From {price}"
+      }
     }
   },
   "funnelWizard": {
@@ -1156,6 +2212,16 @@
       "ctaHomeHref": "/",
       "ctaFollow": "Follow us",
       "ctaFollowHref": "https://www.linkedin.com/company/dbcgermany"
+    }
+  },
+  "ui": {
+    "address": {
+      "line1": "Address line 1",
+      "line2": "Address line 2 (optional)",
+      "city": "City",
+      "state": "State / region",
+      "postal_code": "Postal code",
+      "country": "Country"
     }
   }
 }

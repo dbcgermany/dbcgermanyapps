@@ -150,7 +150,29 @@
       "subtitle": "Your tickets have been sent to each attendee's email.",
       "orderNumber": "Order #{orderId}",
       "downloadAll": "Download all tickets",
-      "viewOrder": "View order details"
+      "viewOrder": "View order details",
+      "recovery": {
+        "allSent": "Billets envoyés à chaque participant.",
+        "someUnsent": "Certains billets n'ont pas encore été envoyés par e-mail. Vous pouvez réessayer maintenant ou télécharger le PDF directement ci-dessous.",
+        "resend": "Renvoyer les billets aux e-mails des participants",
+        "sending": "Envoi en cours…",
+        "sent": "{count, plural, one {1 billet renvoyé.} other {# billets renvoyés.}}",
+        "nothingToResend": "Rien à renvoyer — tous les billets sont déjà marqués comme envoyés.",
+        "error": "Quelque chose s'est mal passé. Veuillez réessayer ou contacter le support."
+      },
+      "page": {
+        "confirmed": "Commande confirmée !",
+        "pending": "Commande en attente",
+        "subtitle": "Vos billets ont été envoyés à l’e-mail de chaque participant.",
+        "pendingSubtitle": "Votre paiement est en cours de traitement. Cette page sera mise à jour une fois confirmé.",
+        "orderNumber": "Commande",
+        "event": "Événement",
+        "date": "Date",
+        "tickets": "Billets",
+        "total": "Total",
+        "backToEvents": "Retour aux événements",
+        "downloadPdf": "Télécharger le PDF"
+      }
     },
     "transfer": {
       "title": "Transfer ticket",
@@ -160,7 +182,23 @@
       "confirm": "Transfer ticket",
       "success": "Ticket transferred successfully. A new ticket has been sent to {email}.",
       "notAuthorized": "Non autorisé",
-      "notAuthorizedDescription": "Vous n’êtes pas autorisé à transférer ce billet."
+      "notAuthorizedDescription": "Vous n’êtes pas autorisé à transférer ce billet.",
+      "form": {
+        "newName": "Nom du nouveau participant",
+        "newEmail": "E-mail du nouveau participant",
+        "confirm": "Transférer le billet",
+        "transferring": "Transfert en cours...",
+        "success": "Billet transféré. Un nouveau PDF a été envoyé au nouveau participant.",
+        "confirmWarning": "Cette action est irréversible. Le code QR actuel cessera immédiatement de fonctionner."
+      },
+      "page": {
+        "title": "Transférer le billet",
+        "description": "Transférez ce billet à un nouveau participant. Le code QR actuel sera immédiatement invalidé et un nouveau PDF de billet sera envoyé au nouveau participant.",
+        "currentAttendee": "Participant actuel",
+        "blockedCheckedIn": "Ce billet a déjà été enregistré et ne peut pas être transféré.",
+        "blockedEnded": "Cet événement est déjà terminé.",
+        "back": "Retour aux commandes"
+      }
     },
     "pdf": {
       "title": "Your Ticket",
@@ -172,7 +210,114 @@
       "scanNote": "Present this QR code at the entrance"
     },
     "gallery": {
-      "close": "Fermer"
+      "close": "Fermer",
+      "page": {
+        "back": "Retour à l’événement",
+        "title": "Galerie",
+        "subtitle": "Photos, vidéos et moments forts de l’événement",
+        "empty": "Aucun média n’a encore été partagé.",
+        "photo": "Photo",
+        "video": "Vidéo",
+        "link": "Lien",
+        "open": "Ouvrir"
+      }
+    },
+    "notFound": {
+      "eyebrow": "Introuvable",
+      "title": "Cette page billetterie est introuvable.",
+      "description": "L'événement ou la commande est peut-être terminé·e, déplacé·e, ou le lien a expiré. Parcourez les événements actifs ici.",
+      "events": "Voir les événements",
+      "orders": "Mes commandes"
+    },
+    "events": {
+      "share": {
+        "share": "Partager",
+        "copied": "Lien copié !"
+      },
+      "countdown": {
+        "startsIn": "Commence dans",
+        "days": "j",
+        "hours": "h",
+        "minutes": "min",
+        "seconds": "s"
+      },
+      "waitlist": {
+        "join": "Rejoindre la liste d’attente",
+        "email": "votre@email.fr",
+        "submit": "Me notifier",
+        "submitting": "...",
+        "done": "✓ Vous êtes sur la liste d’attente"
+      },
+      "list": {
+        "tag": "Incubateur international · Chapitre Europe",
+        "title": "Richesses d'Afrique · Événements live.",
+        "subtitle": "Masterclasses, conférences et meet-ups pour les fondateur·ice·s, investisseur·euse·s et opérateur·ice·s qui bâtissent le corridor UE ↔ Afrique.",
+        "noEvents": "Aucun événement à venir pour le moment. Revenez bientôt.",
+        "cta": "Réserver ma place",
+        "soldOut": "Complet"
+      },
+      "detail": {
+        "back": "Tous les événements",
+        "when": "Date & heure",
+        "venue": "Lieu",
+        "about": "À propos de la masterclass",
+        "schedule": "Programme",
+        "tickets": "Billets",
+        "noTickets": "Aucun billet disponible pour le moment.",
+        "free": "Gratuit",
+        "soldOut": "Complet",
+        "salesStart": "Vente à partir du",
+        "salesEnded": "Vente terminée",
+        "remaining": "restants",
+        "available": "Disponible",
+        "getTickets": "Réserver ma place",
+        "organizer": "Organisateur",
+        "viewOnMap": "Voir sur la carte",
+        "scarcityOnly": "Plus que",
+        "scarcityHurry": "Vite, plus que",
+        "scarcityLeft": "disponibles",
+        "socialProofSuffix": "personnes ont réservé leur place dans les dernières 24 heures",
+        "saveLabel": "Économisez",
+        "deadlinePrefix": "Fin dans",
+        "dayAbbr": "j",
+        "hourAbbr": "h",
+        "minAbbr": "min",
+        "tickerPrefixCity": "Quelqu’un à",
+        "tickerMiddleCity": "vient d’acheter un billet",
+        "tickerPrefixAnon": "Quelqu’un vient d’acheter un billet",
+        "tickerTicket": "",
+        "tickerJustNow": "à l’instant",
+        "tickerAgoMinutes": "il y a {n} min",
+        "tickerAgoHours": "il y a {n} h"
+      }
+    },
+    "auth": {
+      "page": {
+        "title": "Se connecter par e-mail",
+        "description": "Entrez votre e-mail et nous vous enverrons un lien de connexion.",
+        "placeholder": "votre@email.fr",
+        "submit": "Envoyer le lien",
+        "sent": "Vérifiez votre e-mail pour un lien de connexion.",
+        "expiry": "Le lien expire dans 10 minutes.",
+        "error": "Quelque chose s’est mal passé. Veuillez réessayer."
+      }
+    },
+    "orders": {
+      "list": {
+        "title": "Mes commandes",
+        "subtitle": "Billets achetés sur DBC Germany.",
+        "signInRequired": "Veuillez vous connecter pour voir vos commandes.",
+        "empty": "Vous n'avez pas encore de commandes.",
+        "emptyCta": "Voir les événements",
+        "free": "Gratuit",
+        "status": {
+          "pending": "En attente",
+          "paid": "Payé",
+          "comped": "Gratuit",
+          "refunded": "Remboursé",
+          "cancelled": "Annulé"
+        }
+      }
     }
   },
   "orders": {
@@ -271,6 +416,50 @@
         "errorDigest": "Signature d’erreur",
         "tryAgain": "Réessayer",
         "back": "Retour"
+      },
+      "page": {
+        "welcome": "Bon retour",
+        "totalRevenue": "Revenus totaux",
+        "ticketsSold": "Billets vendus",
+        "activeEvents": "Événements actifs",
+        "checkInRate": "Taux d’enregistrement",
+        "revenue": "Revenus",
+        "checkIns": "Enregistrements par jour",
+        "topEvents": "Meilleurs événements",
+        "sold": "vendus",
+        "viewAll": "Tous les événements",
+        "noData": "Aucune donnée sur la période.",
+        "noEvents": "Aucun événement.",
+        "aov": "AOV",
+        "aovSub": "Panier moyen",
+        "arpa": "ARPA",
+        "arpaSub": "Revenu moyen / participant",
+        "netRevenue": "Revenu net",
+        "netRevenueSub": "Brut − remboursements",
+        "refundRate": "Taux de remboursement",
+        "refundRateSub": "Remboursé / payé",
+        "velocity": "Vélocité",
+        "velocitySub": "Billets/jour (7j)",
+        "vsPrior": "vs période préc.",
+        "sellThrough": "Taux de remplissage",
+        "sellThroughSub": "Vendu / capacité par événement",
+        "capacity": "capacité",
+        "abandonedCheckouts": "Paniers abandonnés",
+        "abandonedCheckoutsSub": "Arrivés sur Stripe, non payés",
+        "abandonedRevenue": "Valeur perdue",
+        "abandonedRevenueSub": "Revenus potentiels manqués",
+        "salesByChannel": "Ventes par canal",
+        "online": "En ligne",
+        "onlineSub": "Achat direct via Stripe",
+        "door": "Sur place",
+        "doorSub": "Vendus au guichet",
+        "comped": "Invitations",
+        "compedSub": "Invités / attribués — sans revenu",
+        "tickets": "billets",
+        "channelMix": "Payants vs gratuits",
+        "channelMixSub": "Répartition des entrées",
+        "paid": "Payants",
+        "free": "Gratuits"
       }
     },
     "events": {
@@ -288,7 +477,158 @@
       "editPageTitle": "Modifier l’événement",
       "mediaPageTitle": "Médias",
       "addMedia": "Ajouter un média",
-      "mediaDescription": "Ajoutez des photos, vidéos et liens après l’événement."
+      "mediaDescription": "Ajoutez des photos, vidéos et liens après l’événement.",
+      "new": {
+        "pageTitle": "Créer un événement",
+        "eventType": "Type d’événement",
+        "conference": "Conférence",
+        "masterclass": "Masterclass",
+        "title": "Titre",
+        "description": "Description",
+        "trilingual": "(trilingue)",
+        "english": "English",
+        "deutsch": "Deutsch",
+        "francais": "Français",
+        "venueName": "Nom du lieu",
+        "city": "Ville",
+        "venueAddress": "Adresse",
+        "startDate": "Début (date & heure)",
+        "endDate": "Fin (date & heure)",
+        "capacity": "Capacité",
+        "maxPerOrder": "Max. billets par commande",
+        "creating": "Création…",
+        "createEvent": "Créer l’événement"
+      },
+      "detail": {
+        "publish": "Publier",
+        "unpublish": "Dépublier",
+        "duplicate": "Dupliquer",
+        "duplicateTitle": "Dupliquer cet événement en tant que nouveau brouillon (dates +1 an)",
+        "edit": "Modifier",
+        "published": "Publié",
+        "draft": "Brouillon",
+        "ticketsSold": "Billets vendus",
+        "salesByTier": "Ventes par catégorie",
+        "salesByTierEmpty": "Aucun billet payé pour l'instant — la ventilation apparaîtra ici dès le début des ventes.",
+        "tierName": "Catégorie",
+        "tierTickets": "Billets",
+        "tierRevenue": "Revenus",
+        "ofCapacity": "sur {n} de capacité",
+        "revenue": "Revenus",
+        "checkedIn": "Enregistrés",
+        "startsIn": "Commence dans",
+        "ended": "Terminé",
+        "today": "Aujourd’hui",
+        "dayAgo": "jour écoulé",
+        "daysAgo": "jours écoulés",
+        "day": "jour",
+        "days": "jours",
+        "dateTime": "Date et heure",
+        "venue": "Lieu",
+        "venueNotSet": "Non défini",
+        "capacity": "Capacité",
+        "attendees": "participants",
+        "maxPerOrder": "Max. {n} billets par commande",
+        "salesTarget": "Objectif de vente",
+        "tickets": "billets",
+        "paymentMethods": "Moyens de paiement",
+        "description": "Description",
+        "noDescription": "Aucune description pour le moment.",
+        "setup": "Configuration",
+        "marketing": "Marketing",
+        "operations": "Opérations",
+        "postEvent": "Après l’événement",
+        "ticketTiers": "Catégories de billets",
+        "ticketTiersDesc": "Créer et gérer la tarification",
+        "couponCodes": "Codes promo",
+        "couponCodesDesc": "Créer des codes de réduction pour cet événement",
+        "scheduleSpeakers": "Programme & intervenants",
+        "scheduleSpeakersDesc": "Gérer l’agenda et les intervenants",
+        "ticketPreview": "Aperçu du billet",
+        "ticketPreviewDesc": "Prévisualiser le design du billet PDF",
+        "emailSequences": "Séquences e-mail",
+        "emailSequencesDesc": "Campagnes automatisées d’après-événement",
+        "invitations": "Invitations",
+        "invitationsDesc": "Envoyer des invitations formelles avec billets offerts",
+        "bulkInvitations": "Invitations en masse",
+        "bulkInvitationsDesc": "Importer un CSV d’invités",
+        "checklist": "Checklist",
+        "checklistOverdueSuffix": "en retard",
+        "runSheet": "Plan de déroulement",
+        "runSheetDesc": "Plan minute par minute du jour J",
+        "sponsors": "Sponsors",
+        "sponsorsDesc": "Gérer les accords de parrainage et partenaires",
+        "budgetExpenses": "Budget & dépenses",
+        "budgetExpensesDesc": "Suivre les coûts et calculer la marge",
+        "liveDashboard": "Tableau de bord live",
+        "liveDashboardDesc": "Enregistrements et ventes en temps réel pendant l’événement",
+        "attendeesHub": "Participants",
+        "attendeesHubDesc": "Consulter les inscriptions et le statut d’entrée",
+        "media": "Médias",
+        "mediaDesc": "Téléverser photos et vidéos après l’événement",
+        "posterDoor": "Affiche billetterie sur place",
+        "posterDoorDesc": "Affiche QR imprimable pour l’entrée",
+        "dangerZone": "Zone à risque",
+        "dangerDesc": "La suppression d’un événement est irréversible et retire tous les billets, commandes et données associés."
+      },
+      "coupons": {
+        "title": "Codes promo",
+        "addCoupon": "Ajouter un code"
+      },
+      "live": {
+        "title": "Événement en direct"
+      },
+      "runsheet": {
+        "title": "Feuille de route",
+        "description": "Plan minute par minute. Glissez pour réordonner, cliquez pour éditer.",
+        "addTitle": "Ajouter un élément",
+        "noItems": "Aucun élément. Ajoutez-en un ci-dessous ou chargez depuis le modèle.",
+        "populate": "Charger depuis le modèle",
+        "downloadPdf": "Télécharger le PDF"
+      },
+      "schedule": {
+        "title": "Programme & intervenants",
+        "addItem": "Ajouter un élément"
+      },
+      "tiers": {
+        "title": "Catégories de billets",
+        "addTier": "Ajouter une catégorie"
+      },
+      "invitations": {
+        "title": "Invitations",
+        "description": "Billets offerts — les invités reçoivent un PDF personnalisé et sont étiquetés invited_guests dans Contacts.",
+        "bulkImport": "Import CSV →",
+        "filterNote": "Filtrer les rapports par",
+        "newInvitation": "Nouvelle invitation",
+        "invited": "Invités",
+        "empty": "Aucune invitation pour cet événement.",
+        "ticketFallback": "Billet",
+        "attended": "Présent",
+        "sent": "Envoyé",
+        "emailPending": "E-mail en attente"
+      },
+      "budget": {
+        "title": "Budget & Dépenses",
+        "desc": "Suivre les coûts et paiements fournisseurs.",
+        "totalExpenses": "Dépenses totales",
+        "lineItems": "Éléments",
+        "revenue": "Revenus",
+        "netProfit": "Bénéfice net",
+        "byCategory": "Dépenses par catégorie",
+        "total": "Total",
+        "client": {
+          "description": "Description",
+          "category": "Catégorie",
+          "amount": "Montant (€)",
+          "vendor": "Fournisseur",
+          "vendorContact": "Contact",
+          "paidAt": "Payé le",
+          "add": "Ajouter",
+          "adding": "Ajout...",
+          "delete": "Supprimer",
+          "noExpenses": "Aucune dépense enregistrée."
+        }
+      }
     },
     "sendTicket": {
       "title": "Send Tickets",
@@ -312,14 +652,54 @@
       "attendeeName": "Attendee name",
       "attendeeEmail": "Attendee email (optional)",
       "markPaid": "Mark as paid (cash)",
-      "created": "Ticket created and ready for entry"
+      "created": "Ticket created and ready for entry",
+      "page": {
+        "door": "Vente sur place",
+        "advance": "Prévente",
+        "emptyDoor": "Aucun événement à venir dans les 30 prochains jours.",
+        "emptyAdvance": "Aucun événement à venir."
+      }
     },
     "staff": {
       "title": "Staff Management",
       "invite": "Invite staff",
       "assignEvents": "Assign events",
       "role": "Role",
-      "noStaff": "No staff members yet."
+      "noStaff": "No staff members yet.",
+      "list": {
+        "title": "Gestion du personnel"
+      },
+      "client": {
+        "invite": "Inviter un membre",
+        "inviteEmail": "Adresse e-mail",
+        "inviteName": "Nom d’affichage (optionnel)",
+        "inviteRole": "Rôle",
+        "sendInvite": "Envoyer l’invitation",
+        "sending": "Envoi…",
+        "inviteSuccess": "Invitation envoyée. La personne recevra un e-mail personnalisé avec un lien de connexion.",
+        "cancel": "Annuler",
+        "email": "E-mail",
+        "role": "Rôle",
+        "events": "Événements attribués",
+        "actions": "Actions",
+        "assignEvents": "Attribuer des événements",
+        "remove": "Retirer",
+        "resendInvite": "Renvoyer l’invitation",
+        "revoke": "Révoquer",
+        "revokeConfirm": "Révoquer cette invitation en attente ? Le compte utilisateur sera supprimé.",
+        "removeConfirm": "Retirer cette personne de l’équipe ? Son rôle repassera à « acheteur » et elle sera désassignée de tous les événements.",
+        "noStaff": "Aucun membre pour le moment.",
+        "noEvents": "Aucun événement à attribuer.",
+        "member": "membre",
+        "members": "membres",
+        "teamMember": "Membre",
+        "manager": "Manager",
+        "admin": "Admin",
+        "super_admin": "Super admin"
+      },
+      "detail": {
+        "teamProfile": "Profil public →"
+      }
     },
     "refund": {
       "title": "Issue Refund",
@@ -456,7 +836,44 @@
       "acquisition": "Acquis via",
       "created": "Créée",
       "exportCsv": "Exporter CSV",
-      "noOrders": "Aucune commande ne correspond aux filtres."
+      "noOrders": "Aucune commande ne correspond aux filtres.",
+      "client": {
+        "event": "Événement",
+        "status": "Statut",
+        "customer": "Client",
+        "total": "Total",
+        "date": "Date",
+        "actions": "Actions",
+        "refund": "Rembourser",
+        "refunding": "Remboursement…",
+        "refundConfirm": "Rembourser cette commande ? Le stock de billets est rétabli et un remboursement Stripe est déclenché.",
+        "all": "Tous les événements",
+        "allStatus": "Tous les statuts",
+        "pending": "En attente",
+        "paid": "Payé",
+        "comped": "Gratuit",
+        "refunded": "Remboursé",
+        "cancelled": "Annulé",
+        "purchased": "Acheté",
+        "invited": "Invité",
+        "assigned": "Attribué",
+        "door_sale": "Sur place",
+        "noOrders": "Aucune commande.",
+        "csvOrderId": "ID commande",
+        "csvEvent": "Événement",
+        "csvRecipient": "Destinataire",
+        "csvEmail": "E-mail",
+        "csvStatus": "Statut",
+        "csvAcquisition": "Acquisition",
+        "csvPayment": "Paiement",
+        "csvTotal": "Total (€)",
+        "csvStripe": "Stripe PI",
+        "csvCreated": "Créée le",
+        "csvEmailSent": "E-mail envoyé le"
+      },
+      "detail": {
+        "order": "Commande"
+      }
     },
     "contacts": {
       "title": "Contacts",
@@ -514,7 +931,38 @@
       "sectionProfessional": "Professionnel",
       "sectionAddress": "Adresse",
       "sectionInvolvement": "Participation à un événement",
-      "sectionInternal": "Interne"
+      "sectionInternal": "Interne",
+      "list": {
+        "tabs": {
+          "contacts": "Contacts",
+          "attendees": "Participants"
+        }
+      },
+      "attendeesTab": {
+        "search": "Rechercher par nom, e-mail ou ID du billet",
+        "all": "Tous",
+        "checkedIn": "Enregistrés",
+        "notCheckedIn": "Non enregistrés",
+        "export": "Exporter CSV",
+        "name": "Nom",
+        "event": "Événement",
+        "tier": "Tarif",
+        "status": "Statut",
+        "purchased": "Acheté",
+        "invited": "Invité",
+        "assigned": "Attribué",
+        "doorSale": "Sur place",
+        "notScanned": "Non scanné",
+        "noResults": "Aucun participant trouvé.",
+        "allEvents": "Tous les événements"
+      },
+      "detail": {
+        "invited": "Invité",
+        "door": "Entrée",
+        "buyer": "Acheteur",
+        "subscriber": "Abonné",
+        "messageHistory": "Historique des messages"
+      }
     },
     "back": {
       "dashboard": "Tableau de bord",
@@ -534,17 +982,510 @@
     },
     "scan": {
       "pageTitle": "Scanner les billets",
-      "notAssignedMessage": "Vous n’êtes affecté à aucun événement."
+      "notAssignedMessage": "Vous n’êtes affecté à aucun événement.",
+      "client": {
+        "selectEvent": "Sélectionner l’événement",
+        "startScan": "Commencer le scan",
+        "checkedIn": "Enregistré !",
+        "alreadyScanned": "Déjà enregistré",
+        "invalid": "Billet invalide",
+        "wrongEvent": "Mauvais événement",
+        "at": "à",
+        "by": "par",
+        "manual": "Saisie manuelle",
+        "enterToken": "Entrer le code du billet",
+        "submit": "Enregistrer",
+        "progress": "enregistrés",
+        "startingCamera": "Démarrage de la caméra...",
+        "nextTicket": "Billet suivant",
+        "tapOrEnter": "Appuyer pour continuer ou Entrée"
+      },
+      "find": {
+        "heading": "Impossible de scanner ? Rechercher par nom",
+        "placeholder": "Tapez un nom, un e-mail ou un prénom…",
+        "searching": "Recherche…",
+        "invited": "Invité",
+        "door": "Entrée",
+        "paid": "Payé",
+        "checkedInTag": "✓ Enregistré",
+        "checkIn": "Enregistrer",
+        "resendPdf": "Renvoyer le PDF",
+        "checkedInToast": "Enregistré : {name}",
+        "resendToast": "Billet envoyé à {email}.",
+        "searchFailed": "Échec de la recherche. Réessayez.",
+        "actionFailed": "Action échouée. Réessayez."
+      }
     },
     "account": {
       "pageTitle": "Mon compte",
       "description": "Votre profil personnel, vos préférences et votre sécurité. Les paramètres à l’échelle de la société se trouvent dans Informations société."
     },
     "reports": {
-      "pageTitle": "Rapports"
+      "pageTitle": "Rapports",
+      "tabs": {
+        "finance": "Finance",
+        "marketing": "Marketing",
+        "operations": "Opérations",
+        "visitors": "Visiteurs",
+        "hr": "RH",
+        "it": "IT",
+        "general": "Général"
+      },
+      "eventPdfPanel": {
+        "title": "Rapport PDF de l’événement",
+        "desc": "Événement sélectionné :",
+        "descTail": "Cochez uniquement les sections nécessaires — le rapport contiendra celles-ci.",
+        "kpis": "KPI synthèse",
+        "kpisHint": "Billets vendus, revenus, taux d’enregistrement, mix canal",
+        "tiers": "Revenus par catégorie",
+        "tiersHint": "Prix, vendus, capacité, revenus par catégorie",
+        "demographics": "Démographie",
+        "demographicsHint": "Répartition par pays, genre, profession, source",
+        "attendees": "Liste des participants",
+        "attendeesHint": "Nom complet + e-mail + catégorie + pays + enregistrement",
+        "download": "Télécharger le PDF",
+        "selectAtLeast": "Sélectionnez au moins une section"
+      },
+      "financeTab": {
+        "title": "Finance & Comptabilité",
+        "filters": "Filtres",
+        "from": "Du",
+        "to": "Au",
+        "channel": "Canal",
+        "allChannels": "Tous les canaux",
+        "online": "En ligne",
+        "door": "Sur place",
+        "comped": "Invitations",
+        "event": "Événement",
+        "allEvents": "Tous les événements",
+        "clear": "Réinitialiser",
+        "channelSummary": "Ventes par canal",
+        "onlineSub": "Achat direct via Stripe",
+        "doorSub": "Vendus au guichet",
+        "compedSub": "Invités / attribués — sans revenu",
+        "channelMix": "Payants vs gratuits",
+        "channelMixSub": "Répartition des entrées",
+        "paid": "Payants",
+        "free": "Gratuits",
+        "gross": "Brut",
+        "net": "Net",
+        "refunds": "Remboursements",
+        "orders": "Commandes",
+        "tickets": "Billets",
+        "paymentMethods": "Répartition par moyen de paiement",
+        "method": "Méthode",
+        "noMethodRows": "Aucune commande sur la période.",
+        "total": "Total",
+        "perEvent": "Par événement",
+        "noEvents": "Aucun événement sur la période.",
+        "starts": "Début",
+        "deferredRevenue": "Revenus différés",
+        "deferredRevenueSub": "Billets payés pour événements à venir",
+        "stripeFee": "Frais Stripe (estim.)",
+        "stripeFeeSub": "1,5 % du brut en ligne + €0,25/trx — réconciliez avec Stripe",
+        "vatNote": "TVA : pour un événement physique en Allemagne, le lieu de prestation est le lieu de l’événement, donc TVA DE 19 % quel que soit le pays de l’acheteur. À calculer à partir du brut.",
+        "exports": "Exports",
+        "exportOrders": "CSV Commandes",
+        "exportOrdersSub": "Une ligne par commande — DATEV / Xero / Lexware",
+        "exportSummary": "CSV Synthèse",
+        "exportSummarySub": "Pivot par date / canal / méthode — déclarations TVA",
+        "exportRefunds": "CSV Remboursements",
+        "exportRefundsSub": "Une ligne par commande remboursée",
+        "semicolon": "Délimiteur point-virgule (Excel-DE)",
+        "downloading": "Téléchargement…"
+      }
     },
     "auditLog": {
-      "userColumn": "Utilisateur"
+      "userColumn": "Utilisateur",
+      "page": {
+        "title": "Journal d’audit"
+      },
+      "client": {
+        "filters": "Filtres",
+        "action": "Action",
+        "entity": "Entité",
+        "user": "E-mail utilisateur",
+        "userDisplay": "Utilisateur",
+        "userPlaceholder": "Rechercher par e-mail",
+        "from": "Du",
+        "to": "Au",
+        "apply": "Appliquer",
+        "clear": "Réinitialiser les filtres",
+        "allActions": "Toutes les actions",
+        "allEntities": "Toutes les entités",
+        "timestamp": "Horodatage",
+        "entityId": "ID entité",
+        "ip": "IP",
+        "details": "Détails",
+        "view": "Voir",
+        "hide": "Masquer",
+        "noRows": "Aucune entrée ne correspond aux filtres.",
+        "showing": "Affichage",
+        "to_word": "à",
+        "of": "sur",
+        "prev": "Précédent",
+        "next": "Suivant",
+        "page": "Page"
+      }
+    },
+    "ads": {
+      "page": {
+        "title": "Annonces tableau de bord",
+        "description": "Bannière rotative en haut du tableau de bord admin. Seuls les super admins peuvent modifier."
+      },
+      "client": {
+        "preview": "Aperçu en direct",
+        "previewHint": "Ce que verront les équipes sur le tableau de bord. Seules les annonces actives et en cours s’affichent ici.",
+        "newAd": "Nouvelle annonce",
+        "editAd": "Modifier l’annonce",
+        "allAds": "Toutes les annonces",
+        "noAds": "Aucune annonce. Créez la première ci-dessous.",
+        "createFirst": "Créer la première annonce",
+        "titleRequired": "Titre (EN)",
+        "titleDe": "Titre (DE)",
+        "titleFr": "Titre (FR)",
+        "subtitleEn": "Sous-titre (EN)",
+        "subtitleDe": "Sous-titre (DE)",
+        "subtitleFr": "Sous-titre (FR)",
+        "ctaEn": "Libellé CTA (EN)",
+        "ctaDe": "Libellé CTA (DE)",
+        "ctaFr": "Libellé CTA (FR)",
+        "ctaUrl": "URL CTA (cible du bouton)",
+        "imageUrl": "URL de l’image — fond de l’annonce",
+        "imageHint": "Collez une URL complète (https://…). Format bannière / paysage recommandé (~1600 × 400 px).",
+        "accent": "Couleur d’accent (hex optionnel, ex. #b81838)",
+        "sortOrder": "Ordre (le plus bas en premier)",
+        "startsAt": "Début (optionnel)",
+        "endsAt": "Fin (optionnelle)",
+        "active": "Actif",
+        "save": "Enregistrer",
+        "saving": "Enregistrement…",
+        "create": "Créer l’annonce",
+        "creating": "Création…",
+        "cancel": "Annuler",
+        "edit": "Modifier",
+        "activate": "Activer",
+        "deactivate": "Désactiver",
+        "delete": "Supprimer",
+        "deleteConfirm": "Supprimer définitivement cette annonce ?",
+        "saved": "Enregistré.",
+        "created": "Annonce créée.",
+        "deleted": "Annonce supprimée."
+      }
+    },
+    "applications": {
+      "list": {
+        "title": "Candidatures",
+        "description": "Candidatures incubation et emploi.",
+        "emptyIncubation": "Aucune candidature incubation pour le moment.",
+        "emptyJobs": "Aucune candidature d’emploi pour le moment.",
+        "csvId": "ID",
+        "csvReceived": "Reçue",
+        "csvFounder": "Fondateur",
+        "csvEmail": "E-mail",
+        "csvPhone": "Téléphone",
+        "csvCountry": "Pays",
+        "csvLocale": "Langue",
+        "csvCompany": "Société",
+        "csvWebsite": "Site web",
+        "csvStage": "Phase",
+        "csvFunding": "Financement recherché (EUR)",
+        "csvStatus": "Statut",
+        "csvNotes": "Notes",
+        "csvPitch": "Pitch",
+        "founder": "Fondateur",
+        "company": "Société",
+        "stage": "Phase",
+        "pitch": "Pitch",
+        "received": "Reçue",
+        "status": "Statut",
+        "applicant": "Candidat(e)",
+        "job": "Poste",
+        "coverLetter": "Lettre de motivation",
+        "unknownPosition": "Poste inconnu"
+      },
+      "detail": {
+        "incubationFrom": "Candidature incubation de",
+        "unknownPosition": "Poste inconnu",
+        "applicationFor": "Candidature pour",
+        "pitch": "Pitch",
+        "coverLetter": "Lettre de motivation",
+        "companyDetails": "Détails de l’entreprise",
+        "contact": "Contact",
+        "review": "Évaluation",
+        "status": "Statut",
+        "notes": "Notes du réviseur",
+        "save": "Enregistrer",
+        "saving": "Enregistrement...",
+        "stage": "Étape",
+        "website": "Site web",
+        "country": "Pays",
+        "funding": "Financement recherché",
+        "email": "E-mail",
+        "phone": "Téléphone",
+        "linkedin": "LinkedIn",
+        "portfolio": "Portfolio",
+        "received": "Reçu",
+        "updated": "Dernière mise à jour",
+        "reviewer": "Évalué par",
+        "jobTitle": "Poste"
+      }
+    },
+    "companyInfo": {
+      "page": {
+        "title": "Informations société",
+        "description": "La source unique de vérité pour tout ce qui est visible publiquement — pied de page, Impressum, pages confidentialité/CGU, SEO, liens sociaux et ressources de marque.",
+        "empty": "Aucune ligne company_info. La table company_info n’a pas de ligne avec id = 1. Exécutez la migration Supabase initiale puis actualisez.",
+        "legalReadiness": "Conformité juridique",
+        "allGood": "Tous les champs requis pour Impressum, Politique de confidentialité et CGU sont remplis.",
+        "missingHint": "Les champs suivants manquent encore. Complétez-les avant de publier les pages juridiques :"
+      },
+      "form": {
+        "tabs": {
+          "legal": "Mentions légales · Impressum",
+          "parent": "Société mère",
+          "france": "Entité France",
+          "contact": "Contact",
+          "privacy": "Protection des données",
+          "brand": "Ressources de marque",
+          "social": "Liens sociaux",
+          "seo": "SEO par défaut",
+          "banking": "Coordonnées bancaires",
+          "about": "Page À propos"
+        },
+        "shared": {
+          "orPasteUrl": "Ou coller une URL CDN",
+          "urlHint": "Le téléverseur écrit l’URL ici automatiquement. Cliquez sur Enregistrer pour valider une URL collée.",
+          "saved": "Enregistré.",
+          "assetUploaded": "Ressource téléversée.",
+          "saving": "Enregistrement…",
+          "save": "Enregistrer"
+        }
+      },
+      "about": {
+        "tabs": {
+          "en": "English",
+          "de": "Deutsch",
+          "fr": "Français"
+        },
+        "heading": "Sections de la page À propos",
+        "help": "Tout ce qui suit apparaît sur /about. Laisser une section vide = masquée. Remplir EN d'abord — DE et FR retombent sur EN quand c'est vide.",
+        "saving": "Enregistrement…",
+        "save": "Enregistrer les sections",
+        "saved": "Sections À propos enregistrées.",
+        "mission": "Mission",
+        "missionTitleField": "Titre",
+        "missionBodyField": "Texte",
+        "story": "Histoire",
+        "storyTitleField": "Titre",
+        "storyBodyField": "Texte",
+        "values": "Valeurs",
+        "valuesTitleField": "Titre de section (optionnel)",
+        "addValue": "Ajouter une valeur",
+        "valueTitle": "Titre",
+        "valueDesc": "Description",
+        "metrics": "Bande de chiffres",
+        "addMetric": "Ajouter une métrique",
+        "metricValue": "Valeur (p. ex. 900)",
+        "metricLabel": "Libellé (p. ex. places · une journée)",
+        "press": "Presse / logos partenaires",
+        "pressTitleField": "Titre de section (optionnel)",
+        "addPress": "Ajouter un logo",
+        "pressName": "Nom",
+        "pressLogoUrl": "URL du logo",
+        "pressHref": "URL du lien (optionnel)",
+        "finalCta": "Bandeau CTA final",
+        "finalCtaTitleField": "Titre",
+        "finalCtaSubtitleField": "Sous-titre (optionnel)",
+        "finalCtaPrimaryField": "Libellé du bouton",
+        "finalCtaHrefField": "URL du bouton",
+        "remove": "Retirer"
+      }
+    },
+    "newsletters": {
+      "list": {
+        "title": "Newsletters",
+        "description": "Envois aux contacts confirmés non désabonnés. Chaque e-mail inclut un lien de désabonnement en un clic.",
+        "newNewsletter": "+ Nouvelle newsletter",
+        "subject": "Objet",
+        "status": "Statut",
+        "locale": "Langue",
+        "recipients": "Destinataires",
+        "sentUpdated": "Envoyé / mis à jour",
+        "empty": "Aucune newsletter pour le moment. Créez la première.",
+        "untitled": "(sans titre)"
+      },
+      "detail": {
+        "untitled": "(sans titre)",
+        "statusLabel": "Statut",
+        "analytics": "Analytique d’envoi",
+        "delivered": "Délivrés",
+        "opened": "Ouverts",
+        "clicked": "Cliqués",
+        "bouncedFailed": "Rejetés / Échoués",
+        "unsubscribe": "désabonnement depuis l’envoi",
+        "unsubscribes": "désabonnements depuis l’envoi"
+      },
+      "new": {
+        "title": "Nouvelle newsletter",
+        "description": "Enregistrez en brouillon, prévisualisez le nombre de destinataires, puis envoyez."
+      },
+      "composer": {
+        "saved": "Enregistré.",
+        "saveFirst": "Enregistrez d’abord le brouillon, puis saisissez un e-mail de test.",
+        "saveFirstPlain": "Enregistrez d’abord le brouillon.",
+        "testSent": "Test envoyé à {email}",
+        "confirmSend": "Envoyer à {n} destinataire{s} ? Cette action est irréversible.",
+        "sentReport": "Envoyés : {s}, échoués : {f}.",
+        "subject": "Objet",
+        "preheader": "Pré-en-tête (texte d’aperçu)",
+        "fromName": "Nom d’expéditeur",
+        "fromEmail": "E-mail d’expéditeur",
+        "replyTo": "Répondre à",
+        "localeLabel": "Langue",
+        "bodyLabel": "Contenu (texte brut ; lignes vides séparent les paragraphes)",
+        "saveDraft": "Enregistrer le brouillon",
+        "targeting": "Ciblage",
+        "targetingHint": "Inclure — au moins une étiquette doit correspondre. Exclure — ignorer si une correspond. Aucune inclusion = tous les consentants marketing.",
+        "include": "Inclure",
+        "exclude": "Exclure",
+        "previewCount": "Prévisualiser le nombre de destinataires",
+        "willReceive1": "contact recevra cette newsletter.",
+        "willReceiveMany": "contacts recevront cette newsletter.",
+        "sendTest": "Envoi test",
+        "sendTestBtn": "Envoyer un test",
+        "testPh": "vous@exemple.com",
+        "sendBroadcast": "Envoyer en masse",
+        "sendBroadcastHint": "Action unidirectionnelle. Enregistre d’abord le brouillon puis diffuse à la liste résolue.",
+        "sendNow": "Envoyer maintenant",
+        "cancel": "Annuler",
+        "domainUnverifiedTitle": "Domaine d’expéditeur non vérifié",
+        "domainUnverifiedBody": "Resend n’a pas encore vérifié dbc-germany.com — l’envoi en masse est bloqué. Ajoutez les 3 enregistrements DNS listés dans cred/dns-email-setup.md chez Strato et attendez 5 à 30 min. Les envois test vers le titulaire du compte Resend fonctionnent toujours (depuis onboarding@resend.dev)."
+      }
+    },
+    "notifications": {
+      "list": {
+        "title": "Notifications",
+        "markAll": "Tout marquer comme lu",
+        "empty": "Aucune notification.",
+        "unread": "non lues"
+      }
+    },
+    "team": {
+      "list": {
+        "title": "Profils de l’équipe",
+        "description": "Contenu de la page équipe publique. Glissez-déposez pour réordonner ; l’ordre ici est celui de dbc-germany.com/team. Définissez la visibilité par personne : « public » apparaît sur la page équipe publique, « interne » est visible uniquement dans l’admin, « masqué » archive l’entrée.",
+        "newMember": "Nouveau membre",
+        "empty": "Aucun membre pour le moment."
+      },
+      "detail": {
+        "linked": "Lié à un compte équipe",
+        "notLinked": "Aucun compte équipe lié",
+        "viewStaff": "Voir le profil équipe →",
+        "delete": "Supprimer",
+        "visibility": {
+          "public": "Public",
+          "internal": "Interne",
+          "hidden": "Masqué"
+        }
+      },
+      "new": {
+        "title": "Nouveau membre"
+      }
+    },
+    "news": {
+      "list": {
+        "title": "Actualités",
+        "newPost": "Nouveau billet",
+        "empty": "Aucun billet pour le moment. Créez le premier.",
+        "published": "Publié",
+        "draft": "Brouillon",
+        "edit": "Modifier",
+        "publish": "Publier",
+        "unpublish": "Dépublier"
+      },
+      "new": {
+        "title": "Nouveau billet",
+        "titleEn": "Titre (EN)",
+        "titleDe": "Titre (DE)",
+        "titleFr": "Titre (FR)",
+        "excerptEn": "Extrait (EN)",
+        "excerptDe": "Extrait (DE)",
+        "excerptFr": "Extrait (FR)",
+        "bodyEn": "Contenu (EN)",
+        "bodyDe": "Contenu (DE)",
+        "bodyFr": "Contenu (FR)",
+        "author": "Auteur (optionnel)",
+        "saving": "Enregistrement…",
+        "saveDraft": "Enregistrer le brouillon"
+      }
+    },
+    "funnels": {
+      "list": {
+        "title": "Funnels",
+        "newFunnel": "Nouveau funnel",
+        "empty": "Aucun funnel pour le moment. Créez le premier.",
+        "published": "Publié",
+        "draft": "Brouillon",
+        "archived": "Archivé",
+        "views7d": "Vues 7j",
+        "clicks7d": "Clics 7j",
+        "ctr7d": "CTR 7j",
+        "ctaType": {
+          "external_link": "Lien externe",
+          "incubation_wizard": "Wizard",
+          "contact_form": "Formulaire de contact"
+        }
+      },
+      "new": {
+        "title": "Nouveau funnel"
+      }
+    },
+    "jobOffers": {
+      "list": {
+        "title": "Offres d’emploi",
+        "newJob": "Nouvelle offre",
+        "create": "Créer une offre",
+        "empty": "Aucune offre pour le moment.",
+        "colTitle": "Titre",
+        "location": "Lieu",
+        "type": "Type",
+        "status": "Statut",
+        "actions": "Actions",
+        "published": "Publié",
+        "draft": "Brouillon",
+        "edit": "Modifier",
+        "publish": "Publier",
+        "unpublish": "Dépublier",
+        "types": {
+          "full_time": "Temps plein",
+          "part_time": "Temps partiel",
+          "freelance": "Freelance",
+          "internship": "Stage"
+        }
+      },
+      "new": {
+        "title": "Nouvelle offre",
+        "titleEn": "Titre (EN)",
+        "titleDe": "Titre (DE)",
+        "titleFr": "Titre (FR)",
+        "descEn": "Description (EN)",
+        "descDe": "Description (DE)",
+        "descFr": "Description (FR)",
+        "reqEn": "Exigences (EN)",
+        "reqDe": "Exigences (DE)",
+        "reqFr": "Exigences (FR)",
+        "location": "Lieu",
+        "employmentType": "Type de contrat",
+        "selectType": "Sélectionner un type",
+        "fullTime": "Temps plein",
+        "partTime": "Temps partiel",
+        "freelance": "Freelance",
+        "internship": "Stage",
+        "department": "Département",
+        "saving": "Enregistrement…",
+        "saveDraft": "Enregistrer le brouillon"
+      }
     }
   },
   "gdpr": {
@@ -753,7 +1694,17 @@
       "conviction": "Les idées les plus puissantes méritent des structures solides pour se transformer en entreprises durables.",
       "convictionAttribution": "Dr. Jean-Clément Diambilay, Fondateur",
       "ctaFounder": "Rencontrer le fondateur",
-      "ctaCareers": "Rejoindre l'équipe"
+      "ctaCareers": "Rejoindre l'équipe",
+      "teamPreview": {
+        "eyebrow": "Rencontre l'équipe",
+        "title": "Les opérateurs·trices derrière chaque ligne.",
+        "viewAll": "Voir toute l'équipe →"
+      },
+      "storyTeaser": {
+        "eyebrow": "Notre histoire",
+        "body": "Derrière chaque visage ci-dessus, il y a l'histoire d'entreprise qui les a amenés ici — la mission, les années entre Lubumbashi, Düsseldorf et Paris, et les opérateurs·trices qui y ont cru avant tout le monde.",
+        "cta": "Découvrir comment DBC Germany est né"
+      }
     },
     "contact": {
       "eyebrow": "Contact",
@@ -899,6 +1850,111 @@
       "news": "Le journal DBC Germany couvre la communauté business aux racines africaines en Europe — récits de fondateurs, notes politiques, actualités du capital et longs formats sur les entreprises qui façonnent l'économie diaspora. Des notes depuis Düsseldorf, Berlin, Paris et Lubumbashi, et la couverture de Richesses d'Afrique Germany 2026 et de nos programmes. Nous publions en trois langues ; les versions allemande et française suivent l'anglaise sous quelques jours, sauf mention contraire. Abonnez-vous à la newsletter sur /newsletter pour un brief curé par semaine — les archives vivent ci-dessous.",
       "team": "Voici les opérateurs derrière DBC Germany. Le bureau de Düsseldorf pilote l'incubation, la préparation à l'investissement, les cours, le mentorat et la conférence annuelle Richesses d'Afrique. Les personnes ci-dessous sont celles avec qui vous travaillerez réellement si vous candidatez à un programme, proposez un partenariat ou venez à un événement. Chaque profil mène au parcours et aux programmes qu'elles pilotent. Si vous ne voyez pas le rôle qu'il vous faut, écrivez-nous — nous recrutons plus souvent des opérateurs généralistes solides que ne le laissent entendre les intitulés.",
       "contact": "Contactez DBC Germany via le canal adapté à votre demande. La presse passe par la messagerie presse ; nous répondons en 24 h ouvrées. Les candidatures à l'incubation et aux programmes se font sur /services/incubation/apply et arrivent directement dans notre file de revue. Partenariats et sponsoring — y compris les packages Richesses d'Afrique Germany 2026 — via le formulaire ci-dessous ou à jay@dbc-germany.com. Pour le reste (questions générales, suggestions d'intervenants, sollicitations médias non urgentes), le formulaire ci-dessous atteint la bonne personne le jour même."
+    },
+    "notFound": {
+      "eyebrow": "Piste perdue",
+      "title": "Nous ne trouvons pas cette page.",
+      "description": "La page recherchée a peut-être été déplacée, archivée, ou n'a jamais existé. Reprenez ici.",
+      "home": "Accueil",
+      "events": "Événements",
+      "contact": "Nous contacter"
+    },
+    "careers": {
+      "form": {
+        "email": "E-mail",
+        "phone": "Téléphone (optionnel)",
+        "coverLetter": "Lettre de motivation",
+        "resume": "Lien CV (optionnel)",
+        "resumePlaceholder": "Google Drive, Dropbox, etc.",
+        "linkedin": "URL LinkedIn (optionnel)",
+        "portfolio": "URL Portfolio (optionnel)",
+        "submit": "Envoyer la candidature",
+        "sending": "Envoi…",
+        "success": "Merci — votre candidature a été envoyée. Nous reviendrons vers vous rapidement."
+      }
+    },
+    "newsletter": {
+      "form": {
+        "emailLabel": "E-mail",
+        "firstNameLabel": "Prénom (optionnel)",
+        "interestsLabel": "Qu'est-ce qui vous amène ? (optionnel)",
+        "consentLabel": "J'accepte de recevoir la newsletter DBC Germany. Je peux me désabonner à tout moment via le lien présent dans chaque e-mail.",
+        "submit": "S'abonner",
+        "sending": "Envoi…",
+        "success": "Merci ! Nous vous avons envoyé un e-mail de confirmation. Cliquez sur le lien pour finaliser.",
+        "already": "Vous êtes déjà abonné·e — merci !",
+        "interests": {
+          "founders": "Fondateur·ice·s & entrepreneur·e·s",
+          "investors": "Investisseur·euse·s",
+          "press": "Presse & médias",
+          "diaspora": "Communauté de la diaspora"
+        }
+      },
+      "page": {
+        "eyebrow": "Restez informé·e",
+        "title": "Newsletter DBC Germany",
+        "body": "Des mises à jour ciblées sur Richesses d'Afrique Germany, les appels d'incubation et les notes sur l'économie de la diaspora pour les dirigeants en Europe et en Afrique. Au plus un e-mail par semaine, désinscription en un clic."
+      },
+      "confirm": {
+        "successTitle": "Inscription confirmée — bienvenue !",
+        "successBody": "Merci d'avoir confirmé. Vous recevrez les nouveautés de Richesses d'Afrique Germany et de nos programmes.",
+        "errorTitle": "Lien invalide",
+        "errorBody": "Ce lien de confirmation a expiré ou a déjà été utilisé. Vous pouvez en demander un nouveau.",
+        "home": "Retour à l'accueil",
+        "signup": "Aller à l'inscription"
+      },
+      "unsubscribe": {
+        "title": "Désinscription confirmée",
+        "body": "Vous ne recevrez plus nos newsletters. Si c'était une erreur, vous pouvez vous ré-inscrire à tout moment.",
+        "errorTitle": "Lien de désinscription invalide",
+        "errorBody": "Le lien est absent ou incorrect. Si vous continuez à recevoir des e-mails, répondez-nous et nous vous retirerons manuellement.",
+        "home": "Retour à l'accueil",
+        "signup": "Se ré-inscrire"
+      },
+      "footerSignup": {
+        "label": "Newsletter",
+        "hint": "Événements, appels d'incubation, notes sur l'économie de la diaspora. Désinscription en un clic.",
+        "placeholder": "vous@exemple.fr",
+        "consent": "J'accepte de recevoir la newsletter DBC Germany.",
+        "submit": "S'abonner",
+        "sending": "Envoi…",
+        "success": "Presque terminé — confirmez via l'e-mail que nous vous avons envoyé.",
+        "already": "Vous êtes déjà abonné·e."
+      }
+    },
+    "funnel": {
+      "stickyCta": {
+        "scrollToBuy": "Réserver ta place",
+        "daysLeft": "j"
+      },
+      "pricing": {
+        "mostPopular": "Le plus choisi",
+        "onlyLeft": "Plus que {n}",
+        "seats": "places",
+        "buy": "Obtenir ",
+        "freeLabel": "Gratuit",
+        "soldOut": "Épuisé"
+      },
+      "contactForm": {
+        "name": "Nom",
+        "email": "E-mail",
+        "message": "Message (optionnel)",
+        "thanks": "Merci — bien reçu.",
+        "thanksBody": "L'équipe te recontacte sous 2 jours ouvrés."
+      },
+      "bySlug": {
+        "storyLabels": {
+          "problem": "Le problème",
+          "agitation": "Le coût",
+          "solution": "La salle"
+        },
+        "pricingLabels": {
+          "eyebrow": "Choisis ta place",
+          "title": "Trois façons d'être dans la salle."
+        },
+        "countdownEyebrow": "Ouverture dans",
+        "startingPriceLabel": "Dès {price}"
+      }
     }
   },
   "funnelWizard": {
@@ -1156,6 +2212,16 @@
       "ctaHomeHref": "/",
       "ctaFollow": "Suis-nous",
       "ctaFollowHref": "https://www.linkedin.com/company/dbcgermany"
+    }
+  },
+  "ui": {
+    "address": {
+      "line1": "Adresse (ligne 1)",
+      "line2": "Adresse (ligne 2, optionnelle)",
+      "city": "Ville",
+      "state": "Région / département",
+      "postal_code": "Code postal",
+      "country": "Pays"
     }
   }
 }
