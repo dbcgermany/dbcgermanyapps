@@ -103,7 +103,7 @@ export function ComposeDialog({
           {msg && (
             <p
               className={`text-sm ${
-                msg.type === "err" ? "text-red-600" : "text-green-700"
+                msg.type === "err" ? "text-danger" : "text-success"
               }`}
             >
               {msg.text}

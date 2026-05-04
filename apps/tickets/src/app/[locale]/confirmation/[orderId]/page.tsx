@@ -131,8 +131,8 @@ export default async function ConfirmationPage({
         <div
           className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full text-3xl ${
             isPaid
-              ? "bg-green-100 dark:bg-green-900/30"
-              : "bg-yellow-100 dark:bg-yellow-900/30"
+              ? "bg-success-soft"
+              : "bg-warning-soft"
           }`}
         >
           {isPaid ? "\u2713" : "\u23F3"}

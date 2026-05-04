@@ -110,7 +110,7 @@ export function NewsletterFooterSignup({ locale }: { locale: string }) {
       {message && (
         <p
           className={`mt-2 text-xs ${
-            message.type === "err" ? "text-red-600" : "text-green-700"
+            message.type === "err" ? "text-danger" : "text-success"
           }`}
         >
           {message.text}

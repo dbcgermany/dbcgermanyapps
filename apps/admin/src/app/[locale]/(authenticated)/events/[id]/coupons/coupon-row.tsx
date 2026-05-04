@@ -98,7 +98,7 @@ export function CouponRow({
         className="rounded-lg border border-primary/50 bg-muted/30 p-4 space-y-3"
       >
         {state?.error && (
-          <div className="rounded-md bg-red-50 p-2 text-xs text-red-700 dark:bg-red-900/20 dark:text-red-400">
+          <div className="rounded-md bg-danger-soft p-2 text-xs text-danger">
             {state.error}
           </div>
         )}
@@ -249,7 +249,7 @@ export function CouponRow({
           trigger={
             <button
               type="button"
-              className="text-xs text-red-500 hover:text-red-700"
+              className="text-xs text-danger hover:opacity-80"
             >
               {cr.delete}
             </button>

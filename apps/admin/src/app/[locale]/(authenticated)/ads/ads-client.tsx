@@ -307,7 +307,7 @@ export function AdsClient({
                         <button
                           type="button"
                           disabled={isPending}
-                          className="rounded-md px-2 py-1 font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50 dark:hover:bg-red-950/30"
+                          className="rounded-md px-2 py-1 font-semibold text-danger hover:bg-danger-soft disabled:opacity-50"
                         >
                           {t.delete}
                         </button>

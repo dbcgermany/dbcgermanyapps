@@ -267,7 +267,7 @@ export function WizardShell({
         )}
 
         {serverError ? (
-          <div className="mt-6 rounded-lg bg-red-50 p-3 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
+          <div className="mt-6 rounded-lg bg-danger-soft p-3 text-sm text-danger">
             {serverError}
           </div>
         ) : null}

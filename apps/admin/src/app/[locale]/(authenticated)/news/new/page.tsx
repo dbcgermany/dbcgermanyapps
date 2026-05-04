@@ -57,7 +57,7 @@ export default function NewNewsPostPage({
 
       <form action={formAction} className="mt-8 max-w-3xl space-y-6">
         {state?.error && (
-          <div className="rounded-md bg-red-50 p-4 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
+          <div className="rounded-md bg-danger-soft p-4 text-sm text-danger">
             {state.error}
           </div>
         )}

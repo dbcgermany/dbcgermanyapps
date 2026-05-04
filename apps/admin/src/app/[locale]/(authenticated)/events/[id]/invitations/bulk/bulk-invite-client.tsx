@@ -225,11 +225,11 @@ export function BulkInviteClient({
       </div>
 
       {parseErrors.length > 0 && (
-        <div className="rounded-md border border-red-300 bg-red-50 p-4 text-sm dark:bg-red-900/20">
-          <p className="font-medium text-red-700 dark:text-red-300">
+        <div className="rounded-md border border-danger-border bg-danger-soft p-4 text-sm">
+          <p className="font-medium text-danger">
             {t.parseErrors}
           </p>
-          <ul className="mt-2 space-y-1 text-xs text-red-700 dark:text-red-300">
+          <ul className="mt-2 space-y-1 text-xs text-danger">
             {parseErrors.slice(0, 20).map((err, i) => (
               <li key={i}>
                 {t.line} {err.line}: {err.message}
@@ -385,9 +385,9 @@ export function BulkInviteClient({
                     <td className="px-3 py-1.5">{r.email}</td>
                     <td className="px-3 py-1.5">
                       {r.status === "failed" ? (
-                        <span className="text-red-600">failed</span>
+                        <span className="text-danger">failed</span>
                       ) : (
-                        <span className="text-green-700">{r.status}</span>
+                        <span className="text-success">{r.status}</span>
                       )}
                     </td>
                     <td className="px-3 py-1.5">{r.error ?? ""}</td>

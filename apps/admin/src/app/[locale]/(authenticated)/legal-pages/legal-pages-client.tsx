@@ -304,17 +304,17 @@ function LegalEditor({
           <strong>{t.published}:</strong> {fmt(row.published_at)}
         </p>
         {!row.published_body_markdown && (
-          <p className="text-yellow-700 dark:text-yellow-400">
+          <p className="text-warning">
             {t.notPublishedYet}
           </p>
         )}
         {row.published_body_markdown && draftAhead && (
-          <p className="text-yellow-700 dark:text-yellow-400">
+          <p className="text-warning">
             {t.draftAhead}
           </p>
         )}
         {row.published_body_markdown && !draftAhead && (
-          <p className="text-green-700 dark:text-green-400">
+          <p className="text-success">
             {t.publishedShown}
           </p>
         )}
@@ -401,7 +401,7 @@ function LegalEditor({
             <button
               type="button"
               disabled={isRestoring}
-              className="rounded-md border border-input px-4 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-50 dark:hover:bg-red-900/20"
+              className="rounded-md border border-input px-4 py-1.5 text-xs font-medium text-danger hover:bg-danger-soft disabled:opacity-50"
             >
               {t.restore}
             </button>

@@ -380,7 +380,7 @@ function LocaleSectionEditor({
                 onClick={() =>
                   patch({ values: value.values.filter((_, j) => j !== i) })
                 }
-                className="text-xs text-red-500 hover:text-red-700"
+                className="text-xs text-danger hover:opacity-80"
               >
                 {t.remove}
               </button>
@@ -437,7 +437,7 @@ function LocaleSectionEditor({
                 onClick={() =>
                   patch({ metrics: value.metrics.filter((_, j) => j !== i) })
                 }
-                className="text-xs text-red-500 hover:text-red-700"
+                className="text-xs text-danger hover:opacity-80"
               >
                 {t.remove}
               </button>
@@ -513,7 +513,7 @@ function LocaleSectionEditor({
                 onClick={() =>
                   patch({ press: value.press.filter((_, j) => j !== i) })
                 }
-                className="text-xs text-red-500 hover:text-red-700"
+                className="text-xs text-danger hover:opacity-80"
               >
                 {t.remove}
               </button>

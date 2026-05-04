@@ -240,7 +240,7 @@ export function NewsletterComposer({
       {domainUnverified && (
         <div
           role="alert"
-          className="lg:col-span-2 rounded-lg border border-amber-400/50 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-500/40 dark:bg-amber-950/30 dark:text-amber-200"
+          className="lg:col-span-2 rounded-lg border border-warning-border bg-warning-soft p-4 text-sm text-warning"
         >
           <p className="font-semibold">{t.domainUnverifiedTitle}</p>
           <p className="mt-1 leading-relaxed">{t.domainUnverifiedBody}</p>
@@ -444,8 +444,8 @@ export function NewsletterComposer({
         )}
 
         {!readOnly && (
-          <div className="rounded-lg border border-red-300 bg-red-50 p-4 dark:bg-red-900/10">
-            <p className="text-sm font-semibold text-red-700 dark:text-red-400">
+          <div className="rounded-lg border border-danger-border bg-danger-soft p-4">
+            <p className="text-sm font-semibold text-danger">
               {t.sendBroadcast}
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
@@ -456,7 +456,7 @@ export function NewsletterComposer({
                 <button
                   type="button"
                   disabled={isPending || !state.id || domainUnverified}
-                  className="mt-2 w-full rounded-md bg-red-600 px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
+                  className="mt-2 w-full rounded-md bg-danger-strong px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
                 >
                   {t.sendNow}
                 </button>
@@ -475,7 +475,7 @@ export function NewsletterComposer({
         {msg && (
           <p
             className={`text-sm ${
-              msg.type === "err" ? "text-red-600" : "text-green-700"
+              msg.type === "err" ? "text-danger" : "text-success"
             }`}
           >
             {msg.text}
@@ -499,7 +499,7 @@ function Field({
     <label className="block">
       <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
         {label}
-        {required && <span className="ml-0.5 text-red-500">*</span>}
+        {required && <span className="ml-0.5 text-danger">*</span>}
       </span>
       <div className="mt-1">{children}</div>
     </label>

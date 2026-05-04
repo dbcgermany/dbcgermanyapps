@@ -325,7 +325,7 @@ function InvolvementsList({
                 type="button"
                 onClick={() => handleRemove(i.id)}
                 disabled={isPending}
-                className="text-xs text-red-600 hover:text-red-700 disabled:opacity-50"
+                className="text-xs text-danger hover:opacity-80 disabled:opacity-50"
               >
                 {tInv("remove")}
               </button>
@@ -784,7 +784,7 @@ function TicketRowView({ ticket }: { ticket: TicketRow }) {
         </div>
         <div className="text-right">
           {ticket.checked_in_at ? (
-            <p className="text-xs font-medium text-green-600">
+            <p className="text-xs font-medium text-success">
               Checked in {new Date(ticket.checked_in_at).toLocaleString()}
               {ticket.checked_in_by_profile?.display_name
                 ? ` · ${ticket.checked_in_by_profile.display_name}`

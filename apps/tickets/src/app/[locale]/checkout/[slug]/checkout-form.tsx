@@ -265,7 +265,7 @@ export function CheckoutForm({
   return (
     <form action={formAction} className="mt-8 space-y-8">
       {state?.error && (
-        <div className="rounded-md bg-red-50 p-4 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
+        <div className="rounded-md bg-danger-soft p-4 text-sm text-danger">
           {state.error}
         </div>
       )}
@@ -286,7 +286,7 @@ export function CheckoutForm({
                 <button
                   type="button"
                   onClick={() => removeAttendee(index)}
-                  className="text-xs text-red-500 hover:text-red-700"
+                  className="text-xs text-danger hover:text-danger/80"
                 >
                   {locale === "de" ? "Entfernen" : locale === "fr" ? "Supprimer" : "Remove"}
                 </button>

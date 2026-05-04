@@ -166,7 +166,7 @@ export function AssetUpload({
       </div>
 
       {state.kind === "error" && (
-        <p className="text-xs text-red-600" role="alert">
+        <p className="text-xs text-danger" role="alert">
           {state.message}
         </p>
       )}
@@ -176,7 +176,7 @@ export function AssetUpload({
           type="button"
           disabled={disabled}
           onClick={onRemove}
-          className="self-start text-xs font-medium text-red-600 hover:opacity-80 disabled:opacity-50"
+          className="self-start text-xs font-medium text-danger hover:opacity-80 disabled:opacity-50"
         >
           Remove image
         </button>

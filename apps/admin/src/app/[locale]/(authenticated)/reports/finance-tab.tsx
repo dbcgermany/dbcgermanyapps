@@ -477,7 +477,7 @@ export function FinanceTab({ locale, summary, events, filters }: FinanceTabProps
                         ? "—"
                         : fmt(m.grossCents, currency, locale)}
                     </td>
-                    <td className="px-4 py-3 text-right text-red-600">
+                    <td className="px-4 py-3 text-right text-danger">
                       {m.refundCents === 0
                         ? "—"
                         : `-${fmt(m.refundCents, currency, locale)}`}
@@ -498,7 +498,7 @@ export function FinanceTab({ locale, summary, events, filters }: FinanceTabProps
                   <td className="px-4 py-3 text-right">
                     {fmt(methodTotal.grossCents, currency, locale)}
                   </td>
-                  <td className="px-4 py-3 text-right text-red-600">
+                  <td className="px-4 py-3 text-right text-danger">
                     {methodTotal.refundCents === 0
                       ? "—"
                       : `-${fmt(methodTotal.refundCents, currency, locale)}`}
@@ -579,7 +579,7 @@ export function FinanceTab({ locale, summary, events, filters }: FinanceTabProps
                     <td className="px-4 py-3 text-right">
                       {fmt(r.totalGrossCents, currency, locale)}
                     </td>
-                    <td className="px-4 py-3 text-right text-red-600">
+                    <td className="px-4 py-3 text-right text-danger">
                       {r.totalRefundCents === 0
                         ? "—"
                         : `-${fmt(r.totalRefundCents, currency, locale)}`}

@@ -197,7 +197,7 @@ export function OrdersClient({
       </div>
 
       {error && (
-        <div className="mt-4 rounded-md bg-red-50 p-4 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
+        <div className="mt-4 rounded-md bg-danger-soft p-4 text-sm text-danger">
           {error}
         </div>
       )}
@@ -358,7 +358,7 @@ export function OrdersClient({
                               <button
                                 type="button"
                                 disabled={isPending && refundingId === o.id}
-                                className="text-xs text-red-500 hover:text-red-700 disabled:opacity-50"
+                                className="text-xs text-danger hover:opacity-80 disabled:opacity-50"
                               >
                                 {isPending && refundingId === o.id
                                   ? t.refunding

@@ -83,8 +83,8 @@ function LegalReadinessWidget({
     <div
       className={`mt-6 rounded-lg border p-4 ${
         allGood
-          ? "border-green-500/30 bg-green-50 dark:bg-green-950/20"
-          : "border-amber-500/30 bg-amber-50 dark:bg-amber-950/20"
+          ? "border-success-border bg-success-soft"
+          : "border-warning-border bg-warning-soft"
       }`}
     >
       <div className="flex items-center justify-between">
@@ -94,18 +94,18 @@ function LegalReadinessWidget({
         </Badge>
       </div>
       {allGood ? (
-        <p className="mt-1 text-xs text-green-700 dark:text-green-300">
+        <p className="mt-1 text-xs text-success">
           {t.allGood}
         </p>
       ) : (
         <>
-          <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">
+          <p className="mt-1 text-xs text-warning">
             {t.missingHint}
           </p>
           <ul className="mt-2 grid gap-1 text-xs sm:grid-cols-2">
             {missing.map((m) => (
               <li key={m.key} className="flex items-start gap-1.5">
-                <span className="mt-0.5 block h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" />
+                <span className="mt-0.5 block h-1.5 w-1.5 shrink-0 rounded-full bg-warning-strong" />
                 <span>
                   <span className="font-medium">{m.label}</span>{" "}
                   <span className="text-muted-foreground">({m.why})</span>

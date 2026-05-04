@@ -60,9 +60,9 @@ export function RecentBuyerTicker({
   return (
     <div
       aria-live="polite"
-      className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 px-3 py-2 text-xs text-emerald-700 dark:text-emerald-400"
+      className="rounded-lg border border-success-border bg-success-soft px-3 py-2 text-xs text-success"
     >
-      <span className="mr-1.5 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500 align-middle" />
+      <span className="mr-1.5 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-success-strong align-middle" />
       <span className="font-medium">{line}</span>
       <span className="ml-1 opacity-70">· {ago}</span>
     </div>

@@ -217,7 +217,7 @@ export function SettingsClient({
         <h2 className="font-heading text-lg font-semibold">{t.gdpr}</h2>
 
         {!isSuperAdmin ? (
-          <p className="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-900/50 dark:bg-amber-900/10 dark:text-amber-200">
+          <p className="mt-4 rounded-lg border border-warning-border bg-warning-soft p-4 text-sm text-warning">
             {t.notSuperAdmin}
           </p>
         ) : (
@@ -250,13 +250,13 @@ export function SettingsClient({
             {error && (
               <p
                 role="alert"
-                className="mt-3 rounded-md bg-red-50 p-3 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400"
+                className="mt-3 rounded-md bg-danger-soft p-3 text-sm text-danger"
               >
                 {error}
               </p>
             )}
             {success && (
-              <p className="mt-3 rounded-md bg-green-50 p-3 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-400">
+              <p className="mt-3 rounded-md bg-success-soft p-3 text-sm text-success">
                 {success}
               </p>
             )}
@@ -281,7 +281,7 @@ export function SettingsClient({
                     <button
                       type="button"
                       disabled={isPending}
-                      className="mt-3 rounded-md bg-red-600 px-3 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                      className="mt-3 rounded-md bg-danger-strong px-3 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
                     >
                       {t.deleteBtn}
                     </button>
@@ -319,9 +319,9 @@ function InfoRow({
       <dd
         className={`mt-1 font-heading text-base font-semibold ${
           status === "warn"
-            ? "text-amber-700 dark:text-amber-400"
+            ? "text-warning"
             : status === "ok"
-              ? "text-green-700 dark:text-green-400"
+              ? "text-success"
               : ""
         }`}
       >

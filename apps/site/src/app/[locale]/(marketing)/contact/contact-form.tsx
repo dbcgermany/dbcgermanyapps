@@ -135,13 +135,13 @@ export function ContactForm({
       </div>
 
       {error && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-sm text-danger">
           {error}
         </p>
       )}
 
       {success && (
-        <p className="rounded-md bg-green-50 p-3 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-400">
+        <p className="rounded-md bg-success-soft p-3 text-sm text-success">
           {labels.success}
         </p>
       )}

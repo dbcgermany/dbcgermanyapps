@@ -143,7 +143,7 @@ export default async function TransferPage({
       </div>
 
       {blocked ? (
-        <div className="mt-6 rounded-md bg-red-50 p-4 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
+        <div className="mt-6 rounded-md bg-danger-soft p-4 text-sm text-danger">
           {blockedReason}
         </div>
       ) : (

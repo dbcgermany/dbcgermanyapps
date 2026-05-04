@@ -133,7 +133,7 @@ export function FunnelPricing({
                 ) : null}
 
                 {lowStock ? (
-                  <p className="mt-4 inline-flex w-fit items-center rounded-full bg-red-500/10 px-3 py-1 text-xs font-semibold text-red-600 dark:text-red-400">
+                  <p className="mt-4 inline-flex w-fit items-center rounded-full bg-danger-soft px-3 py-1 text-xs font-semibold text-danger">
                     {t.onlyLeft(tier.seatsLeft!)}
                   </p>
                 ) : tier.maxQuantity !== null ? (

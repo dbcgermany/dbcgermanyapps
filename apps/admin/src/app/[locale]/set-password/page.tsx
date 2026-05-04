@@ -169,7 +169,7 @@ function SetPasswordForm({ locale }: { locale: string }) {
         )}
 
         {stage === "no-session" && (
-          <p className="rounded-md bg-red-50 p-4 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
+          <p className="rounded-md bg-danger-soft p-4 text-sm text-danger">
             {t.noSession}
           </p>
         )}
@@ -217,7 +217,7 @@ function SetPasswordForm({ locale }: { locale: string }) {
               />
             </div>
             {error && (
-              <p className="text-sm text-red-600" role="alert">
+              <p className="text-sm text-danger" role="alert">
                 {error}
               </p>
             )}
@@ -229,7 +229,7 @@ function SetPasswordForm({ locale }: { locale: string }) {
         )}
 
         {stage === "done" && (
-          <p className="rounded-md bg-green-50 p-4 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-400">
+          <p className="rounded-md bg-success-soft p-4 text-sm text-success">
             {t.done}
           </p>
         )}

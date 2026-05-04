@@ -31,8 +31,8 @@ const STATUS_CYCLE: Record<string, "pending" | "in_progress" | "done"> = {
 
 const STATUS_COLORS: Record<string, string> = {
   pending: "border-border",
-  in_progress: "border-yellow-400 bg-yellow-50 dark:bg-yellow-900/10",
-  done: "border-green-400 bg-green-50 dark:bg-green-900/10",
+  in_progress: "border-warning-border bg-warning-soft",
+  done: "border-success-border bg-success-soft",
   skipped: "border-muted opacity-50",
 };
 
@@ -236,7 +236,7 @@ export function ChecklistClient({
           <span className="font-medium">
             {progress.done}/{progress.total} {t.done.toLowerCase()}
             {progress.overdue > 0 && (
-              <span className="ml-2 text-red-500">
+              <span className="ml-2 text-danger">
                 {progress.overdue} {t.overdue.toLowerCase()}
               </span>
             )}
@@ -290,7 +290,7 @@ export function ChecklistClient({
       {/* Overdue items */}
       {overdue.length > 0 && (
         <section>
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-red-500">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-danger">
             {t.overdue} ({overdue.length})
           </h3>
           <div className="mt-2 space-y-1">
@@ -498,9 +498,9 @@ function ItemRow({
         disabled={isPending}
         className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 text-xs transition-colors ${
           item.status === "done"
-            ? "border-green-500 bg-green-500 text-white"
+            ? "border-success-strong bg-success-strong text-white"
             : item.status === "in_progress"
-              ? "border-yellow-500 bg-yellow-100"
+              ? "border-warning-strong bg-warning-soft"
               : "border-border hover:border-primary"
         }`}
         title={`Status: ${item.status} — click to cycle`}
@@ -521,9 +521,9 @@ function ItemRow({
             <span
               className={
                 isOverdue
-                  ? "font-semibold text-red-500"
+                  ? "font-semibold text-danger"
                   : isDueSoon
-                    ? "font-semibold text-yellow-600"
+                    ? "font-semibold text-warning"
                     : ""
               }
             >
@@ -555,7 +555,7 @@ function ItemRow({
           <button
             type="button"
             disabled={isPending}
-            className="shrink-0 text-xs text-red-500 hover:text-red-700 disabled:opacity-50"
+            className="shrink-0 text-xs text-danger hover:opacity-80 disabled:opacity-50"
           >
             {deleteLabel}
           </button>

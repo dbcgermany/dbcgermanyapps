@@ -477,8 +477,8 @@ export function FunnelForm(props: FormProps) {
         <div
           className={`rounded-md p-4 text-sm ${
             message.kind === "error"
-              ? "bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400"
-              : "bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400"
+              ? "bg-danger-soft text-danger"
+              : "bg-success-soft text-success"
           }`}
         >
           {message.text}
@@ -749,13 +749,13 @@ function HeroImagePicker({
           <button
             type="button"
             onClick={() => onChange("")}
-            className="text-xs text-red-500 hover:text-red-700"
+            className="text-xs text-danger hover:opacity-80"
           >
             {clearLabel}
           </button>
         )}
       </div>
-      {error && <p className="text-xs text-red-600">{error}</p>}
+      {error && <p className="text-xs text-danger">{error}</p>}
       {urlValue && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
@@ -886,7 +886,7 @@ function LocaleTab({
                 onClick={() =>
                   patch({ proof: content.proof.filter((_, j) => j !== i) })
                 }
-                className="text-xs text-red-500 hover:text-red-700"
+                className="text-xs text-danger hover:opacity-80"
               >
                 {t.remove}
               </button>
@@ -972,7 +972,7 @@ function LocaleTab({
                     benefits: content.benefits.filter((_, j) => j !== i),
                   })
                 }
-                className="text-xs text-red-500 hover:text-red-700"
+                className="text-xs text-danger hover:opacity-80"
               >
                 {t.remove}
               </button>
@@ -1039,7 +1039,7 @@ function LocaleTab({
                 onClick={() =>
                   patch({ faq: content.faq.filter((_, j) => j !== i) })
                 }
-                className="text-xs text-red-500 hover:text-red-700"
+                className="text-xs text-danger hover:opacity-80"
               >
                 {t.remove}
               </button>
@@ -1102,7 +1102,7 @@ function LocaleTab({
                 onClick={() =>
                   patch({ bonus: content.bonus.filter((_, j) => j !== i) })
                 }
-                className="text-xs text-red-500 hover:text-red-700"
+                className="text-xs text-danger hover:opacity-80"
               >
                 {t.remove}
               </button>

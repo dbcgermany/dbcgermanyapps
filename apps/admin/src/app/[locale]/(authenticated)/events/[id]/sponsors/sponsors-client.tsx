@@ -294,7 +294,7 @@ export function SponsorsClient({
                     <button
                       type="button"
                       disabled={isPending}
-                      className="text-red-500 hover:text-red-700 disabled:opacity-50"
+                      className="text-danger hover:opacity-80 disabled:opacity-50"
                     >
                       {t.delete}
                     </button>

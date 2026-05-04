@@ -86,11 +86,11 @@ export function RecoveryPanel({
     <div
       className={`mt-8 rounded-xl border p-4 text-sm ${
         fullySent
-          ? "border-green-200 bg-green-50 dark:border-green-900/50 dark:bg-green-900/10"
-          : "border-yellow-200 bg-yellow-50 dark:border-yellow-900/50 dark:bg-yellow-900/10"
+          ? "border-success-border bg-success-soft"
+          : "border-warning-border bg-warning-soft"
       }`}
     >
-      <p className={fullySent ? "text-green-800 dark:text-green-300" : "text-yellow-900 dark:text-yellow-200"}>
+      <p className={fullySent ? "text-success" : "text-warning"}>
         {fullySent ? t.allSent : t.someUnsent}
       </p>
       {!fullySent && (
@@ -98,14 +98,14 @@ export function RecoveryPanel({
           type="button"
           onClick={handleClick}
           disabled={pending}
-          className="mt-3 rounded-md border border-yellow-700/30 bg-white px-3 py-1.5 text-xs font-medium text-yellow-900 hover:bg-yellow-100 disabled:opacity-50 dark:border-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-100 dark:hover:bg-yellow-900/50"
+          className="mt-3 rounded-md border border-warning-border bg-background px-3 py-1.5 text-xs font-medium text-warning hover:bg-warning-soft disabled:opacity-50"
         >
           {pending ? t.sending : t.resend}
         </button>
       )}
       {feedback && (
         <p
-          className={`mt-2 text-xs ${feedback.kind === "ok" ? "text-green-800 dark:text-green-300" : "text-red-700 dark:text-red-300"}`}
+          className={`mt-2 text-xs ${feedback.kind === "ok" ? "text-success" : "text-danger"}`}
         >
           {feedback.message}
         </p>

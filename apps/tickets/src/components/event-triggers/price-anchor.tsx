@@ -35,7 +35,7 @@ export function PriceAnchor({
           <span className="text-sm text-muted-foreground line-through">
             {formatMoney(originalPriceCents as number, { currency, locale })}
           </span>
-          <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[11px] font-semibold leading-none text-emerald-700 dark:text-emerald-400">
+          <span className="rounded-full bg-success-soft px-2 py-0.5 text-[11px] font-semibold leading-none text-success">
             {saveLabel} {formatMoney(savingsCents, { currency, locale })}
           </span>
         </>

@@ -183,7 +183,7 @@ export function NewsletterSignupForm({ locale }: { locale: Locale }) {
       {message && (
         <p
           className={`text-sm ${
-            message.type === "err" ? "text-red-600" : "text-green-700"
+            message.type === "err" ? "text-danger" : "text-success"
           }`}
         >
           {message.text}

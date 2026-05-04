@@ -224,7 +224,7 @@ export function StaffClient({
       </div>
 
       {inviteSuccess && (
-        <div className="mt-4 rounded-md bg-green-50 p-4 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-400">
+        <div className="mt-4 rounded-md bg-success-soft p-4 text-sm text-success">
           &#x2713; {t.inviteSuccess}
         </div>
       )}
@@ -234,7 +234,7 @@ export function StaffClient({
         <Card padding="md" className="mt-4 rounded-lg">
           <form action={handleInvite} className="space-y-4">
           {inviteError && (
-            <div className="rounded-md bg-red-50 p-3 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
+            <div className="rounded-md bg-danger-soft p-3 text-sm text-danger">
               {inviteError}
             </div>
           )}
@@ -367,7 +367,7 @@ export function StaffClient({
                             <button
                               onClick={() => handleResendInvite(s.id)}
                               disabled={isPending}
-                              className="text-xs text-amber-600 hover:text-amber-700"
+                              className="text-xs text-warning hover:opacity-80"
                             >
                               {t.resendInvite}
                             </button>
@@ -376,7 +376,7 @@ export function StaffClient({
                                 <button
                                   type="button"
                                   disabled={isPending}
-                                  className="text-xs text-red-500 hover:text-red-700"
+                                  className="text-xs text-danger hover:opacity-80"
                                 >
                                   {t.revoke}
                                 </button>
@@ -396,7 +396,7 @@ export function StaffClient({
                               <button
                                 type="button"
                                 disabled={isPending}
-                                className="text-xs text-red-500 hover:text-red-700"
+                                className="text-xs text-danger hover:opacity-80"
                               >
                                 {t.remove}
                               </button>

@@ -781,7 +781,7 @@ export function ReportsClient({
                 <tr key={c.code} className="border-b border-border last:border-0">
                   <td className="px-4 py-3 font-mono font-medium">{c.code}</td>
                   <td className="px-4 py-3 text-right">{c.uses}</td>
-                  <td className="px-4 py-3 text-right text-green-600">
+                  <td className="px-4 py-3 text-right text-success">
                     -{formatMoney(c.totalDiscountCents, { locale })}
                   </td>
                   <td className="px-4 py-3 text-right font-medium">
@@ -813,7 +813,7 @@ export function ReportsClient({
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 {t.finExpenses}
               </p>
-              <p className="mt-2 font-heading text-2xl font-bold text-red-600">
+              <p className="mt-2 font-heading text-2xl font-bold text-danger">
                 -{formatMoney(financial.expensesCents, { locale })}
               </p>
             </div>
@@ -822,7 +822,7 @@ export function ReportsClient({
                 {t.finProfit}
               </p>
               <p
-                className={`mt-2 font-heading text-2xl font-bold ${financial.profitCents >= 0 ? "text-green-600" : "text-red-600"}`}
+                className={`mt-2 font-heading text-2xl font-bold ${financial.profitCents >= 0 ? "text-success" : "text-danger"}`}
               >
                 {formatMoney(financial.profitCents, { locale })}
               </p>

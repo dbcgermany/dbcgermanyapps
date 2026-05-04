@@ -154,10 +154,10 @@ export default async function OrdersPage({
                     <span
                       className={`mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
                         isPaid
-                          ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                          ? "bg-success-soft text-success"
                           : order.status === "pending"
-                            ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
-                            : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                            ? "bg-warning-soft text-warning"
+                            : "bg-danger-soft text-danger"
                       }`}
                     >
                       {statusLabel}

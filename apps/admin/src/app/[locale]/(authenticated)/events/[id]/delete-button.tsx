@@ -21,7 +21,7 @@ export function DeleteEventButton({
       <button
         type="button"
         onClick={() => setShowConfirm(true)}
-        className="mt-4 rounded-md border border-red-300 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
+        className="mt-4 rounded-md border border-danger-border px-4 py-2 text-sm font-medium text-danger hover:bg-danger-soft"
       >
         Delete event
       </button>
@@ -32,7 +32,7 @@ export function DeleteEventButton({
 
   return (
     <div className="mt-4 space-y-3">
-      <p className="text-sm text-red-700 dark:text-red-400">
+      <p className="text-sm text-danger">
         Type the event title <strong>{eventTitle}</strong> to confirm deletion.
         This cannot be undone.
       </p>
@@ -41,7 +41,7 @@ export function DeleteEventButton({
         value={confirmText}
         onChange={(e) => setConfirmText(e.target.value)}
         placeholder={eventTitle}
-        className="w-full max-w-md rounded-md border border-red-300 bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 dark:border-red-800"
+        className="w-full max-w-md rounded-md border border-danger-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-danger-border"
         autoFocus
       />
       <div className="flex gap-2">
@@ -52,7 +52,7 @@ export function DeleteEventButton({
             setIsDeleting(true);
             await deleteEvent(eventId, locale);
           }}
-          className="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed"
+          className="rounded-md bg-danger-strong px-4 py-2 text-sm font-medium text-white hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {isDeleting ? "Deleting..." : "Permanently delete"}
         </button>

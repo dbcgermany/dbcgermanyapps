@@ -238,7 +238,7 @@ function LoginForm({ locale }: { locale: string }) {
 
       {state?.error && (
         <p
-          className="rounded-md bg-red-500/20 p-2 text-sm text-red-100 backdrop-blur"
+          className="rounded-md bg-danger-strong/20 p-2 text-sm text-danger-strong backdrop-blur"
           role="alert"
         >
           {state.error}
@@ -246,13 +246,13 @@ function LoginForm({ locale }: { locale: string }) {
       )}
 
       {forgotStage === "sent" && (
-        <p className="rounded-md bg-emerald-500/20 p-3 text-sm text-emerald-100 backdrop-blur">
+        <p className="rounded-md bg-success-strong/20 p-3 text-sm text-success-strong backdrop-blur">
           {t.resetSent}
         </p>
       )}
       {forgotStage === "error" && forgotError && (
         <p
-          className="rounded-md bg-red-500/20 p-2 text-sm text-red-100 backdrop-blur"
+          className="rounded-md bg-danger-strong/20 p-2 text-sm text-danger-strong backdrop-blur"
           role="alert"
         >
           {forgotError}

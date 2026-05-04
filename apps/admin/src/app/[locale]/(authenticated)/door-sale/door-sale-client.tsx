@@ -194,12 +194,12 @@ export function DoorSaleClient({
       <input type="hidden" name="event_id" value={eventId} />
 
       {result.error && (
-        <div className="rounded-md bg-red-50 p-4 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
+        <div className="rounded-md bg-danger-soft p-4 text-sm text-danger">
           {result.error}
         </div>
       )}
       {result.success && lastSale && (
-        <div className="rounded-md bg-green-50 p-4 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-400">
+        <div className="rounded-md bg-success-soft p-4 text-sm text-success">
           <div className="flex items-center justify-between gap-4">
             <span>
               &#x2713; {t.success} &mdash; {lastSale.name}
@@ -209,7 +209,7 @@ export function DoorSaleClient({
                 <button
                   type="button"
                   disabled={isPending}
-                  className="rounded-md border border-red-300 bg-white px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50 disabled:opacity-50 dark:bg-transparent"
+                  className="rounded-md border border-danger-border bg-white px-3 py-1 text-xs font-medium text-danger hover:bg-danger-soft disabled:opacity-50 dark:bg-transparent"
                 >
                   Undo / Void
                 </button>

@@ -193,7 +193,7 @@ function SecretRow({
                   trigger={
                     <button
                       type="button"
-                      className="inline-flex items-center gap-1 rounded-md border border-red-500/30 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/20"
+                      className="inline-flex items-center gap-1 rounded-md border border-danger-border px-3 py-1.5 text-xs font-medium text-danger hover:bg-danger-soft"
                       aria-label={`Delete ${canonicalKey}`}
                     >
                       <Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} />

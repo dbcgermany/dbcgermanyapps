@@ -89,7 +89,7 @@ export function NewContactForm({
   return (
     <form action={formAction} className="space-y-8">
       {state?.error && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
+        <div className="rounded-md bg-danger-soft p-3 text-sm text-danger">
           {state.error}
         </div>
       )}

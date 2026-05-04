@@ -145,7 +145,7 @@ export function NotificationBell({
         {unreadCount > 0 && (
           <span
             aria-label={`${unreadCount} unread notification${unreadCount === 1 ? "" : "s"}`}
-            className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500 ring-2 ring-background"
+            className="absolute top-1 right-1 h-2 w-2 rounded-full bg-danger-strong ring-2 ring-background"
           />
         )}
       </button>

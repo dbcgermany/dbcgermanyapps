@@ -113,7 +113,7 @@ export function SortableList<T extends SortableItem>({
         </p>
       )}
       {error && (
-        <p className="mb-3 rounded-md border border-red-300 bg-red-50 p-2 text-xs text-red-700 dark:bg-red-900/20 dark:text-red-400">
+        <p className="mb-3 rounded-md border border-danger-border bg-danger-soft p-2 text-xs text-danger">
           {error}
         </p>
       )}

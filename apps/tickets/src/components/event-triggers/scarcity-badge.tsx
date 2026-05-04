@@ -26,12 +26,12 @@ export function ScarcityBadge({
   const low = !critical && pctGone >= 0.75;
 
   const classes = critical
-    ? "border-red-500/40 bg-red-500/10 text-red-600 dark:text-red-400"
+    ? "border-danger-border bg-danger-soft text-danger"
     : low
       ? "border-orange-500/40 bg-orange-500/10 text-orange-600 dark:text-orange-400"
       : "border-border bg-muted/50 text-muted-foreground";
   const dotClasses = critical
-    ? `${DOT} animate-pulse bg-red-500`
+    ? `${DOT} animate-pulse bg-danger-strong`
     : low
       ? `${DOT} bg-orange-500`
       : `${DOT} bg-muted-foreground/50`;

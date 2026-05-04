@@ -65,7 +65,7 @@ export function CoverImageUpload({
           <button
             type="button"
             onClick={() => setUrl(null)}
-            className="text-xs text-red-500 hover:text-red-700"
+            className="text-xs text-danger hover:opacity-80"
           >
             Remove
           </button>
@@ -73,7 +73,7 @@ export function CoverImageUpload({
       </div>
 
       {error && (
-        <p className="text-xs text-red-600" role="alert">
+        <p className="text-xs text-danger" role="alert">
           {error}
         </p>
       )}

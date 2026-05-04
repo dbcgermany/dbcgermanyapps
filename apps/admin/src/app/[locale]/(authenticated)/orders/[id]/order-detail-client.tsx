@@ -212,7 +212,7 @@ export function OrderDetailClient({
               <button
                 type="button"
                 disabled={isPending}
-                className="rounded-md border border-red-300 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
+                className="rounded-md border border-danger-border px-4 py-2 text-sm font-medium text-danger hover:bg-danger-soft disabled:opacity-50"
               >
                 {isPending ? t.refunding : t.refund}
               </button>
@@ -324,7 +324,7 @@ export function OrderDetailClient({
                   </span>
                 )}
               </dt>
-              <dd className="text-green-600">-{fmt(order.discount_cents)}</dd>
+              <dd className="text-success">-{fmt(order.discount_cents)}</dd>
             </div>
           )}
           <div className="flex justify-between border-t border-border pt-2 font-semibold">
@@ -354,7 +354,7 @@ export function OrderDetailClient({
           </li>
           {order.email_sent_at && (
             <li className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-green-500" />
+              <span className="h-2 w-2 rounded-full bg-success-strong" />
               <span className="text-muted-foreground">{t.emailSent}</span>
               <span className="ml-auto font-medium">
                 {new Date(order.email_sent_at).toLocaleString(locale, {
@@ -370,7 +370,7 @@ export function OrderDetailClient({
             .filter((tk) => tk.checked_in_at)
             .map((tk) => (
               <li key={tk.id} className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-green-500" />
+                <span className="h-2 w-2 rounded-full bg-success-strong" />
                 <span className="text-muted-foreground">
                   {t.checkedIn}: {tk.attendee_name}
                 </span>

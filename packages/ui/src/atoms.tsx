@@ -22,7 +22,7 @@ const buttonVariants = cva(
           "border border-border bg-background text-foreground hover:bg-muted",
         ghost: "text-foreground hover:bg-muted",
         destructive:
-          "border border-red-300 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20",
+          "border border-danger-border text-danger hover:bg-danger-soft",
         accent:
           "bg-accent text-accent-foreground hover:bg-accent/90",
       },
@@ -124,7 +124,7 @@ const inputVariants = cva(
       },
       state: {
         default: "border-input",
-        error: "border-red-400 focus:ring-red-400",
+        error: "border-danger-border focus:ring-danger-border",
         disabled: "border-input bg-muted",
       },
     },
@@ -160,7 +160,7 @@ const textareaVariants = cva(
     variants: {
       state: {
         default: "border-input",
-        error: "border-red-400 focus:ring-red-400",
+        error: "border-danger-border focus:ring-danger-border",
         disabled: "border-input bg-muted",
       },
     },
@@ -202,7 +202,7 @@ const selectVariants = cva(
       },
       state: {
         default: "border-input",
-        error: "border-red-400 focus:ring-red-400",
+        error: "border-danger-border focus:ring-danger-border",
         disabled: "border-input bg-muted",
       },
     },
@@ -258,7 +258,7 @@ export function Label({
     >
       {children}
       {required && (
-        <span aria-hidden className="ml-0.5 text-red-500">
+        <span aria-hidden className="ml-0.5 text-danger">
           *
         </span>
       )}
@@ -423,7 +423,7 @@ export function FormField({
       {label && <Label required={required}>{label}</Label>}
       {children}
       {error ? (
-        <p className="mt-1 text-xs text-red-600" role="alert">
+        <p className="mt-1 text-xs text-danger" role="alert">
           {error}
         </p>
       ) : hint ? (

@@ -39,7 +39,7 @@ export function Page5Expectations({
       </header>
 
       {error ? (
-        <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
+        <div className="rounded-lg bg-danger-soft p-3 text-sm text-danger">
           {error}
         </div>
       ) : null}

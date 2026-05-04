@@ -67,9 +67,9 @@ export function TransferForm({
 
   if (success) {
     return (
-      <div className="mt-6 rounded-md bg-green-50 p-6 text-center dark:bg-green-900/20">
+      <div className="mt-6 rounded-md bg-success-soft p-6 text-center">
         <p className="text-2xl">&#x2713;</p>
-        <p className="mt-2 font-medium text-green-700 dark:text-green-400">
+        <p className="mt-2 font-medium text-success">
           {t.success}
         </p>
       </div>
@@ -79,7 +79,7 @@ export function TransferForm({
   return (
     <form onSubmit={handleSubmit} className="mt-6 space-y-4">
       {error && (
-        <div className="rounded-md bg-red-50 p-3 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
+        <div className="rounded-md bg-danger-soft p-3 text-sm text-danger">
           {error}
         </div>
       )}
@@ -108,7 +108,7 @@ export function TransferForm({
         />
       </div>
 
-      <p className="rounded-md bg-yellow-50 p-3 text-xs text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400">
+      <p className="rounded-md bg-warning-soft p-3 text-xs text-warning">
         {t.confirmWarning}
       </p>
 

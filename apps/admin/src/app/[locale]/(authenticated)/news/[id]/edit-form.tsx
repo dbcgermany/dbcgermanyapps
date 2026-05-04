@@ -73,12 +73,12 @@ export function EditNewsForm({ locale, post }: { locale: string; post: Post }) {
   return (
     <form action={formAction} className="mt-8 max-w-3xl space-y-6">
       {state?.error && (
-        <div className="rounded-md bg-red-50 p-4 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
+        <div className="rounded-md bg-danger-soft p-4 text-sm text-danger">
           {state.error}
         </div>
       )}
       {state?.success && (
-        <div className="rounded-md bg-green-50 p-4 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-400">
+        <div className="rounded-md bg-success-soft p-4 text-sm text-success">
           {t.saved}
         </div>
       )}

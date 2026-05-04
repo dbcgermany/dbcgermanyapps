@@ -241,7 +241,7 @@ function ProfileTab({
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block">
           <span className="mb-1 block text-sm font-medium">
-            {t.firstName}<span className="ml-0.5 text-red-500">*</span>
+            {t.firstName}<span className="ml-0.5 text-danger">*</span>
           </span>
           <input
             type="text"

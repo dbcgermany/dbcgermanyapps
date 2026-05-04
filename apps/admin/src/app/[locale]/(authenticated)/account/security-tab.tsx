@@ -302,7 +302,7 @@ export function SecurityTab() {
                 Loading status…
               </p>
             ) : mfaEnabled ? (
-              <p className="mt-2 text-xs text-green-700 dark:text-green-400">
+              <p className="mt-2 text-xs text-success">
                 ✓ Enabled
                 {remainingCodes !== null &&
                   ` · ${remainingCodes} backup code${
@@ -310,7 +310,7 @@ export function SecurityTab() {
                   } remaining`}
               </p>
             ) : (
-              <p className="mt-2 text-xs text-yellow-700 dark:text-yellow-400">
+              <p className="mt-2 text-xs text-warning">
                 Not yet enabled.
               </p>
             )}
@@ -337,7 +337,7 @@ export function SecurityTab() {
                   type="button"
                   onClick={disable2fa}
                   disabled={mfaPending}
-                  className="rounded-md border border-red-300 px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/30"
+                  className="rounded-md border border-danger-border px-3 py-1.5 text-sm font-medium text-danger hover:bg-danger-soft disabled:opacity-50"
                 >
                   Disable 2FA
                 </button>
@@ -406,15 +406,15 @@ export function SecurityTab() {
         )}
 
         {enrollment.kind === "showing_codes" && (
-          <div className="mt-5 rounded-md border border-yellow-300 bg-yellow-50 p-4 dark:bg-yellow-900/20">
-            <p className="text-sm font-semibold text-yellow-900 dark:text-yellow-200">
+          <div className="mt-5 rounded-md border border-warning-border bg-warning-soft p-4">
+            <p className="text-sm font-semibold text-warning">
               Save these backup codes now
             </p>
-            <p className="mt-1 text-xs text-yellow-900/80 dark:text-yellow-200/80">
+            <p className="mt-1 text-xs text-warning opacity-80">
               Each code works once. We will never show them again. Use them if
               you lose access to your authenticator.
             </p>
-            <div className="mt-3 grid grid-cols-2 gap-1 font-mono text-sm text-yellow-900 dark:text-yellow-200">
+            <div className="mt-3 grid grid-cols-2 gap-1 font-mono text-sm text-warning">
               {enrollment.codes.map((c, i) => (
                 <div key={i}>{c}</div>
               ))}
@@ -462,7 +462,7 @@ export function SecurityTab() {
             type="button"
             onClick={handleSignOutEverywhere}
             disabled={soePending}
-            className="rounded-md border border-red-300 px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-950/30"
+            className="rounded-md border border-danger-border px-3 py-1.5 text-sm font-medium text-danger hover:bg-danger-soft disabled:opacity-50"
           >
             {soePending ? "Signing out…" : "Sign out everywhere"}
           </button>
@@ -511,7 +511,7 @@ export function SecurityTab() {
                     type="button"
                     onClick={() => revokeSession(s.id)}
                     disabled={revokingId === s.id}
-                    className="text-xs font-medium text-red-600 hover:opacity-80 disabled:opacity-50"
+                    className="text-xs font-medium text-danger hover:opacity-80 disabled:opacity-50"
                   >
                     {revokingId === s.id ? "Revoking…" : "Revoke"}
                   </button>

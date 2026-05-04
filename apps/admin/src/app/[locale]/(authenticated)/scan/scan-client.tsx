@@ -335,10 +335,10 @@ export function ScanClient({
             <button
               type="button"
               onClick={dismissResult}
-              className="relative z-10 w-full max-w-md rounded-2xl border-4 border-green-500 bg-green-50 p-8 text-left shadow-2xl transition-transform hover:scale-[1.01] focus:outline-none focus:ring-4 focus:ring-green-300 dark:bg-green-900/40"
+              className="relative z-10 w-full max-w-md rounded-2xl border-4 border-success-border bg-success-soft p-8 text-left shadow-2xl transition-transform hover:scale-[1.01] focus:outline-none focus:ring-4 focus:ring-success-border"
               autoFocus
             >
-              <p className="font-heading text-4xl font-bold text-green-700 dark:text-green-300">
+              <p className="font-heading text-4xl font-bold text-success">
                 ✓ {t.checkedIn}
               </p>
               <p className="mt-3 text-xl font-semibold text-foreground">
@@ -347,11 +347,11 @@ export function ScanClient({
               <p className="mt-1 text-sm text-muted-foreground">
                 {status.result.tierName}
               </p>
-              <div className="mt-6 flex items-center justify-between border-t border-green-300/50 pt-4 text-sm">
-                <span className="text-green-800 dark:text-green-300">
+              <div className="mt-6 flex items-center justify-between border-t border-success-border pt-4 text-sm">
+                <span className="text-success">
                   {t.tapOrEnter}
                 </span>
-                <span className="rounded-md bg-green-600 px-4 py-2 font-semibold text-white shadow">
+                <span className="rounded-md bg-success-strong px-4 py-2 font-semibold text-white shadow">
                   {t.nextTicket} →
                 </span>
               </div>
@@ -360,10 +360,10 @@ export function ScanClient({
             <button
               type="button"
               onClick={dismissResult}
-              className="relative z-10 w-full max-w-md rounded-2xl border-4 border-red-500 bg-red-50 p-8 text-left shadow-2xl transition-transform hover:scale-[1.01] focus:outline-none focus:ring-4 focus:ring-red-300 dark:bg-red-900/40"
+              className="relative z-10 w-full max-w-md rounded-2xl border-4 border-danger-border bg-danger-soft p-8 text-left shadow-2xl transition-transform hover:scale-[1.01] focus:outline-none focus:ring-4 focus:ring-danger-border"
               autoFocus
             >
-              <p className="font-heading text-4xl font-bold text-red-700 dark:text-red-300">
+              <p className="font-heading text-4xl font-bold text-danger">
                 ✕{" "}
                 {status.result.error
                   ? t.invalid
@@ -388,11 +388,11 @@ export function ScanClient({
                   {t.by} {status.result.alreadyCheckedInBy}
                 </p>
               )}
-              <div className="mt-6 flex items-center justify-between border-t border-red-300/50 pt-4 text-sm">
-                <span className="text-red-800 dark:text-red-300">
+              <div className="mt-6 flex items-center justify-between border-t border-danger-border pt-4 text-sm">
+                <span className="text-danger">
                   {t.tapOrEnter}
                 </span>
-                <span className="rounded-md bg-red-600 px-4 py-2 font-semibold text-white shadow">
+                <span className="rounded-md bg-danger-strong px-4 py-2 font-semibold text-white shadow">
                   {t.nextTicket} →
                 </span>
               </div>
@@ -602,7 +602,7 @@ function NameFindPanel({
               </div>
               <div className="flex items-center gap-2">
                 {r.checked_in_at ? (
-                  <span className="text-xs font-medium text-green-600">
+                  <span className="text-xs font-medium text-success">
                     {ft.checkedInTag}
                   </span>
                 ) : (

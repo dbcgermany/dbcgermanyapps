@@ -513,7 +513,7 @@ export default async function EventDetailPage({
                     </div>
                     <div className="mt-1 h-2 rounded-full bg-muted">
                       <div
-                        className="h-2 rounded-full bg-green-500 transition-all"
+                        className="h-2 rounded-full bg-success-strong transition-all"
                         style={{ width: `${revenueProgressPct}%` }}
                       />
                     </div>
@@ -609,8 +609,8 @@ export default async function EventDetailPage({
       </div>
 
       {/* Danger zone */}
-      <div className="mt-12 rounded-lg border border-red-200 p-6 dark:border-red-900/50">
-        <h3 className="text-sm font-medium text-red-600 dark:text-red-400">
+      <div className="mt-12 rounded-lg border border-danger-border p-6">
+        <h3 className="text-sm font-medium text-danger">
           {t.dangerZone}
         </h3>
         <p className="mt-1 text-sm text-muted-foreground">

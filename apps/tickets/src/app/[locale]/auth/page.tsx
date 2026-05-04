@@ -84,7 +84,7 @@ function AuthForm({ locale }: { locale: string }) {
     return (
       <main className="flex min-h-screen items-center justify-center px-4">
         <div className="max-w-sm text-center space-y-4">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-3xl dark:bg-green-900/30">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-success-soft text-3xl">
             &#x2709;
           </div>
           <h1 className="font-heading text-2xl font-bold">{t.sent}</h1>
@@ -119,7 +119,7 @@ function AuthForm({ locale }: { locale: string }) {
           </div>
 
           {error && (
-            <p className="text-sm text-red-600" role="alert">
+            <p className="text-sm text-danger" role="alert">
               {error}
             </p>
           )}

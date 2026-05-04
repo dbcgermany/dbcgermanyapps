@@ -285,7 +285,7 @@ async function ContactsTabContent({
                             {t("unsubscribed")}
                           </span>
                         ) : c.marketing_consent ? (
-                          <span className="text-xs font-medium text-green-600">
+                          <span className="text-xs font-medium text-success">
                             {t("subscribed")}
                           </span>
                         ) : (

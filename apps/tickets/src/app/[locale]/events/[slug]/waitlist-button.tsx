@@ -62,7 +62,7 @@ export function WaitlistButton({
 
   if (done) {
     return (
-      <p className="mt-2 text-xs font-medium text-green-600 dark:text-green-400">
+      <p className="mt-2 text-xs font-medium text-success">
         {t.done}
       </p>
     );
@@ -97,7 +97,7 @@ export function WaitlistButton({
         {isPending ? t.submitting : t.submit}
       </button>
       {error && (
-        <p className="absolute mt-8 text-xs text-red-600" role="alert">
+        <p className="absolute mt-8 text-xs text-danger" role="alert">
           {error}
         </p>
       )}
