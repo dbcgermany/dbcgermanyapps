@@ -33,7 +33,7 @@ export default async function PressPage({
     }[l],
     intro: {
       en: "Thank you. Below are verified facts, visuals and contacts for journalists, analysts, and partners.",
-      de: "Danke. Hier finden Sie geprüfte Fakten, Bildmaterial und Kontakte für Journalist:innen, Analyst:innen und Partner.",
+      de: "Danke. Hier finden Sie geprüfte Fakten, Bildmaterial und Kontakte für Journalisten, Analysten und Partner.",
       fr: "Merci. Retrouvez ici des faits vérifiés, des visuels et des contacts pour journalistes, analystes et partenaires.",
     }[l],
     factsTitle: {
@@ -89,7 +89,7 @@ export default async function PressPage({
       value: "213",
     },
     {
-      label: { en: "Satisfied clients", de: "Zufriedene Kund:innen", fr: "Clients satisfaits" }[l],
+      label: { en: "Satisfied clients", de: "Zufriedene Kunden", fr: "Clients satisfaits" }[l],
       value: "275",
     },
     {

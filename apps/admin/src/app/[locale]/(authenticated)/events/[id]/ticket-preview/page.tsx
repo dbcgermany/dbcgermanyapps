@@ -99,7 +99,7 @@ export default async function TicketPreviewPage({
       ticket: "Ticket",
       date: "Datum",
       venue: "Veranstaltungsort",
-      attendee: "Teilnehmer:in",
+      attendee: "Teilnehmer",
       tierLabel: "Ticketart",
       scanTitle: "Am Eingang vorzeigen",
       scanText:

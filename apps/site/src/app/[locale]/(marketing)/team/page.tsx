@@ -74,8 +74,8 @@ export default async function TeamPage({
     }[l],
     intro: {
       en: "Senior operators in Düsseldorf. We run incubation, investments, courses, mentorship and the Richesses d'Afrique Germany conference for founders building between Europe and Africa.",
-      de: "Senior-Operator:innen in Düsseldorf. Wir betreiben Inkubation, Investitionen, Kurse, Mentoring und die Richesses d'Afrique Germany Konferenz für Gründer:innen, die zwischen Europa und Afrika bauen.",
-      fr: "Opérateur·ice·s senior à Düsseldorf. Nous opérons l'incubation, les investissements, les formations, le mentorat et la conférence Richesses d'Afrique Germany pour les fondateur·ice·s qui construisent entre l'Europe et l'Afrique.",
+      de: "Senior-Operatoren in Düsseldorf. Wir betreiben Inkubation, Investitionen, Kurse, Mentoring und die Richesses d'Afrique Germany Konferenz für Gründer, die zwischen Europa und Afrika bauen.",
+      fr: "Opérateurs senior à Düsseldorf. Nous opérons l'incubation, les investissements, les formations, le mentorat et la conférence Richesses d'Afrique Germany pour les fondateurs qui construisent entre l'Europe et l'Afrique.",
     }[l],
     empty: {
       en: "Team profiles are being prepared.",

@@ -21,7 +21,7 @@ const T = {
     titleEn: "Titel (EN)", titleDe: "Titel (DE)", titleFr: "Titel (FR)",
     excerptEn: "Kurzfassung (EN)", excerptDe: "Kurzfassung (DE)", excerptFr: "Kurzfassung (FR)",
     bodyEn: "Inhalt (EN)", bodyDe: "Inhalt (DE)", bodyFr: "Inhalt (FR)",
-    author: "Autor:in", saving: "Wird gespeichert…", save: "Speichern",
+    author: "Autor", saving: "Wird gespeichert…", save: "Speichern",
   },
   fr: {
     saved: "Enregistré.",

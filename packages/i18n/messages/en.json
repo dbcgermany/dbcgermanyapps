@@ -249,7 +249,7 @@
         "done": "✓ You’re on the waitlist"
       },
       "list": {
-        "tag": "International incubator · Europe chapter",
+        "tag": "International incubator · DACH chapter",
         "title": "Richesses d'Afrique · Live events.",
         "subtitle": "Masterclasses, conferences and meet-ups for founders, investors and operators building the EU ↔ Africa corridor.",
         "noEvents": "No upcoming events at the moment. Check back soon.",
@@ -1566,9 +1566,9 @@
       "sisterAcademie": "Académie Investir en Afrique"
     },
     "hero": {
-      "tag": "International incubator · Europe chapter",
-      "title": "Building a new generation of African entrepreneurs — from Germany.",
-      "subtitle": "DBC Germany is the European chapter of Diambilay Business Center — an international incubator for the African diaspora in Europe.",
+      "tag": "International incubator · DACH chapter",
+      "title": "Building a new generation of African entrepreneurs.",
+      "subtitle": "DBC Germany is the DACH chapter of Diambilay Business Center — an international incubator for the African diaspora.",
       "ctaPrimary": "Explore Richesses d'Afrique Germany",
       "ctaSecondary": "Become a member"
     },
@@ -1648,9 +1648,9 @@
         ]
       },
       "germanyBand": {
-        "eyebrow": "Europe chapter",
+        "eyebrow": "DACH chapter",
         "title": "How to get in.",
-        "subtitle": "Four ways to plug into DBC's catalogue from Europe — built and run from Düsseldorf.",
+        "subtitle": "Four ways to plug into DBC's catalogue — built and run from Düsseldorf.",
         "items": {
           "meetups": {
             "title": "Quarterly founder meetups",
@@ -1690,7 +1690,7 @@
     "about": {
       "eyebrow": "About DBC",
       "title": "From Lubumbashi to Düsseldorf — one mission.",
-      "body": "Founded in Lubumbashi by Dr. Jean-Clément Diambilay, Diambilay Business Center is an international incubator building a new generation of African entrepreneurs. DBC Germany is its European chapter, delivering the full DBC catalogue — incubation, capital, mentorship, courses, events — to African-rooted founders across Europe, in German, English and French.",
+      "body": "Founded in Lubumbashi by Dr. Jean-Clément Diambilay, Diambilay Business Center is an international incubator building a new generation of African entrepreneurs. DBC Germany is its DACH chapter, delivering the full DBC catalogue — incubation, capital, mentorship, courses, events — to African-rooted founders, in German, English and French.",
       "conviction": "The most powerful ideas deserve solid structures to grow into enduring companies.",
       "convictionAttribution": "Dr. Jean-Clément Diambilay, Founder",
       "ctaFounder": "Meet the founder",
@@ -1735,7 +1735,7 @@
       "pressLabel": "Press"
     },
     "footer": {
-      "tagline": "International incubator. Europe chapter.",
+      "tagline": "International incubator. DACH chapter.",
       "sections": {
         "services": "Services",
         "company": "Company",
@@ -1762,7 +1762,7 @@
     "seo": {
       "about": {
         "title": "About DBC Germany — founder, mission, locations",
-        "description": "DBC Germany is an African-rooted business community serving the diaspora in Europe. Düsseldorf HQ, operator-led, backed by DBC across Africa and France."
+        "description": "DBC Germany is an African-rooted business community serving the African diaspora. Düsseldorf HQ, operator-led, backed by DBC across Africa and France."
       },
       "services": {
         "title": "Services — incubation, investment, courses, mentorship",

@@ -249,9 +249,9 @@
         "done": "✓ Sie sind auf der Warteliste"
       },
       "list": {
-        "tag": "Internationaler Inkubator · Europa-Chapter",
+        "tag": "Internationaler Inkubator · DACH-Kapitel",
         "title": "Richesses d'Afrique · Live-Events.",
-        "subtitle": "Masterclasses, Konferenzen und Meet-ups für Gründer:innen, Investor:innen und Operator:innen, die den EU ↔ Afrika-Korridor gestalten.",
+        "subtitle": "Masterclasses, Konferenzen und Meet-ups für Gründer, Investoren und Operatoren, die den EU ↔ Afrika-Korridor gestalten.",
         "noEvents": "Derzeit keine bevorstehenden Veranstaltungen. Schauen Sie bald wieder vorbei.",
         "cta": "Platz reservieren",
         "soldOut": "Ausverkauft"
@@ -374,9 +374,9 @@
       "devInfo": "Dev-Info",
       "doorSale": "Direktverkauf",
       "events": "Veranstaltungen",
-      "founders": "Gründer:innen",
+      "founders": "Gründer",
       "funnels": "Funnels",
-      "investors": "Investor:innen",
+      "investors": "Investoren",
       "jobOffers": "Stellenangebote",
       "legalPages": "Rechtstexte",
       "news": "Aktuelles",
@@ -542,8 +542,8 @@
         "ticketTiersDesc": "Ticketpreise erstellen und verwalten",
         "couponCodes": "Rabattcodes",
         "couponCodesDesc": "Rabattcodes für diese Veranstaltung erstellen",
-        "scheduleSpeakers": "Programm & Sprecher:innen",
-        "scheduleSpeakersDesc": "Agenda und Sprecher:innen verwalten",
+        "scheduleSpeakers": "Programm & Sprecher",
+        "scheduleSpeakersDesc": "Agenda und Sprecher verwalten",
         "ticketPreview": "Ticket-Vorschau",
         "ticketPreviewDesc": "Vorschau des PDF-Ticketdesigns",
         "emailSequences": "E-Mail-Sequenzen",
@@ -587,7 +587,7 @@
         "downloadPdf": "PDF herunterladen"
       },
       "schedule": {
-        "title": "Programm & Sprecher:innen",
+        "title": "Programm & Sprecher",
         "addItem": "Programmpunkt hinzufügen"
       },
       "tiers": {
@@ -714,8 +714,8 @@
       "about": {
         "title": "Über Narikia UG",
         "legalName": "Narikia UG (i.G.)",
-        "intro": "{name} ist ein Softwareunternehmen. Wir entwickeln Software für Organisationen und selbstständige Unternehmer:innen verschiedener Branchen — SaaS, Web-Plattformen und mobile Apps — und betreiben zudem unsere eigenen Produkte, darunter Bossmetics.",
-        "foundersLabel": "Gründer:innen",
+        "intro": "{name} ist ein Softwareunternehmen. Wir entwickeln Software für Organisationen und selbstständige Unternehmer verschiedener Branchen — SaaS, Web-Plattformen und mobile Apps — und betreiben zudem unsere eigenen Produkte, darunter Bossmetics.",
+        "foundersLabel": "Gründer",
         "founderGeraldName": "Gerald Ngongo Kalala",
         "founderGeraldRole": "Geschäftsführer und Gründer",
         "founderFannyName": "Fanny Kananga Kumande",
@@ -829,7 +829,7 @@
       "title": "Bestellungen",
       "filterAll": "Alle Veranstaltungen",
       "search": "Suche nach E-Mail oder Bestell-ID",
-      "buyer": "Käufer:in",
+      "buyer": "Käufer",
       "event": "Veranstaltung",
       "total": "Gesamt",
       "status": "Status",
@@ -840,7 +840,7 @@
       "client": {
         "event": "Veranstaltung",
         "status": "Status",
-        "customer": "Kund:in",
+        "customer": "Kunde",
         "total": "Gesamt",
         "date": "Datum",
         "actions": "Aktionen",
@@ -861,7 +861,7 @@
         "noOrders": "Keine Bestellungen gefunden.",
         "csvOrderId": "Bestell-ID",
         "csvEvent": "Veranstaltung",
-        "csvRecipient": "Empfänger:in",
+        "csvRecipient": "Empfänger",
         "csvEmail": "E-Mail",
         "csvStatus": "Status",
         "csvAcquisition": "Erhalten durch",
@@ -879,7 +879,7 @@
       "title": "Kontakte",
       "createContact": "Kontakt hinzufügen",
       "newTitle": "Neuer Kontakt",
-      "newDescription": "Sponsoren, Partner, Dienstleister, Sprecher:innen oder andere Personen manuell in unsere Daten aufnehmen.",
+      "newDescription": "Sponsoren, Partner, Dienstleister, Sprecher oder andere Personen manuell in unsere Daten aufnehmen.",
       "search": "Name oder E-Mail suchen",
       "categoryFilter": "Kategorie",
       "allCategories": "Alle Kategorien",
@@ -912,14 +912,14 @@
       "addInvolvement": "Zu Veranstaltung hinzufügen",
       "remove": "Entfernen",
       "roles": {
-        "attendee": "Teilnehmer:in",
+        "attendee": "Teilnehmer",
         "invited_guest": "Eingeladener Gast",
         "sponsor": "Sponsor",
         "partner": "Partner",
         "contractor": "Dienstleister",
-        "speaker": "Sprecher:in",
-        "moderator": "Moderator:in",
-        "volunteer": "Helfer:in",
+        "speaker": "Sprecher",
+        "moderator": "Moderator",
+        "volunteer": "Helfer",
         "staff": "Team",
         "press": "Presse",
         "vip": "VIP"
@@ -959,8 +959,8 @@
       "detail": {
         "invited": "Eingeladen",
         "door": "Abendkasse",
-        "buyer": "Käufer:in",
-        "subscriber": "Abonnent:in",
+        "buyer": "Käufer",
+        "subscriber": "Abonnent",
         "messageHistory": "Nachrichtenverlauf"
       }
     },
@@ -1135,7 +1135,7 @@
       },
       "client": {
         "preview": "Live-Vorschau",
-        "previewHint": "So sehen Mitarbeiter:innen die Anzeige im Dashboard. Nur aktive, laufende Anzeigen erscheinen hier.",
+        "previewHint": "So sehen Mitarbeiter die Anzeige im Dashboard. Nur aktive, laufende Anzeigen erscheinen hier.",
         "newAd": "Neue Anzeige",
         "editAd": "Anzeige bearbeiten",
         "allAds": "Alle Anzeigen",
@@ -1181,7 +1181,7 @@
         "emptyJobs": "Noch keine Stellenbewerbungen.",
         "csvId": "ID",
         "csvReceived": "Eingegangen",
-        "csvFounder": "Gründer:in",
+        "csvFounder": "Gründer",
         "csvEmail": "E-Mail",
         "csvPhone": "Telefon",
         "csvCountry": "Land",
@@ -1193,13 +1193,13 @@
         "csvStatus": "Status",
         "csvNotes": "Notizen",
         "csvPitch": "Pitch",
-        "founder": "Gründer:in",
+        "founder": "Gründer",
         "company": "Unternehmen",
         "stage": "Phase",
         "pitch": "Pitch",
         "received": "Eingegangen",
         "status": "Status",
-        "applicant": "Bewerber:in",
+        "applicant": "Bewerber",
         "job": "Stelle",
         "coverLetter": "Anschreiben",
         "unknownPosition": "Unbekannte Stelle"
@@ -1415,7 +1415,7 @@
         "bodyEn": "Inhalt (EN)",
         "bodyDe": "Inhalt (DE)",
         "bodyFr": "Inhalt (FR)",
-        "author": "Autor:in (optional)",
+        "author": "Autor (optional)",
         "saving": "Wird gespeichert…",
         "saveDraft": "Entwurf speichern"
       }
@@ -1561,14 +1561,14 @@
     },
     "affiliation": {
       "badge": "Teil der Diambilay Business Center · Lubumbashi",
-      "footer": "DBC Germany ist der europäische Arm der Diambilay Business Center, gegründet in Lubumbashi von Dr. Jean-Clément Diambilay.",
+      "footer": "DBC Germany ist das DACH-Kapitel der Diambilay Business Center, gegründet in Lubumbashi von Dr. Jean-Clément Diambilay.",
       "sisterRichesses": "Richesses d'Afrique",
       "sisterAcademie": "Académie Investir en Afrique"
     },
     "hero": {
-      "tag": "Internationaler Inkubator · Europa-Chapter",
-      "title": "Wir bauen die nächste Generation afrikanischer Unternehmer:innen — aus Deutschland.",
-      "subtitle": "DBC Germany ist das Europa-Chapter des Diambilay Business Center — ein internationaler Inkubator für die afrikanische Diaspora in Europa.",
+      "tag": "Internationaler Inkubator · DACH-Kapitel",
+      "title": "Wir bauen die nächste Generation afrikanischer Unternehmer.",
+      "subtitle": "DBC Germany ist das DACH-Kapitel des Diambilay Business Center — ein internationaler Inkubator für die afrikanische Diaspora.",
       "ctaPrimary": "Richesses d'Afrique Germany entdecken",
       "ctaSecondary": "Mitglied werden"
     },
@@ -1578,7 +1578,7 @@
       "countriesValue": "EN · DE · FR",
       "founders": "Begleitete Startups",
       "foundersValue": "213+",
-      "capital": "Zufriedene Kund:innen",
+      "capital": "Zufriedene Kunden",
       "capitalValue": "750+",
       "years": "Flagship 2026",
       "yearsValue": "Essen · 13. Juni"
@@ -1586,7 +1586,7 @@
     "services": {
       "eyebrow": "Was wir tun",
       "title": "Der komplette Stack für afrikanisches Unternehmertum — in Deutschland.",
-      "subtitle": "Sechs aufeinander abgestimmte Säulen, die Gründer:innen von der Idee über das investierbare Unternehmen zur globalen Marke führen.",
+      "subtitle": "Sechs aufeinander abgestimmte Säulen, die Gründer von der Idee über das investierbare Unternehmen zur globalen Marke führen.",
       "incubation": {
         "title": "Inkubation",
         "short": "90-Tage-Programme, die frühe Ideen zu venture-fähigen Unternehmen machen.",
@@ -1594,15 +1594,15 @@
         "bullets": [
           "90-Tage-Gründer-Sprints",
           "Produkt-, Rechts- und Go-to-Market-Support",
-          "Demo-Day-Zugang zu DBC-Investor:innen"
+          "Demo-Day-Zugang zu DBC-Investoren"
         ]
       },
       "courses": {
         "title": "Kurse",
         "short": "On-Demand- und Kohorten-Kurse mit den schärfsten Köpfen des Kontinents.",
-        "long": "Der gesamte DBC-Katalog — vom ersten Businessplan bis zu CFO-Finanzen — inklusive Formation Excellentia und der Académie Investir en Afrique. Von Praktiker:innen gebaut, die es getan haben, auf Deutsch, Englisch und Französisch.",
+        "long": "Der gesamte DBC-Katalog — vom ersten Businessplan bis zu CFO-Finanzen — inklusive Formation Excellentia und der Académie Investir en Afrique. Von Praktiker gebaut, die es getan haben, auf Deutsch, Englisch und Französisch.",
         "bullets": [
-          "Live-Kohorten mit Senior-Operator:innen",
+          "Live-Kohorten mit Senior-Operatoren",
           "Selbstbestimmte Podia-Masterclasses",
           "Von DBC-Partnern anerkannte Zertifikate"
         ]
@@ -1619,18 +1619,18 @@
       },
       "mentorship": {
         "title": "Mentoring",
-        "short": "1:1-Sessions mit Senior-Leader:innen, die gebaut haben, was Sie bauen.",
-        "long": "DBCs Senior-Operator-Mentor:innen-Netzwerk — Ex-Fortune-500-Exec:s, afrikanische Unicorn-Gründer:innen, europäische Venture-Partner:innen. In Deutschland: quartalsweise DBC-Germany-Meetups in Düsseldorf, monatliches 1:1-Matching, langfristige Beziehungen.",
+        "short": "1:1-Sessions mit Senior-Leader, die gebaut haben, was Sie bauen.",
+        "long": "DBCs Senior-Operator-Mentoren-Netzwerk — Ex-Fortune-500-Execs, afrikanische Unicorn-Gründer, europäische Venture-Partner. In Deutschland: quartalsweise DBC-Germany-Meetups in Düsseldorf, monatliches 1:1-Matching, langfristige Beziehungen.",
         "bullets": [
           "Monatliche 1:1-Sessions",
-          "Branchengenau passende Mentor:innen",
+          "Branchengenau passende Mentoren",
           "Langfristige Beziehungen, keine Einmalgespräche"
         ]
       },
       "events": {
         "title": "Richesses d'Afrique Germany",
         "short": "Flaggschiff-Konferenzen und Masterclasses, die das Ökosystem in einem Raum versammeln.",
-        "long": "DBC-Masterclasses und Flaggschiff-Konferenzen, die das Ökosystem zusammenbringen. In Deutschland: die Richesses d'Afrique Germany Konferenz — Ausgabe 2026 am 13. Juni im Congress Center West, Messe Essen, mit 950+ Gründer:innen, Investor:innen und Führungskräften.",
+        "long": "DBC-Masterclasses und Flaggschiff-Konferenzen, die das Ökosystem zusammenbringen. In Deutschland: die Richesses d'Afrique Germany Konferenz — Ausgabe 2026 am 13. Juni im Congress Center West, Messe Essen, mit 950+ Gründer, Investoren und Führungskräften.",
         "bullets": [
           "Richesses d'Afrique Germany 2026 · 13. Juni · Essen",
           "DBC-Masterclasses wechseln zwischen afrikanischen und europäischen Hubs",
@@ -1648,13 +1648,13 @@
         ]
       },
       "germanyBand": {
-        "eyebrow": "Europa-Chapter",
+        "eyebrow": "DACH-Kapitel",
         "title": "So kommen Sie rein.",
-        "subtitle": "Vier Wege in den DBC-Katalog aus Europa — gebaut und betrieben aus Düsseldorf.",
+        "subtitle": "Vier Wege in den DBC-Katalog — gebaut und betrieben aus Düsseldorf.",
         "items": {
           "meetups": {
             "title": "Quartalsweise Gründer-Meetups",
-            "body": "Präsenztreffen in Düsseldorf für Gründer:innen mit afrikanischen Wurzeln, die in Europa bauen.",
+            "body": "Präsenztreffen in Düsseldorf für Gründer mit afrikanischen Wurzeln, die in Europa bauen.",
             "cta": "Platz reservieren",
             "href": "/contact?topic=meetup"
           },
@@ -1666,7 +1666,7 @@
           },
           "fund": {
             "title": "DBC Germany Fund",
-            "body": "LP-Gespräche und Portfolio-Partnerschaft für Investor:innen, die zur DBC-These passen.",
+            "body": "LP-Gespräche und Portfolio-Partnerschaft für Investoren, die zur DBC-These passen.",
             "cta": "Gespräch beginnen",
             "href": "/contact?topic=fund"
           },
@@ -1683,26 +1683,26 @@
     "events": {
       "eyebrow": "Demnächst",
       "title": "Events, die Karrieren verändern.",
-      "subtitle": "Live-Momente für Gründer:innen, Investor:innen und die Diaspora, die Afrikas Wirtschaft prägt.",
+      "subtitle": "Live-Momente für Gründer, Investoren und die Diaspora, die Afrikas Wirtschaft prägt.",
       "cta": "Alle Veranstaltungen",
       "noUpcoming": "Unsere nächste Veranstaltung wird bald angekündigt. Tragen Sie sich unten ein."
     },
     "about": {
       "eyebrow": "Über DBC",
       "title": "Von Lubumbashi nach Düsseldorf — eine Mission.",
-      "body": "Gegründet in Lubumbashi von Dr. Jean-Clément Diambilay ist das Diambilay Business Center ein internationaler Inkubator, der eine neue Generation afrikanischer Unternehmer:innen aufbaut. DBC Germany ist das Europa-Chapter und liefert den gesamten DBC-Katalog — Inkubation, Kapital, Mentoring, Kurse, Events — an Gründer:innen mit afrikanischen Wurzeln in Europa, auf Deutsch, Englisch und Französisch.",
+      "body": "Gegründet in Lubumbashi von Dr. Jean-Clément Diambilay ist das Diambilay Business Center ein internationaler Inkubator, der eine neue Generation afrikanischer Unternehmer aufbaut. DBC Germany ist das DACH-Kapitel und liefert den gesamten DBC-Katalog — Inkubation, Kapital, Mentoring, Kurse, Events — an Gründer mit afrikanischen Wurzeln, auf Deutsch, Englisch und Französisch.",
       "conviction": "Die stärksten Ideen verdienen solide Strukturen, um zu dauerhaften Unternehmen zu werden.",
       "convictionAttribution": "Dr. Jean-Clément Diambilay, Gründer",
       "ctaFounder": "Gründer kennenlernen",
       "ctaCareers": "Zum Team stoßen",
       "teamPreview": {
         "eyebrow": "Lerne das Team kennen",
-        "title": "Die Operator:innen hinter jeder Zeile, die du gelesen hast.",
+        "title": "Die Operatoren hinter jeder Zeile, die du gelesen hast.",
         "viewAll": "Ganzes Team ansehen →"
       },
       "storyTeaser": {
         "eyebrow": "Unsere Geschichte",
-        "body": "Hinter jedem Gesicht hier oben steht die Firmengeschichte, die sie hergebracht hat — die Mission, die Jahre zwischen Lubumbashi, Düsseldorf und Paris, und die Operator:innen, die vor allen anderen daran geglaubt haben.",
+        "body": "Hinter jedem Gesicht hier oben steht die Firmengeschichte, die sie hergebracht hat — die Mission, die Jahre zwischen Lubumbashi, Düsseldorf und Paris, und die Operatoren, die vor allen anderen daran geglaubt haben.",
         "cta": "So ist DBC Germany entstanden"
       }
     },
@@ -1735,7 +1735,7 @@
       "pressLabel": "Presse"
     },
     "footer": {
-      "tagline": "Internationaler Inkubator. Europa-Chapter.",
+      "tagline": "Internationaler Inkubator. DACH-Kapitel.",
       "sections": {
         "services": "Leistungen",
         "company": "Unternehmen",
@@ -1762,27 +1762,27 @@
     "seo": {
       "about": {
         "title": "Über DBC Germany — Gründer, Mission, Standorte",
-        "description": "DBC Germany ist eine afrikanisch verwurzelte Business-Community für die Diaspora in Europa. HQ in Düsseldorf, operator-geführt, Teil von DBC in Afrika und Frankreich."
+        "description": "DBC Germany ist eine afrikanisch verwurzelte Business-Community für die afrikanische Diaspora. HQ in Düsseldorf, operator-geführt, Teil von DBC in Afrika und Frankreich."
       },
       "services": {
         "title": "Leistungen — Inkubation, Investment, Kurse, Mentoring",
-        "description": "DBC Germany bietet Inkubation, Investment-Prep, Kurse, Mentoring und Veranstaltungen für afrikanisch verwurzelte Gründer:innen zwischen Europa und Afrika."
+        "description": "DBC Germany bietet Inkubation, Investment-Prep, Kurse, Mentoring und Veranstaltungen für afrikanisch verwurzelte Gründer zwischen Europa und Afrika."
       },
       "servicesIncubation": {
         "title": "Inkubation bei DBC Germany — 6-Monats-Programm",
-        "description": "Bewerben Sie sich für das Inkubationsprogramm von DBC Germany: sechs Monate Operator-Mentoring, Kapital-Vorbereitung und Community für afrikanisch verwurzelte Gründer:innen."
+        "description": "Bewerben Sie sich für das Inkubationsprogramm von DBC Germany: sechs Monate Operator-Mentoring, Kapital-Vorbereitung und Community für afrikanisch verwurzelte Gründer."
       },
       "servicesCourses": {
-        "title": "Kurse bei DBC Germany — scharfe Skills für Gründer:innen",
-        "description": "Kurse von DBC Germany: Finanzen, Operations, Fundraising und Go-to-Market für afrikanisch verwurzelte Unternehmer:innen in Europa."
+        "title": "Kurse bei DBC Germany — scharfe Skills für Gründer",
+        "description": "Kurse von DBC Germany: Finanzen, Operations, Fundraising und Go-to-Market für afrikanisch verwurzelte Unternehmer in Europa."
       },
       "servicesInvestments": {
         "title": "Investment-Prep — nächste Runde mit DBC Germany",
         "description": "Datenraum, Story und Kennzahlen investor-ready machen — mit DBC Germany. Operator-geführtes Coaching, europäisches und afrikanisches Kapital."
       },
       "servicesMentorship": {
-        "title": "Mentoring bei DBC Germany — 1:1 mit Senior-Operator:innen",
-        "description": "Buchen Sie regelmäßige Sessions mit Senior-Operator:innen im DBC-Germany-Netzwerk. Praxisnahes Mentoring für Gründer:innen in Europa und Afrika."
+        "title": "Mentoring bei DBC Germany — 1:1 mit Senior-Operatoren",
+        "description": "Buchen Sie regelmäßige Sessions mit Senior-Operatoren im DBC-Germany-Netzwerk. Praxisnahes Mentoring für Gründer in Europa und Afrika."
       },
       "servicesElearning": {
         "title": "E-Learning — Richesses d'Afrique Akademie",
@@ -1794,19 +1794,19 @@
       },
       "events": {
         "title": "Veranstaltungen von DBC Germany — Richesses d'Afrique 2026, Masterclasses",
-        "description": "Kommende Events von DBC Germany: Richesses d'Afrique Germany 2026 in Essen, Masterclasses und Networking für afrikanisch verwurzelte Gründer:innen und Investor:innen."
+        "description": "Kommende Events von DBC Germany: Richesses d'Afrique Germany 2026 in Essen, Masterclasses und Networking für afrikanisch verwurzelte Gründer und Investoren."
       },
       "news": {
         "title": "News von DBC Germany — Diaspora-Ökonomie, Gründer-Stories",
         "description": "Das DBC-Germany-Journal: Diaspora-Ökonomie, Gründer-Stories, Policy-Notizen und Programm-Updates für die afrikanisch verwurzelte Business-Community."
       },
       "team": {
-        "title": "Das Team von DBC Germany — Leadership & Operator:innen",
-        "description": "Die Menschen hinter DBC Germany. Senior-Operator:innen in Düsseldorf, die Inkubation, Investment, Kurse, Mentoring und Richesses d'Afrique leiten."
+        "title": "Das Team von DBC Germany — Leadership & Operatoren",
+        "description": "Die Menschen hinter DBC Germany. Senior-Operatoren in Düsseldorf, die Inkubation, Investment, Kurse, Mentoring und Richesses d'Afrique leiten."
       },
       "teamMemberFallback": {
         "title": "DBC Germany — Teamprofil",
-        "description": "Lernen Sie ein Mitglied des DBC-Germany-Teams kennen — Senior-Operator:in für Programme für afrikanisch verwurzelte Gründer:innen in Europa."
+        "description": "Lernen Sie ein Mitglied des DBC-Germany-Teams kennen — Senior-Operator für Programme für afrikanisch verwurzelte Gründer in Europa."
       },
       "careers": {
         "title": "Karriere bei DBC Germany — Operator-Rollen in Düsseldorf",
@@ -1826,7 +1826,7 @@
       },
       "partners": {
         "title": "Partner werden — Richesses d'Afrique 2026 sponsern",
-        "description": "Sponsoring- und Partnerpakete für Richesses d'Afrique Germany 2026 in Essen. 950+ Gründer:innen, Investor:innen und Führungskräfte erreichen."
+        "description": "Sponsoring- und Partnerpakete für Richesses d'Afrique Germany 2026 in Essen. 950+ Gründer, Investoren und Führungskräfte erreichen."
       },
       "press": {
         "title": "Presse & Medien — DBC Germany",
@@ -1846,9 +1846,9 @@
       }
     },
     "intros": {
-      "events": "DBC Germany veranstaltet Events, die die afrikanisch verwurzelte Business-Community in Europa gezielt zusammenbringen. Flagship ist die Richesses d'Afrique Germany 2026 — unsere Jahreskonferenz am 13. Juni in Essen mit 950+ Gründer:innen, Investor:innen und Operator:innen auf zwei Tracks. Zwischen den Jahreskonferenzen laufen kleinere Masterclasses, Dinner und Member-Sessions in Düsseldorf, Berlin, Hamburg und Paris. Jedes Format ist kuratiert: kurze Talks, enge Moderation, Räume, in denen man die Menschen tatsächlich trifft, wegen denen man gekommen ist. Tickets unter tickets.dbc-germany.com. Wenn Sie in diesem Feld bauen, investieren oder operativ arbeiten, zeigt der Kalender unten, wo wir als Nächstes sind.",
+      "events": "DBC Germany veranstaltet Events, die die afrikanisch verwurzelte Business-Community in Europa gezielt zusammenbringen. Flagship ist die Richesses d'Afrique Germany 2026 — unsere Jahreskonferenz am 13. Juni in Essen mit 950+ Gründer, Investoren und Operatoren auf zwei Tracks. Zwischen den Jahreskonferenzen laufen kleinere Masterclasses, Dinner und Member-Sessions in Düsseldorf, Berlin, Hamburg und Paris. Jedes Format ist kuratiert: kurze Talks, enge Moderation, Räume, in denen man die Menschen tatsächlich trifft, wegen denen man gekommen ist. Tickets unter tickets.dbc-germany.com. Wenn Sie in diesem Feld bauen, investieren oder operativ arbeiten, zeigt der Kalender unten, wo wir als Nächstes sind.",
       "news": "Das Journal von DBC Germany berichtet über die afrikanisch verwurzelte Business-Community in Europa — Gründer-Stories, Policy-Briefings, Kapital-Updates und Longreads zu den Unternehmen, die die Diaspora-Wirtschaft prägen. Notizen aus Düsseldorf, Berlin, Paris und Lubumbashi sowie Berichte zu Richesses d'Afrique Germany 2026 und unseren Programmen. Wir publizieren in drei Sprachen; deutsche und französische Fassungen folgen der englischen in der Regel innerhalb weniger Tage. Newsletter unter /newsletter abonnieren, um einen kuratierten Brief pro Woche zu erhalten — das Archiv liegt unten.",
-      "team": "Lernen Sie die Operator:innen hinter DBC Germany kennen. Das Düsseldorfer Büro leitet Inkubation, Investment-Prep, Kurse, Mentoring und die jährliche Richesses-d'Afrique-Konferenz. Die Personen unten sind die, mit denen Sie tatsächlich arbeiten, wenn Sie sich für ein Programm bewerben, eine Partnerschaft pitchen oder zu einem Event kommen. Jedes Profil verlinkt auf den professionellen Hintergrund und die Programme der Person. Falls die benötigte Rolle nicht dabei ist: Kontaktieren Sie uns — wir stellen häufiger operativ starke Generalist:innen ein, als die Titel vermuten lassen.",
+      "team": "Lernen Sie die Operatoren hinter DBC Germany kennen. Das Düsseldorfer Büro leitet Inkubation, Investment-Prep, Kurse, Mentoring und die jährliche Richesses-d'Afrique-Konferenz. Die Personen unten sind die, mit denen Sie tatsächlich arbeiten, wenn Sie sich für ein Programm bewerben, eine Partnerschaft pitchen oder zu einem Event kommen. Jedes Profil verlinkt auf den professionellen Hintergrund und die Programme der Person. Falls die benötigte Rolle nicht dabei ist: Kontaktieren Sie uns — wir stellen häufiger operativ starke Generalisten ein, als die Titel vermuten lassen.",
       "contact": "DBC Germany erreichen Sie über den Kanal, der zu Ihrem Anliegen passt. Presse- und Medienanfragen gehen an die Presse-Adresse; wir antworten werktags innerhalb von 24 Stunden. Bewerbungen für die Inkubation und unsere Programme liegen unter /services/incubation/apply und landen direkt in der Sichtungsliste. Partnerschaften und Sponsoring — auch die Pakete für Richesses d'Afrique Germany 2026 — gehen über das Formular unten oder an jay@dbc-germany.com. Für alles andere (allgemeine Fragen, Speaker-Vorschläge, nicht zeitkritische Medienanfragen) erreicht das Formular unten die richtige Person noch am selben Tag."
     },
     "notFound": {
@@ -1884,8 +1884,8 @@
         "success": "Danke! Wir haben Ihnen eine Bestätigungs-E-Mail geschickt. Klicken Sie den Link darin, um die Anmeldung abzuschließen.",
         "already": "Sie sind bereits angemeldet — vielen Dank!",
         "interests": {
-          "founders": "Gründer:innen & Unternehmer:innen",
-          "investors": "Investor:innen",
+          "founders": "Gründer & Unternehmer",
+          "investors": "Investoren",
           "press": "Presse & Medien",
           "diaspora": "Diaspora-Community"
         }
@@ -1975,7 +1975,7 @@
     "landing": {
       "eyebrow": "Bewerben · DBC Germany",
       "title": "Bau dein Unternehmen mit DBC.",
-      "subtitle": "Inkubation, Kapital, Mentoring, Masterclasses, Events und E-Learning für afrikanisch geprägte Gründer:innen in Europa. Eine Bewerbung — das gesamte Angebot.",
+      "subtitle": "Inkubation, Kapital, Mentoring, Masterclasses, Events und E-Learning für afrikanisch geprägte Gründer in Europa. Eine Bewerbung — das gesamte Angebot.",
       "primaryCta": "Bewerbung starten",
       "scrollAnchor": "apply",
       "pillars": {
@@ -2008,7 +2008,7 @@
           },
           "consulting": {
             "title": "Beratung",
-            "desc": "Beratungs-Engagements für Scale-ups, Partner und Investor:innen."
+            "desc": "Beratungs-Engagements für Scale-ups, Partner und Investoren."
           }
         }
       },
@@ -2028,7 +2028,7 @@
             "a": "Englisch, Deutsch oder Französisch. Wir antworten in deiner Sprache innerhalb von 10 Werktagen."
           },
           {
-            "q": "Ist das nur für Gründer:innen in Deutschland?",
+            "q": "Ist das nur für Gründer in Deutschland?",
             "a": "Nein. DBC Germany — das DACH-Kapitel — nimmt Bewerbungen aus der afrikanischen Diaspora in Europa und darüber hinaus an."
           },
           {
@@ -2061,13 +2061,13 @@
       "subtitle": "Wähle das Profil, das dich heute beschreibt. Später kannst du die Richtung ändern.",
       "profileType": {
         "label": "Dein Profil",
-        "projectHolder": "Projektträger:in",
+        "projectHolder": "Projektträger",
         "projectHolderDesc": "Ich habe ein frühes Projekt, das ich aufbauen möchte.",
-        "entrepreneur": "Unternehmer:in",
+        "entrepreneur": "Unternehmer",
         "entrepreneurDesc": "Ich führe bereits ein Unternehmen und will es skalieren.",
-        "student": "Student:in",
+        "student": "Student",
         "studentDesc": "Ich bin in Ausbildung und erkunde Unternehmertum.",
-        "investor": "Investor:in",
+        "investor": "Investor",
         "investorDesc": "Ich möchte in afrikanisch geprägte Ventures investieren.",
         "other": "Andere",
         "otherDesc": "Etwas anderes — erzähl es uns unten.",
@@ -2089,7 +2089,7 @@
           "placeholder": "Der konkrete Schmerzpunkt, den du siehst — und wer ihn hat."
         },
         "audience": {
-          "label": "Wer sind deine Nutzer:innen oder Kund:innen?",
+          "label": "Wer sind deine Nutzer oder Kunden?",
           "placeholder": "Wer profitiert? Ein oder zwei Sätze."
         },
         "stage": {

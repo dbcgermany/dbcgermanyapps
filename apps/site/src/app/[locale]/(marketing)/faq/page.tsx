@@ -55,7 +55,7 @@ const SECTIONS: Array<{
       {
         q: {
           en: "Can I transfer my ticket to a colleague?",
-          de: "Kann ich mein Ticket an Kolleg:innen übertragen?",
+          de: "Kann ich mein Ticket an Kollegen übertragen?",
           fr: "Puis-je transférer mon billet à un collègue ?",
         },
         a: {
@@ -81,7 +81,7 @@ const SECTIONS: Array<{
         },
         a: {
           en: "Founders with African roots or African focus, based in Germany, Austria, or Switzerland, and European investors wanting exposure to that ecosystem.",
-          de: "Gründer:innen mit afrikanischen Wurzeln oder Afrika-Fokus, ansässig in Deutschland, Österreich oder der Schweiz — sowie europäische Investor:innen, die Zugang zu diesem Ökosystem suchen.",
+          de: "Gründer mit afrikanischen Wurzeln oder Afrika-Fokus, ansässig in Deutschland, Österreich oder der Schweiz — sowie europäische Investoren, die Zugang zu diesem Ökosystem suchen.",
           fr: "Entrepreneurs aux racines africaines ou à focus africain, basés en Allemagne, Autriche ou Suisse — et investisseurs européens souhaitant s'exposer à cet écosystème.",
         },
       },

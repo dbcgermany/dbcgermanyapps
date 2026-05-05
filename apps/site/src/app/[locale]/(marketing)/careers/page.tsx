@@ -74,8 +74,8 @@ export default async function CareersPage({
     }[l],
     intro: {
       en: "We\u2019re a lean team in D\u00fcsseldorf. Hands-on operators welcome. Strong preference for candidates with African roots or Francophone fluency.",
-      de: "Wir sind ein schlankes Team in D\u00fcsseldorf. Praktische Macher:innen willkommen \u2014 bevorzugt mit afrikanischen Wurzeln oder franz\u00f6sischen Sprachkenntnissen.",
-      fr: "\u00c9quipe resserr\u00e9e \u00e0 D\u00fcsseldorf. Profils op\u00e9rationnels bienvenus \u2014 une pr\u00e9f\u00e9rence pour les candidat\u00b7e\u00b7s aux racines africaines ou francophones.",
+      de: "Wir sind ein schlankes Team in D\u00fcsseldorf. Praktische Macher willkommen \u2014 bevorzugt mit afrikanischen Wurzeln oder franz\u00f6sischen Sprachkenntnissen.",
+      fr: "\u00c9quipe resserr\u00e9e \u00e0 D\u00fcsseldorf. Profils op\u00e9rationnels bienvenus \u2014 une pr\u00e9f\u00e9rence pour les candidats aux racines africaines ou francophones.",
     }[l],
     apply: { en: "Apply", de: "Bewerben", fr: "Postuler" }[l],
     speculativeTitle: {
@@ -85,7 +85,7 @@ export default async function CareersPage({
     }[l],
     speculativeBody: {
       en: "We always want to meet excellent operators. Send a short note on what you\u2019d build with us.",
-      de: "Wir lernen gerne exzellente Operator:innen kennen. Schreib uns kurz, was du mit uns aufbauen willst.",
+      de: "Wir lernen gerne exzellente Operatoren kennen. Schreib uns kurz, was du mit uns aufbauen willst.",
       fr: "Nous rencontrons volontiers d\u2019excellents op\u00e9rationnels. \u00c9crivez-nous ce que vous construiriez avec nous.",
     }[l],
     contact: { en: "Contact", de: "Kontakt", fr: "Contact" }[l],

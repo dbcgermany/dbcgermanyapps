@@ -225,7 +225,7 @@
     "notFound": {
       "eyebrow": "Introuvable",
       "title": "Cette page billetterie est introuvable.",
-      "description": "L'événement ou la commande est peut-être terminé·e, déplacé·e, ou le lien a expiré. Parcourez les événements actifs ici.",
+      "description": "L'événement ou la commande est peut-être terminé, déplacé, ou le lien a expiré. Parcourez les événements actifs ici.",
       "events": "Voir les événements",
       "orders": "Mes commandes"
     },
@@ -249,9 +249,9 @@
         "done": "✓ Vous êtes sur la liste d’attente"
       },
       "list": {
-        "tag": "Incubateur international · Chapitre Europe",
+        "tag": "Incubateur international · Chapitre DACH",
         "title": "Richesses d'Afrique · Événements live.",
-        "subtitle": "Masterclasses, conférences et meet-ups pour les fondateur·ice·s, investisseur·euse·s et opérateur·ice·s qui bâtissent le corridor UE ↔ Afrique.",
+        "subtitle": "Masterclasses, conférences et meet-ups pour les fondateurs, investisseurs et opérateurs qui bâtissent le corridor UE ↔ Afrique.",
         "noEvents": "Aucun événement à venir pour le moment. Revenez bientôt.",
         "cta": "Réserver ma place",
         "soldOut": "Complet"
@@ -714,8 +714,8 @@
       "about": {
         "title": "À propos de Narikia UG",
         "legalName": "Narikia UG (i.G.)",
-        "intro": "{name} est une entreprise logicielle. Nous construisons des logiciels pour des organisations et des entrepreneur·euse·s indépendant·e·s de tous secteurs — SaaS, plateformes web et applications mobiles — et développons également nos propres produits, notamment Bossmetics.",
-        "foundersLabel": "Fondateur·ice·s",
+        "intro": "{name} est une entreprise logicielle. Nous construisons des logiciels pour des organisations et des entrepreneurs indépendants de tous secteurs — SaaS, plateformes web et applications mobiles — et développons également nos propres produits, notamment Bossmetics.",
+        "foundersLabel": "Fondateurs",
         "founderGeraldName": "Gerald Ngongo Kalala",
         "founderGeraldRole": "Directeur général et fondateur",
         "founderFannyName": "Fanny Kananga Kumande",
@@ -1561,14 +1561,14 @@
     },
     "affiliation": {
       "badge": "Membre du Diambilay Business Center · Lubumbashi",
-      "footer": "DBC Germany est le bras européen du Diambilay Business Center, fondé à Lubumbashi par le Dr Jean-Clément Diambilay.",
+      "footer": "DBC Germany est le chapitre DACH du Diambilay Business Center, fondé à Lubumbashi par le Dr Jean-Clément Diambilay.",
       "sisterRichesses": "Richesses d'Afrique",
       "sisterAcademie": "Académie Investir en Afrique"
     },
     "hero": {
-      "tag": "Incubateur international · Chapitre Europe",
-      "title": "Nous bâtissons une nouvelle génération d'entrepreneur·e·s africain·e·s — depuis l'Allemagne.",
-      "subtitle": "DBC Germany est le chapitre européen du Diambilay Business Center — un incubateur international pour la diaspora africaine en Europe.",
+      "tag": "Incubateur international · Chapitre DACH",
+      "title": "Nous bâtissons une nouvelle génération d'entrepreneurs africains.",
+      "subtitle": "DBC Germany est le chapitre DACH du Diambilay Business Center — un incubateur international pour la diaspora africaine.",
       "ctaPrimary": "Découvrir Richesses d'Afrique Germany",
       "ctaSecondary": "Devenir membre"
     },
@@ -1586,7 +1586,7 @@
     "services": {
       "eyebrow": "Ce que nous faisons",
       "title": "La stack complète de l'entrepreneuriat africain, en Allemagne.",
-      "subtitle": "Six piliers interconnectés pour faire passer les fondateur·ice·s de l'idée à l'entreprise investissable puis à la marque globale.",
+      "subtitle": "Six piliers interconnectés pour faire passer les fondateurs de l'idée à l'entreprise investissable puis à la marque globale.",
       "incubation": {
         "title": "Incubation",
         "short": "Programmes de 90 jours qui transforment les idées en entreprises prêtes à lever.",
@@ -1594,23 +1594,23 @@
         "bullets": [
           "Sprints fondateurs de 90 jours",
           "Soutien produit, juridique et go-to-market",
-          "Demo-day devant les investisseur·euse·s DBC"
+          "Demo-day devant les investisseurs DBC"
         ]
       },
       "courses": {
         "title": "Formations",
-        "short": "Formations à la demande et en cohorte avec les meilleurs opérateur·ice·s du continent.",
-        "long": "Tout le catalogue DBC — du premier business plan à la finance niveau CFO — incluant Formation Excellentia et l'Académie Investir en Afrique. Enseigné par des praticien·ne·s qui l'ont fait, en allemand, anglais et français.",
+        "short": "Formations à la demande et en cohorte avec les meilleurs opérateurs du continent.",
+        "long": "Tout le catalogue DBC — du premier business plan à la finance niveau CFO — incluant Formation Excellentia et l'Académie Investir en Afrique. Enseigné par des praticiens qui l'ont fait, en allemand, anglais et français.",
         "bullets": [
-          "Cohortes en direct avec des senior·e·s",
+          "Cohortes en direct avec des seniors",
           "Masterclasses Podia à votre rythme",
           "Certificats reconnus par les partenaires DBC"
         ]
       },
       "investments": {
         "title": "Investissements",
-        "short": "Capital de pre-seed à Series A pour les entreprises fondées par des Africain·e·s entre UE et Afrique.",
-        "long": "Le capital DBC de pre-seed à Series A pour les entreprises fondées par des Africain·e·s entre UE et Afrique. En Allemagne : le DBC Germany Fund, co-investissement thèse-guidé avec partenaires UE et UA, candidatures LP continues.",
+        "short": "Capital de pre-seed à Series A pour les entreprises fondées par des Africains entre UE et Afrique.",
+        "long": "Le capital DBC de pre-seed à Series A pour les entreprises fondées par des Africains entre UE et Afrique. En Allemagne : le DBC Germany Fund, co-investissement thèse-guidé avec partenaires UE et UA, candidatures LP continues.",
         "bullets": [
           "Premiers tickets de 25 k à 500 k €",
           "Focus : fintech, commerce, industries créatives",
@@ -1620,17 +1620,17 @@
       "mentorship": {
         "title": "Mentorat",
         "short": "Sessions 1:1 avec des leaders qui ont déjà construit ce que vous construisez.",
-        "long": "Le réseau de mentor·e·s senior DBC — ex-dirigeant·e·s du Fortune 500, fondateur·ice·s de licornes africaines, venture partners européens. En Allemagne : meetups fondateurs trimestriels DBC Germany à Düsseldorf, matching mensuel 1:1, relations de long terme.",
+        "long": "Le réseau de mentors senior DBC — ex-dirigeants du Fortune 500, fondateurs de licornes africaines, venture partners européens. En Allemagne : meetups fondateurs trimestriels DBC Germany à Düsseldorf, matching mensuel 1:1, relations de long terme.",
         "bullets": [
           "Sessions 1:1 mensuelles",
-          "Mentor·e·s adapté·e·s à votre secteur",
+          "Mentors adaptés à votre secteur",
           "Relations de long terme, pas de one-shots"
         ]
       },
       "events": {
         "title": "Richesses d'Afrique Germany",
         "short": "Conférences et masterclasses phares qui rassemblent l'écosystème.",
-        "long": "Masterclasses DBC et conférences phares qui rassemblent l'écosystème. En Allemagne : la conférence Richesses d'Afrique Germany — édition 2026 au Congress Center West, Messe Essen, le 13 juin, 950+ fondateur·ice·s, investisseur·euse·s et dirigeant·e·s.",
+        "long": "Masterclasses DBC et conférences phares qui rassemblent l'écosystème. En Allemagne : la conférence Richesses d'Afrique Germany — édition 2026 au Congress Center West, Messe Essen, le 13 juin, 950+ fondateurs, investisseurs et dirigeants.",
         "bullets": [
           "Richesses d'Afrique Germany 2026 · 13 juin · Essen",
           "Les masterclasses DBC se déplacent entre hubs africains et européens",
@@ -1648,13 +1648,13 @@
         ]
       },
       "germanyBand": {
-        "eyebrow": "Chapitre Europe",
+        "eyebrow": "Chapitre DACH",
         "title": "Comment entrer.",
-        "subtitle": "Quatre portes d'entrée dans le catalogue DBC depuis l'Europe — conçues et opérées depuis Düsseldorf.",
+        "subtitle": "Quatre portes d'entrée dans le catalogue DBC — conçues et opérées depuis Düsseldorf.",
         "items": {
           "meetups": {
             "title": "Meetups fondateurs trimestriels",
-            "body": "Rencontres en présentiel à Düsseldorf pour les fondateur·ice·s aux racines africaines qui construisent en Europe.",
+            "body": "Rencontres en présentiel à Düsseldorf pour les fondateurs aux racines africaines qui construisent en Europe.",
             "cta": "Réserver une place",
             "href": "/contact?topic=meetup"
           },
@@ -1666,7 +1666,7 @@
           },
           "fund": {
             "title": "DBC Germany Fund",
-            "body": "Conversations LP et partenariats portfolio pour les investisseur·euse·s alignés avec la thèse DBC.",
+            "body": "Conversations LP et partenariats portfolio pour les investisseurs alignés avec la thèse DBC.",
             "cta": "Entamer la conversation",
             "href": "/contact?topic=fund"
           },
@@ -1683,26 +1683,26 @@
     "events": {
       "eyebrow": "À venir",
       "title": "Des événements qui changent des carrières.",
-      "subtitle": "Des moments en direct pour fondateur·ice·s, investisseur·euse·s et diaspora qui façonnent l'économie africaine.",
+      "subtitle": "Des moments en direct pour fondateurs, investisseurs et diaspora qui façonnent l'économie africaine.",
       "cta": "Voir tous les événements",
       "noUpcoming": "Notre prochain événement public sera bientôt annoncé."
     },
     "about": {
       "eyebrow": "À propos de DBC",
       "title": "De Lubumbashi à Düsseldorf — une seule mission.",
-      "body": "Fondé à Lubumbashi par le Dr. Jean-Clément Diambilay, le Diambilay Business Center est un incubateur international qui construit une nouvelle génération d'entrepreneur·e·s africain·e·s. DBC Germany en est le chapitre européen, livrant tout le catalogue DBC — incubation, capital, mentorat, formations, événements — aux fondateur·ice·s aux racines africaines à travers l'Europe, en allemand, anglais et français.",
+      "body": "Fondé à Lubumbashi par le Dr. Jean-Clément Diambilay, le Diambilay Business Center est un incubateur international qui construit une nouvelle génération d'entrepreneurs africains. DBC Germany en est le chapitre DACH, livrant tout le catalogue DBC — incubation, capital, mentorat, formations, événements — aux fondateurs aux racines africaines, en allemand, anglais et français.",
       "conviction": "Les idées les plus puissantes méritent des structures solides pour se transformer en entreprises durables.",
       "convictionAttribution": "Dr. Jean-Clément Diambilay, Fondateur",
       "ctaFounder": "Rencontrer le fondateur",
       "ctaCareers": "Rejoindre l'équipe",
       "teamPreview": {
         "eyebrow": "Rencontre l'équipe",
-        "title": "Les opérateurs·trices derrière chaque ligne.",
+        "title": "Les opérateurs derrière chaque ligne.",
         "viewAll": "Voir toute l'équipe →"
       },
       "storyTeaser": {
         "eyebrow": "Notre histoire",
-        "body": "Derrière chaque visage ci-dessus, il y a l'histoire d'entreprise qui les a amenés ici — la mission, les années entre Lubumbashi, Düsseldorf et Paris, et les opérateurs·trices qui y ont cru avant tout le monde.",
+        "body": "Derrière chaque visage ci-dessus, il y a l'histoire d'entreprise qui les a amenés ici — la mission, les années entre Lubumbashi, Düsseldorf et Paris, et les opérateurs qui y ont cru avant tout le monde.",
         "cta": "Découvrir comment DBC Germany est né"
       }
     },
@@ -1735,7 +1735,7 @@
       "pressLabel": "Presse"
     },
     "footer": {
-      "tagline": "Incubateur international. Chapitre Europe.",
+      "tagline": "Incubateur international. Chapitre DACH.",
       "sections": {
         "services": "Services",
         "company": "Société",
@@ -1754,7 +1754,7 @@
       "presence": "Nous sommes internationaux"
     },
     "cta": {
-      "ready": "Prêt·e à rejoindre DBC ?",
+      "ready": "Prêt à rejoindre DBC ?",
       "readySub": "Que vous fondiez, investissiez ou mentoriez — il y a un pilier pour vous.",
       "primary": "Postuler à l'incubation",
       "secondary": "Nous contacter"
@@ -1762,7 +1762,7 @@
     "seo": {
       "about": {
         "title": "À propos de DBC Germany — fondateur, mission, implantations",
-        "description": "DBC Germany est une communauté business aux racines africaines pour la diaspora en Europe. Siège à Düsseldorf, piloté par des opérateurs, adossé à DBC en Afrique et en France."
+        "description": "DBC Germany est une communauté business aux racines africaines pour la diaspora africaine. Siège à Düsseldorf, piloté par des opérateurs, adossé à DBC en Afrique et en France."
       },
       "services": {
         "title": "Services — incubation, investissement, cours, mentorat",
@@ -1882,16 +1882,16 @@
         "submit": "S'abonner",
         "sending": "Envoi…",
         "success": "Merci ! Nous vous avons envoyé un e-mail de confirmation. Cliquez sur le lien pour finaliser.",
-        "already": "Vous êtes déjà abonné·e — merci !",
+        "already": "Vous êtes déjà abonné — merci !",
         "interests": {
-          "founders": "Fondateur·ice·s & entrepreneur·e·s",
-          "investors": "Investisseur·euse·s",
+          "founders": "Fondateurs & entrepreneurs",
+          "investors": "Investisseurs",
           "press": "Presse & médias",
           "diaspora": "Communauté de la diaspora"
         }
       },
       "page": {
-        "eyebrow": "Restez informé·e",
+        "eyebrow": "Restez informé",
         "title": "Newsletter DBC Germany",
         "body": "Des mises à jour ciblées sur Richesses d'Afrique Germany, les appels d'incubation et les notes sur l'économie de la diaspora pour les dirigeants en Europe et en Afrique. Au plus un e-mail par semaine, désinscription en un clic."
       },
@@ -1919,7 +1919,7 @@
         "submit": "S'abonner",
         "sending": "Envoi…",
         "success": "Presque terminé — confirmez via l'e-mail que nous vous avons envoyé.",
-        "already": "Vous êtes déjà abonné·e."
+        "already": "Vous êtes déjà abonné."
       }
     },
     "funnel": {
@@ -1975,7 +1975,7 @@
     "landing": {
       "eyebrow": "Candidature · DBC Germany",
       "title": "Construis ton entreprise avec DBC.",
-      "subtitle": "Incubation, capital, mentorat, masterclasses, événements et e-learning pour les entrepreneur·e·s de la diaspora africaine en Europe. Une candidature — toute l'offre.",
+      "subtitle": "Incubation, capital, mentorat, masterclasses, événements et e-learning pour les entrepreneurs de la diaspora africaine en Europe. Une candidature — toute l'offre.",
       "primaryCta": "Commencer ma candidature",
       "scrollAnchor": "apply",
       "pillars": {
@@ -2033,7 +2033,7 @@
           },
           {
             "q": "La candidature est-elle payante ?",
-            "a": "La candidature est gratuite. Des frais peuvent s'appliquer à certains programmes payants (cours, masterclasses, événements) une fois que tu y es orienté·e."
+            "a": "La candidature est gratuite. Des frais peuvent s'appliquer à certains programmes payants (cours, masterclasses, événements) une fois que tu y es orienté."
           }
         ]
       },
@@ -2061,13 +2061,13 @@
       "subtitle": "Choisis celui qui te décrit aujourd'hui. Tu peux changer de cap plus tard.",
       "profileType": {
         "label": "Ton profil",
-        "projectHolder": "Porteur·euse de projet",
+        "projectHolder": "Porteur de projet",
         "projectHolderDesc": "J'ai un projet à un stade précoce que je veux construire.",
-        "entrepreneur": "Entrepreneur·e",
+        "entrepreneur": "Entrepreneur",
         "entrepreneurDesc": "Je dirige déjà une entreprise et je veux la faire grandir.",
-        "student": "Étudiant·e",
+        "student": "Étudiant",
         "studentDesc": "Je suis en formation et j'explore l'entrepreneuriat.",
-        "investor": "Investisseur·euse",
+        "investor": "Investisseur",
         "investorDesc": "Je veux soutenir les ventures de la diaspora africaine.",
         "other": "Autre",
         "otherDesc": "Autre chose — dis-nous ci-dessous.",
@@ -2121,7 +2121,7 @@
         "otherPlaceholder": "Quel secteur ?"
       },
       "prior": {
-        "label": "As-tu déjà été accompagné·e par un incubateur, un accelerator ou un mentor ?",
+        "label": "As-tu déjà été accompagné par un incubateur, un accelerator ou un mentor ?",
         "subtitle": "Contexte optionnel — ça nous aide à calibrer ta candidature.",
         "yes": "Oui",
         "no": "Non"
@@ -2184,7 +2184,7 @@
     },
     "page7": {
       "title": "Une dernière question — et un récapitulatif rapide.",
-      "subtitle": "Comment tu nous as trouvé·e·s nous aide à affiner notre communication.",
+      "subtitle": "Comment tu nous as trouvés nous aide à affiner notre communication.",
       "heardAbout": {
         "label": "Comment as-tu entendu parler de DBC ?",
         "social_media": "Réseaux sociaux",

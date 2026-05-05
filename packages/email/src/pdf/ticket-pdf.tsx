@@ -209,7 +209,7 @@ const TRANSLATIONS = {
     ticket: "Ticket",
     date: "Datum",
     venue: "Veranstaltungsort",
-    attendee: "Teilnehmer:in",
+    attendee: "Teilnehmer",
     tierLabel: "Ticketart",
     scanTitle: "Am Eingang vorzeigen",
     scanText:
@@ -221,12 +221,12 @@ const TRANSLATIONS = {
     ticket: "Billet",
     date: "Date",
     venue: "Lieu",
-    attendee: "Participant·e",
+    attendee: "Participant",
     tierLabel: "Type de billet",
     scanTitle: "À présenter à l'entrée",
     scanText:
       "Montrez ce code QR à l'entrée. Usage unique — le billet ne peut pas être réutilisé.",
-    invitation: "Invité·e",
+    invitation: "Invité",
     support: "Assistance",
   },
 };
