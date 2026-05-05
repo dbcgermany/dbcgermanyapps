@@ -8,9 +8,23 @@ import {
   unpublishFunnel,
 } from "@/actions/funnels";
 import { PageHeader } from "@/components/page-header";
+import { captureServerError } from "@/lib/observe";
 import { FunnelForm } from "../funnel-form";
 import { KpiCards } from "./kpi-cards";
 import { ShareLinkBuilder } from "./share-link-builder";
+
+async function loadOrCapture<T>(
+  op: () => Promise<T>,
+  scope: string,
+  data: Record<string, unknown>,
+): Promise<T> {
+  try {
+    return await op();
+  } catch (err) {
+    captureServerError(err, { scope, data });
+    throw err;
+  }
+}
 
 const T = {
   en: {
@@ -47,9 +61,20 @@ export default async function EditFunnelPage({
   const { locale, id } = await params;
   const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
   const tBack = await getTranslations({ locale, namespace: "admin.back" });
-  const funnel = await getFunnel(id);
-  const kpis7 = await getFunnelKpis(id, 7);
-  const eventOptions = await listFunnelEventOptions(locale);
+  const funnel = await loadOrCapture(() => getFunnel(id), "funnels.getFunnel", {
+    funnel_id: id,
+    locale,
+  });
+  const kpis7 = await loadOrCapture(
+    () => getFunnelKpis(id, 7),
+    "funnels.getFunnelKpis",
+    { funnel_id: id, days: 7 },
+  );
+  const eventOptions = await loadOrCapture(
+    () => listFunnelEventOptions(locale),
+    "funnels.listFunnelEventOptions",
+    { locale },
+  );
 
   return (
     <div className="space-y-10">
