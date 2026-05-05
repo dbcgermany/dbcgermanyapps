@@ -29,9 +29,9 @@ export type DashboardAd = {
 const COLUMNS =
   "id, title_en, title_de, title_fr, subtitle_en, subtitle_de, subtitle_fr, cta_label_en, cta_label_de, cta_label_fr, cta_url, image_url, accent_color, is_active, sort_order, starts_at, ends_at, created_by, created_at, updated_at" as const;
 
-/** Super-admin only — list every ad including drafts / expired, for the admin UI. */
+/** Admin+ — list every ad including drafts / expired, for the admin UI. */
 export async function listDashboardAds(): Promise<DashboardAd[]> {
-  await requireRole("super_admin");
+  await requireRole("admin");
   const supabase = await createServerClient();
   const { data, error } = await supabase
     .from("dashboard_ads")
@@ -47,7 +47,7 @@ export async function listDashboardAds(): Promise<DashboardAd[]> {
  * to active + in-window rows; this action merely exposes a typed reader.
  */
 export async function getActiveDashboardAds(): Promise<DashboardAd[]> {
-  await requireRole("team_member");
+  await requireRole("scanner");
   const supabase = await createServerClient();
   const { data, error } = await supabase
     .from("dashboard_ads")
@@ -97,7 +97,7 @@ function parseRecord(formData: FormData) {
 }
 
 export async function createDashboardAd(formData: FormData) {
-  const user = await requireRole("super_admin");
+  const user = await requireRole("admin");
   const record = parseRecord(formData);
 
   if (!record.title_en) return { error: "Title (EN) is required." };
@@ -126,7 +126,7 @@ export async function createDashboardAd(formData: FormData) {
 }
 
 export async function updateDashboardAd(id: string, formData: FormData) {
-  const user = await requireRole("super_admin");
+  const user = await requireRole("admin");
   const record = parseRecord(formData);
 
   if (!record.title_en) return { error: "Title (EN) is required." };
@@ -154,7 +154,7 @@ export async function updateDashboardAd(id: string, formData: FormData) {
 }
 
 export async function toggleDashboardAdActive(id: string) {
-  const user = await requireRole("super_admin");
+  const user = await requireRole("admin");
   const supabase = await createServerClient();
   const { data: current } = await supabase
     .from("dashboard_ads")
@@ -184,7 +184,7 @@ export async function toggleDashboardAdActive(id: string) {
 }
 
 export async function deleteDashboardAd(id: string) {
-  const user = await requireRole("super_admin");
+  const user = await requireRole("admin");
   const supabase = await createServerClient();
   const { data: existing } = await supabase
     .from("dashboard_ads")
@@ -208,7 +208,7 @@ export async function deleteDashboardAd(id: string) {
 }
 
 export async function reorderDashboardAds(orderedIds: string[]) {
-  const user = await requireRole("super_admin");
+  const user = await requireRole("admin");
   const supabase = await createServerClient();
 
   const updates = await Promise.all(

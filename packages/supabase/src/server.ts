@@ -4,7 +4,7 @@
 // `next/headers`, which is only available in the Node.js server runtime.
 
 export { createServerClient } from "./server-client";
-export { requireRole } from "./guards";
+export { requireRole, requirePermission } from "./guards";
 export { isAuthorisedCronRequest } from "./cron-auth";
 export {
   notifyAdmins,

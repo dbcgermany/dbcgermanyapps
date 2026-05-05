@@ -90,7 +90,7 @@ export async function getEventCapacity(eventId: string): Promise<number> {
 // ---------------------------------------------------------------------------
 
 export async function getEvents() {
-  await requireRole("manager");
+  await requireRole("team_member");
   const supabase = await createServerClient();
 
   const { data, error } = await supabase
@@ -105,7 +105,7 @@ export async function getEvents() {
 }
 
 export async function getEvent(id: string) {
-  await requireRole("manager");
+  await requireRole("team_member");
   const supabase = await createServerClient();
 
   const { data, error } = await supabase

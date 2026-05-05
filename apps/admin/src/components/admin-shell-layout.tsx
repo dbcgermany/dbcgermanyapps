@@ -22,6 +22,7 @@ interface AdminShellState {
   openMobile: () => void;
   closeMobile: () => void;
   toggleMobile: () => void;
+  userRole: UserRole;
 }
 
 const AdminShellContext = createContext<AdminShellState | null>(null);
@@ -98,8 +99,8 @@ export function AdminShellLayout({
   }, [mobileOpen]);
 
   const ctxValue = useMemo<AdminShellState>(
-    () => ({ mobileOpen, openMobile, closeMobile, toggleMobile }),
-    [mobileOpen, openMobile, closeMobile, toggleMobile]
+    () => ({ mobileOpen, openMobile, closeMobile, toggleMobile, userRole }),
+    [mobileOpen, openMobile, closeMobile, toggleMobile, userRole]
   );
 
   return (

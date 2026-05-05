@@ -6,7 +6,7 @@ import { sendTicketEmail } from "@dbc/email";
 import { revalidatePath } from "next/cache";
 
 export async function createDoorSale(formData: FormData) {
-  const user = await requireRole("team_member");
+  const user = await requireRole("door_sales");
   const supabase = await createServerClient();
 
   const eventId = formData.get("event_id") as string;
@@ -191,7 +191,7 @@ export async function createDoorSale(formData: FormData) {
  * after a sale — only allows voids on door_sale orders.
  */
 export async function voidDoorSale(orderId: string, locale: string) {
-  const user = await requireRole("team_member");
+  const user = await requireRole("door_sales");
   const supabase = await createServerClient();
 
   const { data: order } = await supabase
@@ -255,7 +255,7 @@ export async function voidDoorSale(orderId: string, locale: string) {
 }
 
 export async function getDoorSaleEvents(mode: "door" | "advance" = "door") {
-  await requireRole("team_member");
+  await requireRole("door_sales");
   const supabase = await createServerClient();
 
   let query = supabase
@@ -278,7 +278,7 @@ export async function getDoorSaleEvents(mode: "door" | "advance" = "door") {
 }
 
 export async function getEventTiers(eventId: string) {
-  await requireRole("team_member");
+  await requireRole("door_sales");
   const supabase = await createServerClient();
 
   const { data } = await supabase

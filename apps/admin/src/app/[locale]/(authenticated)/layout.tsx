@@ -9,7 +9,7 @@ export default async function AuthenticatedLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const user = await requireRole("team_member");
+  const user = await requireRole("scanner");
 
   return (
     <AdminShell

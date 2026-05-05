@@ -692,6 +692,8 @@
         "noEvents": "No events to assign.",
         "member": "member",
         "members": "members",
+        "scanner": "Scanner",
+        "doorSales": "Door sales",
         "teamMember": "Team member",
         "manager": "Manager",
         "admin": "Admin",

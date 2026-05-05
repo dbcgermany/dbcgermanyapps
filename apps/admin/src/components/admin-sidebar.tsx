@@ -32,48 +32,50 @@ import {
   Zap,
   type LucideIcon,
 } from "lucide-react";
-import type { UserRole } from "@dbc/types";
-import { ROLE_HIERARCHY } from "@dbc/types";
+import type { AdminModule, UserRole } from "@dbc/types";
+import { canDo } from "@dbc/types";
 import { useAdminShell } from "./admin-shell-layout";
 
 interface NavItem {
   labelKey: string;
   href: string;
   icon: LucideIcon;
-  minRole: UserRole;
+  /** Module key in the canonical PERMISSIONS matrix (@dbc/types).
+   *  Sidebar visibility = `canDo(userRole, mod, "read")`. */
+  mod: AdminModule;
   dividerAbove?: boolean;
   indent?: boolean;
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { labelKey: "dashboard", href: "/dashboard", icon: LayoutDashboard, minRole: "team_member" },
-  { labelKey: "reports", href: "/reports", icon: LineChart, minRole: "admin" },
+  { labelKey: "dashboard", href: "/dashboard", icon: LayoutDashboard, mod: "dashboard" },
+  { labelKey: "reports", href: "/reports", icon: LineChart, mod: "reports" },
 
-  { labelKey: "events", href: "/events", icon: Calendar, minRole: "manager", dividerAbove: true },
-  { labelKey: "orders", href: "/orders", icon: ShoppingCart, minRole: "manager" },
-  { labelKey: "doorSale", href: "/door-sale", icon: DoorOpen, minRole: "team_member" },
-  { labelKey: "scan", href: "/scan", icon: ScanLine, minRole: "team_member" },
+  { labelKey: "events", href: "/events", icon: Calendar, mod: "events", dividerAbove: true },
+  { labelKey: "orders", href: "/orders", icon: ShoppingCart, mod: "orders" },
+  { labelKey: "doorSale", href: "/door-sale", icon: DoorOpen, mod: "doorSale" },
+  { labelKey: "scan", href: "/scan", icon: ScanLine, mod: "scan" },
 
-  { labelKey: "news", href: "/news", icon: Newspaper, minRole: "manager", dividerAbove: true },
-  { labelKey: "newsletters", href: "/newsletters", icon: Mail, minRole: "manager" },
-  { labelKey: "funnels", href: "/funnels", icon: Zap, minRole: "manager" },
-  { labelKey: "applications", href: "/applications", icon: FileText, minRole: "manager" },
-  { labelKey: "jobOffers", href: "/job-offers", icon: Briefcase, minRole: "manager" },
+  { labelKey: "news", href: "/news", icon: Newspaper, mod: "news", dividerAbove: true },
+  { labelKey: "newsletters", href: "/newsletters", icon: Mail, mod: "newsletters" },
+  { labelKey: "funnels", href: "/funnels", icon: Zap, mod: "funnels" },
+  { labelKey: "applications", href: "/applications", icon: FileText, mod: "applications" },
+  { labelKey: "jobOffers", href: "/job-offers", icon: Briefcase, mod: "jobOffers" },
 
-  { labelKey: "allContacts", href: "/contacts", icon: Contact, minRole: "manager", dividerAbove: true },
-  { labelKey: "partners", href: "/contacts?category=partners", icon: Contact, minRole: "manager", indent: true },
-  { labelKey: "founders", href: "/contacts?category=founders", icon: Contact, minRole: "manager", indent: true },
-  { labelKey: "investors", href: "/contacts?category=investors", icon: Contact, minRole: "manager", indent: true },
-  { labelKey: "press", href: "/contacts?category=press", icon: Contact, minRole: "manager", indent: true },
-  { labelKey: "team", href: "/team", icon: UserSquare, minRole: "manager" },
-  { labelKey: "staff", href: "/staff", icon: Users, minRole: "admin" },
+  { labelKey: "allContacts", href: "/contacts", icon: Contact, mod: "contacts", dividerAbove: true },
+  { labelKey: "partners", href: "/contacts?category=partners", icon: Contact, mod: "contacts", indent: true },
+  { labelKey: "founders", href: "/contacts?category=founders", icon: Contact, mod: "contacts", indent: true },
+  { labelKey: "investors", href: "/contacts?category=investors", icon: Contact, mod: "contacts", indent: true },
+  { labelKey: "press", href: "/contacts?category=press", icon: Contact, mod: "contacts", indent: true },
+  { labelKey: "team", href: "/team", icon: UserSquare, mod: "team" },
+  { labelKey: "staff", href: "/staff", icon: Users, mod: "staff" },
 
-  { labelKey: "companyInfo", href: "/company-info", icon: Building2, minRole: "manager", dividerAbove: true },
-  { labelKey: "legalPages", href: "/legal-pages", icon: Scale, minRole: "manager" },
-  { labelKey: "settings", href: "/settings", icon: Settings, minRole: "admin" },
-  { labelKey: "ads", href: "/ads", icon: Megaphone, minRole: "super_admin" },
-  { labelKey: "auditLog", href: "/audit-log", icon: ScrollText, minRole: "super_admin" },
-  { labelKey: "devInfo", href: "/dev-info", icon: Info, minRole: "super_admin" },
+  { labelKey: "companyInfo", href: "/company-info", icon: Building2, mod: "companyInfo", dividerAbove: true },
+  { labelKey: "legalPages", href: "/legal-pages", icon: Scale, mod: "legalPages" },
+  { labelKey: "settings", href: "/settings", icon: Settings, mod: "settings" },
+  { labelKey: "ads", href: "/ads", icon: Megaphone, mod: "ads" },
+  { labelKey: "auditLog", href: "/audit-log", icon: ScrollText, mod: "auditLog" },
+  { labelKey: "devInfo", href: "/dev-info", icon: Info, mod: "devInfo" },
 ];
 
 const STORAGE_KEY = "admin-sidebar-collapsed";
@@ -93,10 +95,9 @@ export function AdminSidebar({
   const tShell = useTranslations("admin.shell");
   const { mobileOpen, closeMobile } = useAdminShell();
   const [collapsed, setCollapsed] = useState(false);
-  const userLevel = ROLE_HIERARCHY[userRole];
 
-  const visibleItems = NAV_ITEMS.filter(
-    (item) => userLevel >= ROLE_HIERARCHY[item.minRole]
+  const visibleItems = NAV_ITEMS.filter((item) =>
+    canDo(userRole, item.mod, "read")
   );
 
   // Hydrate collapse state from localStorage on mount. This intentionally

@@ -23,9 +23,9 @@ async function requireAdmin() {
     .single();
   if (
     !profile ||
-    !["admin", "super_admin", "manager"].includes(profile.role as string)
+    !["admin", "super_admin"].includes(profile.role as string)
   ) {
-    return { error: "Not authorised — admin/manager role required" };
+    return { error: "Not authorised — admin role required" };
   }
   return { supabase, userId: user.id };
 }

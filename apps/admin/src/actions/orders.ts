@@ -26,7 +26,7 @@ export async function getOrders(filter?: {
   status?: string;
   page?: number;
 }) {
-  await requireRole("manager");
+  await requireRole("team_member");
   const supabase = await createServerClient();
 
   const page = Math.max(1, filter?.page ?? 1);
@@ -69,7 +69,7 @@ export async function getOrders(filter?: {
 }
 
 export async function getOrdersEvents() {
-  await requireRole("manager");
+  await requireRole("team_member");
   const supabase = await createServerClient();
 
   const { data } = await supabase
@@ -84,7 +84,7 @@ export async function getOrdersEvents() {
  * Fetch a single order with all related data for the detail page.
  */
 export async function getOrder(orderId: string) {
-  await requireRole("manager");
+  await requireRole("team_member");
   const supabase = await createServerClient();
 
   const { data: order, error } = await supabase

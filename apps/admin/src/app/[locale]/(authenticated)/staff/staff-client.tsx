@@ -33,6 +33,8 @@ interface EventOption {
 }
 
 const ROLE_OPTIONS: UserRole[] = [
+  "scanner",
+  "door_sales",
   "team_member",
   "manager",
   "admin",
@@ -109,6 +111,8 @@ export function StaffClient({
 
   const roleLabels: Record<UserRole, string> = {
     buyer: "Buyer",
+    scanner: t("scanner"),
+    door_sales: t("doorSales"),
     team_member: t("teamMember"),
     manager: t("manager"),
     admin: t("admin"),

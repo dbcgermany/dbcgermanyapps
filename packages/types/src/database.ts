@@ -3069,7 +3069,7 @@ export type Database = {
         | "partner"
         | "media"
       team_member_visibility: "public" | "internal" | "hidden"
-      user_role: "buyer" | "team_member" | "manager" | "admin" | "super_admin"
+      user_role: "buyer" | "scanner" | "door_sales" | "team_member" | "manager" | "admin" | "super_admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -3269,7 +3269,7 @@ export const Constants = {
         "media",
       ],
       team_member_visibility: ["public", "internal", "hidden"],
-      user_role: ["buyer", "team_member", "manager", "admin", "super_admin"],
+      user_role: ["buyer", "scanner", "door_sales", "team_member", "manager", "admin", "super_admin"],
     },
   },
 } as const

@@ -137,7 +137,7 @@ const COLUMNS = `
 `;
 
 export async function getCompanyInfo(): Promise<CompanyInfo | null> {
-  await requireRole("manager");
+  await requireRole("admin");
   const supabase = await createServerClient();
   const { data, error } = await supabase
     .from("company_info")
@@ -463,7 +463,7 @@ export async function updateCompanyInfoAboutSections(input: {
   de: Partial<AboutSections>;
   fr: Partial<AboutSections>;
 }): Promise<{ error?: string; success?: true }> {
-  const user = await requireRole("manager");
+  const user = await requireRole("admin");
   const supabase = await createServerClient();
 
   const { error } = await supabase

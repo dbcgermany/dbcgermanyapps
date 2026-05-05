@@ -1,6 +1,6 @@
 import { createServerClient } from "./server-client";
-import type { UserRole } from "@dbc/types";
-import { ROLE_HIERARCHY } from "@dbc/types";
+import type { AdminModule, CrudAction, UserRole } from "@dbc/types";
+import { PERMISSIONS, ROLE_HIERARCHY } from "@dbc/types";
 
 interface AuthResult {
   userId: string;
@@ -51,4 +51,25 @@ export async function requireRole(minimumRole: UserRole): Promise<AuthResult> {
     role: profile.role as UserRole,
     email: user.email ?? "",
   };
+}
+
+/**
+ * Server Action guard — looks up the minimum role for a (module, action)
+ * pair in the canonical PERMISSIONS matrix and delegates to requireRole().
+ * Throws if the action is not permitted on this module (matrix cell = null)
+ * or the caller lacks the required role.
+ *
+ * Usage:
+ *   const user = await requirePermission("events", "create"); // → manager+
+ *   const user = await requirePermission("orders", "delete"); // → admin+
+ */
+export async function requirePermission(
+  mod: AdminModule,
+  action: CrudAction,
+): Promise<AuthResult> {
+  const required = PERMISSIONS[mod][action];
+  if (required === null) {
+    throw new Error(`Forbidden: action "${action}" not allowed on "${mod}"`);
+  }
+  return requireRole(required);
 }

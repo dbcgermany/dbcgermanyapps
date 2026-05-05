@@ -12,6 +12,8 @@
 
 export const USER_ROLE_VALUES = [
   "buyer",
+  "scanner",
+  "door_sales",
   "team_member",
   "manager",
   "admin",
@@ -27,6 +29,8 @@ export type UserRole = (typeof USER_ROLE_VALUES)[number];
  * a general UserRole to `.includes(role)` without a cast.
  */
 export const STAFF_ROLES: readonly UserRole[] = [
+  "scanner",
+  "door_sales",
   "team_member",
   "manager",
   "admin",
@@ -37,11 +41,100 @@ export type StaffRole = Exclude<UserRole, "buyer">;
 /** Role hierarchy — higher number = more permissions */
 export const ROLE_HIERARCHY: Record<UserRole, number> = {
   buyer: 0,
-  team_member: 1,
-  manager: 2,
-  admin: 3,
-  super_admin: 4,
+  scanner: 1,
+  door_sales: 2,
+  team_member: 3,
+  manager: 4,
+  admin: 5,
+  super_admin: 6,
 };
+
+/* -------------------------------------------------------------------------- */
+/*                          Admin modules + permissions                       */
+/* -------------------------------------------------------------------------- */
+// Single source of truth for which role can do what in the admin app.
+// Drives sidebar visibility (read), server-action guards (any CRUD action),
+// and client-side button gating via the useCan() hook. A `null` cell means
+// "this action is not available on this module" (e.g. dashboard has no create).
+
+export const ADMIN_MODULES = [
+  "dashboard",
+  "reports",
+  "reports.marketing",
+  "reports.ops",
+  "reports.visitors",
+  "reports.finance",
+  "reports.hr",
+  "reports.it",
+  "events",
+  "orders",
+  "doorSale",
+  "scan",
+  "news",
+  "newsletters",
+  "funnels",
+  "applications",
+  "jobOffers",
+  "contacts",
+  "team",
+  "staff",
+  "companyInfo",
+  "legalPages",
+  "settings",
+  "settings.appSecrets",
+  "ads",
+  "auditLog",
+  "devInfo",
+] as const;
+export type AdminModule = (typeof ADMIN_MODULES)[number];
+
+export const CRUD_ACTIONS = ["read", "create", "update", "delete"] as const;
+export type CrudAction = (typeof CRUD_ACTIONS)[number];
+
+export const PERMISSIONS: Record<
+  AdminModule,
+  Record<CrudAction, UserRole | null>
+> = {
+  dashboard:             { read: "scanner",     create: null,         update: null,        delete: null         },
+  reports:               { read: "manager",     create: null,         update: null,        delete: null         },
+  "reports.marketing":   { read: "manager",     create: null,         update: null,        delete: null         },
+  "reports.ops":         { read: "manager",     create: null,         update: null,        delete: null         },
+  "reports.visitors":    { read: "manager",     create: null,         update: null,        delete: null         },
+  "reports.finance":     { read: "admin",       create: null,         update: null,        delete: null         },
+  "reports.hr":          { read: "admin",       create: null,         update: null,        delete: null         },
+  "reports.it":          { read: "admin",       create: null,         update: null,        delete: null         },
+  events:                { read: "team_member", create: "manager",    update: "manager",   delete: "admin"      },
+  orders:                { read: "team_member", create: "door_sales", update: "manager",   delete: "admin"      },
+  doorSale:              { read: "door_sales",  create: "door_sales", update: null,        delete: null         },
+  scan:                  { read: "scanner",     create: "scanner",    update: null,        delete: null         },
+  news:                  { read: "manager",     create: "manager",    update: "manager",   delete: "admin"      },
+  newsletters:           { read: "manager",     create: "manager",    update: "manager",   delete: "admin"      },
+  funnels:               { read: "manager",     create: "manager",    update: "manager",   delete: "admin"      },
+  applications:          { read: "manager",     create: null,         update: "manager",   delete: "admin"      },
+  jobOffers:             { read: "admin",       create: "admin",      update: "admin",     delete: "admin"      },
+  contacts:              { read: "manager",     create: "manager",    update: "manager",   delete: "admin"      },
+  team:                  { read: "manager",     create: "admin",      update: "admin",     delete: "admin"      },
+  staff:                 { read: "admin",       create: "admin",      update: "admin",     delete: "admin"      },
+  companyInfo:           { read: "admin",       create: "admin",      update: "admin",     delete: "super_admin" },
+  legalPages:            { read: "admin",       create: "admin",      update: "admin",     delete: "super_admin" },
+  settings:              { read: "admin",       create: "admin",      update: "admin",     delete: "super_admin" },
+  "settings.appSecrets": { read: "super_admin", create: "super_admin", update: "super_admin", delete: "super_admin" },
+  ads:                   { read: "admin",       create: "admin",      update: "admin",     delete: "admin"      },
+  auditLog:              { read: "super_admin", create: null,         update: null,        delete: null         },
+  devInfo:               { read: "super_admin", create: null,         update: null,        delete: null         },
+};
+
+/** Returns true when `role` meets the minimum required for this module/action.
+ *  Returns false when the action is `null` in the matrix (= not available). */
+export function canDo(
+  role: UserRole,
+  mod: AdminModule,
+  action: CrudAction,
+): boolean {
+  const required = PERMISSIONS[mod][action];
+  if (required === null) return false;
+  return ROLE_HIERARCHY[role] >= ROLE_HIERARCHY[required];
+}
 
 /* -------------------------------------------------------------------------- */
 /*                                  Events                                    */

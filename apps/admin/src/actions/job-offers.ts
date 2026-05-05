@@ -15,7 +15,7 @@ const JOB_COLUMNS =
   "id, title_en, title_de, title_fr, description_en, description_de, description_fr, requirements_en, requirements_de, requirements_fr, location, employment_type, department, is_published, sort_order, created_at, updated_at" as const;
 
 export async function getJobOffers() {
-  await requireRole("manager");
+  await requireRole("admin");
   const supabase = await createServerClient();
   const { data, error } = await supabase
     .from("job_offers")
@@ -26,7 +26,7 @@ export async function getJobOffers() {
 }
 
 export async function getJobOffer(id: string) {
-  await requireRole("manager");
+  await requireRole("admin");
   const supabase = await createServerClient();
   const { data, error } = await supabase
     .from("job_offers")
@@ -38,7 +38,7 @@ export async function getJobOffer(id: string) {
 }
 
 export async function createJobOffer(formData: FormData) {
-  const user = await requireRole("manager");
+  const user = await requireRole("admin");
   const supabase = await createServerClient();
   const locale = formData.get("locale") as string;
 
@@ -90,7 +90,7 @@ export async function createJobOffer(formData: FormData) {
 }
 
 export async function updateJobOffer(id: string, formData: FormData) {
-  const user = await requireRole("manager");
+  const user = await requireRole("admin");
   const supabase = await createServerClient();
   const locale = formData.get("locale") as string;
 
@@ -133,7 +133,7 @@ export async function updateJobOffer(id: string, formData: FormData) {
 }
 
 export async function toggleJobOfferPublished(id: string, locale: string) {
-  const user = await requireRole("manager");
+  const user = await requireRole("admin");
   const supabase = await createServerClient();
 
   const { data: job } = await supabase

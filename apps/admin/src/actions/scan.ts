@@ -84,7 +84,7 @@ export async function checkInTicket(
   eventId: string
 ): Promise<ScanResult> {
   try {
-    const user = await requireRole("team_member");
+    const user = await requireRole("scanner");
     const supabase = await createServerClient();
 
     // Validate token looks like a UUID (prevent injection)
@@ -151,7 +151,7 @@ export async function getScanStats(
   eventId: string
 ): Promise<{ total: number; checkedIn: number }> {
   try {
-    await requireRole("team_member");
+    await requireRole("scanner");
     const supabase = await createServerClient();
 
     const { count: total } = await supabase
@@ -173,10 +173,12 @@ export async function getScanStats(
 }
 
 export async function getAssignedEvents() {
-  const user = await requireRole("team_member");
+  const user = await requireRole("scanner");
   const supabase = await createServerClient();
 
-  // Managers+ see all events; team_members see only assigned events
+  // team_member is the only role restricted to assigned events. scanner and
+  // door_sales are global by design (they work whichever event needs them);
+  // manager+ obviously see everything.
   if (user.role === "team_member") {
     const { data } = await supabase
       .from("staff_event_assignments")

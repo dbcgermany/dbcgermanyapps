@@ -4,7 +4,8 @@ import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Badge } from "@dbc/ui";
-import type { UserRole } from "@dbc/types";
+import type { AdminModule, UserRole } from "@dbc/types";
+import { canDo } from "@dbc/types";
 import {
   updateStaffRole,
   assignStaffToEvent,
@@ -44,6 +45,8 @@ interface EventOption {
 }
 
 const ROLE_OPTIONS: UserRole[] = [
+  "scanner",
+  "door_sales",
   "team_member",
   "manager",
   "admin",
@@ -78,6 +81,8 @@ export function StaffDetailClient({
       eventAssignments: "Event assignments",
       recentActivity: "Recent activity",
       noActivity: "No recent activity.",
+      scanner: "Scanner",
+      doorSales: "Door sales",
       teamMember: "Team member",
       manager: "Manager",
       admin: "Admin",
@@ -92,6 +97,8 @@ export function StaffDetailClient({
       eventAssignments: "Veranstaltungszuweisungen",
       recentActivity: "Letzte Aktivit\u00E4t",
       noActivity: "Keine Aktivit\u00E4t.",
+      scanner: "Scanner",
+      doorSales: "Kassenpersonal",
       teamMember: "Teammitglied",
       manager: "Manager",
       admin: "Admin",
@@ -106,6 +113,8 @@ export function StaffDetailClient({
       eventAssignments: "Affectations",
       recentActivity: "Activit\u00E9 r\u00E9cente",
       noActivity: "Aucune activit\u00E9.",
+      scanner: "Scanner",
+      doorSales: "Caisse",
       teamMember: "Membre",
       manager: "Manager",
       admin: "Admin",
@@ -114,11 +123,14 @@ export function StaffDetailClient({
   }[locale] ?? {
     profile: "Profile", email: "Email", role: "Role", locale: "Locale",
     memberSince: "Member since", eventAssignments: "Events", recentActivity: "Activity",
-    noActivity: "No activity.", teamMember: "Team", manager: "Manager", admin: "Admin", super_admin: "Super admin",
+    noActivity: "No activity.", scanner: "Scanner", doorSales: "Door sales",
+    teamMember: "Team", manager: "Manager", admin: "Admin", super_admin: "Super admin",
   };
 
   const roleLabels: Record<UserRole, string> = {
     buyer: "Buyer",
+    scanner: t.scanner,
+    door_sales: t.doorSales,
     team_member: t.teamMember,
     manager: t.manager,
     admin: t.admin,
@@ -190,6 +202,7 @@ export function StaffDetailClient({
             </dd>
           </div>
         </dl>
+        <RoleCapabilitiesPanel role={profile.role} locale={locale} />
       </section>
 
       {/* Event assignments */}
@@ -263,6 +276,66 @@ export function StaffDetailClient({
           </div>
         )}
       </section>
+    </div>
+  );
+}
+
+// Renders a checklist of modules the given role can read. Drives the
+// "what this role can do" hint shown next to the role dropdown so the
+// assigner can see the permission spread before saving.
+const CAPABILITY_MODULES: { mod: AdminModule; key: string; label: { en: string; de: string; fr: string } }[] = [
+  { mod: "scan",         key: "scan",         label: { en: "Scan tickets at the door",       de: "Tickets am Einlass scannen",          fr: "Scanner les billets à l'entrée" } },
+  { mod: "doorSale",     key: "doorSale",     label: { en: "Sell walk-in tickets at the door", de: "Walk-In-Tickets am Einlass verkaufen", fr: "Vendre des billets à l'entrée" } },
+  { mod: "events",       key: "events",       label: { en: "View events",                    de: "Events einsehen",                     fr: "Consulter les événements" } },
+  { mod: "orders",       key: "orders",       label: { en: "View orders",                    de: "Bestellungen einsehen",               fr: "Consulter les commandes" } },
+  { mod: "news",         key: "news",         label: { en: "Manage news + content",          de: "News & Inhalte verwalten",            fr: "Gérer les actualités & contenus" } },
+  { mod: "newsletters",  key: "newsletters",  label: { en: "Send newsletters",               de: "Newsletter versenden",                fr: "Envoyer des newsletters" } },
+  { mod: "contacts",     key: "contacts",     label: { en: "Manage CRM contacts",            de: "CRM-Kontakte verwalten",              fr: "Gérer les contacts CRM" } },
+  { mod: "applications", key: "applications", label: { en: "Review applications",            de: "Bewerbungen sichten",                 fr: "Examiner les candidatures" } },
+  { mod: "reports.marketing", key: "reportsMarketing", label: { en: "View marketing reports", de: "Marketing-Reports einsehen",         fr: "Consulter les rapports marketing" } },
+  { mod: "reports.finance",   key: "reportsFinance",   label: { en: "View finance reports",   de: "Finanz-Reports einsehen",            fr: "Consulter les rapports finance" } },
+  { mod: "jobOffers",    key: "jobOffers",    label: { en: "Post job offers",                de: "Stellenangebote veröffentlichen",     fr: "Publier des offres d'emploi" } },
+  { mod: "staff",        key: "staff",        label: { en: "Manage staff",                   de: "Mitarbeiter verwalten",               fr: "Gérer le personnel" } },
+  { mod: "companyInfo",  key: "companyInfo",  label: { en: "Edit company info",              de: "Unternehmensinfo bearbeiten",         fr: "Modifier les infos société" } },
+  { mod: "legalPages",   key: "legalPages",   label: { en: "Edit legal pages",               de: "Rechtsseiten bearbeiten",             fr: "Modifier les pages légales" } },
+  { mod: "settings",     key: "settings",     label: { en: "Edit app settings",              de: "App-Einstellungen bearbeiten",        fr: "Modifier les paramètres" } },
+  { mod: "ads",          key: "ads",          label: { en: "Manage dashboard ads",           de: "Dashboard-Ads verwalten",             fr: "Gérer les annonces dashboard" } },
+  { mod: "auditLog",     key: "auditLog",     label: { en: "View audit log",                 de: "Audit-Log einsehen",                  fr: "Consulter l'audit log" } },
+];
+
+function RoleCapabilitiesPanel({
+  role,
+  locale,
+}: {
+  role: UserRole;
+  locale: string;
+}) {
+  const lang = (locale === "de" || locale === "fr" ? locale : "en") as "en" | "de" | "fr";
+  const heading = { en: "What this role can do", de: "Was diese Rolle kann", fr: "Ce que ce rôle peut faire" }[lang];
+
+  return (
+    <div className="mt-5 rounded-md border border-dashed border-border bg-muted/20 p-4">
+      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        {heading}
+      </p>
+      <ul className="mt-3 grid gap-1.5 text-xs sm:grid-cols-2">
+        {CAPABILITY_MODULES.map((cap) => {
+          const allowed = canDo(role, cap.mod, "read");
+          return (
+            <li
+              key={cap.key}
+              className={`flex items-center gap-2 ${
+                allowed ? "text-foreground" : "text-muted-foreground/60 line-through"
+              }`}
+            >
+              <span aria-hidden className={allowed ? "text-primary" : "opacity-50"}>
+                {allowed ? "✓" : "✗"}
+              </span>
+              <span>{cap.label[lang]}</span>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }

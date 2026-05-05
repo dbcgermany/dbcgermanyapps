@@ -10,7 +10,8 @@ import {
   type FinanceChannel,
 } from "@/actions/reports";
 import { PageHeader } from "@/components/page-header";
-import { requireRole } from "@dbc/supabase/server";
+import { requirePermission } from "@dbc/supabase/server";
+import { canDo } from "@dbc/types";
 import { ReportsClient } from "./reports-client";
 import { EventPdfPanel } from "./event-pdf-panel";
 import { FinanceTab } from "./finance-tab";
@@ -55,14 +56,31 @@ export default async function ReportsPage({
     to?: string;
   }>;
 }) {
-  // Reports are admin-gated — finance data is sensitive enough to warrant
-  // blocking manager-level access entirely (they see the dashboard channel
-  // split but not the raw order list / refund ledger).
-  await requireRole("admin");
+  // Reports module is open to manager+. Per-tab gating below filters out
+  // finance/HR/IT for non-admin viewers; the page-level guard only ensures
+  // the visitor can read at least one tab.
+  const user = await requirePermission("reports", "read");
 
   const { locale } = await params;
   const sp = await searchParams;
-  const tab = parseTab(sp.tab);
+  let tab = parseTab(sp.tab);
+
+  // Snap tab to one the viewer can read. Manager hitting the default
+  // "finance" tab gets bumped to "marketing"; every other defaults flow
+  // through unchanged.
+  const tabModuleByKey: Record<TabKey, "reports.finance" | "reports.marketing" | "reports.ops" | "reports.visitors" | "reports.hr" | "reports.it"> = {
+    finance: "reports.finance",
+    marketing: "reports.marketing",
+    operations: "reports.ops",
+    visitors: "reports.visitors",
+    hr: "reports.hr",
+    it: "reports.it",
+    general: "reports.finance",
+  };
+  if (!canDo(user.role, tabModuleByKey[tab], "read")) {
+    const fallback: TabKey[] = ["marketing", "operations", "visitors", "finance", "hr", "it", "general"];
+    tab = fallback.find((t) => canDo(user.role, tabModuleByKey[t], "read")) ?? "marketing";
+  }
 
   const t = await getTranslations({ locale, namespace: "admin.reports" });
 
