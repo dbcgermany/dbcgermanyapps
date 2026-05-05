@@ -53,14 +53,32 @@ const T = {
   },
 } as const;
 
-export default async function EditFunnelPage({
+export default async function EditFunnelPage(props: {
+  params: Promise<{ locale: string; id: string }>;
+}) {
+  try {
+    return await renderEditFunnelPage(props);
+  } catch (err) {
+    captureServerError(err, {
+      scope: "funnels.editPage",
+      data: { stage: "render" },
+    });
+    throw err;
+  }
+}
+
+async function renderEditFunnelPage({
   params,
 }: {
   params: Promise<{ locale: string; id: string }>;
 }) {
   const { locale, id } = await params;
   const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
-  const tBack = await getTranslations({ locale, namespace: "admin.back" });
+  const tBack = await loadOrCapture(
+    () => getTranslations({ locale, namespace: "admin.back" }),
+    "funnels.getTranslations.back",
+    { locale },
+  );
   const funnel = await loadOrCapture(() => getFunnel(id), "funnels.getFunnel", {
     funnel_id: id,
     locale,
