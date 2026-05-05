@@ -199,7 +199,7 @@ export function serviceJsonLd(service: {
     areaServed: [
       { "@type": "Country", name: "Germany" },
       { "@type": "Country", name: "France" },
-      { "@type": "Place", name: "African diaspora in Europe" },
+      { "@type": "Place", name: "African diaspora" },
     ],
   };
 }
