@@ -13,7 +13,14 @@ const SCHEDULE_PUBLIC =
   "id, title_en, title_de, title_fr, description_en, description_de, description_fr, starts_at, ends_at, speaker_name, speaker_title, speaker_image_url, speaker_id, sort_order" as const;
 
 const SPEAKER_PUBLIC =
-  "id, slug, first_name, last_name, title_en, title_de, title_fr, company_en, company_de, company_fr, bio_en, bio_de, bio_fr, photo_url, email, linkedin_url, twitter_url, website_url" as const;
+  "id, slug, first_name, last_name, title_en, title_de, title_fr, company_en, company_de, company_fr, bio_en, bio_de, bio_fr, photo_url, email, linkedin_url, twitter_url, website_url, team_member_id" as const;
+
+// Pulled when a speaker has team_member_id set so the public profile can
+// inherit bio/photo/role/contact from the canonical team_members row.
+// Speakers row fields take precedence when filled — team_members is only
+// the fallback. Same pattern as how the team profile page already renders.
+const TEAM_MEMBER_FOR_SPEAKER =
+  "id, slug, name, role_en, role_de, role_fr, bio_en, bio_de, bio_fr, photo_url, email, linkedin_url, visibility" as const;
 
 const EVENT_SPEAKER_PUBLIC =
   "speaker_id, role_label_en, role_label_de, role_label_fr, is_featured, sort_order" as const;
@@ -87,6 +94,22 @@ export async function getEventMedia(eventId: string) {
   return data ?? [];
 }
 
+export type PublicTeamMemberFallback = {
+  id: string;
+  slug: string;
+  name: string;
+  role_en: string | null;
+  role_de: string | null;
+  role_fr: string | null;
+  bio_en: string | null;
+  bio_de: string | null;
+  bio_fr: string | null;
+  photo_url: string | null;
+  email: string | null;
+  linkedin_url: string | null;
+  visibility: string;
+};
+
 export type PublicEventSpeaker = {
   speaker_id: string;
   role_label_en: string | null;
@@ -113,6 +136,8 @@ export type PublicEventSpeaker = {
     linkedin_url: string | null;
     twitter_url: string | null;
     website_url: string | null;
+    team_member_id: string | null;
+    team_members: PublicTeamMemberFallback | null;
   };
 };
 
@@ -121,7 +146,9 @@ export async function getEventSpeakers(eventId: string): Promise<PublicEventSpea
 
   const { data, error } = await supabase
     .from("event_speakers")
-    .select(`${EVENT_SPEAKER_PUBLIC}, speakers!inner(${SPEAKER_PUBLIC})`)
+    .select(
+      `${EVENT_SPEAKER_PUBLIC}, speakers!inner(${SPEAKER_PUBLIC}, team_members(${TEAM_MEMBER_FOR_SPEAKER}))`,
+    )
     .eq("event_id", eventId)
     .eq("speakers.visibility", "public")
     .order("is_featured", { ascending: false })
@@ -139,7 +166,9 @@ export async function getEventSpeakerBySlug(
 
   const { data, error } = await supabase
     .from("event_speakers")
-    .select(`${EVENT_SPEAKER_PUBLIC}, speakers!inner(${SPEAKER_PUBLIC})`)
+    .select(
+      `${EVENT_SPEAKER_PUBLIC}, speakers!inner(${SPEAKER_PUBLIC}, team_members(${TEAM_MEMBER_FOR_SPEAKER}))`,
+    )
     .eq("event_id", eventId)
     .eq("speakers.slug", speakerSlug)
     .eq("speakers.visibility", "public")

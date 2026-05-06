@@ -159,21 +159,27 @@ export default async function EventDetailPage({
     | "en"
     | "de"
     | "fr";
-  const speakerCards: SpeakerCardData[] = eventSpeakers.map((es) => ({
-    slug: es.speakers.slug,
-    fullName: `${es.speakers.first_name} ${es.speakers.last_name}`.trim(),
-    title:
-      (es.speakers[`title_${eff}` as const] as string | null) ||
-      es.speakers.title_en,
-    company:
-      (es.speakers[`company_${eff}` as const] as string | null) ||
-      es.speakers.company_en,
-    photoUrl: es.speakers.photo_url,
-    roleLabel:
-      (es[`role_label_${eff}` as const] as string | null) ||
-      es.role_label_en,
-    isFeatured: es.is_featured,
-  }));
+  const speakerCards: SpeakerCardData[] = eventSpeakers.map((es) => {
+    const tm = es.speakers.team_members;
+    return {
+      slug: es.speakers.slug,
+      fullName: `${es.speakers.first_name} ${es.speakers.last_name}`.trim(),
+      title:
+        (es.speakers[`title_${eff}` as const] as string | null) ||
+        es.speakers.title_en ||
+        (tm?.[`role_${eff}` as const] as string | null) ||
+        tm?.role_en ||
+        null,
+      company:
+        (es.speakers[`company_${eff}` as const] as string | null) ||
+        es.speakers.company_en,
+      photoUrl: es.speakers.photo_url || tm?.photo_url || null,
+      roleLabel:
+        (es[`role_label_${eff}` as const] as string | null) ||
+        es.role_label_en,
+      isFeatured: es.is_featured,
+    };
+  });
   const featuredSpeakers = speakerCards.filter((s) => s.isFeatured);
 
   const checkoutHref = `/${locale}/checkout/${slug}`;

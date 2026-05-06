@@ -85,6 +85,37 @@ export async function getTeamMembersForLinking() {
   return (data ?? []) as { id: string; name: string; slug: string }[];
 }
 
+export interface LinkedTeamMemberPreview {
+  id: string;
+  name: string;
+  slug: string;
+  role_en: string | null;
+  role_de: string | null;
+  role_fr: string | null;
+  bio_en: string | null;
+  bio_de: string | null;
+  bio_fr: string | null;
+  photo_url: string | null;
+  email: string | null;
+  linkedin_url: string | null;
+}
+
+export async function getLinkedTeamMember(
+  teamMemberId: string,
+): Promise<LinkedTeamMemberPreview | null> {
+  await requireRole("manager");
+  const supabase = await createServerClient();
+  const { data, error } = await supabase
+    .from("team_members")
+    .select(
+      "id, name, slug, role_en, role_de, role_fr, bio_en, bio_de, bio_fr, photo_url, email, linkedin_url",
+    )
+    .eq("id", teamMemberId)
+    .maybeSingle();
+  if (error) return null;
+  return (data ?? null) as LinkedTeamMemberPreview | null;
+}
+
 function readSpeakerForm(formData: FormData) {
   const first = ((formData.get("first_name") as string) || "").trim();
   const last = ((formData.get("last_name") as string) || "").trim();
@@ -198,6 +229,46 @@ export async function updateSpeaker(id: string, formData: FormData) {
   for (const slug of eventSlugs) {
     await pingRevalidate("tickets", ticketsPathsForEvent(slug));
   }
+  return { success: true };
+}
+
+export async function setSpeakerVisibility(
+  id: string,
+  visibility: Visibility,
+  locale: string,
+) {
+  const user = await requireRole("manager");
+  const supabase = await createServerClient();
+  const { error } = await supabase
+    .from("speakers")
+    .update({ visibility, updated_by: user.userId })
+    .eq("id", id);
+  if (error) return { error: error.message };
+
+  await supabase.from("audit_log").insert({
+    user_id: user.userId,
+    action: "set_speaker_visibility",
+    entity_type: "speakers",
+    entity_id: id,
+    details: { visibility },
+  });
+
+  // Find every event this speaker is attached to and ping its public page
+  const { data: links } = await supabase
+    .from("event_speakers")
+    .select("event_id, events(slug)")
+    .eq("speaker_id", id);
+  const eventSlugs = (links ?? [])
+    .map(
+      (l) =>
+        (l as unknown as { events: { slug: string } | null }).events?.slug ??
+        null,
+    )
+    .filter((s): s is string => !!s);
+  for (const slug of eventSlugs) {
+    await pingRevalidate("tickets", ticketsPathsForEvent(slug));
+  }
+  revalidatePath(`/${locale}/speakers`);
   return { success: true };
 }
 

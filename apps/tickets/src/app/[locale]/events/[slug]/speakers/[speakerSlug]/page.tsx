@@ -81,7 +81,10 @@ export default async function SpeakerProfilePage({
   ]);
   if (!speaker) return notFound();
 
-  const t = await getTranslations({ locale, namespace: "speakers.profile" });
+  const t = await getTranslations({
+    locale,
+    namespace: "tickets.speakers.profile",
+  });
   const f = await getTranslations({
     locale,
     namespace: "tickets.events.funnel",
@@ -92,20 +95,40 @@ export default async function SpeakerProfilePage({
     | "de"
     | "fr";
 
+  // When a speaker is linked to a team member, the team_members row is the
+  // canonical source of bio / photo / contact. The speakers row only
+  // overrides if explicitly filled (e.g. an event-specific bio/photo).
+  // This avoids re-entering Diambilay's or Bambi's bio twice.
+  const tm = speaker.speakers.team_members;
+
   const fullName =
     `${speaker.speakers.first_name} ${speaker.speakers.last_name}`.trim();
+
+  // title: speakers.title_* wins (it's the public-facing event title); else
+  // fall back to the team member's role.
   const title =
     (speaker.speakers[`title_${eff}` as const] as string | null) ||
-    speaker.speakers.title_en;
+    speaker.speakers.title_en ||
+    (tm?.[`role_${eff}` as const] as string | null) ||
+    tm?.role_en ||
+    null;
   const company =
     (speaker.speakers[`company_${eff}` as const] as string | null) ||
     speaker.speakers.company_en;
   const bio =
     (speaker.speakers[`bio_${eff}` as const] as string | null) ||
-    speaker.speakers.bio_en;
+    speaker.speakers.bio_en ||
+    (tm?.[`bio_${eff}` as const] as string | null) ||
+    tm?.bio_en ||
+    null;
+  const photoUrl = speaker.speakers.photo_url || tm?.photo_url || null;
+  const email = speaker.speakers.email || tm?.email || null;
+  const linkedinUrl =
+    speaker.speakers.linkedin_url || tm?.linkedin_url || null;
   const roleLabel =
     (speaker[`role_label_${eff}` as const] as string | null) ||
     speaker.role_label_en;
+  const teamMemberSlug = tm?.visibility === "public" ? tm.slug : null;
 
   const minPrice =
     tiers.length > 0
@@ -156,10 +179,10 @@ export default async function SpeakerProfilePage({
           {/* LEFT: portrait card */}
           <Reveal>
             <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-              {speaker.speakers.photo_url ? (
+              {photoUrl ? (
                 <div className="relative aspect-square w-full overflow-hidden rounded-xl">
                   <Image
-                    src={speaker.speakers.photo_url}
+                    src={photoUrl}
                     alt={fullName}
                     fill
                     sizes="(min-width: 1024px) 280px, 100vw"
@@ -188,19 +211,20 @@ export default async function SpeakerProfilePage({
                   {[title, company].filter(Boolean).join(" · ")}
                 </p>
               )}
-              {(speaker.speakers.linkedin_url ||
+              {(linkedinUrl ||
                 speaker.speakers.twitter_url ||
                 speaker.speakers.website_url ||
-                speaker.speakers.email) && (
+                email ||
+                teamMemberSlug) && (
                 <div className="mt-5 border-t border-border pt-5">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                     {t("linksHeading")}
                   </p>
                   <ul className="mt-3 space-y-2 text-sm">
-                    {speaker.speakers.linkedin_url && (
+                    {linkedinUrl && (
                       <li>
                         <a
-                          href={speaker.speakers.linkedin_url}
+                          href={linkedinUrl}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-2 text-primary hover:text-primary/80"
@@ -233,13 +257,25 @@ export default async function SpeakerProfilePage({
                         </a>
                       </li>
                     )}
-                    {speaker.speakers.email && (
+                    {email && (
                       <li>
                         <a
-                          href={`mailto:${speaker.speakers.email}`}
+                          href={`mailto:${email}`}
                           className="inline-flex items-center gap-2 text-primary hover:text-primary/80"
                         >
                           <Mail className="h-4 w-4" /> {t("email")}
+                        </a>
+                      </li>
+                    )}
+                    {teamMemberSlug && (
+                      <li>
+                        <a
+                          href={`https://dbc-germany.com/${locale}/team/${teamMemberSlug}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 text-primary hover:text-primary/80"
+                        >
+                          <ExternalLink className="h-4 w-4" /> {t("alsoOnTeam")}
                         </a>
                       </li>
                     )}

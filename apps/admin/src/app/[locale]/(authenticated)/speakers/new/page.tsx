@@ -11,10 +11,16 @@ export default async function NewSpeakerPage({
   const teamMembers = await getTeamMembersForLinking();
   return (
     <div>
-      <PageHeader title="New speaker" description="Add a speaker to the global library." />
-      <div className="mt-6">
-        <SpeakerForm mode="create" locale={locale} teamMembers={teamMembers} />
-      </div>
+      <PageHeader
+        title="New speaker"
+        description="Add a speaker to the global library."
+      />
+      <SpeakerForm
+        mode="create"
+        locale={locale}
+        teamMembers={teamMembers}
+        linkedTeam={null}
+      />
     </div>
   );
 }
