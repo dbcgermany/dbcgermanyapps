@@ -289,6 +289,52 @@
         "tickerJustNow": "just now",
         "tickerAgoMinutes": "{n} min ago",
         "tickerAgoHours": "{n}h ago"
+      },
+      "funnel": {
+        "featuredSpeakersEyebrow": "On stage",
+        "featuredSpeakersTitle": "Speakers headlining the day",
+        "viewProfile": "View profile",
+        "allSpeakersTitle": "Full speakers line-up",
+        "allSpeakersSubtitle": "Founders, investors and operators leading the sessions you came for.",
+        "allSpeakersCta": "Meet every speaker",
+        "pillarsEyebrow": "What you take home",
+        "pillarsTitle": "Why people travel for this event",
+        "testimonialsEyebrow": "From past editions",
+        "testimonialsTitle": "What attendees actually say afterwards",
+        "playVideo": "Play testimonial",
+        "galleryEyebrow": "From the room",
+        "galleryTitle": "Past edition in pictures",
+        "galleryViewAll": "Open the full gallery",
+        "faqEyebrow": "Before you book",
+        "faqTitle": "Questions people ask before they buy",
+        "closingEyebrow": "Final call",
+        "closingTitle": "Reserve your seat — there is one room and a fixed door count.",
+        "closingCta": "Buy my ticket",
+        "stickyCtaLabel": "Buy ticket",
+        "stickyFromPrice": "From {price}",
+        "stickyDeadlinePrefix": "Ends in",
+        "stickyScarcity": "Only {n} left",
+        "trustEyebrow": "Trusted by",
+        "speakersBack": "All speakers"
+      }
+    },
+    "speakers": {
+      "archive": {
+        "back": "Back to event",
+        "title": "Speakers",
+        "subtitle": "Every speaker on stage at this edition.",
+        "viewProfile": "View profile",
+        "company": "Company"
+      },
+      "profile": {
+        "back": "All speakers",
+        "bioHeading": "About",
+        "linksHeading": "Links",
+        "linkedin": "LinkedIn",
+        "twitter": "Twitter",
+        "website": "Website",
+        "email": "Email",
+        "alsoOnTeam": "Also on the DBC Germany team"
       }
     },
     "auth": {

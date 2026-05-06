@@ -289,6 +289,52 @@
         "tickerJustNow": "à l’instant",
         "tickerAgoMinutes": "il y a {n} min",
         "tickerAgoHours": "il y a {n} h"
+      },
+      "funnel": {
+        "featuredSpeakersEyebrow": "Sur scène",
+        "featuredSpeakersTitle": "Les intervenants en tête d’affiche",
+        "viewProfile": "Voir le profil",
+        "allSpeakersTitle": "Programme complet des intervenants",
+        "allSpeakersSubtitle": "Fondateurs, investisseurs et opérateurs qui mènent les sessions pour lesquelles vous êtes venu.",
+        "allSpeakersCta": "Voir tous les intervenants",
+        "pillarsEyebrow": "Ce que vous repartez avec",
+        "pillarsTitle": "Pourquoi les participants traversent l’Europe pour cet événement",
+        "testimonialsEyebrow": "Des éditions passées",
+        "testimonialsTitle": "Ce que les participants disent vraiment après",
+        "playVideo": "Lire le témoignage",
+        "galleryEyebrow": "Dans la salle",
+        "galleryTitle": "L’édition précédente en images",
+        "galleryViewAll": "Ouvrir la galerie complète",
+        "faqEyebrow": "Avant de réserver",
+        "faqTitle": "Questions posées avant l’achat",
+        "closingEyebrow": "Dernier appel",
+        "closingTitle": "Réservez votre place — une salle, un nombre de portes fixe.",
+        "closingCta": "Acheter mon billet",
+        "stickyCtaLabel": "Acheter un billet",
+        "stickyFromPrice": "À partir de {price}",
+        "stickyDeadlinePrefix": "Se termine dans",
+        "stickyScarcity": "Plus que {n}",
+        "trustEyebrow": "Ils nous font confiance",
+        "speakersBack": "Tous les intervenants"
+      }
+    },
+    "speakers": {
+      "archive": {
+        "back": "Retour à l’événement",
+        "title": "Intervenants",
+        "subtitle": "Tous les intervenants de cette édition.",
+        "viewProfile": "Voir le profil",
+        "company": "Société"
+      },
+      "profile": {
+        "back": "Tous les intervenants",
+        "bioHeading": "À propos",
+        "linksHeading": "Liens",
+        "linkedin": "LinkedIn",
+        "twitter": "Twitter",
+        "website": "Site web",
+        "email": "E-mail",
+        "alsoOnTeam": "Également dans l’équipe DBC Germany"
       }
     },
     "auth": {

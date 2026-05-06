@@ -10,6 +10,8 @@ import {
   Image as ImageIcon,
   ListChecks,
   Mail,
+  Megaphone,
+  Mic,
   QrCode,
   Radio,
   Scissors,
@@ -369,6 +371,18 @@ export default async function EventDetailPage({
             {t("marketing")}
           </h2>
           <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <HubLink
+              href={`/${locale}/events/${id}/funnel`}
+              icon={Megaphone}
+              title="Funnel content"
+              desc="Hero video, intro/closing copy, pillars, testimonials, FAQs, scarcity threshold."
+            />
+            <HubLink
+              href={`/${locale}/events/${id}/speakers`}
+              icon={Mic}
+              title="Speakers"
+              desc="Attach speakers to this event and set role labels (Keynote, Host, Co-Host)."
+            />
             <HubLink href={`/${locale}/events/${id}/emails`} icon={Mail} title={t("emailSequences")} desc={t("emailSequencesDesc")} />
             <HubLink href={`/${locale}/events/${id}/invitations`} icon={Gift} title={t("invitations")} desc={t("invitationsDesc")} />
             <HubLink href={`/${locale}/events/${id}/invitations/bulk`} icon={Upload} title={t("bulkInvitations")} desc={t("bulkInvitationsDesc")} />

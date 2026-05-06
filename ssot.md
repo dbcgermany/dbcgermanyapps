@@ -1186,6 +1186,43 @@ Every financial and KPI formula lives in Server Actions -- never in client-side 
 
 ---
 
+## 12.5. Public Event Funnel Page Composition
+
+Every event's public detail page (`/[locale]/events/[slug]` in the **tickets** app) follows the same conversion-driven section order. Sections are **data-gated**: any section whose backing rows are empty / null renders nothing, so events without speakers or testimonials still render correctly.
+
+```
+┌─ HERO                  hero_video_url (HeroVideo) OR cover_image_url
+│  ⤷ funnel_tagline_*    centred above the info card
+├─ INFO CARD             when/where/organizer/share (existing)
+├─ EVENT COUNTDOWN       Countdown component, only when starts_at > now
+├─ FEATURED SPEAKERS     event_speakers WHERE is_featured=true (top 4)
+├─ FUNNEL INTRO          funnel_intro_* (emotional bridge)
+├─ PILLARS               event_pillars ("What you take home")
+├─ TESTIMONIALS          event_testimonials (with optional video play overlay)
+├─ DESCRIPTION + SCHEDULE event.description_*, event_schedule_items (existing)
+├─ TICKETS SIDEBAR       sticky desktop right column (existing) — id="tickets-sidebar"
+├─ FULL SPEAKERS GRID    event_speakers (full list, links to /speakers/[slug])
+├─ FAQ                   event_faqs (accordion)
+├─ CLOSING CTA           funnel_closing_* + final big buy button
+└─ STICKY BOTTOM CTA     EventStickyCta — countdown + "From €X" + active deadline +
+                         scarcity ("Only X left"). Hides when #tickets-sidebar in view.
+```
+
+**Sub-routes** (same funnel intent — sticky CTA persists, so the visitor never loses the buy entry point):
+- `/events/[slug]/speakers` — event speakers archive
+- `/events/[slug]/speakers/[speakerSlug]` — speaker profile page
+
+**Per-event editable surfaces** in admin (gated `requireRole("manager")`):
+- `/events/[id]/speakers` — relation editor: attach speakers from the global library, set role labels (Keynote / Moderator & Host / Co-Host) and `is_featured`
+- `/events/[id]/funnel` — funnel content tab: hero video, tagline, intro, closing pitch, scarcity threshold, pillars CRUD, testimonials CRUD, FAQs CRUD
+- `/speakers` — global speakers library with optional `team_member_id` link to `team_members`
+
+**ISR**: every public event surface uses `export const revalidate = 300`. Admin writes call `pingRevalidate("tickets", […])` so changes appear within seconds of save instead of waiting for the 5-min ceiling.
+
+**Why this ordering**: featured speakers + pillars provide above-the-fold social proof and concrete value before the visitor scrolls; testimonials and FAQ kill objections before the closing CTA; the sticky bar ensures the buy action is one tap away on every screen at every scroll depth without duplicating the desktop sidebar's primary button.
+
+---
+
 ## 13. UI Behavior Patterns
 
 ### Loading States

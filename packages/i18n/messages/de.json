@@ -289,6 +289,52 @@
         "tickerJustNow": "gerade eben",
         "tickerAgoMinutes": "vor {n} Min",
         "tickerAgoHours": "vor {n} Std"
+      },
+      "funnel": {
+        "featuredSpeakersEyebrow": "Auf der Bühne",
+        "featuredSpeakersTitle": "Die Hauptredner des Tages",
+        "viewProfile": "Profil ansehen",
+        "allSpeakersTitle": "Komplettes Speaker-Lineup",
+        "allSpeakersSubtitle": "Gründer, Investoren und Operatoren, die die Sessions leiten, weshalb du hier bist.",
+        "allSpeakersCta": "Alle Speaker treffen",
+        "pillarsEyebrow": "Was du mitnimmst",
+        "pillarsTitle": "Warum Teilnehmer für dieses Event anreisen",
+        "testimonialsEyebrow": "Aus früheren Editionen",
+        "testimonialsTitle": "Was Teilnehmer im Nachhinein wirklich sagen",
+        "playVideo": "Testimonial abspielen",
+        "galleryEyebrow": "Aus dem Saal",
+        "galleryTitle": "Vergangene Edition in Bildern",
+        "galleryViewAll": "Vollständige Galerie öffnen",
+        "faqEyebrow": "Vor der Buchung",
+        "faqTitle": "Häufige Fragen vor dem Kauf",
+        "closingEyebrow": "Letzter Aufruf",
+        "closingTitle": "Sichere dir deinen Platz — ein Saal, eine feste Türzahl.",
+        "closingCta": "Mein Ticket kaufen",
+        "stickyCtaLabel": "Ticket kaufen",
+        "stickyFromPrice": "Ab {price}",
+        "stickyDeadlinePrefix": "Endet in",
+        "stickyScarcity": "Nur noch {n}",
+        "trustEyebrow": "Vertrauen von",
+        "speakersBack": "Alle Speaker"
+      }
+    },
+    "speakers": {
+      "archive": {
+        "back": "Zurück zum Event",
+        "title": "Speaker",
+        "subtitle": "Alle Speaker dieser Edition.",
+        "viewProfile": "Profil ansehen",
+        "company": "Unternehmen"
+      },
+      "profile": {
+        "back": "Alle Speaker",
+        "bioHeading": "Über",
+        "linksHeading": "Links",
+        "linkedin": "LinkedIn",
+        "twitter": "Twitter",
+        "website": "Website",
+        "email": "E-Mail",
+        "alsoOnTeam": "Auch im Team von DBC Germany"
       }
     },
     "auth": {

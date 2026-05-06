@@ -2,7 +2,16 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { getEventBySlug, getPublicTiers, getEventSchedule } from "@/lib/queries";
+import { formatMoney } from "@dbc/ui";
+import {
+  getEventBySlug,
+  getPublicTiers,
+  getEventSchedule,
+  getEventSpeakers,
+  getEventPillars,
+  getEventTestimonials,
+  getEventFaqs,
+} from "@/lib/queries";
 import { getEventTriggers, TRIGGER_POLICY } from "@/actions/triggers";
 import { getCompanyInfo } from "@/lib/company-info";
 import { WaitlistButton } from "./waitlist-button";
@@ -13,6 +22,15 @@ import { SocialProofBadge } from "@/components/event-triggers/social-proof-badge
 import { TierDeadlineCountdown } from "@/components/event-triggers/tier-deadline-countdown";
 import { RecentBuyerTicker } from "@/components/event-triggers/recent-buyer-ticker";
 import { PriceAnchor } from "@/components/event-triggers/price-anchor";
+import { HeroVideo } from "@/components/funnel/hero-video";
+import { EventStickyCta } from "@/components/funnel/event-sticky-cta";
+import { FunnelPillars } from "@/components/funnel/funnel-pillars";
+import { FunnelTestimonials } from "@/components/funnel/funnel-testimonials";
+import { FunnelFaq } from "@/components/funnel/funnel-faq";
+import { FunnelClosingCta } from "@/components/funnel/funnel-closing-cta";
+import { FeaturedSpeakersStrip } from "@/components/speakers/featured-speakers-strip";
+import { SpeakersGrid } from "@/components/speakers/speakers-grid";
+import type { SpeakerCardData } from "@/components/speakers/speaker-card";
 
 // 5-min ISR ceiling. Admin tier/coupon/event writes still trigger on-demand
 // revalidation via apps/admin/src/lib/revalidate.ts, so this is just the
@@ -73,21 +91,92 @@ export default async function EventDetailPage({
     locale,
     namespace: "tickets.events.detail",
   });
+  const f = await getTranslations({
+    locale,
+    namespace: "tickets.events.funnel",
+  });
 
   const triggerLocale = (locale === "de" || locale === "fr" ? locale : "en") as
     | "en"
     | "de"
     | "fr";
 
-  const [tiers, schedule, triggers] = await Promise.all([
-    getPublicTiers(event.id),
-    getEventSchedule(event.id),
-    getEventTriggers(event.id, triggerLocale),
-  ]);
+  const [tiers, schedule, triggers, eventSpeakers, pillars, testimonials, faqs] =
+    await Promise.all([
+      getPublicTiers(event.id),
+      getEventSchedule(event.id),
+      getEventTriggers(event.id, triggerLocale),
+      getEventSpeakers(event.id),
+      getEventPillars(event.id),
+      getEventTestimonials(event.id),
+      getEventFaqs(event.id),
+    ]);
 
   const minPrice = tiers.length > 0
     ? Math.min(...tiers.map((tier) => tier.price_cents)) / 100
     : null;
+  const minPriceCurrency = tiers[0]?.currency ?? "EUR";
+
+  // Compute the urgency signals for the sticky bottom CTA. We pick the
+  // earliest-ending currently-on-sale tier as the "active deadline" and
+  // the tier with the lowest displayRemaining (under threshold) for
+  // scarcity. Both feed FOMO without ever exposing exact stock numbers
+  // beyond what the ScarcityBadge already shows.
+  const nowDate = new Date();
+  const onSaleTiers = tiers.filter((tier) => {
+    const notYet = tier.sales_start_at && new Date(tier.sales_start_at) > nowDate;
+    const ended = tier.sales_end_at && new Date(tier.sales_end_at) < nowDate;
+    const soldOut =
+      tier.max_quantity !== null && tier.quantity_sold >= tier.max_quantity;
+    return !notYet && !ended && !soldOut;
+  });
+  const activeDeadlineTier = onSaleTiers
+    .filter((tier) => tier.sales_end_at)
+    .sort(
+      (a, b) =>
+        new Date(a.sales_end_at!).getTime() -
+        new Date(b.sales_end_at!).getTime(),
+    )[0];
+
+  const scarcityThreshold = (event.scarcity_threshold as number | null) ?? 20;
+  const scarcestTier = onSaleTiers
+    .map((tier) => ({
+      tier,
+      stats: triggers.tiers[tier.id],
+    }))
+    .filter(
+      ({ stats }) =>
+        stats?.capacity != null &&
+        stats.displayRemaining != null &&
+        stats.displayRemaining > 0 &&
+        stats.displayRemaining <= scarcityThreshold,
+    )
+    .sort((a, b) => (a.stats?.displayRemaining ?? 0) - (b.stats?.displayRemaining ?? 0))[0];
+
+  // Map raw speaker rows to the shape SpeakerCard expects, picking the
+  // active locale up front so cards stay simple.
+  const eff = (locale === "de" || locale === "fr" ? locale : "en") as
+    | "en"
+    | "de"
+    | "fr";
+  const speakerCards: SpeakerCardData[] = eventSpeakers.map((es) => ({
+    slug: es.speakers.slug,
+    fullName: `${es.speakers.first_name} ${es.speakers.last_name}`.trim(),
+    title:
+      (es.speakers[`title_${eff}` as const] as string | null) ||
+      es.speakers.title_en,
+    company:
+      (es.speakers[`company_${eff}` as const] as string | null) ||
+      es.speakers.company_en,
+    photoUrl: es.speakers.photo_url,
+    roleLabel:
+      (es[`role_label_${eff}` as const] as string | null) ||
+      es.role_label_en,
+    isFeatured: es.is_featured,
+  }));
+  const featuredSpeakers = speakerCards.filter((s) => s.isFeatured);
+
+  const checkoutHref = `/${locale}/checkout/${slug}`;
 
   const eventJsonLd = {
     "@context": "https://schema.org",
@@ -169,19 +258,30 @@ export default async function EventDetailPage({
           <span aria-hidden>&larr;</span> {t("back")}
         </Link>
 
-        {/* HERO IMAGE — boxed */}
-        <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-border bg-muted shadow-sm sm:aspect-21/9">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={
-              event.cover_image_url ??
-              "https://diambilaybusinesscenter.org/images/2025_03_29_13_47_IMG_3075-copy.jpg"
-            }
-            alt={loc("title")}
-            className="h-full w-full object-cover"
-            referrerPolicy="no-referrer"
-          />
-        </div>
+        {/* HERO — video if hero_video_url is set, otherwise cover image */}
+        {event.hero_video_url ? (
+          <HeroVideo url={event.hero_video_url as string} title={loc("title")} />
+        ) : (
+          <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-border bg-muted shadow-sm sm:aspect-21/9">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={
+                event.cover_image_url ??
+                "https://diambilaybusinesscenter.org/images/2025_03_29_13_47_IMG_3075-copy.jpg"
+              }
+              alt={loc("title")}
+              className="h-full w-full object-cover"
+              referrerPolicy="no-referrer"
+            />
+          </div>
+        )}
+
+        {/* Funnel tagline (above the info card, sets the conversion frame) */}
+        {loc("funnel_tagline") && (
+          <p className="mt-6 text-balance text-center font-heading text-lg font-semibold leading-snug text-foreground/90 sm:text-xl">
+            {loc("funnel_tagline")}
+          </p>
+        )}
 
         {/* INFO CARD — boxed, no overlay */}
         <div className="mt-6 rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-10">
@@ -268,6 +368,58 @@ export default async function EventDetailPage({
         )}
       </div>
 
+      {/* FEATURED SPEAKERS strip — above-the-fold social proof */}
+      <FeaturedSpeakersStrip
+        speakers={featuredSpeakers}
+        hrefBase={`/${locale}/events/${slug}/speakers`}
+        eyebrow={f("featuredSpeakersEyebrow")}
+        title={f("featuredSpeakersTitle")}
+        viewLabel={f("viewProfile")}
+      />
+
+      {/* Funnel intro — emotional bridge between speakers strip and pillars */}
+      {loc("funnel_intro") && (
+        <section className="mx-auto mt-12 max-w-3xl px-5 text-center sm:px-8">
+          <p className="whitespace-pre-wrap text-base leading-7 text-foreground sm:text-lg sm:leading-8">
+            {loc("funnel_intro")}
+          </p>
+        </section>
+      )}
+
+      {/* Pillars — "What you take home" */}
+      <FunnelPillars
+        pillars={pillars.map((p) => ({
+          id: p.id,
+          icon: p.icon,
+          title:
+            (p[`title_${eff}` as const] as string | null) || p.title_en,
+          description:
+            (p[`description_${eff}` as const] as string | null) ||
+            p.description_en,
+        }))}
+        eyebrow={f("pillarsEyebrow")}
+        title={f("pillarsTitle")}
+      />
+
+      {/* Testimonials — past edition social proof */}
+      <FunnelTestimonials
+        testimonials={testimonials.map((tm) => ({
+          id: tm.id,
+          authorName: tm.author_name,
+          authorRole:
+            (tm[`author_role_${eff}` as const] as string | null) ||
+            tm.author_role_en,
+          authorPhotoUrl: tm.author_photo_url,
+          quote:
+            (tm[`quote_${eff}` as const] as string | null) || tm.quote_en,
+          videoUrl: tm.video_url,
+          rating: tm.rating,
+        }))}
+        eyebrow={f("testimonialsEyebrow")}
+        title={f("testimonialsTitle")}
+        playLabel={f("playVideo")}
+      />
+
       {/* CONTENT */}
       <div className="mx-auto mt-10 max-w-6xl px-5 sm:mt-12 sm:px-8">
         <div className="grid gap-10 lg:grid-cols-[1.4fr_1fr]">
@@ -323,7 +475,7 @@ export default async function EventDetailPage({
           </div>
 
           {/* RIGHT: tickets */}
-          <aside className="lg:sticky lg:top-24 lg:self-start">
+          <aside id="tickets-sidebar" className="lg:sticky lg:top-24 lg:self-start">
             <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-lg">
               <div className="border-b border-border bg-gradient-to-r from-primary/10 via-primary/5 to-accent/10 px-6 py-5">
                 <h2 className="font-heading text-lg font-bold">
@@ -469,7 +621,7 @@ export default async function EventDetailPage({
 
               <div className="border-t border-border bg-muted/30 p-5">
                 <Link
-                  href={`/${locale}/checkout/${slug}`}
+                  href={checkoutHref}
                   className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-lg"
                 >
                   {t("getTickets")}
@@ -480,6 +632,62 @@ export default async function EventDetailPage({
           </aside>
         </div>
       </div>
+
+      {/* FULL SPEAKERS GRID — every speaker on stage */}
+      <SpeakersGrid
+        speakers={speakerCards}
+        hrefBase={`/${locale}/events/${slug}/speakers`}
+        eyebrow={f("featuredSpeakersEyebrow")}
+        title={f("allSpeakersTitle")}
+        subtitle={f("allSpeakersSubtitle")}
+        viewLabel={f("viewProfile")}
+        ctaLabel={f("allSpeakersCta")}
+        ctaHref={`/${locale}/events/${slug}/speakers`}
+      />
+
+      {/* FAQ — kills objections before the closing CTA */}
+      <FunnelFaq
+        faqs={faqs.map((q) => ({
+          id: q.id,
+          question:
+            (q[`question_${eff}` as const] as string | null) || q.question_en,
+          answer:
+            (q[`answer_${eff}` as const] as string | null) || q.answer_en,
+        }))}
+        eyebrow={f("faqEyebrow")}
+        title={f("faqTitle")}
+      />
+
+      {/* CLOSING CTA — final pitch */}
+      <FunnelClosingCta
+        eyebrow={f("closingEyebrow")}
+        title={loc("funnel_closing") || f("closingTitle")}
+        body={null}
+        ctaHref={checkoutHref}
+        ctaLabel={f("closingCta")}
+      />
+
+      {/* STICKY BOTTOM CTA — follows the visitor through every section.
+          Carries event countdown + cheapest-tier price + optional tier
+          deadline + optional scarcity badge. Hides automatically when the
+          desktop tickets sidebar is visible. */}
+      {startsAt > now && minPrice != null && (
+        <EventStickyCta
+          eventStartsAt={event.starts_at}
+          ctaHref={checkoutHref}
+          ctaLabel={f("stickyCtaLabel")}
+          fromPriceLabel={f("stickyFromPrice", {
+            price: formatMoney(Math.round(minPrice * 100), {
+              currency: minPriceCurrency,
+              locale,
+            }),
+          })}
+          deadlineIso={activeDeadlineTier?.sales_end_at ?? null}
+          deadlinePrefix={f("stickyDeadlinePrefix")}
+          scarcityCount={scarcestTier?.stats?.displayRemaining ?? null}
+          scarcityLabel={f("stickyScarcity")}
+        />
+      )}
     </main>
   );
 }
