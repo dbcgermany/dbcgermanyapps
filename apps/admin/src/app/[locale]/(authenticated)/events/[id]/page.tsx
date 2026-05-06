@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
+import QRCode from "qrcode";
 import {
   Calendar,
   ClipboardList,
@@ -18,7 +19,7 @@ import {
   Users,
   Wallet,
 } from "lucide-react";
-import { Badge, Button, Card, LinkButton } from "@dbc/ui";
+import { Badge, Button, Card, LinkButton, BRAND_HEX } from "@dbc/ui";
 import { getEvent, togglePublish, duplicateEvent } from "@/actions/events";
 import { getEventChecklist } from "@/actions/checklist";
 import { getLiveEventStats } from "@/actions/live-event";
@@ -26,6 +27,7 @@ import { StatCard } from "@/components/stat-card";
 import { StatGrid } from "@/components/stat-grid";
 import { PageHeader } from "@/components/page-header";
 import { DeleteEventButton } from "./delete-button";
+import { EventQrCard } from "./event-qr-card";
 
 export default async function EventDetailPage({
   params,
@@ -80,6 +82,20 @@ export default async function EventDetailPage({
 
   const titleKey = `title_${locale}` as keyof typeof event;
   const descKey = `description_${locale}` as keyof typeof event;
+
+  // Public event-page QR — encodes the marketing/landing URL on the tickets
+  // app (NOT the per-ticket QR used at the door for check-in). Use this for
+  // flyers, social posts, partner decks — anywhere you want someone to read
+  // about the event before deciding to buy.
+  const ticketsBaseUrl =
+    process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://tickets.dbc-germany.com";
+  const publicEventUrl = `${ticketsBaseUrl}/${locale}/events/${event.slug}`;
+  const publicEventQrPng = await QRCode.toDataURL(publicEventUrl, {
+    width: 720,
+    margin: 1,
+    errorCorrectionLevel: "M",
+    color: { dark: BRAND_HEX.ink, light: BRAND_HEX.paper },
+  });
 
   return (
     <div>
@@ -311,6 +327,26 @@ export default async function EventDetailPage({
           </section>
         </div>
       </div>
+
+      {/* Event-page QR — distinct from the per-ticket check-in QR. Encodes
+          the public landing URL so people can scan a flyer / poster / slide
+          and land on the event page (where they'll then choose to buy). */}
+      <section className="mt-8">
+        <EventQrCard
+          pngDataUrl={publicEventQrPng}
+          publicUrl={publicEventUrl}
+          fileBaseName={`event-page-${event.slug}`}
+          labels={{
+            title: t("qrCardTitle"),
+            description: t("qrCardDesc"),
+            publicLink: t("qrCardPublicLink"),
+            download: t("qrCardDownload"),
+            copy: t("qrCardCopy"),
+            copied: t("qrCardCopied"),
+            open: t("qrCardOpen"),
+          }}
+        />
+      </section>
 
       {/* Management Hub — all sub-pages grouped */}
       <div className="mt-12 space-y-10 border-t border-border pt-8">

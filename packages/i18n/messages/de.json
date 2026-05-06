@@ -568,6 +568,13 @@
         "mediaDesc": "Fotos und Videos nach der Veranstaltung hochladen",
         "posterDoor": "Abendkassen-Poster",
         "posterDoorDesc": "Druckbares QR-Poster für den Eingang",
+        "qrCardTitle": "QR-Code zur Event-Seite",
+        "qrCardDesc": "Für Flyer, Slides oder Social-Posts. Beim Scannen öffnet sich die öffentliche Event-Seite auf tickets.dbc-germany.com — getrennt vom Ticket-QR-Code, der am Einlass gescannt wird.",
+        "qrCardPublicLink": "Öffentlicher Event-Link",
+        "qrCardDownload": "PNG herunterladen",
+        "qrCardCopy": "Link kopieren",
+        "qrCardCopied": "Kopiert!",
+        "qrCardOpen": "Seite öffnen",
         "dangerZone": "Gefahrenbereich",
         "dangerDesc": "Das Löschen einer Veranstaltung ist unwiderruflich und entfernt alle zugehörigen Tickets, Bestellungen und Daten."
       },

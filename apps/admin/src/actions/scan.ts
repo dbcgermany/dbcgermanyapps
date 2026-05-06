@@ -87,15 +87,26 @@ export async function checkInTicket(
     const user = await requireRole("scanner");
     const supabase = await createServerClient();
 
-    // Validate token looks like a UUID (prevent injection)
+    // Validate token looks like a UUID (prevent injection). The two QR types
+    // we generate are intentionally non-overlapping: ticket QRs encode a bare
+    // UUID token; the per-event "share" QR (admin event detail page) encodes
+    // a public URL. If someone scans the share QR with the door scanner we
+    // surface a specific error so they don't think the ticket is broken.
+    const trimmed = ticketToken.trim();
+    if (/^https?:\/\//i.test(trimmed)) {
+      return {
+        success: false,
+        error: "This is the public event link, not a ticket. Scan the QR from the customer's email or PDF ticket.",
+      };
+    }
     const uuidRegex =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (!uuidRegex.test(ticketToken.trim())) {
+    if (!uuidRegex.test(trimmed)) {
       return { success: false, error: "Invalid ticket code" };
     }
 
     const { data, error } = await supabase.rpc("check_in_ticket", {
-      p_ticket_token: ticketToken.trim(),
+      p_ticket_token: trimmed,
       p_event_id: eventId,
       p_staff_id: user.userId,
     });

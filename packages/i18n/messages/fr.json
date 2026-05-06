@@ -568,6 +568,13 @@
         "mediaDesc": "Téléverser photos et vidéos après l’événement",
         "posterDoor": "Affiche billetterie sur place",
         "posterDoorDesc": "Affiche QR imprimable pour l’entrée",
+        "qrCardTitle": "QR code de la page événement",
+        "qrCardDesc": "À utiliser sur les flyers, slides et posts sociaux. Le scan ouvre la page publique de l’événement sur tickets.dbc-germany.com — distinct du QR de billet utilisé à l’entrée.",
+        "qrCardPublicLink": "Lien public de l’événement",
+        "qrCardDownload": "Télécharger PNG",
+        "qrCardCopy": "Copier le lien",
+        "qrCardCopied": "Copié !",
+        "qrCardOpen": "Ouvrir la page",
         "dangerZone": "Zone à risque",
         "dangerDesc": "La suppression d’un événement est irréversible et retire tous les billets, commandes et données associés."
       },

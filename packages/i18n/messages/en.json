@@ -568,6 +568,13 @@
         "mediaDesc": "Upload photos and videos after the event",
         "posterDoor": "Door-sale Poster",
         "posterDoorDesc": "Printable QR poster for venue entrance",
+        "qrCardTitle": "Event-page QR code",
+        "qrCardDesc": "Share this on flyers, slides or social posts. Scanning it opens the public event page on tickets.dbc-germany.com — separate from the per-ticket QR used at the door.",
+        "qrCardPublicLink": "Public event link",
+        "qrCardDownload": "Download PNG",
+        "qrCardCopy": "Copy link",
+        "qrCardCopied": "Copied!",
+        "qrCardOpen": "Open page",
         "dangerZone": "Danger zone",
         "dangerDesc": "Deleting an event is irreversible and removes all associated tickets, orders, and data."
       },
