@@ -346,7 +346,19 @@ export interface EventSpeakerRow {
     first_name: string;
     last_name: string;
     photo_url: string | null;
+    email: string | null;
+    title_en: string | null;
+    company_en: string | null;
     visibility: Visibility;
+    team_member_id: string | null;
+    // JOINed for avatar / email fallback in the admin row, mirroring the
+    // public funnel's inheritance behaviour.
+    team_members: {
+      id: string;
+      photo_url: string | null;
+      email: string | null;
+      role_en: string | null;
+    } | null;
   };
 }
 
@@ -358,13 +370,74 @@ export async function getEventSpeakersForAdmin(
   const { data, error } = await supabase
     .from("event_speakers")
     .select(
-      "event_id, speaker_id, role_label_en, role_label_de, role_label_fr, is_featured, sort_order, speakers(id, slug, first_name, last_name, photo_url, visibility)",
+      "event_id, speaker_id, role_label_en, role_label_de, role_label_fr, is_featured, sort_order, speakers(id, slug, first_name, last_name, photo_url, email, title_en, company_en, visibility, team_member_id, team_members(id, photo_url, email, role_en))",
     )
     .eq("event_id", eventId)
     .order("is_featured", { ascending: false })
     .order("sort_order", { ascending: true });
   if (error) throw new Error(error.message);
   return (data ?? []) as unknown as EventSpeakerRow[];
+}
+
+export async function setEventSpeakerFeatured(
+  eventId: string,
+  speakerId: string,
+  isFeatured: boolean,
+  locale: string,
+) {
+  const user = await requireRole("manager");
+  const supabase = await createServerClient();
+  const { error } = await supabase
+    .from("event_speakers")
+    .update({ is_featured: isFeatured })
+    .eq("event_id", eventId)
+    .eq("speaker_id", speakerId);
+  if (error) return { error: error.message };
+  await supabase.from("audit_log").insert({
+    user_id: user.userId,
+    action: "set_event_speaker_featured",
+    entity_type: "event_speakers",
+    entity_id: eventId,
+    details: { speaker_id: speakerId, is_featured: isFeatured },
+  });
+  const eventSlug = await getEventSlug(eventId);
+  revalidatePath(`/${locale}/events/${eventId}/speakers`);
+  await pingRevalidate("tickets", ticketsPathsForEvent(eventSlug));
+  return { success: true };
+}
+
+export async function reorderEventSpeakers(
+  eventId: string,
+  orderedSpeakerIds: string[],
+  locale: string,
+) {
+  const user = await requireRole("manager");
+  const supabase = await createServerClient();
+  // Bump in increments of 10 so admins can manually fit a row in between
+  // later by typing 15 / 25 etc. without re-saving the whole row.
+  const updates = orderedSpeakerIds.map((speakerId, index) =>
+    supabase
+      .from("event_speakers")
+      .update({ sort_order: (index + 1) * 10 })
+      .eq("event_id", eventId)
+      .eq("speaker_id", speakerId),
+  );
+  const results = await Promise.all(updates);
+  const failed = results.find((r) => r.error);
+  if (failed?.error) return { error: failed.error.message };
+
+  await supabase.from("audit_log").insert({
+    user_id: user.userId,
+    action: "reorder_event_speakers",
+    entity_type: "event_speakers",
+    entity_id: eventId,
+    details: { order: orderedSpeakerIds },
+  });
+
+  const eventSlug = await getEventSlug(eventId);
+  revalidatePath(`/${locale}/events/${eventId}/speakers`);
+  await pingRevalidate("tickets", ticketsPathsForEvent(eventSlug));
+  return { success: true };
 }
 
 async function getEventSlug(eventId: string): Promise<string | null> {

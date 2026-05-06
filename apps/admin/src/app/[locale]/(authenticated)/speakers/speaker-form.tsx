@@ -205,23 +205,59 @@ export function SpeakerForm({
         </div>
       )}
 
-      <NameFields
-        firstName={firstName}
-        lastName={lastName}
-        onFirstNameChange={setFirstName}
-        onLastNameChange={setLastName}
-        firstNameLabel={tPerson("firstName")}
-        lastNameLabel={tPerson("lastName")}
-        required
-      />
+      {/* Profile header — photo + name lifted to the top so the form
+          immediately reads as a profile editor. Photo upload here is the
+          primary entry point; the "or paste a CDN URL" fallback below is
+          for when admins already have a hosted image. */}
+      <div className="grid gap-6 sm:grid-cols-[180px_1fr]">
+        <div>
+          <AssetUpload
+            label={t.photo}
+            description={
+              inh?.photo_url
+                ? `${t.photoHint} ${t.photoInherits}`
+                : t.photoHint
+            }
+            value={photoUrl || inh?.photo_url || null}
+            onUpload={handlePhotoUpload}
+            onChange={setPhotoUrl}
+            onRemove={() => setPhotoUrl("")}
+          />
+          <label className="mt-3 block">
+            <span className="mb-1 block text-xs font-medium text-muted-foreground">
+              {t.orPasteUrl}
+            </span>
+            <input
+              type="url"
+              name="photo_url"
+              value={photoUrl}
+              onChange={(e) => setPhotoUrl(e.target.value)}
+              placeholder={inh?.photo_url ?? "https://…"}
+              className={`${inputClass} font-mono text-xs`}
+            />
+          </label>
+        </div>
+
+        <div className="space-y-4">
+          <NameFields
+            firstName={firstName}
+            lastName={lastName}
+            onFirstNameChange={setFirstName}
+            onLastNameChange={setLastName}
+            firstNameLabel={tPerson("firstName")}
+            lastNameLabel={tPerson("lastName")}
+            required
+          />
+          <Field
+            label={t.slug}
+            name="slug"
+            defaultValue={speaker?.slug ?? ""}
+            hint={t.slugHelp}
+          />
+        </div>
+      </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field
-          label={t.slug}
-          name="slug"
-          defaultValue={speaker?.slug ?? ""}
-          hint={t.slugHelp}
-        />
         <Field
           label={t.email}
           name="email"
@@ -289,34 +325,6 @@ export function SpeakerForm({
           <span className="mt-1 block text-xs text-muted-foreground">
             {t.linkedHint}
           </span>
-        </div>
-
-        <div className="sm:col-span-2">
-          <AssetUpload
-            label={t.photo}
-            description={
-              inh?.photo_url
-                ? `${t.photoHint} ${t.photoInherits}`
-                : t.photoHint
-            }
-            value={photoUrl || inh?.photo_url || null}
-            onUpload={handlePhotoUpload}
-            onChange={setPhotoUrl}
-            onRemove={() => setPhotoUrl("")}
-          />
-          <label className="mt-3 block">
-            <span className="mb-1 block text-xs font-medium text-muted-foreground">
-              {t.orPasteUrl}
-            </span>
-            <input
-              type="url"
-              name="photo_url"
-              value={photoUrl}
-              onChange={(e) => setPhotoUrl(e.target.value)}
-              placeholder={inh?.photo_url ?? "https://…"}
-              className={`${inputClass} font-mono`}
-            />
-          </label>
         </div>
       </div>
 
