@@ -155,7 +155,7 @@ export function EventStickyCta({
           </div>
           <Link
             href={ctaHref}
-            className="inline-flex shrink-0 items-center justify-center gap-1 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+            className="animate-wiggle-cta inline-flex shrink-0 items-center justify-center gap-1 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
           >
             {ctaLabel}
             <span aria-hidden>→</span>
@@ -181,7 +181,7 @@ export function EventStickyCta({
             </div>
             <Link
               href={ctaHref}
-              className="inline-flex shrink-0 items-center justify-center rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground"
+              className="animate-wiggle-cta inline-flex shrink-0 items-center justify-center rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground"
             >
               {ctaLabel}
             </Link>

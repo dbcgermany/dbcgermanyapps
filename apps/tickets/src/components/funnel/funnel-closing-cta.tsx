@@ -30,7 +30,7 @@ export function FunnelClosingCta({
         <div className="mt-8 flex justify-center">
           <Link
             href={ctaHref}
-            className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-8 py-4 text-base font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-lg sm:text-lg"
+            className="animate-wiggle-cta inline-flex items-center justify-center gap-2 rounded-full bg-primary px-8 py-4 text-base font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-lg sm:text-lg"
           >
             {ctaLabel}
             <span aria-hidden>→</span>
