@@ -14,6 +14,7 @@ import {
   removeStaff,
   resendStaffInvite,
   revokeStaffInvite,
+  assignRoleAndResendInvite,
 } from "@/actions/staff";
 import { EmptyState } from "@/components/empty-state";
 
@@ -32,6 +33,14 @@ interface EventOption {
   startsAt: string;
 }
 
+interface PendingInvitation {
+  id: string;
+  email: string;
+  displayName: string;
+  invitedAt: string | null;
+  currentRole: UserRole;
+}
+
 const ROLE_OPTIONS: UserRole[] = [
   "scanner",
   "door_sales",
@@ -45,10 +54,12 @@ export function StaffClient({
   locale,
   staff,
   events,
+  pendingInvitations,
 }: {
   locale: string;
   staff: StaffMember[];
   events: EventOption[];
+  pendingInvitations: PendingInvitation[];
 }) {
   const t = useTranslations("admin.staff.client");
   const [expandedStaffId, setExpandedStaffId] = useState<string | null>(null);
@@ -98,6 +109,25 @@ export function StaffClient({
   function handleResendInvite(staffId: string) {
     startTransition(async () => {
       const res = await resendStaffInvite(staffId, locale);
+      if (res.error) toast.error(res.error);
+      else toast.success(t("resendInvite"));
+    });
+  }
+
+  // Per-pending-invite role draft (defaults to team_member); admin
+  // changes it via the inline dropdown before clicking the resend button.
+  const [pendingRoleDraft, setPendingRoleDraft] = useState<
+    Record<string, UserRole>
+  >(
+    Object.fromEntries(
+      pendingInvitations.map((p) => [p.id, "team_member" as UserRole])
+    )
+  );
+
+  function handlePendingResend(userId: string) {
+    const role = pendingRoleDraft[userId] ?? "team_member";
+    startTransition(async () => {
+      const res = await assignRoleAndResendInvite(userId, role, locale);
       if (res.error) toast.error(res.error);
       else toast.success(t("resendInvite"));
     });
@@ -201,6 +231,90 @@ export function StaffClient({
           </div>
           </form>
         </Card>
+      )}
+
+      {/* Pending invitations — auth users invited via the Supabase
+          dashboard or whose role was never promoted past 'buyer'. The
+          existing staff list filters by staff role so they're invisible
+          there. Each row carries a Set-role + Resend-invite combo so
+          admins can finish the onboarding in one click. */}
+      {pendingInvitations.length > 0 && (
+        <div className="mt-6">
+          <h2 className="text-sm font-semibold text-foreground">
+            Pending invitations · {pendingInvitations.length}
+          </h2>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Invited but never signed in. Pick a role and click Resend to
+            promote them and send a fresh invite link in one go.
+          </p>
+          <div className="mt-3 overflow-x-auto rounded-lg border border-warning-border">
+            <table className="w-full min-w-160 text-sm">
+              <thead>
+                <tr className="border-b border-border bg-warning-soft/40">
+                  <th className="px-4 py-3 text-left font-medium">{t("email")}</th>
+                  <th className="px-4 py-3 text-left font-medium">Invited</th>
+                  <th className="px-4 py-3 text-left font-medium">Set role</th>
+                  <th className="px-4 py-3 text-right font-medium">
+                    {t("actions")}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {pendingInvitations.map((p) => (
+                  <tr key={p.id} className="border-b border-border last:border-0">
+                    <td className="px-4 py-3">
+                      <p className="font-medium">{p.displayName || p.email}</p>
+                      {p.displayName && (
+                        <p className="text-xs text-muted-foreground">
+                          {p.email}
+                        </p>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-xs text-muted-foreground">
+                      {p.invitedAt
+                        ? new Date(p.invitedAt).toLocaleDateString(locale, {
+                            month: "short",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                        : "—"}
+                    </td>
+                    <td className="px-4 py-3">
+                      <select
+                        value={pendingRoleDraft[p.id] ?? "team_member"}
+                        onChange={(e) =>
+                          setPendingRoleDraft((prev) => ({
+                            ...prev,
+                            [p.id]: e.target.value as UserRole,
+                          }))
+                        }
+                        disabled={isPending}
+                        className="rounded-md border border-input bg-background px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-ring"
+                      >
+                        {ROLE_OPTIONS.map((r) => (
+                          <option key={r} value={r}>
+                            {roleLabels[r]}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <button
+                        type="button"
+                        onClick={() => handlePendingResend(p.id)}
+                        disabled={isPending}
+                        className="text-xs font-medium text-primary hover:text-primary/80 disabled:opacity-50"
+                      >
+                        Set role &amp; resend invite
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       )}
 
       {/* Staff list */}

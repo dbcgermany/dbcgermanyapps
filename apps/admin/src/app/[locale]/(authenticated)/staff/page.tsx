@@ -1,5 +1,9 @@
 import { getTranslations } from "next-intl/server";
-import { getStaff, getEventsForAssignment } from "@/actions/staff";
+import {
+  getStaff,
+  getEventsForAssignment,
+  getPendingInvitations,
+} from "@/actions/staff";
 import { PageHeader } from "@/components/page-header";
 import { StaffClient } from "./staff-client";
 
@@ -11,9 +15,10 @@ export default async function StaffPage({
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "admin.staff.list" });
 
-  const [staff, events] = await Promise.all([
+  const [staff, events, pending] = await Promise.all([
     getStaff(),
     getEventsForAssignment(),
+    getPendingInvitations(),
   ]);
 
   return (
@@ -36,6 +41,7 @@ export default async function StaffPage({
             (e[`title_${locale}` as keyof typeof e] as string) || e.title_en,
           startsAt: e.starts_at,
         }))}
+        pendingInvitations={pending}
       />
     </div>
   );

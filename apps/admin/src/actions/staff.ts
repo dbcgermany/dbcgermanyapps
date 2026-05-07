@@ -462,3 +462,150 @@ export async function getEventsForAssignment() {
 
   return data ?? [];
 }
+
+/**
+ * Lists Supabase auth users who were invited (invited_at NOT NULL) but
+ * never signed in (last_sign_in_at IS NULL) AND aren't already in the
+ * staff list. Catches the common gap where an invite was issued via the
+ * Supabase dashboard or some external flow that didn't promote
+ * profiles.role above 'buyer' — those users are otherwise invisible to
+ * the admin and the resend button has nowhere to live.
+ */
+export async function getPendingInvitations() {
+  await requireRole("admin");
+  const service = getServiceClient();
+
+  // listUsers paginates at 50 per page by default; bump to 200 to cover
+  // the full set without paging on a small project.
+  const { data, error } = await service.auth.admin.listUsers({
+    page: 1,
+    perPage: 200,
+  });
+  if (error) return [];
+
+  // Collect candidates: invited but never signed in.
+  const candidates = (data?.users ?? []).filter(
+    (u) => u.invited_at && !u.last_sign_in_at
+  );
+  if (candidates.length === 0) return [];
+
+  // Filter out anyone already with a staff role (they show in the main
+  // staff list — duplicating them here would just be noise).
+  const candidateIds = candidates.map((u) => u.id);
+  const supabase = await createServerClient();
+  const { data: profiles } = await supabase
+    .from("profiles")
+    .select("id, role, display_name")
+    .in("id", candidateIds);
+
+  const profileById = new Map((profiles ?? []).map((p) => [p.id, p]));
+
+  return candidates
+    .filter((u) => {
+      const role = profileById.get(u.id)?.role ?? "buyer";
+      return !STAFF_ROLES.includes(role as UserRole);
+    })
+    .map((u) => ({
+      id: u.id,
+      email: u.email ?? "",
+      displayName:
+        profileById.get(u.id)?.display_name ??
+        ((u.user_metadata?.display_name as string | undefined) ?? ""),
+      invitedAt: u.invited_at ?? null,
+      currentRole: (profileById.get(u.id)?.role ?? "buyer") as UserRole,
+    }))
+    .sort((a, b) => {
+      const aDate = a.invitedAt ? new Date(a.invitedAt).getTime() : 0;
+      const bDate = b.invitedAt ? new Date(b.invitedAt).getTime() : 0;
+      return bDate - aDate;
+    });
+}
+
+/**
+ * Promotes an auth user to a staff role and immediately resends a fresh
+ * invite link via the existing branded Resend template. One-click fix
+ * for users who were invited via the Supabase dashboard or whose
+ * original invite expired.
+ */
+export async function assignRoleAndResendInvite(
+  userId: string,
+  newRole: UserRole,
+  locale: string
+) {
+  const actor = await requireRole("admin");
+  if (!STAFF_ROLES.includes(newRole)) {
+    return { error: "Invalid staff role" };
+  }
+  if (newRole === "super_admin" && actor.role !== "super_admin") {
+    return { error: "Only super admin can assign super admin role" };
+  }
+  if (
+    newRole === "admin" &&
+    actor.role !== "super_admin" &&
+    actor.role !== "admin"
+  ) {
+    return { error: "You do not have permission to create admins" };
+  }
+
+  const service = getServiceClient();
+
+  const { data: authData, error: authErr } =
+    await service.auth.admin.getUserById(userId);
+  if (authErr || !authData.user) return { error: "User not found" };
+
+  // Promote profile (auth trigger created it as buyer).
+  const { error: roleErr } = await service
+    .from("profiles")
+    .update({ role: newRole })
+    .eq("id", userId);
+  if (roleErr) return { error: roleErr.message };
+
+  // Generate fresh invite link.
+  const adminUrl =
+    process.env.NEXT_PUBLIC_ADMIN_URL ?? "https://admin.dbc-germany.com";
+  const inviteLocale = (locale === "de" || locale === "fr" ? locale : "en") as
+    | "en"
+    | "de"
+    | "fr";
+  const email = authData.user.email ?? "";
+
+  const { data: linkData, error: linkError } =
+    await service.auth.admin.generateLink({
+      type: "invite",
+      email,
+      options: {
+        redirectTo: `${adminUrl}/${inviteLocale}/set-password`,
+      },
+    });
+  if (linkError || !linkData.properties?.action_link) {
+    return { error: linkError?.message ?? "Failed to generate link" };
+  }
+
+  try {
+    const { sendStaffInvite } = await import("@dbc/email");
+    const displayName =
+      ((authData.user.user_metadata?.display_name as string | undefined) ??
+        email.split("@")[0]);
+    await sendStaffInvite({
+      to: email,
+      recipientName: displayName,
+      role: newRole,
+      actionLink: linkData.properties.action_link,
+      locale: inviteLocale,
+    });
+  } catch (err) {
+    console.error("[assignRoleAndResendInvite] email failed:", err);
+    return { error: "Role set but invite email delivery failed" };
+  }
+
+  await service.from("audit_log").insert({
+    user_id: actor.userId,
+    action: "assign_role_and_resend_invite",
+    entity_type: "profiles",
+    entity_id: userId,
+    details: { email, role: newRole },
+  });
+
+  revalidatePath(`/${locale}/staff`);
+  return { success: true };
+}
