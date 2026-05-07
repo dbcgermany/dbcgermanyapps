@@ -72,9 +72,6 @@ export function PasswordResetEmail(props: PasswordResetEmailProps) {
 
       <Section className="mt-6">
         <Text className="text-xs leading-5 text-neutral-500">{t.note}</Text>
-        <Text className="mt-3 break-all text-xs text-neutral-400">
-          {props.actionLink}
-        </Text>
       </Section>
 
       <Section className="mt-8">

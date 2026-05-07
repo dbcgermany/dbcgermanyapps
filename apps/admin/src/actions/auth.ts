@@ -3,6 +3,7 @@
 import { createServerClient } from "@dbc/supabase/server";
 import { createClient } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
+import { buildAuthConfirmUrl } from "@/lib/auth-confirm-url";
 
 export async function loginWithPassword(formData: FormData) {
   const email = formData.get("email") as string;
@@ -68,11 +69,15 @@ export async function requestPasswordResetForEmail(
 
     // If the user doesn't exist, Supabase returns an error — but we return
     // success anyway to prevent email enumeration attacks.
-    if (error || !data?.properties?.action_link) {
+    if (error || !data?.properties?.hashed_token) {
       return { success: true };
     }
 
-    const actionLink = data.properties.action_link;
+    const actionLink = buildAuthConfirmUrl(
+      data.properties.hashed_token,
+      "recovery",
+      resetLocale
+    );
 
     // Try to fetch the user's display_name for personalisation
     let firstName: string | undefined;

@@ -35,5 +35,15 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(redirectTo);
   }
 
+  // Recovery links have to land the user on /set-password regardless of
+  // whether they previously completed an invite — without this flag the
+  // proxy bounces an authenticated user away from /set-password to /dashboard
+  // (see proxy.ts; /set-password is a public path, so authenticated visits
+  // get redirected). The flag is cleared in set-password/page.tsx after a
+  // successful password update, so the user isn't permanently trapped.
+  if (type === "recovery") {
+    await supabase.auth.updateUser({ data: { must_change_password: true } });
+  }
+
   return NextResponse.redirect(redirectTo);
 }

@@ -5,30 +5,13 @@ import { createClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 import { STAFF_ROLES } from "@dbc/types";
 import type { UserRole } from "@dbc/types";
+import { buildAuthConfirmUrl } from "@/lib/auth-confirm-url";
 
 function getServiceClient() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
-}
-
-// Build a single-use invite URL that points at our own /auth/confirm route
-// instead of the raw Supabase verify URL. Email scanners pre-walk links in
-// transit and burn the OTP before the human clicks; routing through our
-// domain lets us redirect with a real `?error=` so the user sees a useful
-// message instead of "no session". `hashedToken` comes from
-// `generateLink().properties.hashed_token`.
-function buildInviteActionLink(
-  hashedToken: string,
-  inviteLocale: "en" | "de" | "fr"
-): string {
-  const adminUrl =
-    process.env.NEXT_PUBLIC_ADMIN_URL ?? "https://admin.dbc-germany.com";
-  const next = `/${inviteLocale}/set-password`;
-  return `${adminUrl}/${inviteLocale}/auth/confirm?token_hash=${encodeURIComponent(
-    hashedToken
-  )}&type=invite&next=${encodeURIComponent(next)}`;
 }
 
 export async function getStaff() {
@@ -199,8 +182,9 @@ export async function inviteStaff(formData: FormData) {
       to: email,
       recipientName: resolvedName,
       role,
-      actionLink: buildInviteActionLink(
+      actionLink: buildAuthConfirmUrl(
         linkData.properties.hashed_token,
+        "invite",
         inviteLocale
       ),
       locale: inviteLocale,
@@ -269,8 +253,9 @@ export async function resendStaffInvite(staffId: string, locale: string) {
       to: email,
       recipientName: profile.display_name ?? email.split("@")[0],
       role: profile.role ?? "team_member",
-      actionLink: buildInviteActionLink(
+      actionLink: buildAuthConfirmUrl(
         linkData.properties.hashed_token,
+        "invite",
         inviteLocale
       ),
       locale: inviteLocale,
@@ -616,8 +601,9 @@ export async function assignRoleAndResendInvite(
       to: email,
       recipientName: displayName,
       role: newRole,
-      actionLink: buildInviteActionLink(
+      actionLink: buildAuthConfirmUrl(
         linkData.properties.hashed_token,
+        "invite",
         inviteLocale
       ),
       locale: inviteLocale,
