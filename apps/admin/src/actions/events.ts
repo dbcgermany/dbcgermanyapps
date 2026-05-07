@@ -546,3 +546,85 @@ export async function uploadEventCover(formData: FormData) {
   const { data } = service.storage.from(COVER_BUCKET).getPublicUrl(path);
   return { success: true as const, url: data.publicUrl };
 }
+
+/**
+ * Uploads a hero video (mp4/webm/quicktime) to event-covers/{eventId}/hero-video/.
+ * No transcoding — admins are responsible for compressing before upload (50 MB cap).
+ * The returned URL is written into the event's hero_video_url field.
+ */
+const ALLOWED_HERO_VIDEO_TYPES = new Set([
+  "video/mp4",
+  "video/webm",
+  "video/quicktime",
+]);
+export async function uploadEventHeroVideo(formData: FormData) {
+  await requireRole("manager");
+  const file = formData.get("file") as File | null;
+  const eventId = (formData.get("event_id") as string | null) ?? null;
+  if (!file || typeof file === "string") {
+    return { error: "No file provided" };
+  }
+  if (!eventId || !/^[0-9a-fA-F-]{32,40}$/.test(eventId)) {
+    return { error: "Missing or invalid event_id" };
+  }
+  if (file.size > 50 * 1024 * 1024) {
+    return { error: "Video is larger than 50 MB" };
+  }
+  if (!ALLOWED_HERO_VIDEO_TYPES.has(file.type)) {
+    return { error: "Only MP4, WebM or QuickTime videos are allowed" };
+  }
+
+  const ext =
+    file.type === "video/mp4"
+      ? "mp4"
+      : file.type === "video/webm"
+        ? "webm"
+        : "mov";
+  const path = `${eventId}/hero-video/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${ext}`;
+
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const service = getServiceClient();
+  const { error: uploadError } = await service.storage
+    .from(COVER_BUCKET)
+    .upload(path, buffer, { contentType: file.type, upsert: false });
+  if (uploadError) {
+    return { error: `Upload failed: ${uploadError.message}` };
+  }
+  const { data } = service.storage.from(COVER_BUCKET).getPublicUrl(path);
+  return { success: true as const, url: data.publicUrl };
+}
+
+/**
+ * Uploads a PNG hero overlay (transparency preserved — never WebP-converted)
+ * to event-covers/{eventId}/hero-overlay/. Returned URL is written into
+ * events.hero_overlay_image_url.
+ */
+export async function uploadEventHeroOverlay(formData: FormData) {
+  await requireRole("manager");
+  const file = formData.get("file") as File | null;
+  const eventId = (formData.get("event_id") as string | null) ?? null;
+  if (!file || typeof file === "string") {
+    return { error: "No file provided" };
+  }
+  if (!eventId || !/^[0-9a-fA-F-]{32,40}$/.test(eventId)) {
+    return { error: "Missing or invalid event_id" };
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    return { error: "PNG is larger than 5 MB" };
+  }
+  if (file.type !== "image/png") {
+    return { error: "Only PNG images are allowed (transparency required)" };
+  }
+
+  const path = `${eventId}/hero-overlay/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.png`;
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const service = getServiceClient();
+  const { error: uploadError } = await service.storage
+    .from(COVER_BUCKET)
+    .upload(path, buffer, { contentType: "image/png", upsert: false });
+  if (uploadError) {
+    return { error: `Upload failed: ${uploadError.message}` };
+  }
+  const { data } = service.storage.from(COVER_BUCKET).getPublicUrl(path);
+  return { success: true as const, url: data.publicUrl };
+}

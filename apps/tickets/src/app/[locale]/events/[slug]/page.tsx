@@ -22,7 +22,7 @@ import { SocialProofBadge } from "@/components/event-triggers/social-proof-badge
 import { TierDeadlineCountdown } from "@/components/event-triggers/tier-deadline-countdown";
 import { RecentBuyerTicker } from "@/components/event-triggers/recent-buyer-ticker";
 import { PriceAnchor } from "@/components/event-triggers/price-anchor";
-import { HeroVideo } from "@/components/funnel/hero-video";
+import { EventHeroBanner } from "@/components/funnel/event-hero-banner";
 import { EventStickyCta } from "@/components/funnel/event-sticky-cta";
 import { WhyAttend } from "@/components/funnel/why-attend";
 import { FunnelTestimonials } from "@/components/funnel/funnel-testimonials";
@@ -264,23 +264,19 @@ export default async function EventDetailPage({
           <span aria-hidden>&larr;</span> {t("back")}
         </Link>
 
-        {/* HERO — video if hero_video_url is set, otherwise cover image */}
-        {event.hero_video_url ? (
-          <HeroVideo url={event.hero_video_url as string} title={loc("title")} />
-        ) : (
-          <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-border bg-muted shadow-sm sm:aspect-21/9">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={
-                event.cover_image_url ??
-                "https://diambilaybusinesscenter.org/images/2025_03_29_13_47_IMG_3075-copy.jpg"
-              }
-              alt={loc("title")}
-              className="h-full w-full object-cover"
-              referrerPolicy="no-referrer"
-            />
-          </div>
-        )}
+        {/* HERO — uploaded mp4 / external embed / cover image, with optional
+            darkening tint, centered PNG overlay and trilingual overlay text. */}
+        <EventHeroBanner
+          title={loc("title")}
+          videoUrl={event.hero_video_url as string | null}
+          imageUrl={event.cover_image_url as string | null}
+          overlayImageUrl={event.hero_overlay_image_url as string | null}
+          overlayText={
+            (event[`hero_overlay_text_${locale}` as keyof typeof event] as string | null) ??
+            (event.hero_overlay_text_en as string | null)
+          }
+          darkeningStrength={(event.hero_darkening_strength as number | null) ?? 50}
+        />
 
       </div>
 

@@ -404,6 +404,11 @@ export async function deleteFaq(id: string, eventId: string, locale: string) {
 
 export interface EventFunnelCopy {
   hero_video_url: string | null;
+  hero_overlay_image_url: string | null;
+  hero_overlay_text_en: string | null;
+  hero_overlay_text_de: string | null;
+  hero_overlay_text_fr: string | null;
+  hero_darkening_strength: number;
   funnel_tagline_en: string | null;
   funnel_tagline_de: string | null;
   funnel_tagline_fr: string | null;
@@ -424,7 +429,7 @@ export async function getEventFunnelCopy(
   const { data, error } = await supabase
     .from("events")
     .select(
-      "hero_video_url, funnel_tagline_en, funnel_tagline_de, funnel_tagline_fr, funnel_intro_en, funnel_intro_de, funnel_intro_fr, funnel_closing_en, funnel_closing_de, funnel_closing_fr, scarcity_threshold",
+      "hero_video_url, hero_overlay_image_url, hero_overlay_text_en, hero_overlay_text_de, hero_overlay_text_fr, hero_darkening_strength, funnel_tagline_en, funnel_tagline_de, funnel_tagline_fr, funnel_intro_en, funnel_intro_de, funnel_intro_fr, funnel_closing_en, funnel_closing_de, funnel_closing_fr, scarcity_threshold",
     )
     .eq("id", eventId)
     .single();
@@ -441,6 +446,24 @@ export async function updateEventFunnelCopy(
   const record: EventFunnelCopy = {
     hero_video_url:
       ((formData.get("hero_video_url") as string) || "").trim() || null,
+    hero_overlay_image_url:
+      ((formData.get("hero_overlay_image_url") as string) || "").trim() || null,
+    hero_overlay_text_en:
+      ((formData.get("hero_overlay_text_en") as string) || "").trim() || null,
+    hero_overlay_text_de:
+      ((formData.get("hero_overlay_text_de") as string) || "").trim() || null,
+    hero_overlay_text_fr:
+      ((formData.get("hero_overlay_text_fr") as string) || "").trim() || null,
+    hero_darkening_strength: Math.min(
+      100,
+      Math.max(
+        0,
+        parseInt(
+          (formData.get("hero_darkening_strength") as string) || "50",
+          10,
+        ) || 0,
+      ),
+    ),
     funnel_tagline_en:
       ((formData.get("funnel_tagline_en") as string) || "").trim() || null,
     funnel_tagline_de:

@@ -1624,6 +1624,11 @@ export type Database = {
           funnel_tagline_de: string | null
           funnel_tagline_en: string | null
           funnel_tagline_fr: string | null
+          hero_darkening_strength: number
+          hero_overlay_image_url: string | null
+          hero_overlay_text_de: string | null
+          hero_overlay_text_en: string | null
+          hero_overlay_text_fr: string | null
           hero_video_url: string | null
           id: string
           is_published: boolean
@@ -1667,6 +1672,11 @@ export type Database = {
           funnel_tagline_de?: string | null
           funnel_tagline_en?: string | null
           funnel_tagline_fr?: string | null
+          hero_darkening_strength?: number
+          hero_overlay_image_url?: string | null
+          hero_overlay_text_de?: string | null
+          hero_overlay_text_en?: string | null
+          hero_overlay_text_fr?: string | null
           hero_video_url?: string | null
           id?: string
           is_published?: boolean
@@ -1710,6 +1720,11 @@ export type Database = {
           funnel_tagline_de?: string | null
           funnel_tagline_en?: string | null
           funnel_tagline_fr?: string | null
+          hero_darkening_strength?: number
+          hero_overlay_image_url?: string | null
+          hero_overlay_text_de?: string | null
+          hero_overlay_text_en?: string | null
+          hero_overlay_text_fr?: string | null
           hero_video_url?: string | null
           id?: string
           is_published?: boolean

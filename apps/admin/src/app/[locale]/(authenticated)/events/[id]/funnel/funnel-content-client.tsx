@@ -19,6 +19,10 @@ import {
   type EventPillar,
   type EventTestimonial,
 } from "@/actions/event-funnel-content";
+import {
+  uploadEventHeroVideo,
+  uploadEventHeroOverlay,
+} from "@/actions/events";
 
 export function FunnelContentClient({
   eventId,
@@ -75,7 +79,7 @@ function CopySection({
     <section>
       <SectionHeader
         title="Hero, intro & closing"
-        description="The hero video and trilingual copy that frame every funnel section."
+        description="The hero composition (video / image, overlay PNG, overlay text, darkening) and the trilingual copy that frame every funnel section."
       />
       <form
         className="space-y-8"
@@ -93,34 +97,20 @@ function CopySection({
           });
         }}
       >
+        <HeroBannerFields eventId={eventId} initial={initial} />
         <Card>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="sm:col-span-2">
-              <Label htmlFor="hero_video_url">Hero video URL (YouTube / Vimeo)</Label>
-              <Input
-                id="hero_video_url"
-                name="hero_video_url"
-                type="url"
-                defaultValue={initial.hero_video_url ?? ""}
-                placeholder="https://www.youtube.com/watch?v=..."
-              />
-              <p className="mt-1 text-xs text-muted-foreground">
-                When set, replaces the cover image in the hero. Leave blank to use the cover image.
-              </p>
-            </div>
-            <div>
-              <Label htmlFor="scarcity_threshold">Scarcity threshold</Label>
-              <Input
-                id="scarcity_threshold"
-                name="scarcity_threshold"
-                type="number"
-                min="0"
-                defaultValue={String(initial.scarcity_threshold)}
-              />
-              <p className="mt-1 text-xs text-muted-foreground">
-                Show &ldquo;Only X left&rdquo; on the sticky bar when remaining ≤ this. Set 0 to disable.
-              </p>
-            </div>
+          <div>
+            <Label htmlFor="scarcity_threshold">Scarcity threshold</Label>
+            <Input
+              id="scarcity_threshold"
+              name="scarcity_threshold"
+              type="number"
+              min="0"
+              defaultValue={String(initial.scarcity_threshold)}
+            />
+            <p className="mt-1 text-xs text-muted-foreground">
+              Show &ldquo;Only X left&rdquo; on the sticky bar when remaining ≤ this. Set 0 to disable.
+            </p>
           </div>
         </Card>
 
@@ -173,6 +163,223 @@ function CopySection({
         </Button>
       </form>
     </section>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Hero banner subcomponent — uploaded video / external embed URL,
+// centered PNG overlay, trilingual overlay text, darkening tint.
+// ---------------------------------------------------------------------------
+
+function HeroBannerFields({
+  eventId,
+  initial,
+}: {
+  eventId: string;
+  initial: EventFunnelCopy;
+}) {
+  const [videoUrl, setVideoUrl] = useState<string>(initial.hero_video_url ?? "");
+  const [overlayUrl, setOverlayUrl] = useState<string>(
+    initial.hero_overlay_image_url ?? "",
+  );
+  const [strength, setStrength] = useState<number>(
+    Number.isFinite(initial.hero_darkening_strength)
+      ? initial.hero_darkening_strength
+      : 50,
+  );
+
+  return (
+    <Card>
+      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        Hero banner
+      </p>
+
+      {/* Video — upload OR paste a YouTube/Vimeo URL */}
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        <div>
+          <Label htmlFor="hero_video_url">Hero video URL</Label>
+          <Input
+            id="hero_video_url"
+            name="hero_video_url"
+            type="url"
+            value={videoUrl}
+            onChange={(e) => setVideoUrl(e.target.value)}
+            placeholder="https://www.youtube.com/watch?v=..."
+          />
+          <p className="mt-1 text-xs text-muted-foreground">
+            Paste a YouTube/Vimeo URL, OR upload an mp4 below — the public URL fills this field.
+          </p>
+        </div>
+        <FileUploadField
+          label="Upload video (MP4 / WebM)"
+          description="Up to 50 MB. Plays muted + looping behind the overlays."
+          accept="video/mp4,video/webm,video/quicktime"
+          maxSizeBytes={50 * 1024 * 1024}
+          onUpload={async (file) => {
+            const fd = new FormData();
+            fd.set("file", file);
+            fd.set("event_id", eventId);
+            const res = await uploadEventHeroVideo(fd);
+            if (res.success) return res.url;
+            throw new Error(res.error ?? "Upload failed");
+          }}
+          currentUrl={videoUrl || null}
+          onResolved={(url) => setVideoUrl(url)}
+        />
+      </div>
+
+      {/* Overlay PNG */}
+      <div className="mt-6 grid gap-3 sm:grid-cols-2">
+        <div>
+          <Label htmlFor="hero_overlay_image_url">Centered PNG overlay URL</Label>
+          <Input
+            id="hero_overlay_image_url"
+            name="hero_overlay_image_url"
+            type="url"
+            value={overlayUrl}
+            onChange={(e) => setOverlayUrl(e.target.value)}
+            placeholder="https://… (filled by upload)"
+          />
+          <p className="mt-1 text-xs text-muted-foreground">
+            Sits centered over the background. Use a transparent PNG (logo, lockup, badge).
+          </p>
+        </div>
+        <FileUploadField
+          label="Upload PNG"
+          description="Transparent PNG, up to 5 MB."
+          accept="image/png"
+          maxSizeBytes={5 * 1024 * 1024}
+          onUpload={async (file) => {
+            const fd = new FormData();
+            fd.set("file", file);
+            fd.set("event_id", eventId);
+            const res = await uploadEventHeroOverlay(fd);
+            if (res.success) return res.url;
+            throw new Error(res.error ?? "Upload failed");
+          }}
+          currentUrl={overlayUrl || null}
+          onResolved={(url) => setOverlayUrl(url)}
+        />
+      </div>
+
+      {/* Trilingual overlay text */}
+      <div className="mt-6">
+        <p className="text-xs font-medium text-foreground">
+          Overlay text (trilingual, optional — sits under the PNG)
+        </p>
+        <div className="mt-2 grid gap-3 sm:grid-cols-3">
+          <Input
+            name="hero_overlay_text_en"
+            defaultValue={initial.hero_overlay_text_en ?? ""}
+            placeholder="EN"
+          />
+          <Input
+            name="hero_overlay_text_de"
+            defaultValue={initial.hero_overlay_text_de ?? ""}
+            placeholder="DE"
+          />
+          <Input
+            name="hero_overlay_text_fr"
+            defaultValue={initial.hero_overlay_text_fr ?? ""}
+            placeholder="FR"
+          />
+        </div>
+      </div>
+
+      {/* Darkening slider */}
+      <div className="mt-6">
+        <Label htmlFor="hero_darkening_strength">
+          Darkening tint{" "}
+          <span className="font-mono text-xs text-muted-foreground">
+            {strength}%
+          </span>
+        </Label>
+        <input
+          id="hero_darkening_strength"
+          name="hero_darkening_strength"
+          type="range"
+          min={0}
+          max={100}
+          value={strength}
+          onChange={(e) => setStrength(parseInt(e.target.value, 10) || 0)}
+          className="mt-2 w-full"
+        />
+        <p className="mt-1 text-xs text-muted-foreground">
+          0 = no tint · 50 = balanced (default) · 100 = nearly black. Boost when the background is busy.
+        </p>
+      </div>
+    </Card>
+  );
+}
+
+function FileUploadField({
+  label,
+  description,
+  accept,
+  maxSizeBytes,
+  onUpload,
+  currentUrl,
+  onResolved,
+}: {
+  label: string;
+  description: string;
+  accept: string;
+  maxSizeBytes: number;
+  onUpload: (file: File) => Promise<string>;
+  currentUrl: string | null;
+  onResolved: (url: string) => void;
+}) {
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setError(null);
+    if (file.size > maxSizeBytes) {
+      setError(
+        `File is too large (max ${Math.round(maxSizeBytes / 1024 / 1024)} MB).`,
+      );
+      e.target.value = "";
+      return;
+    }
+    startTransition(async () => {
+      try {
+        const url = await onUpload(file);
+        onResolved(url);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Upload failed.");
+      } finally {
+        e.target.value = "";
+      }
+    });
+  }
+
+  return (
+    <div>
+      <p className="text-sm font-medium text-foreground">{label}</p>
+      <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>
+      <input
+        type="file"
+        accept={accept}
+        onChange={handleChange}
+        disabled={pending}
+        className="mt-2 block w-full text-xs file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-primary-foreground hover:file:bg-primary/90"
+      />
+      {pending && (
+        <p className="mt-1 text-xs text-muted-foreground">Uploading…</p>
+      )}
+      {error && (
+        <p className="mt-1 text-xs text-danger" role="alert">
+          {error}
+        </p>
+      )}
+      {currentUrl && !pending && (
+        <p className="mt-1 truncate text-[11px] text-muted-foreground">
+          Current: {currentUrl}
+        </p>
+      )}
+    </div>
   );
 }
 
