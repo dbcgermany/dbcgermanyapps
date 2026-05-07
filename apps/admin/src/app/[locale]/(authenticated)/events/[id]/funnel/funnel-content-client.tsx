@@ -20,9 +20,10 @@ import {
   type EventTestimonial,
 } from "@/actions/event-funnel-content";
 import {
-  uploadEventHeroVideo,
+  getEventHeroVideoUploadUrl,
   uploadEventHeroOverlay,
 } from "@/actions/events";
+import { createBrowserClient } from "@dbc/supabase";
 
 export function FunnelContentClient({
   eventId,
@@ -212,16 +213,29 @@ function HeroBannerFields({
         </div>
         <FileUploadField
           label="Upload video (MP4 / WebM)"
-          description="Up to 50 MB. Plays muted + looping behind the overlays."
+          description="Up to 100 MB. Plays muted + looping behind the overlays. Uploaded straight to Supabase Storage (bypasses the 4.5 MB Vercel function cap)."
           accept="video/mp4,video/webm,video/quicktime"
-          maxSizeBytes={50 * 1024 * 1024}
+          maxSizeBytes={100 * 1024 * 1024}
           onUpload={async (file) => {
-            const fd = new FormData();
-            fd.set("file", file);
-            fd.set("event_id", eventId);
-            const res = await uploadEventHeroVideo(fd);
-            if (res.success) return res.url;
-            throw new Error(res.error ?? "Upload failed");
+            const sig = await getEventHeroVideoUploadUrl({
+              eventId,
+              contentType: file.type,
+              sizeBytes: file.size,
+            });
+            if (!sig.success) {
+              throw new Error(sig.error ?? "Could not create upload URL");
+            }
+            const supabase = createBrowserClient();
+            const { error } = await supabase.storage
+              .from("event-covers")
+              .uploadToSignedUrl(sig.path, sig.token, file, {
+                contentType: file.type,
+                upsert: false,
+              });
+            if (error) {
+              throw new Error(`Upload failed: ${error.message}`);
+            }
+            return sig.publicUrl;
           }}
           currentUrl={videoUrl || null}
           onResolved={(url) => setVideoUrl(url)}

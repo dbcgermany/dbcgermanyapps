@@ -548,50 +548,65 @@ export async function uploadEventCover(formData: FormData) {
 }
 
 /**
- * Uploads a hero video (mp4/webm/quicktime) to event-covers/{eventId}/hero-video/.
- * No transcoding — admins are responsible for compressing before upload (50 MB cap).
- * The returned URL is written into the event's hero_video_url field.
+ * Issues a signed Supabase Storage upload URL for a hero video so the
+ * browser can upload the file straight to storage, bypassing the Vercel
+ * 4.5 MB serverless-function payload cap. Validates auth + content-type
+ * server-side; the file size is enforced by the bucket itself (100 MB).
+ *
+ * Client flow (uploadToSignedUrl):
+ *   1. Call this action with eventId + file metadata
+ *   2. Use @supabase/supabase-js .uploadToSignedUrl(path, token, file)
+ *   3. On success, write the returned publicUrl into the form
  */
 const ALLOWED_HERO_VIDEO_TYPES = new Set([
   "video/mp4",
   "video/webm",
   "video/quicktime",
 ]);
-export async function uploadEventHeroVideo(formData: FormData) {
+const HERO_VIDEO_MAX_BYTES = 100 * 1024 * 1024;
+
+export async function getEventHeroVideoUploadUrl(input: {
+  eventId: string;
+  contentType: string;
+  sizeBytes: number;
+}) {
   await requireRole("manager");
-  const file = formData.get("file") as File | null;
-  const eventId = (formData.get("event_id") as string | null) ?? null;
-  if (!file || typeof file === "string") {
-    return { error: "No file provided" };
-  }
+
+  const { eventId, contentType, sizeBytes } = input;
   if (!eventId || !/^[0-9a-fA-F-]{32,40}$/.test(eventId)) {
     return { error: "Missing or invalid event_id" };
   }
-  if (file.size > 50 * 1024 * 1024) {
-    return { error: "Video is larger than 50 MB" };
-  }
-  if (!ALLOWED_HERO_VIDEO_TYPES.has(file.type)) {
+  if (!ALLOWED_HERO_VIDEO_TYPES.has(contentType)) {
     return { error: "Only MP4, WebM or QuickTime videos are allowed" };
+  }
+  if (!Number.isFinite(sizeBytes) || sizeBytes <= 0 || sizeBytes > HERO_VIDEO_MAX_BYTES) {
+    return { error: "Video must be between 0 and 100 MB" };
   }
 
   const ext =
-    file.type === "video/mp4"
+    contentType === "video/mp4"
       ? "mp4"
-      : file.type === "video/webm"
+      : contentType === "video/webm"
         ? "webm"
         : "mov";
   const path = `${eventId}/hero-video/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${ext}`;
 
-  const buffer = Buffer.from(await file.arrayBuffer());
   const service = getServiceClient();
-  const { error: uploadError } = await service.storage
+  const { data, error } = await service.storage
     .from(COVER_BUCKET)
-    .upload(path, buffer, { contentType: file.type, upsert: false });
-  if (uploadError) {
-    return { error: `Upload failed: ${uploadError.message}` };
+    .createSignedUploadUrl(path);
+  if (error || !data) {
+    return { error: `Could not create upload URL: ${error?.message ?? "unknown"}` };
   }
-  const { data } = service.storage.from(COVER_BUCKET).getPublicUrl(path);
-  return { success: true as const, url: data.publicUrl };
+
+  const { data: pub } = service.storage.from(COVER_BUCKET).getPublicUrl(path);
+
+  return {
+    success: true as const,
+    path,
+    token: data.token,
+    publicUrl: pub.publicUrl,
+  };
 }
 
 /**
