@@ -44,6 +44,10 @@ export function notificationHref(
       return contactId ? `${base}/contacts/${contactId}` : `${base}/contacts`;
     case "newsletter_subscriber":
       return `${base}/newsletters`;
+    case "speaker_question":
+      return eventId
+        ? `${base}/events/${eventId}/questions`
+        : `${base}/events`;
     case "check_in_milestone":
       return eventId ? `${base}/events/${eventId}/live` : `${base}/events`;
     case "waitlist_available":

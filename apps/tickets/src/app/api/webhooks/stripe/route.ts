@@ -5,6 +5,7 @@ import { createClient } from "@supabase/supabase-js";
 import { notifyAdmins } from "@dbc/supabase/server";
 import { sendOrderReceipt } from "@dbc/email";
 import { sendTicketsForOrder } from "@/lib/send-tickets-for-order";
+import { sendAskSpeakersPromptForOrder } from "@/lib/send-ask-speakers-prompt";
 import { captureServerError } from "@/lib/observe";
 
 // Lazy-initialised so the module can be imported during `next build`
@@ -377,6 +378,35 @@ export async function POST(request: Request) {
           type: "new_order",
           title: `New order: ${order.recipient_name}`,
           body: `${ticketCount ?? 0} ticket${(ticketCount ?? 0) === 1 ? "" : "s"} for ${eventRow.title_en} \u2014 \u20AC${(order.total_cents / 100).toFixed(2)}`,
+          data: { order_id: orderId, event_id: eventId },
+        });
+      }
+
+      // "Ask a speaker" prompt \u2014 late-purchase branch.
+      // The cron `/api/cron/ask-speakers-prompts` handles the normal case
+      // (1 day after purchase, \u2265 2 days before event). When the event is
+      // 48\u201372h away the 24h delay would push past the upper bound, so fire
+      // immediately. Buyers \u2264 48h out are intentionally suppressed (the
+      // helper itself short-circuits when the event has started, but the
+      // window check here is what enforces the "no later than 2 days
+      // before" rule for late purchases).
+      try {
+        const { data: eventTimingRow } = await supabase
+          .from("events")
+          .select("starts_at")
+          .eq("id", eventId)
+          .maybeSingle();
+        if (eventTimingRow?.starts_at) {
+          const hoursUntilEvent =
+            (new Date(eventTimingRow.starts_at).getTime() - Date.now()) /
+            3_600_000;
+          if (hoursUntilEvent > 48 && hoursUntilEvent <= 72) {
+            await sendAskSpeakersPromptForOrder(supabase, orderId);
+          }
+        }
+      } catch (err) {
+        captureServerError(err, {
+          scope: "stripe_webhook:ask_speakers_prompt",
           data: { order_id: orderId, event_id: eventId },
         });
       }

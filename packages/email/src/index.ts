@@ -82,6 +82,21 @@ export { PasswordResetEmail } from "./templates/password-reset";
 export type { PasswordResetEmailProps } from "./templates/password-reset";
 export { StaffInviteEmail } from "./templates/staff-invite";
 export type { StaffInviteEmailProps } from "./templates/staff-invite";
+export { AskSpeakersEmail } from "./templates/ask-speakers";
+export type {
+  AskSpeakersEmailProps,
+  AskSpeakersEmailSpeaker,
+} from "./templates/ask-speakers";
+export { sendAskSpeakersEmail } from "./send-ask-speakers";
+export type { SendAskSpeakersInput } from "./send-ask-speakers";
+export { SpeakerQuestionsPdf } from "./pdf/speaker-questions-pdf";
+export type {
+  SpeakerQuestionsPdfProps,
+  SpeakerQuestionsPdfSpeakerGroup,
+  SpeakerQuestionsPdfQuestion,
+} from "./pdf/speaker-questions-pdf";
+export { generateSpeakerQuestionsPdf } from "./pdf/generate-speaker-questions";
+export type { GenerateSpeakerQuestionsInput } from "./pdf/generate-speaker-questions";
 export { InvoicePdf } from "./pdf/invoice-pdf";
 export { generateInvoicePdf } from "./pdf/generate-invoice";
 export type { GenerateInvoiceInput } from "./pdf/generate-invoice";

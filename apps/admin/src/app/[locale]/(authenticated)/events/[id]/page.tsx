@@ -11,6 +11,7 @@ import {
   ListChecks,
   Mail,
   Megaphone,
+  MessageCircleQuestion,
   Mic,
   QrCode,
   Radio,
@@ -384,6 +385,12 @@ export default async function EventDetailPage({
               desc="Attach speakers to this event and set role labels (Keynote, Host, Co-Host)."
             />
             <HubLink href={`/${locale}/events/${id}/emails`} icon={Mail} title={t("emailSequences")} desc={t("emailSequencesDesc")} />
+            <HubLink
+              href={`/${locale}/events/${id}/questions`}
+              icon={MessageCircleQuestion}
+              title="Speaker questions"
+              desc="Buyer-submitted questions, triage by speaker, export PDF for prep."
+            />
             <HubLink href={`/${locale}/events/${id}/invitations`} icon={Gift} title={t("invitations")} desc={t("invitationsDesc")} />
             <HubLink href={`/${locale}/events/${id}/invitations/bulk`} icon={Upload} title={t("bulkInvitations")} desc={t("bulkInvitationsDesc")} />
           </div>

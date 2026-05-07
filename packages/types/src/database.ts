@@ -2510,6 +2510,7 @@ export type Database = {
         Row: {
           acquisition_type: Database["public"]["Enums"]["acquisition_type"]
           amount_refunded_cents: number
+          ask_speaker_email_sent_at: string | null
           buyer_id: string | null
           contact_id: string | null
           coupon_id: string | null
@@ -2547,6 +2548,7 @@ export type Database = {
         Insert: {
           acquisition_type?: Database["public"]["Enums"]["acquisition_type"]
           amount_refunded_cents?: number
+          ask_speaker_email_sent_at?: string | null
           buyer_id?: string | null
           contact_id?: string | null
           coupon_id?: string | null
@@ -2584,6 +2586,7 @@ export type Database = {
         Update: {
           acquisition_type?: Database["public"]["Enums"]["acquisition_type"]
           amount_refunded_cents?: number
+          ask_speaker_email_sent_at?: string | null
           buyer_id?: string | null
           contact_id?: string | null
           coupon_id?: string | null
@@ -2779,6 +2782,90 @@ export type Database = {
             columns: ["updated_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      speaker_questions: {
+        Row: {
+          admin_notes: string | null
+          attendee_email: string
+          attendee_name: string
+          created_at: string
+          event_id: string
+          id: string
+          locale: string
+          order_id: string
+          question: string
+          speaker_id: string
+          status: Database["public"]["Enums"]["speaker_question_status"]
+          ticket_id: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          attendee_email: string
+          attendee_name: string
+          created_at?: string
+          event_id: string
+          id?: string
+          locale: string
+          order_id: string
+          question: string
+          speaker_id: string
+          status?: Database["public"]["Enums"]["speaker_question_status"]
+          ticket_id: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          attendee_email?: string
+          attendee_name?: string
+          created_at?: string
+          event_id?: string
+          id?: string
+          locale?: string
+          order_id?: string
+          question?: string
+          speaker_id?: string
+          status?: Database["public"]["Enums"]["speaker_question_status"]
+          ticket_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "speaker_questions_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "speaker_questions_event_speaker_fk"
+            columns: ["event_id", "speaker_id"]
+            isOneToOne: false
+            referencedRelation: "event_speakers"
+            referencedColumns: ["event_id", "speaker_id"]
+          },
+          {
+            foreignKeyName: "speaker_questions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "speaker_questions_speaker_id_fkey"
+            columns: ["speaker_id"]
+            isOneToOne: false
+            referencedRelation: "speakers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "speaker_questions_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
             referencedColumns: ["id"]
           },
         ]
@@ -3397,6 +3484,7 @@ export type Database = {
         | "cash"
         | "sepa_debit"
         | "klarna"
+      speaker_question_status: "new" | "shortlisted" | "answered" | "declined"
       sponsor_status: "lead" | "proposal" | "confirmed" | "active" | "completed"
       sponsor_tier:
         | "title"
@@ -3603,6 +3691,7 @@ export const Constants = {
         "sepa_debit",
         "klarna",
       ],
+      speaker_question_status: ["new", "shortlisted", "answered", "declined"],
       sponsor_status: ["lead", "proposal", "confirmed", "active", "completed"],
       sponsor_tier: [
         "title",

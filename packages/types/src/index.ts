@@ -230,6 +230,7 @@ export const NOTIFICATION_TYPE_VALUES = [
   "new_application",
   "contact_form_received",
   "newsletter_subscriber",
+  "speaker_question",
   // Event operations
   "check_in_milestone",
   "waitlist_available",
@@ -260,6 +261,7 @@ export const NOTIFICATION_DEFAULTS: Record<
   new_application:       { in_app: true,  email: true  },
   contact_form_received: { in_app: true,  email: true  },
   newsletter_subscriber: { in_app: false, email: false },
+  speaker_question:      { in_app: true,  email: false },
   check_in_milestone:    { in_app: true,  email: false },
   waitlist_available:    { in_app: true,  email: false },
   admin_event_reminder:  { in_app: true,  email: true  },
