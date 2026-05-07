@@ -83,6 +83,24 @@ export default async function HomePage({
           className="absolute inset-0 overflow-hidden bg-black"
         />
 
+        {/* Directional gradient: keeps the LEFT side (where copy lives) very
+            opaque-background so the body text stays legible in both themes
+            even when the admin pushes the darkening tint up. The radial
+            adds a brand-color halo on top of that. Both sit ABOVE the
+            HeroBanner's tint and BELOW the content. */}
+        <div
+          aria-hidden
+          className="absolute inset-0 bg-linear-to-r from-background/95 via-background/80 to-background/30 dark:from-background/95 dark:via-background/85 dark:to-background/30"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(60% 60% at 15% 0%, rgba(200,16,46,0.18) 0%, transparent 60%), radial-gradient(50% 50% at 90% 10%, rgba(212,160,23,0.18) 0%, transparent 60%)",
+          }}
+        />
+
         <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-28 lg:px-8 lg:py-36">
           <Reveal>
             <p className="inline-flex items-center gap-2 rounded-full border border-border bg-background/80 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur">

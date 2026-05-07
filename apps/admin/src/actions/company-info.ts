@@ -416,6 +416,13 @@ export async function updateCompanyInfoSection(
 
   revalidatePath("/", "layout");
   await pingSiteRevalidate("company-info");
+  // Homepage hero is a page-level field — tag-revalidation alone busts
+  // the data cache but the homepage's own ISR (revalidate=60) keeps the
+  // static prerender. Path-revalidate the marketing root so the new
+  // hero shows up on the next request, not 60s later.
+  if (section === "home_hero") {
+    await pingSitePath("/[locale]");
+  }
   return { success: true };
 }
 
@@ -439,6 +446,29 @@ async function pingSiteRevalidate(tag: string) {
     });
   } catch (err) {
     console.error("[pingSiteRevalidate] failed:", err);
+  }
+}
+
+/**
+ * Like pingSiteRevalidate but path-based — busts the page-level ISR for a
+ * specific Next.js literal route (e.g. "/[locale]"). Use when a save
+ * changes content rendered directly into a page's HTML; tag-only is
+ * insufficient because the page's own static prerender survives a tag
+ * bust until its own revalidate window expires.
+ */
+async function pingSitePath(path: string) {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  const secret = process.env.REVALIDATE_SECRET;
+  if (!siteUrl || !secret) return;
+  try {
+    await fetch(`${siteUrl}/api/revalidate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ path, secret }),
+      cache: "no-store",
+    });
+  } catch (err) {
+    console.error("[pingSitePath] failed:", err);
   }
 }
 
