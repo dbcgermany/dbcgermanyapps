@@ -16,12 +16,14 @@ function resolveEmbedUrl(
     const parsed = new URL(url);
     const host = parsed.hostname.replace(/^www\./, "");
 
+    const ytParams = (id: string) =>
+      `autoplay=1&mute=1&loop=1&playlist=${id}&controls=0&disablekb=1&fs=0&iv_load_policy=3&modestbranding=1&playsinline=1&rel=0&showinfo=0`;
     if (host === "youtube.com" || host === "m.youtube.com") {
       const id = parsed.searchParams.get("v");
       if (id)
         return {
           provider: "youtube",
-          src: `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&loop=1&playlist=${id}&controls=0&playsinline=1&rel=0&modestbranding=1`,
+          src: `https://www.youtube-nocookie.com/embed/${id}?${ytParams(id)}`,
         };
     }
     if (host === "youtu.be") {
@@ -29,7 +31,7 @@ function resolveEmbedUrl(
       if (id)
         return {
           provider: "youtube",
-          src: `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&loop=1&playlist=${id}&controls=0&playsinline=1&rel=0&modestbranding=1`,
+          src: `https://www.youtube-nocookie.com/embed/${id}?${ytParams(id)}`,
         };
     }
     if (host === "vimeo.com" || host === "player.vimeo.com") {
@@ -63,12 +65,20 @@ export function HeroVideo({ url, title }: { url: string; title: string }) {
           aria-label={title}
         />
       ) : (
+        // Hide YouTube/Vimeo chrome (logo on hover, end-screen, "More
+        // videos") by suppressing pointer events on the iframe — the
+        // background-style hero is play-and-loop, no interaction needed.
+        // disablekb=1 + fs=0 + controls=0 + modestbranding=1 + rel=0
+        // already strip most of the UI; this is the belt that closes
+        // the remaining gap (the brand logo that briefly appears on
+        // hover, which our overlay would otherwise expose if a click
+        // landed on the iframe).
         <iframe
           src={src}
           title={title}
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
-          className="h-full w-full"
+          className="pointer-events-none h-full w-full"
         />
       )}
     </div>
