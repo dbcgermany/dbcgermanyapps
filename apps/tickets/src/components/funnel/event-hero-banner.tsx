@@ -1,4 +1,5 @@
 import { HeroVideo } from "./hero-video";
+import { EventHeroVideoPlayer } from "./event-hero-video-player";
 
 // Single composition for the public event hero. Layers (back to front):
 //   1. Background — Supabase-hosted mp4 (autoplay/muted/loop), or YouTube/Vimeo
@@ -76,16 +77,7 @@ export function EventHeroBanner({
   return (
     <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-border bg-black shadow-sm sm:aspect-21/9">
       {trimmedVideo ? (
-        <video
-          src={trimmedVideo}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          className="h-full w-full object-cover"
-          aria-label={title}
-        />
+        <EventHeroVideoPlayer src={trimmedVideo} title={title} />
       ) : (
         // eslint-disable-next-line @next/next/no-img-element
         <img
