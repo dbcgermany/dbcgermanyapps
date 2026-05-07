@@ -13,6 +13,7 @@ import {
   type EventSpeakerRow,
 } from "@/actions/speakers";
 import { FeaturedSelect } from "./featured-select";
+import { SpeakerVisibilitySelect } from "../../../speakers/visibility-select";
 
 function initialsOf(name: string) {
   return name
@@ -319,6 +320,19 @@ export function EventSpeakersClient({
                           {es.is_featured && (
                             <Badge variant="accent">Featured</Badge>
                           )}
+                          {es.speakers.visibility !== "public" && (
+                            <Badge
+                              variant={
+                                es.speakers.visibility === "internal"
+                                  ? "warning"
+                                  : "default"
+                              }
+                            >
+                              {es.speakers.visibility === "internal"
+                                ? "Internal — not on public page"
+                                : "Hidden"}
+                            </Badge>
+                          )}
                           {isLinkedToTeam && (
                             <Badge variant="info">team-linked</Badge>
                           )}
@@ -330,6 +344,11 @@ export function EventSpeakersClient({
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
+                      <SpeakerVisibilitySelect
+                        id={es.speaker_id}
+                        current={es.speakers.visibility}
+                        locale={locale}
+                      />
                       <FeaturedSelect
                         eventId={eventId}
                         speakerId={es.speaker_id}
