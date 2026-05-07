@@ -5,6 +5,7 @@ import { HeroBanner, Reveal } from "@dbc/ui";
 import { getUpcomingEvents } from "@/lib/queries";
 import { getHomeHero } from "@/lib/home-hero";
 import { DBC } from "@/lib/dbc-assets";
+import { ServiceIconBadge } from "@/components/service-icon-badge";
 
 export const revalidate = 60;
 
@@ -198,20 +199,7 @@ export default async function HomePage({
                     referrerPolicy="no-referrer"
                   />
                   <div className="absolute inset-0 bg-linear-to-t from-black/55 via-black/10 to-transparent" />
-                  {/* Always-light badge so the dark-inked SVG icons stay
-                      legible in dark mode too (bg-background/90 went dark
-                      on dark-mode and hid them). */}
-                  <div className="absolute bottom-3 left-3 flex h-12 w-12 items-center justify-center rounded-xl border border-white/40 bg-white/95 backdrop-blur">
-                    <Image
-                      src={s.icon}
-                      alt=""
-                      width={28}
-                      height={28}
-                      aria-hidden
-                      className="h-7 w-7 object-contain"
-                      referrerPolicy="no-referrer"
-                    />
-                  </div>
+                  <ServiceIconBadge src={s.icon} size="sm" />
                 </div>
                 <div className="flex flex-1 flex-col p-8">
                   <h3 className="font-heading text-xl font-bold">

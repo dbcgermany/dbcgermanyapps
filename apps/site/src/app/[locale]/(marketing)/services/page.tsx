@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { Reveal } from "@dbc/ui";
 import { seoFromI18n } from "@/lib/seo";
 import { DBC } from "@/lib/dbc-assets";
+import { ServiceIconBadge } from "@/components/service-icon-badge";
 
 export async function generateMetadata({
   params,
@@ -113,17 +114,7 @@ export default async function ServicesHubPage({
                   referrerPolicy="no-referrer"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
-                <div className="absolute bottom-3 left-3 flex h-14 w-14 items-center justify-center rounded-xl border border-white/30 bg-background/90 backdrop-blur">
-                  <Image
-                    src={s.icon}
-                    alt=""
-                    width={32}
-                    height={32}
-                    aria-hidden
-                    className="h-8 w-8 object-contain"
-                    referrerPolicy="no-referrer"
-                  />
-                </div>
+                <ServiceIconBadge src={s.icon} size="lg" />
               </div>
               <div className="flex flex-1 flex-col p-10">
                 <h2 className="font-heading text-2xl font-bold">
