@@ -112,6 +112,15 @@ export interface PublicCompanyInfo {
   account_holder: string | null;
   iban: string | null;
   bic: string | null;
+
+  // Marketing homepage hero (mirrors the per-event hero composition).
+  home_hero_video_url: string | null;
+  home_hero_image_url: string | null;
+  home_hero_overlay_image_url: string | null;
+  home_hero_overlay_text_en: string | null;
+  home_hero_overlay_text_de: string | null;
+  home_hero_overlay_text_fr: string | null;
+  home_hero_darkening_strength: number;
 }
 
 // Actual DB read, wrapped in unstable_cache with tag so

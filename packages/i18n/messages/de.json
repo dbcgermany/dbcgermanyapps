@@ -1306,7 +1306,8 @@
           "social": "Soziale Links",
           "seo": "SEO-Standards",
           "banking": "Bankdaten",
-          "about": "About-Seite"
+          "about": "About-Seite",
+          "home_hero": "Startseiten-Hero"
         },
         "shared": {
           "orPasteUrl": "Oder CDN-URL einfügen",

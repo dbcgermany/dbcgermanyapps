@@ -1306,7 +1306,8 @@
           "social": "Liens sociaux",
           "seo": "SEO par défaut",
           "banking": "Coordonnées bancaires",
-          "about": "Page À propos"
+          "about": "Page À propos",
+          "home_hero": "Hero de la page d’accueil"
         },
         "shared": {
           "orPasteUrl": "Ou coller une URL CDN",

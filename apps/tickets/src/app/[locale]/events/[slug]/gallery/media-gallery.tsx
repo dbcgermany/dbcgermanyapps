@@ -11,11 +11,9 @@ interface MediaItem {
 }
 
 export function MediaGallery({
-  locale,
   media,
   labels,
 }: {
-  locale: string;
   media: MediaItem[];
   labels: { photo: string; video: string; link: string; open: string };
 }) {

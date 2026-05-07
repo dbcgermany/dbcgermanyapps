@@ -1,8 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
-import { Reveal } from "@dbc/ui";
+import { HeroBanner, Reveal } from "@dbc/ui";
 import { getUpcomingEvents } from "@/lib/queries";
+import { getCompanyInfo } from "@/lib/company-info";
 import { DBC } from "@/lib/dbc-assets";
 
 export const revalidate = 60;
@@ -53,35 +54,33 @@ export default async function HomePage({
 }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "site" });
-  const events = await getUpcomingEvents(3);
+  const [events, company] = await Promise.all([
+    getUpcomingEvents(3),
+    getCompanyInfo(),
+  ]);
 
   const ticketsUrl =
     process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://tickets.dbc-germany.com";
+
+  const heroOverlayText =
+    (company?.[`home_hero_overlay_text_${locale}` as keyof typeof company] as
+      | string
+      | null
+      | undefined) ?? company?.home_hero_overlay_text_en ?? null;
 
   return (
     <>
       {/* Hero ------------------------------------------------------------- */}
       <section className="relative overflow-hidden border-b border-border">
-        <Image
-          src={DBC.hero.home}
-          alt="African entrepreneurs networking at a DBC Germany event"
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover"
-          referrerPolicy="no-referrer"
-        />
-        <div
-          aria-hidden
-          className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/80 to-background/50 dark:from-background/95 dark:via-background/85 dark:to-background/50"
-        />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(60% 60% at 15% 0%, rgba(200,16,46,0.18) 0%, transparent 60%), radial-gradient(50% 50% at 90% 10%, rgba(212,160,23,0.18) 0%, transparent 60%)",
-          }}
+        <HeroBanner
+          title={t("hero.title")}
+          videoUrl={company?.home_hero_video_url ?? null}
+          imageUrl={company?.home_hero_image_url ?? null}
+          fallbackImageUrl={DBC.hero.home}
+          overlayImageUrl={company?.home_hero_overlay_image_url ?? null}
+          overlayText={heroOverlayText}
+          darkeningStrength={company?.home_hero_darkening_strength ?? 50}
+          className="absolute inset-0 overflow-hidden bg-black"
         />
 
         <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-28 lg:px-8 lg:py-36">
@@ -139,7 +138,7 @@ export default async function HomePage({
                   {item.label}
                 </dt>
                 <dd className="mt-2 font-heading text-2xl font-bold text-foreground sm:text-3xl">
-                  <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                  <span className="bg-linear-to-r from-primary to-accent bg-clip-text text-transparent">
                     {item.value}
                   </span>
                 </dd>
@@ -172,7 +171,7 @@ export default async function HomePage({
                 href={s.href(locale)}
                 className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all hover:-translate-y-1 hover:border-primary/30 hover:shadow-lg"
               >
-                <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
+                <div className="relative aspect-16/10 w-full overflow-hidden bg-muted">
                   <Image
                     src={s.photo}
                     alt={t(`services.${s.key}.title`)}
@@ -181,7 +180,7 @@ export default async function HomePage({
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                     referrerPolicy="no-referrer"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
+                  <div className="absolute inset-0 bg-linear-to-t from-black/55 via-black/10 to-transparent" />
                   <div className="absolute bottom-3 left-3 flex h-12 w-12 items-center justify-center rounded-xl border border-white/30 bg-background/90 backdrop-blur">
                     <Image
                       src={s.icon}
@@ -244,7 +243,7 @@ export default async function HomePage({
 
           {events.length === 0 ? (
             <div className="mt-12 grid overflow-hidden rounded-2xl border border-border bg-background md:grid-cols-2">
-              <div className="relative aspect-[4/3] w-full md:aspect-auto">
+              <div className="relative aspect-4/3 w-full md:aspect-auto">
                 <Image
                   src={DBC.photo.eventFallback}
                   alt="Richesses d'Afrique Germany 2026 conference"
@@ -253,7 +252,7 @@ export default async function HomePage({
                   className="object-cover"
                   referrerPolicy="no-referrer"
                 />
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-background/10 to-background/80" />
+                <div className="absolute inset-0 bg-linear-to-r from-transparent via-background/10 to-background/80" />
               </div>
               <div className="flex flex-col justify-center p-8 sm:p-12">
                 <p className="text-xs font-semibold uppercase tracking-wider text-primary">
@@ -339,7 +338,7 @@ export default async function HomePage({
                 (src, i) => (
                   <div
                     key={i}
-                    className="relative aspect-[4/3] overflow-hidden rounded-2xl"
+                    className="relative aspect-4/3 overflow-hidden rounded-2xl"
                   >
                     <Image
                       src={src}
@@ -392,7 +391,7 @@ export default async function HomePage({
       <section className="relative overflow-hidden">
         <div
           aria-hidden
-          className="absolute inset-0 bg-gradient-to-br from-primary via-primary/90 to-brand-red-hover"
+          className="absolute inset-0 bg-linear-to-br from-primary via-primary/90 to-brand-red-hover"
         />
         <div
           aria-hidden

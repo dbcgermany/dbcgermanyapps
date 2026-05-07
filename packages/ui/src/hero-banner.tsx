@@ -1,29 +1,35 @@
-import { HeroVideo } from "./hero-video";
-import { EventHeroVideoPlayer } from "./event-hero-video-player";
+import { HeroEmbed } from "./hero-embed";
+import { HeroVideoPlayer } from "./hero-video-player";
 
-// Single composition for the public event hero. Layers (back to front):
-//   1. Background — Supabase-hosted mp4 (autoplay/muted/loop), or YouTube/Vimeo
-//      embed via HeroVideo, or static cover image, or hard-coded fallback.
+// Single composition for an admin-controlled hero banner. Layers (back to
+// front):
+//   1. Background — Supabase-hosted mp4 (autoplay/muted/loop), or
+//      YouTube/Vimeo embed via HeroEmbed, or static cover image, or the
+//      consumer-supplied fallback image.
 //   2. Darkening tint — rgba(0,0,0,strength/100) so the PNG and copy below
-//      always read against whatever the operator chose. Inline style because
-//      Tailwind can't generate arbitrary opacity from a runtime number.
-//   3. Centered PNG overlay (transparency-preserved) + smaller localised text.
+//      always read against whatever the operator chose. Inline style
+//      because Tailwind can't generate arbitrary opacity from a runtime
+//      number.
+//   3. Centered PNG overlay (transparency-preserved) + smaller localised
+//      text.
 //
-// External video URLs (YouTube / Vimeo) keep the existing HeroVideo iframe;
-// the overlays sit on top of the iframe via absolute positioning. Self-hosted
-// videos render as a <video> tag with autoplay so the hero feels alive.
+// Used by both apps/tickets (event hero) and apps/site (homepage hero).
+// Remains presentational — fetching the props is the consumer's job.
 
-interface EventHeroBannerProps {
+export interface HeroBannerProps {
   title: string;
   videoUrl?: string | null;
   imageUrl?: string | null;
+  /** When videoUrl + imageUrl are both null/empty, this is rendered. */
+  fallbackImageUrl?: string;
   overlayImageUrl?: string | null;
+  /** Already locale-resolved by the consumer. */
   overlayText?: string | null;
+  /** 0–100; clamped internally. */
   darkeningStrength: number;
+  /** Override the default rounded-2xl/border container chrome. */
+  className?: string;
 }
-
-const DEFAULT_IMAGE_URL =
-  "https://diambilaybusinesscenter.org/images/2025_03_29_13_47_IMG_3075-copy.jpg";
 
 function isExternalEmbed(url: string): boolean {
   try {
@@ -40,14 +46,19 @@ function isExternalEmbed(url: string): boolean {
   }
 }
 
-export function EventHeroBanner({
+const DEFAULT_CONTAINER =
+  "relative aspect-video w-full overflow-hidden rounded-2xl border border-border bg-black shadow-sm sm:aspect-21/9";
+
+export function HeroBanner({
   title,
   videoUrl,
   imageUrl,
+  fallbackImageUrl,
   overlayImageUrl,
   overlayText,
   darkeningStrength,
-}: EventHeroBannerProps) {
+  className,
+}: HeroBannerProps) {
   const trimmedVideo = videoUrl?.trim() || null;
   const trimmedImage = imageUrl?.trim() || null;
   const hasOverlay = !!overlayImageUrl || !!overlayText;
@@ -55,8 +66,8 @@ export function EventHeroBanner({
 
   if (trimmedVideo && isExternalEmbed(trimmedVideo)) {
     return (
-      <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-border bg-black shadow-sm sm:aspect-21/9">
-        <HeroVideo url={trimmedVideo} title={title} />
+      <div className={className ?? DEFAULT_CONTAINER}>
+        <HeroEmbed url={trimmedVideo} title={title} />
         {tintAlpha > 0 && (
           <div
             aria-hidden
@@ -75,13 +86,13 @@ export function EventHeroBanner({
   }
 
   return (
-    <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-border bg-black shadow-sm sm:aspect-21/9">
+    <div className={className ?? DEFAULT_CONTAINER}>
       {trimmedVideo ? (
-        <EventHeroVideoPlayer src={trimmedVideo} title={title} />
+        <HeroVideoPlayer src={trimmedVideo} title={title} />
       ) : (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={trimmedImage ?? DEFAULT_IMAGE_URL}
+          src={trimmedImage ?? fallbackImageUrl ?? ""}
           alt={title}
           className="h-full w-full object-cover"
           referrerPolicy="no-referrer"

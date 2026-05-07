@@ -47,7 +47,6 @@ export default async function EventGalleryPage({
         </p>
       ) : (
         <MediaGallery
-          locale={locale}
           media={media.map((m) => ({
             id: m.id,
             type: m.type as "photo" | "video" | "link",

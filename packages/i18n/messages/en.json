@@ -1306,7 +1306,8 @@
           "social": "Social links",
           "seo": "SEO defaults",
           "banking": "Banking",
-          "about": "About page"
+          "about": "About page",
+          "home_hero": "Homepage hero"
         },
         "shared": {
           "orPasteUrl": "Or paste a CDN URL",

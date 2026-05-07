@@ -22,7 +22,7 @@ import { SocialProofBadge } from "@/components/event-triggers/social-proof-badge
 import { TierDeadlineCountdown } from "@/components/event-triggers/tier-deadline-countdown";
 import { RecentBuyerTicker } from "@/components/event-triggers/recent-buyer-ticker";
 import { PriceAnchor } from "@/components/event-triggers/price-anchor";
-import { EventHeroBanner } from "@/components/funnel/event-hero-banner";
+import { HeroBanner } from "@dbc/ui";
 import { EventStickyCta } from "@/components/funnel/event-sticky-cta";
 import { WhyAttend } from "@/components/funnel/why-attend";
 import { FunnelTestimonials } from "@/components/funnel/funnel-testimonials";
@@ -266,10 +266,11 @@ export default async function EventDetailPage({
 
         {/* HERO — uploaded mp4 / external embed / cover image, with optional
             darkening tint, centered PNG overlay and trilingual overlay text. */}
-        <EventHeroBanner
+        <HeroBanner
           title={loc("title")}
           videoUrl={event.hero_video_url as string | null}
           imageUrl={event.cover_image_url as string | null}
+          fallbackImageUrl="https://diambilaybusinesscenter.org/images/2025_03_29_13_47_IMG_3075-copy.jpg"
           overlayImageUrl={event.hero_overlay_image_url as string | null}
           overlayText={
             (event[`hero_overlay_text_${locale}` as keyof typeof event] as string | null) ??

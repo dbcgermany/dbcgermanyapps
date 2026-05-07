@@ -107,6 +107,14 @@ export interface CompanyInfo {
   about_sections_en: Record<string, unknown>;
   about_sections_de: Record<string, unknown>;
   about_sections_fr: Record<string, unknown>;
+  // Marketing homepage hero (mirrors the per-event hero composition).
+  home_hero_video_url: string | null;
+  home_hero_image_url: string | null;
+  home_hero_overlay_image_url: string | null;
+  home_hero_overlay_text_en: string | null;
+  home_hero_overlay_text_de: string | null;
+  home_hero_overlay_text_fr: string | null;
+  home_hero_darkening_strength: number;
   updated_at: string;
 }
 
@@ -133,7 +141,11 @@ const COLUMNS = `
   seo_title_en, seo_title_de, seo_title_fr, seo_description_en,
   seo_description_de, seo_description_fr, google_site_verification,
   bing_site_verification, bank_name, account_holder, iban, bic,
-  about_sections_en, about_sections_de, about_sections_fr, updated_at
+  about_sections_en, about_sections_de, about_sections_fr,
+  home_hero_video_url, home_hero_image_url, home_hero_overlay_image_url,
+  home_hero_overlay_text_en, home_hero_overlay_text_de, home_hero_overlay_text_fr,
+  home_hero_darkening_strength,
+  updated_at
 `;
 
 export async function getCompanyInfo(): Promise<CompanyInfo | null> {
@@ -157,7 +169,8 @@ type Section =
   | "brand"
   | "social"
   | "seo"
-  | "banking";
+  | "banking"
+  | "home_hero";
 
 const SECTION_FIELDS: Record<Section, Array<keyof CompanyInfo>> = {
   legal: [
@@ -259,6 +272,15 @@ const SECTION_FIELDS: Record<Section, Array<keyof CompanyInfo>> = {
     "bing_site_verification",
   ],
   banking: ["bank_name", "account_holder", "iban", "bic"],
+  home_hero: [
+    "home_hero_video_url",
+    "home_hero_image_url",
+    "home_hero_overlay_image_url",
+    "home_hero_overlay_text_en",
+    "home_hero_overlay_text_de",
+    "home_hero_overlay_text_fr",
+    "home_hero_darkening_strength",
+  ],
 };
 
 const EMAIL_FIELDS = new Set([
@@ -287,6 +309,9 @@ const URL_FIELDS = new Set([
   "youtube_url",
   "twitter_url",
   "eu_odr_link",
+  "home_hero_video_url",
+  "home_hero_image_url",
+  "home_hero_overlay_image_url",
 ]);
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -323,10 +348,16 @@ export async function updateCompanyInfoSection(
   const fields = SECTION_FIELDS[section];
   if (!fields) return { error: "Unknown section." };
 
-  const patch: Record<string, string | boolean | null> = {};
+  const patch: Record<string, string | boolean | number | null> = {};
   for (const field of fields) {
     if (field === "dpo_required") {
       patch[field] = formData.get(field) === "on";
+      continue;
+    }
+    if (field === "home_hero_darkening_strength") {
+      const raw = formData.get(field);
+      const parsed = parseInt(typeof raw === "string" ? raw : "50", 10);
+      patch[field] = Math.min(100, Math.max(0, Number.isFinite(parsed) ? parsed : 50));
       continue;
     }
     const raw = formData.get(field);
@@ -409,6 +440,105 @@ async function pingSiteRevalidate(tag: string) {
   } catch (err) {
     console.error("[pingSiteRevalidate] failed:", err);
   }
+}
+
+/**
+ * Issues a Supabase signed upload URL for the homepage hero video so the
+ * browser can stream the file straight to brand-assets/, bypassing the
+ * Vercel 4.5 MB serverless-function payload cap. Mirrors the per-event
+ * helper (apps/admin/src/actions/events.ts:getEventHeroVideoUploadUrl).
+ */
+const ALLOWED_HOME_HERO_VIDEO_TYPES = new Set([
+  "video/mp4",
+  "video/webm",
+  "video/quicktime",
+]);
+const HOME_HERO_VIDEO_MAX_BYTES = 100 * 1024 * 1024;
+
+export async function getHomeHeroVideoUploadUrl(input: {
+  contentType: string;
+  sizeBytes: number;
+}) {
+  await requireRole("admin");
+  const { contentType, sizeBytes } = input;
+  if (!ALLOWED_HOME_HERO_VIDEO_TYPES.has(contentType)) {
+    return { error: "Only MP4, WebM or QuickTime videos are allowed" };
+  }
+  if (
+    !Number.isFinite(sizeBytes) ||
+    sizeBytes <= 0 ||
+    sizeBytes > HOME_HERO_VIDEO_MAX_BYTES
+  ) {
+    return { error: "Video must be between 0 and 100 MB" };
+  }
+
+  const ext =
+    contentType === "video/mp4"
+      ? "mp4"
+      : contentType === "video/webm"
+        ? "webm"
+        : "mov";
+  const path = `home/hero-video/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${ext}`;
+
+  const supabase = await createServerClient();
+  const { data, error } = await supabase.storage
+    .from("brand-assets")
+    .createSignedUploadUrl(path);
+  if (error || !data) {
+    return {
+      error: `Could not create upload URL: ${error?.message ?? "unknown"}`,
+    };
+  }
+  const { data: pub } = supabase.storage
+    .from("brand-assets")
+    .getPublicUrl(path);
+
+  return {
+    success: true as const,
+    path,
+    token: data.token,
+    publicUrl: pub.publicUrl,
+  };
+}
+
+/**
+ * Uploads a transparent PNG overlay for the homepage hero. Small file
+ * (≤5 MB) so the through-server-action path is fine; PNG is preserved
+ * (never WebP-converted) so transparency stays intact.
+ */
+export async function uploadHomeHeroOverlay(formData: FormData) {
+  const user = await requireRole("admin");
+  const file = formData.get("file") as File | null;
+  if (!file || typeof file === "string") {
+    return { error: "No file provided" };
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    return { error: "PNG is larger than 5 MB" };
+  }
+  if (file.type !== "image/png") {
+    return { error: "Only PNG images are allowed (transparency required)" };
+  }
+
+  const path = `home/hero-overlay/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.png`;
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const supabase = await createServerClient();
+  const { error: uploadError } = await supabase.storage
+    .from("brand-assets")
+    .upload(path, buffer, { contentType: "image/png", upsert: false });
+  if (uploadError) {
+    return { error: `Upload failed: ${uploadError.message}` };
+  }
+  const { data } = supabase.storage.from("brand-assets").getPublicUrl(path);
+
+  await supabase.from("audit_log").insert({
+    user_id: user.userId,
+    action: "upload_home_hero_overlay",
+    entity_type: "company_info",
+    entity_id: "1",
+    details: { path },
+  });
+
+  return { success: true as const, url: data.publicUrl };
 }
 
 export async function uploadBrandAsset(

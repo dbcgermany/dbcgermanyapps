@@ -164,6 +164,13 @@ export type Database = {
           fr_registered_address: string | null
           fr_siren: string | null
           google_site_verification: string | null
+          home_hero_darkening_strength: number
+          home_hero_image_url: string | null
+          home_hero_overlay_image_url: string | null
+          home_hero_overlay_text_de: string | null
+          home_hero_overlay_text_en: string | null
+          home_hero_overlay_text_fr: string | null
+          home_hero_video_url: string | null
           hrb_court: string | null
           hrb_number: string | null
           iban: string | null
@@ -259,6 +266,13 @@ export type Database = {
           fr_registered_address?: string | null
           fr_siren?: string | null
           google_site_verification?: string | null
+          home_hero_darkening_strength?: number
+          home_hero_image_url?: string | null
+          home_hero_overlay_image_url?: string | null
+          home_hero_overlay_text_de?: string | null
+          home_hero_overlay_text_en?: string | null
+          home_hero_overlay_text_fr?: string | null
+          home_hero_video_url?: string | null
           hrb_court?: string | null
           hrb_number?: string | null
           iban?: string | null
@@ -354,6 +368,13 @@ export type Database = {
           fr_registered_address?: string | null
           fr_siren?: string | null
           google_site_verification?: string | null
+          home_hero_darkening_strength?: number
+          home_hero_image_url?: string | null
+          home_hero_overlay_image_url?: string | null
+          home_hero_overlay_text_de?: string | null
+          home_hero_overlay_text_en?: string | null
+          home_hero_overlay_text_fr?: string | null
+          home_hero_video_url?: string | null
           hrb_court?: string | null
           hrb_number?: string | null
           iban?: string | null

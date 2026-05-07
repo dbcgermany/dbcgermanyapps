@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { AssetUpload, Button } from "@dbc/ui";
 import { AboutSectionsForm } from "./about-sections-form";
+import { HomeHeroForm } from "./home-hero-form";
 import {
   updateCompanyInfoSection,
   uploadBrandAsset,
@@ -28,7 +29,8 @@ type Section =
   | "social"
   | "seo"
   | "banking"
-  | "about";
+  | "about"
+  | "home_hero";
 
 interface FieldDef {
   name: keyof CompanyInfo;
@@ -326,6 +328,9 @@ const FIELDS: Record<Section, FieldDef[]> = {
   ],
   // Handled by a dedicated component (JSONB + repeater rows per locale).
   about: [],
+  // Handled by HomeHeroForm — uploads + range slider don't fit the
+  // generic FieldDef → SectionForm pipeline.
+  home_hero: [],
 };
 
 export function CompanyInfoForm({
@@ -345,6 +350,7 @@ export function CompanyInfoForm({
       "contact",
       "privacy",
       "brand",
+      "home_hero",
       "social",
       "seo",
       "banking",
@@ -374,6 +380,8 @@ export function CompanyInfoForm({
       <div className="mt-6">
         {tab === "about" ? (
           <AboutSectionsForm info={info} locale={locale} />
+        ) : tab === "home_hero" ? (
+          <HomeHeroForm info={info} />
         ) : (
           <SectionForm
             section={tab as FlatSection}
@@ -387,10 +395,10 @@ export function CompanyInfoForm({
 }
 
 // The generic SectionForm handles only the flat-column tabs — the
-// "about" tab is rendered by the dedicated AboutSectionsForm component.
+// "about" and "home_hero" tabs are rendered by dedicated components.
 // Narrow the type accordingly so `updateCompanyInfoSection(section,…)`
-// can never be called with "about".
-type FlatSection = Exclude<Section, "about">;
+// is only called with sections SectionForm handles.
+type FlatSection = Exclude<Section, "about" | "home_hero">;
 
 function SectionForm({
   section,
