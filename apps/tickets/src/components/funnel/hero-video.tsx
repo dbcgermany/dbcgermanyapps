@@ -2,6 +2,12 @@
 // YouTube/Vimeo URLs to nocookie-friendly embeds; falls back to native
 // <video> for direct file URLs. Aspect ratio mirrors the cover-image hero
 // (aspect-video on small, aspect-21/9 on >=sm) so layout is identical.
+//
+// All variants autoplay muted + loop continuously — the hero is a
+// background, never a player the visitor is meant to interact with.
+// YouTube `loop=1` requires `playlist=<id>` set to the same id, otherwise
+// the video stops after one play. Vimeo uses `background=1` which is the
+// purpose-built clean-autoplay-loop mode.
 
 function resolveEmbedUrl(
   url: string,
@@ -15,7 +21,7 @@ function resolveEmbedUrl(
       if (id)
         return {
           provider: "youtube",
-          src: `https://www.youtube-nocookie.com/embed/${id}?rel=0&modestbranding=1`,
+          src: `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&loop=1&playlist=${id}&controls=0&playsinline=1&rel=0&modestbranding=1`,
         };
     }
     if (host === "youtu.be") {
@@ -23,7 +29,7 @@ function resolveEmbedUrl(
       if (id)
         return {
           provider: "youtube",
-          src: `https://www.youtube-nocookie.com/embed/${id}?rel=0&modestbranding=1`,
+          src: `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&loop=1&playlist=${id}&controls=0&playsinline=1&rel=0&modestbranding=1`,
         };
     }
     if (host === "vimeo.com" || host === "player.vimeo.com") {
@@ -31,7 +37,7 @@ function resolveEmbedUrl(
       if (id)
         return {
           provider: "vimeo",
-          src: `https://player.vimeo.com/video/${id}`,
+          src: `https://player.vimeo.com/video/${id}?autoplay=1&loop=1&muted=1&background=1`,
         };
     }
   } catch {
@@ -48,7 +54,9 @@ export function HeroVideo({ url, title }: { url: string; title: string }) {
       {provider === "native" ? (
         <video
           src={src}
-          controls
+          autoPlay
+          muted
+          loop
           playsInline
           preload="metadata"
           className="h-full w-full object-cover"
