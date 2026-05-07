@@ -24,7 +24,7 @@ import { RecentBuyerTicker } from "@/components/event-triggers/recent-buyer-tick
 import { PriceAnchor } from "@/components/event-triggers/price-anchor";
 import { HeroVideo } from "@/components/funnel/hero-video";
 import { EventStickyCta } from "@/components/funnel/event-sticky-cta";
-import { FunnelPillars } from "@/components/funnel/funnel-pillars";
+import { WhyAttend } from "@/components/funnel/why-attend";
 import { FunnelTestimonials } from "@/components/funnel/funnel-testimonials";
 import { FunnelFaq } from "@/components/funnel/funnel-faq";
 import { FunnelClosingCta } from "@/components/funnel/funnel-closing-cta";
@@ -282,12 +282,54 @@ export default async function EventDetailPage({
           </div>
         )}
 
-        {/* Funnel tagline (above the info card, sets the conversion frame) */}
-        {loc("funnel_tagline") && (
-          <p className="mt-6 text-balance text-center font-heading text-lg font-semibold leading-snug text-foreground/90 sm:text-xl">
-            {loc("funnel_tagline")}
-          </p>
-        )}
+      </div>
+
+      {/* AD-STYLE PITCH BLOCK — shown right after the hero so the visitor
+          gets sold on the why before they hit the dry info card. Combines
+          the funnel tagline (= big headline), funnel intro (= subhead),
+          pillars (= benefit cards), and a primary Buy CTA + urgency line.
+          Falls back to a sensible default tagline if none is set. */}
+      {(loc("funnel_tagline") || loc("funnel_intro") || pillars.length > 0) && (
+        <WhyAttend
+          eyebrow={f("pillarsEyebrow")}
+          headline={loc("funnel_tagline") || loc("title")}
+          subhead={loc("funnel_intro") || null}
+          pillars={pillars.map((p) => ({
+            id: p.id,
+            icon: p.icon,
+            title:
+              (p[`title_${eff}` as const] as string | null) || p.title_en,
+            description:
+              (p[`description_${eff}` as const] as string | null) ||
+              p.description_en,
+          }))}
+          ctaHref={checkoutHref}
+          ctaLabel={f("stickyCtaLabel")}
+          urgencyLine={
+            minPrice != null
+              ? f("stickyFromPrice", {
+                  price: formatMoney(Math.round(minPrice * 100), {
+                    currency: minPriceCurrency,
+                    locale,
+                  }),
+                })
+              : null
+          }
+        />
+      )}
+
+      {/* FEATURED SPEAKERS strip — proof immediately after the pitch.
+          Names + photos before the dry info card cement the credibility
+          the WhyAttend block claims. */}
+      <FeaturedSpeakersStrip
+        speakers={featuredSpeakers}
+        hrefBase={`/${locale}/events/${slug}/speakers`}
+        eyebrow={f("featuredSpeakersEyebrow")}
+        title={f("featuredSpeakersTitle")}
+        viewLabel={f("viewProfile")}
+      />
+
+      <div className="mx-auto max-w-6xl px-5 sm:px-8">
 
         {/* INFO CARD — boxed, no overlay */}
         <div className="mt-6 rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-10">
@@ -373,39 +415,6 @@ export default async function EventDetailPage({
           </div>
         )}
       </div>
-
-      {/* FEATURED SPEAKERS strip — above-the-fold social proof */}
-      <FeaturedSpeakersStrip
-        speakers={featuredSpeakers}
-        hrefBase={`/${locale}/events/${slug}/speakers`}
-        eyebrow={f("featuredSpeakersEyebrow")}
-        title={f("featuredSpeakersTitle")}
-        viewLabel={f("viewProfile")}
-      />
-
-      {/* Funnel intro — emotional bridge between speakers strip and pillars */}
-      {loc("funnel_intro") && (
-        <section className="mx-auto mt-12 max-w-3xl px-5 text-center sm:px-8">
-          <p className="whitespace-pre-wrap text-base leading-7 text-foreground sm:text-lg sm:leading-8">
-            {loc("funnel_intro")}
-          </p>
-        </section>
-      )}
-
-      {/* Pillars — "What you take home" */}
-      <FunnelPillars
-        pillars={pillars.map((p) => ({
-          id: p.id,
-          icon: p.icon,
-          title:
-            (p[`title_${eff}` as const] as string | null) || p.title_en,
-          description:
-            (p[`description_${eff}` as const] as string | null) ||
-            p.description_en,
-        }))}
-        eyebrow={f("pillarsEyebrow")}
-        title={f("pillarsTitle")}
-      />
 
       {/* Testimonials — past edition social proof */}
       <FunnelTestimonials
