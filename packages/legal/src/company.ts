@@ -125,6 +125,13 @@ export interface PublicCompanyInfo {
 
 // Actual DB read, wrapped in unstable_cache with tag so
 // revalidateTag("company-info") propagates across route segments and apps.
+//
+// The cache key includes a schema version. Bump it any time PublicCompanyInfo
+// gains/loses columns that consumers read — `revalidateTag` busts the durable
+// store, but warm in-memory copies on running Vercel instances may keep
+// serving the OLD shape (no new columns) until they cold-start. Changing the
+// key forces a clean cache miss across all instances.
+const COMPANY_INFO_CACHE_VERSION = "v2-home-hero";
 const fetchCompanyInfoCached = unstable_cache(
   async (): Promise<PublicCompanyInfo | null> => {
     try {
@@ -139,7 +146,7 @@ const fetchCompanyInfoCached = unstable_cache(
       return null;
     }
   },
-  ["company-info"],
+  ["company-info", COMPANY_INFO_CACHE_VERSION],
   { tags: ["company-info"], revalidate: 60 }
 );
 
