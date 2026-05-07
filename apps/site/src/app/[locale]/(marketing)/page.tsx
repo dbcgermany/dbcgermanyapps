@@ -3,7 +3,7 @@ import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { HeroBanner, Reveal } from "@dbc/ui";
 import { getUpcomingEvents } from "@/lib/queries";
-import { getCompanyInfo } from "@/lib/company-info";
+import { getHomeHero } from "@/lib/home-hero";
 import { DBC } from "@/lib/dbc-assets";
 
 export const revalidate = 60;
@@ -54,19 +54,18 @@ export default async function HomePage({
 }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "site" });
-  const [events, company] = await Promise.all([
+  const [events, hero] = await Promise.all([
     getUpcomingEvents(3),
-    getCompanyInfo(),
+    getHomeHero(),
   ]);
 
   const ticketsUrl =
     process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://tickets.dbc-germany.com";
 
   const heroOverlayText =
-    (company?.[`home_hero_overlay_text_${locale}` as keyof typeof company] as
+    (hero[`home_hero_overlay_text_${locale}` as keyof typeof hero] as
       | string
-      | null
-      | undefined) ?? company?.home_hero_overlay_text_en ?? null;
+      | null) ?? hero.home_hero_overlay_text_en;
 
   return (
     <>
@@ -74,12 +73,12 @@ export default async function HomePage({
       <section className="relative overflow-hidden border-b border-border">
         <HeroBanner
           title={t("hero.title")}
-          videoUrl={company?.home_hero_video_url ?? null}
-          imageUrl={company?.home_hero_image_url ?? null}
+          videoUrl={hero.home_hero_video_url}
+          imageUrl={hero.home_hero_image_url}
           fallbackImageUrl={DBC.hero.home}
-          overlayImageUrl={company?.home_hero_overlay_image_url ?? null}
+          overlayImageUrl={hero.home_hero_overlay_image_url}
           overlayText={heroOverlayText}
-          darkeningStrength={company?.home_hero_darkening_strength ?? 50}
+          darkeningStrength={hero.home_hero_darkening_strength}
           className="absolute inset-0 overflow-hidden bg-black"
         />
 
