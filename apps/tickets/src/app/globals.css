@@ -42,19 +42,19 @@ body {
   max-width: var(--dbc-text-measure-long);
 }
 
-/* Buy-CTA wiggle — quick attention nudge that fires for ~600ms then
-   pauses for ~5.4s. Applied to the sticky bottom-bar CTA (always
-   visible while reading) and the closing-pitch CTA (last call before
-   leaving the page). Skipped on the hero CTA (already prominent) and
-   per-tier pricing buttons (distracts during tier comparison).
-   Respects the OS-level reduce-motion preference. */
+/* Buy-CTA wiggle — quick attention nudge that fires for ~1.2s then
+   pauses for ~28.8s (one wiggle every 30s). Applied to the sticky
+   bottom-bar CTA (always visible while reading) and the closing-pitch
+   CTA (last call before leaving the page). Skipped on the hero CTA
+   (already prominent) and per-tier pricing buttons (distracts during
+   tier comparison). Respects the OS-level reduce-motion preference. */
 @keyframes dbc-wiggle {
-  0%, 90%, 100% { transform: rotate(0deg); }
-  91%, 95%, 99% { transform: rotate(-3deg); }
-  93%, 97% { transform: rotate(3deg); }
+  0%, 96%, 100% { transform: rotate(0deg); }
+  97%, 99% { transform: rotate(-3deg); }
+  98% { transform: rotate(3deg); }
 }
 .animate-wiggle-cta {
-  animation: dbc-wiggle 6s ease-in-out infinite;
+  animation: dbc-wiggle 30s ease-in-out infinite;
   transform-origin: center center;
   /* Promote to its own compositor layer so the rotate doesn't trigger
      layout recalc on neighbours every frame. */
