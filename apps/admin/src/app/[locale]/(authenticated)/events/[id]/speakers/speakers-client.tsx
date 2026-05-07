@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Badge, Button, Card, Input, Label, Select } from "@dbc/ui";
 import { SortableList } from "@/components/sortable-list";
+import { PersonListRow } from "@/components/person-list-row";
 import {
   attachSpeakerToEvent,
   detachSpeakerFromEvent,
@@ -14,16 +15,6 @@ import {
 } from "@/actions/speakers";
 import { FeaturedSelect } from "./featured-select";
 import { SpeakerVisibilitySelect } from "../../../speakers/visibility-select";
-
-function initialsOf(name: string) {
-  return name
-    .split(/\s+/)
-    .map((p) => p[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-}
 
 // Inherit avatar / email from team_members when the speaker row's own
 // fields are blank — same fallback the public funnel uses, surfaced here so
@@ -280,70 +271,56 @@ export function EventSpeakersClient({
               const isEditingRole = editingRoleId === es.speaker_id;
 
               return (
-                <div
-                  ref={handle.setNodeRef}
-                  style={handle.style}
-                  className="rounded-lg border border-border bg-background p-4"
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <button
-                        type="button"
-                        aria-label="Drag to reorder"
-                        className="flex h-8 w-8 cursor-grab items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-muted active:cursor-grabbing"
-                        {...handle.attributes}
-                        {...handle.listeners}
-                      >
-                        <span aria-hidden>⋮⋮</span>
-                      </button>
-                      {photo ? (
-                        /* eslint-disable-next-line @next/next/no-img-element */
-                        <img
-                          src={photo}
-                          alt=""
-                          className="h-12 w-12 rounded-full object-cover"
-                          referrerPolicy="no-referrer"
-                        />
-                      ) : (
-                        <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 font-heading text-sm font-bold text-primary">
-                          {initialsOf(fullName)}
-                        </span>
+                <PersonListRow
+                  id={es.speaker_id}
+                  outerRef={handle.setNodeRef}
+                  outerStyle={handle.style}
+                  dragHandle={
+                    <button
+                      type="button"
+                      aria-label="Drag to reorder"
+                      className="flex h-8 w-8 shrink-0 cursor-grab items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-muted active:cursor-grabbing"
+                      {...handle.attributes}
+                      {...handle.listeners}
+                    >
+                      <span aria-hidden>⋮⋮</span>
+                    </button>
+                  }
+                  photoUrl={photo}
+                  initialsName={fullName}
+                  name={fullName}
+                  nameHref={`/${locale}/speakers/${es.speaker_id}`}
+                  badges={
+                    <>
+                      {es.is_featured && (
+                        <Badge variant="accent">Featured</Badge>
                       )}
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <Link
-                            href={`/${locale}/speakers/${es.speaker_id}`}
-                            className="font-medium hover:text-primary"
-                          >
-                            {fullName}
-                          </Link>
-                          {es.is_featured && (
-                            <Badge variant="accent">Featured</Badge>
-                          )}
-                          {es.speakers.visibility !== "public" && (
-                            <Badge
-                              variant={
-                                es.speakers.visibility === "internal"
-                                  ? "warning"
-                                  : "default"
-                              }
-                            >
-                              {es.speakers.visibility === "internal"
-                                ? "Internal — not on public page"
-                                : "Hidden"}
-                            </Badge>
-                          )}
-                          {isLinkedToTeam && (
-                            <Badge variant="info">team-linked</Badge>
-                          )}
-                        </div>
-                        <p className="mt-0.5 text-sm text-muted-foreground">
-                          {roleLabel ?? "—"} · sort {es.sort_order}
-                          {email && ` · ${email}`}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
+                      {es.speakers.visibility !== "public" && (
+                        <Badge
+                          variant={
+                            es.speakers.visibility === "internal"
+                              ? "warning"
+                              : "default"
+                          }
+                        >
+                          {es.speakers.visibility === "internal"
+                            ? "Internal — not on public page"
+                            : "Hidden"}
+                        </Badge>
+                      )}
+                      {isLinkedToTeam && (
+                        <Badge variant="info">team-linked</Badge>
+                      )}
+                    </>
+                  }
+                  subtitle={
+                    <>
+                      {roleLabel ?? "—"} · sort {es.sort_order}
+                      {email && ` · ${email}`}
+                    </>
+                  }
+                  actions={
+                    <>
                       <SpeakerVisibilitySelect
                         id={es.speaker_id}
                         current={es.speakers.visibility}
@@ -377,63 +354,64 @@ export function EventSpeakersClient({
                       >
                         {t.remove}
                       </button>
-                    </div>
-                  </div>
-
-                  {isEditingRole && (
-                    <form
-                      className="mt-4 grid gap-3 border-t border-border pt-4 sm:grid-cols-3"
-                      action={(fd) => handleEditRole(es.speaker_id, fd)}
-                    >
-                      <input
-                        type="hidden"
-                        name="is_featured"
-                        value={es.is_featured ? "on" : ""}
-                      />
-                      <FieldText
-                        label="EN"
-                        name="role_label_en"
-                        defaultValue={es.role_label_en ?? ""}
-                        placeholder={t.rolePlaceholderEn}
-                      />
-                      <FieldText
-                        label="DE"
-                        name="role_label_de"
-                        defaultValue={es.role_label_de ?? ""}
-                        placeholder={t.rolePlaceholderDe}
-                      />
-                      <FieldText
-                        label="FR"
-                        name="role_label_fr"
-                        defaultValue={es.role_label_fr ?? ""}
-                        placeholder={t.rolePlaceholderFr}
-                      />
-                      <div>
-                        <Label htmlFor={`sort_${es.speaker_id}`}>
-                          {t.sortOrder}
-                        </Label>
-                        <Input
-                          id={`sort_${es.speaker_id}`}
-                          name="sort_order"
-                          type="number"
-                          defaultValue={es.sort_order}
+                    </>
+                  }
+                  footer={
+                    isEditingRole ? (
+                      <form
+                        className="mt-4 grid gap-3 border-t border-border pt-4 sm:grid-cols-3"
+                        action={(fd) => handleEditRole(es.speaker_id, fd)}
+                      >
+                        <input
+                          type="hidden"
+                          name="is_featured"
+                          value={es.is_featured ? "on" : ""}
                         />
-                      </div>
-                      <div className="sm:col-span-3 flex gap-3">
-                        <Button type="submit" disabled={pending}>
-                          {pending ? t.saving : t.save}
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          onClick={() => setEditingRoleId(null)}
-                        >
-                          {t.cancel}
-                        </Button>
-                      </div>
-                    </form>
-                  )}
-                </div>
+                        <FieldText
+                          label="EN"
+                          name="role_label_en"
+                          defaultValue={es.role_label_en ?? ""}
+                          placeholder={t.rolePlaceholderEn}
+                        />
+                        <FieldText
+                          label="DE"
+                          name="role_label_de"
+                          defaultValue={es.role_label_de ?? ""}
+                          placeholder={t.rolePlaceholderDe}
+                        />
+                        <FieldText
+                          label="FR"
+                          name="role_label_fr"
+                          defaultValue={es.role_label_fr ?? ""}
+                          placeholder={t.rolePlaceholderFr}
+                        />
+                        <div>
+                          <Label htmlFor={`sort_${es.speaker_id}`}>
+                            {t.sortOrder}
+                          </Label>
+                          <Input
+                            id={`sort_${es.speaker_id}`}
+                            name="sort_order"
+                            type="number"
+                            defaultValue={es.sort_order}
+                          />
+                        </div>
+                        <div className="sm:col-span-3 flex gap-3">
+                          <Button type="submit" disabled={pending}>
+                            {pending ? t.saving : t.save}
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() => setEditingRoleId(null)}
+                          >
+                            {t.cancel}
+                          </Button>
+                        </div>
+                      </form>
+                    ) : null
+                  }
+                />
               );
             }}
           />

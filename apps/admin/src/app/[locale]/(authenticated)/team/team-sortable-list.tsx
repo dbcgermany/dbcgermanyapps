@@ -1,21 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { Badge } from "@dbc/ui";
 import { SortableList } from "@/components/sortable-list";
+import { PersonListRow } from "@/components/person-list-row";
 import type { TeamMember } from "@/actions/team";
 import { reorderTeamMembers } from "@/actions/team";
 import { VisibilitySelect } from "./visibility-select";
-
-function initialsOf(name: string) {
-  return name
-    .split(/\s+/)
-    .map((p) => p[0])
-    .filter(Boolean)
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-}
 
 function visibilityVariant(
   visibility: TeamMember["visibility"]
@@ -29,8 +19,8 @@ function visibilityVariant(
 
 const VIS_LABELS = {
   en: { public: "Public", internal: "Internal", hidden: "Hidden" },
-  de: { public: "\u00d6ffentlich", internal: "Intern", hidden: "Versteckt" },
-  fr: { public: "Public", internal: "Interne", hidden: "Masqu\u00e9" },
+  de: { public: "Öffentlich", internal: "Intern", hidden: "Versteckt" },
+  fr: { public: "Public", internal: "Interne", hidden: "Masqué" },
 } as const;
 
 function visibilityLabel(
@@ -57,65 +47,52 @@ export function TeamSortableList({
         if (result?.error) return { error: result.error };
       }}
       renderItem={(member, handle) => (
-        <div
-          ref={handle.setNodeRef}
-          style={handle.style}
-          className="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-border bg-background p-4"
-        >
-          <div className="flex items-center gap-3">
+        <PersonListRow
+          id={member.id}
+          outerRef={handle.setNodeRef}
+          outerStyle={handle.style}
+          dragHandle={
             <button
               type="button"
               aria-label="Drag to reorder"
-              className="flex h-8 w-8 cursor-grab items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-muted active:cursor-grabbing"
+              className="flex h-8 w-8 shrink-0 cursor-grab items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-muted active:cursor-grabbing"
               {...handle.attributes}
               {...handle.listeners}
             >
               <span aria-hidden>⋮⋮</span>
             </button>
-            {member.photo_url ? (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img
-                src={member.photo_url}
-                alt=""
-                className="h-12 w-12 rounded-full object-cover"
+          }
+          photoUrl={member.photo_url}
+          initialsName={member.name}
+          name={member.name}
+          nameHref={`/${locale}/team/${member.id}`}
+          badges={
+            <Badge variant={visibilityVariant(member.visibility)}>
+              {visibilityLabel(member.visibility, locale)}
+            </Badge>
+          }
+          subtitle={
+            <>
+              {member.role_en} · sort {member.sort_order}
+              {member.email && ` · ${member.email}`}
+            </>
+          }
+          actions={
+            <>
+              <VisibilitySelect
+                id={member.id}
+                current={member.visibility}
+                locale={locale}
               />
-            ) : (
-              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 font-heading text-sm font-bold text-primary">
-                {initialsOf(member.name)}
-              </span>
-            )}
-            <div>
-              <div className="flex items-center gap-2">
-                <Link
-                  href={`/${locale}/team/${member.id}`}
-                  className="font-medium hover:text-primary"
-                >
-                  {member.name}
-                </Link>
-                <Badge variant={visibilityVariant(member.visibility)}>
-                  {visibilityLabel(member.visibility, locale)}
-                </Badge>
-              </div>
-              <p className="mt-0.5 text-sm text-muted-foreground">
-                {member.role_en} · sort {member.sort_order}
-                {member.email && ` · ${member.email}`}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <VisibilitySelect
-              id={member.id}
-              current={member.visibility}
-              locale={locale}
-            />
-            <Link
-              href={`/${locale}/team/${member.id}`}
-              className="text-xs text-primary hover:text-primary/80"
-            >
-              Edit
-            </Link>
-          </div>
-        </div>
+              <a
+                href={`/${locale}/team/${member.id}`}
+                className="text-xs text-primary hover:text-primary/80"
+              >
+                Edit
+              </a>
+            </>
+          }
+        />
       )}
     />
   );
