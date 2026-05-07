@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, use, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createBrowserClient } from "@dbc/supabase";
 import { Button } from "@dbc/ui";
 
@@ -21,41 +21,32 @@ export default function SetPasswordPage({
 
 function SetPasswordForm({ locale }: { locale: string }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const linkError = searchParams.get("error");
   const [stage, setStage] = useState<
     "checking" | "ready" | "no-session" | "saving" | "done"
-  >("checking");
+  >(linkError ? "no-session" : "checking");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [email, setEmail] = useState<string | null>(null);
 
   useEffect(() => {
+    if (linkError) return;
     const supabase = createBrowserClient();
 
-    // Supabase's detectSessionInUrl option (default true) processes hash
-    // fragments automatically. Re-read the session after a tick.
-    const t = setTimeout(async () => {
+    (async () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
       if (user) {
         setEmail(user.email ?? null);
         setStage("ready");
-        // Clean the hash from the URL once the session is established.
-        if (window.location.hash) {
-          window.history.replaceState(
-            null,
-            "",
-            window.location.pathname + window.location.search
-          );
-        }
       } else {
         setStage("no-session");
       }
-    }, 200);
-
-    return () => clearTimeout(t);
-  }, []);
+    })();
+  }, [linkError]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

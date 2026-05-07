@@ -6,6 +6,7 @@ const PUBLIC_PATHS = [
   "/login",
   "/set-password",
   "/auth/callback",
+  "/auth/confirm",
   "/mfa-challenge",
 ];
 

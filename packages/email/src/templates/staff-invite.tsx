@@ -40,7 +40,6 @@ const T = {
     body: "You’ve been invited to join the DBC Germany team as a {role}. Click the button below to set your password and sign in for the first time. This link expires in 7 days.",
     cta: "Set my password",
     note: "If you weren’t expecting this invite, you can ignore this email and the account will remain inactive.",
-    linkFallback: "Button not working? Paste this link into your browser:",
     closing: "Welcome aboard,",
     team: "The DBC Germany Team",
   },
@@ -50,7 +49,6 @@ const T = {
     body: "Sie wurden eingeladen, dem DBC-Germany-Team als {role} beizutreten. Klicken Sie auf die Schaltfläche unten, um Ihr Passwort festzulegen und sich erstmals anzumelden. Dieser Link ist 7 Tage gültig.",
     cta: "Passwort festlegen",
     note: "Falls Sie diese Einladung nicht erwartet haben, können Sie diese E-Mail ignorieren. Das Konto bleibt dann inaktiv.",
-    linkFallback: "Schaltfläche funktioniert nicht? Kopieren Sie diesen Link in Ihren Browser:",
     closing: "Willkommen im Team,",
     team: "Das DBC Germany Team",
   },
@@ -60,7 +58,6 @@ const T = {
     body: "Vous avez été invité(e) à rejoindre l’équipe DBC Germany en tant que {role}. Cliquez sur le bouton ci-dessous pour définir votre mot de passe et vous connecter pour la première fois. Ce lien expire dans 7 jours.",
     cta: "Définir mon mot de passe",
     note: "Si vous n’attendiez pas cette invitation, vous pouvez ignorer cet e-mail. Le compte restera inactif.",
-    linkFallback: "Le bouton ne fonctionne pas ? Collez ce lien dans votre navigateur :",
     closing: "Bienvenue dans l’équipe,",
     team: "L’équipe DBC Germany",
   },
@@ -100,12 +97,6 @@ export function StaffInviteEmail(props: StaffInviteEmailProps) {
 
       <Section className="mt-6">
         <Text className="text-xs leading-5 text-neutral-500">{t.note}</Text>
-        <Text className="mt-4 text-xs text-neutral-500">
-          {t.linkFallback}
-        </Text>
-        <Text className="mt-1 break-all text-xs text-neutral-400">
-          {props.actionLink}
-        </Text>
       </Section>
 
       <Section className="mt-8">

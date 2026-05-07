@@ -13,6 +13,24 @@ function getServiceClient() {
   );
 }
 
+// Build a single-use invite URL that points at our own /auth/confirm route
+// instead of the raw Supabase verify URL. Email scanners pre-walk links in
+// transit and burn the OTP before the human clicks; routing through our
+// domain lets us redirect with a real `?error=` so the user sees a useful
+// message instead of "no session". `hashedToken` comes from
+// `generateLink().properties.hashed_token`.
+function buildInviteActionLink(
+  hashedToken: string,
+  inviteLocale: "en" | "de" | "fr"
+): string {
+  const adminUrl =
+    process.env.NEXT_PUBLIC_ADMIN_URL ?? "https://admin.dbc-germany.com";
+  const next = `/${inviteLocale}/set-password`;
+  return `${adminUrl}/${inviteLocale}/auth/confirm?token_hash=${encodeURIComponent(
+    hashedToken
+  )}&type=invite&next=${encodeURIComponent(next)}`;
+}
+
 export async function getStaff() {
   await requireRole("admin");
   const supabase = await createServerClient();
@@ -165,7 +183,7 @@ export async function inviteStaff(formData: FormData) {
       },
     });
 
-  if (linkError || !linkData?.user || !linkData.properties?.action_link) {
+  if (linkError || !linkData?.user || !linkData.properties?.hashed_token) {
     return { error: linkError?.message ?? "Failed to generate invite link" };
   }
 
@@ -181,7 +199,10 @@ export async function inviteStaff(formData: FormData) {
       to: email,
       recipientName: resolvedName,
       role,
-      actionLink: linkData.properties.action_link,
+      actionLink: buildInviteActionLink(
+        linkData.properties.hashed_token,
+        inviteLocale
+      ),
       locale: inviteLocale,
     });
   } catch (err) {
@@ -234,10 +255,11 @@ export async function resendStaffInvite(staffId: string, locale: string) {
       type: "invite",
       email,
       options: {
+        data: { must_change_password: true },
         redirectTo: `${adminUrl}/${inviteLocale}/set-password`,
       },
     });
-  if (linkError || !linkData.properties?.action_link) {
+  if (linkError || !linkData.properties?.hashed_token) {
     return { error: linkError?.message ?? "Failed to generate link" };
   }
 
@@ -247,7 +269,10 @@ export async function resendStaffInvite(staffId: string, locale: string) {
       to: email,
       recipientName: profile.display_name ?? email.split("@")[0],
       role: profile.role ?? "team_member",
-      actionLink: linkData.properties.action_link,
+      actionLink: buildInviteActionLink(
+        linkData.properties.hashed_token,
+        inviteLocale
+      ),
       locale: inviteLocale,
     });
   } catch (err) {
@@ -574,10 +599,11 @@ export async function assignRoleAndResendInvite(
       type: "invite",
       email,
       options: {
+        data: { must_change_password: true },
         redirectTo: `${adminUrl}/${inviteLocale}/set-password`,
       },
     });
-  if (linkError || !linkData.properties?.action_link) {
+  if (linkError || !linkData.properties?.hashed_token) {
     return { error: linkError?.message ?? "Failed to generate link" };
   }
 
@@ -590,7 +616,10 @@ export async function assignRoleAndResendInvite(
       to: email,
       recipientName: displayName,
       role: newRole,
-      actionLink: linkData.properties.action_link,
+      actionLink: buildInviteActionLink(
+        linkData.properties.hashed_token,
+        inviteLocale
+      ),
       locale: inviteLocale,
     });
   } catch (err) {
