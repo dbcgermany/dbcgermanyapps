@@ -198,7 +198,10 @@ export default async function HomePage({
                     referrerPolicy="no-referrer"
                   />
                   <div className="absolute inset-0 bg-linear-to-t from-black/55 via-black/10 to-transparent" />
-                  <div className="absolute bottom-3 left-3 flex h-12 w-12 items-center justify-center rounded-xl border border-white/30 bg-background/90 backdrop-blur">
+                  {/* Always-light badge so the dark-inked SVG icons stay
+                      legible in dark mode too (bg-background/90 went dark
+                      on dark-mode and hid them). */}
+                  <div className="absolute bottom-3 left-3 flex h-12 w-12 items-center justify-center rounded-xl border border-white/40 bg-white/95 backdrop-blur">
                     <Image
                       src={s.icon}
                       alt=""
