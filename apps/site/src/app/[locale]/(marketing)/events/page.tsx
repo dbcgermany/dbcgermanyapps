@@ -81,7 +81,6 @@ export default async function EventsPage({
             title={t("testimonials.title")}
             subtitle={t("testimonials.subtitle")}
             playLabel={t("testimonials.playLabel")}
-            viaLabel={t("testimonials.via")}
             className="mt-16"
           />
         </Reveal>

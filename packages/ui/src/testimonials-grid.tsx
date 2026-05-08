@@ -29,7 +29,6 @@ export function TestimonialsGrid({
   title,
   subtitle,
   playLabel,
-  viaLabel,
   className,
 }: {
   testimonials: TestimonialItem[];
@@ -37,7 +36,6 @@ export function TestimonialsGrid({
   title: string;
   subtitle?: string | null;
   playLabel: string;
-  viaLabel: string;
   className?: string;
 }) {
   if (testimonials.length === 0) return null;
@@ -116,17 +114,6 @@ export function TestimonialsGrid({
             <blockquote className="text-sm leading-6 text-foreground">
               &ldquo;{t.quote}&rdquo;
             </blockquote>
-            {t.sourceUrl && t.sourceLabel && (
-              <a
-                href={t.sourceUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-auto inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80"
-              >
-                {viaLabel} {t.sourceLabel}
-                <span aria-hidden>&rarr;</span>
-              </a>
-            )}
           </article>
         ))}
       </div>

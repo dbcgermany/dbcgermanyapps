@@ -7,13 +7,11 @@ export function FunnelTestimonials({
   eyebrow,
   title,
   playLabel,
-  viaLabel,
 }: {
   testimonials: TestimonialItem[];
   eyebrow: string;
   title: string;
   playLabel: string;
-  viaLabel: string;
 }) {
   return (
     <TestimonialsGrid
@@ -21,7 +19,6 @@ export function FunnelTestimonials({
       eyebrow={eyebrow}
       title={title}
       playLabel={playLabel}
-      viaLabel={viaLabel}
     />
   );
 }

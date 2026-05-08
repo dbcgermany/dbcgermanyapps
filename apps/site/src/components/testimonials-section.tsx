@@ -20,7 +20,6 @@ export function TestimonialsSection({
   title,
   subtitle,
   playLabel,
-  viaLabel,
   className,
 }: {
   testimonials: SiteTestimonialRow[];
@@ -29,7 +28,6 @@ export function TestimonialsSection({
   title: string;
   subtitle?: string | null;
   playLabel: string;
-  viaLabel: string;
   className?: string;
 }) {
   if (testimonials.length === 0) return null;
@@ -42,8 +40,6 @@ export function TestimonialsSection({
     quote: pickQuote(t, l),
     videoUrl: t.video_url,
     rating: t.rating,
-    sourceUrl: t.source_url,
-    sourceLabel: t.source_label,
   }));
   return (
     <TestimonialsGrid
@@ -52,7 +48,6 @@ export function TestimonialsSection({
       title={title}
       subtitle={subtitle ?? null}
       playLabel={playLabel}
-      viaLabel={viaLabel}
       className={className}
     />
   );

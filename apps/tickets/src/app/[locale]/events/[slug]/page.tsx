@@ -459,7 +459,6 @@ export default async function EventDetailPage({
             : f("testimonialsTitle")
         }
         playLabel={f("playVideo")}
-        viaLabel={f("via")}
       />
 
       {/* CONTENT */}

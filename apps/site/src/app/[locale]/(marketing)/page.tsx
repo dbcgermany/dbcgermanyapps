@@ -240,7 +240,6 @@ export default async function HomePage({
                 title={t("testimonials.title")}
                 subtitle={t("testimonials.subtitle")}
                 playLabel={t("testimonials.playLabel")}
-                viaLabel={t("testimonials.via")}
                 className=""
               />
             </Reveal>
