@@ -63,13 +63,13 @@ export function TestimonialsGrid({
           >
             <div className="flex items-center gap-3">
               {t.authorPhotoUrl ? (
-                <div className="relative h-14 w-14 overflow-hidden rounded-full">
+                <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full">
                   <Image
                     src={t.authorPhotoUrl}
                     alt={t.authorName}
                     fill
                     sizes="56px"
-                    className="object-cover"
+                    className="object-cover object-top"
                     referrerPolicy="no-referrer"
                   />
                   {t.videoUrl && (
@@ -86,7 +86,7 @@ export function TestimonialsGrid({
                 </div>
               ) : (
                 <div
-                  className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 font-heading text-base font-bold text-primary"
+                  className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary/10 font-heading text-base font-bold text-primary"
                   aria-hidden
                 >
                   {initialsOf(t.authorName)}
