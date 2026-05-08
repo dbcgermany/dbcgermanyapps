@@ -235,24 +235,19 @@ export default async function AboutPage({
       <section className="py-20 sm:py-28">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <Reveal>
-            <div className="grid items-center gap-12 md:grid-cols-[2fr_1fr]">
+            <div className="grid items-start gap-12 md:grid-cols-[2fr_1fr]">
               <div>
-                <h2 className="font-heading text-2xl font-bold">
-                  {l === "de"
-                    ? "Unser Gründer"
-                    : l === "fr"
-                      ? "Notre fondateur"
-                      : "Our founder"}
+                <h2 className="font-heading text-2xl font-bold sm:text-3xl">
+                  {t("about.founder.heading")}
                 </h2>
-                <p className="mt-4 text-base leading-7 text-muted-foreground">
-                  {l === "de"
-                    ? "Dr. Jean-Clément Diambilay gründete das Diambilay Business Center in Lubumbashi mit einer einfachen Überzeugung: Afrikas größte wirtschaftliche Ressource sind seine Menschen. DBC Germany trägt diese Überzeugung nach Europa und bringt jede Säule unseres Ökosystems zur afrikanischen Diaspora."
-                    : l === "fr"
-                      ? "Le Dr Jean-Clément Diambilay a fondé le Diambilay Business Center à Lubumbashi avec une conviction simple : la plus grande ressource économique de l'Afrique, ce sont ses peuples. DBC Germany porte cette conviction en Europe."
-                      : "Dr. Jean-Clément Diambilay founded the Diambilay Business Center in Lubumbashi on one simple conviction: Africa's greatest economic asset is its people. DBC Germany carries that conviction to Europe and brings every pillar of our ecosystem to the African diaspora."}
-                </p>
+                <div className="mt-5 space-y-4 text-base leading-7 text-muted-foreground">
+                  <p>{t("about.founder.p1")}</p>
+                  <p>{t("about.founder.p2")}</p>
+                  <p>{t("about.founder.p3")}</p>
+                  <p>{t("about.founder.p4")}</p>
+                </div>
               </div>
-              <figure className="flex flex-col gap-3">
+              <figure className="flex flex-col gap-3 md:sticky md:top-24">
                 <div className="relative aspect-4/5 overflow-hidden rounded-2xl border border-border bg-muted shadow-sm">
                   <Image
                     src={DBC.photo.founder}
@@ -268,11 +263,7 @@ export default async function AboutPage({
                     Dr. Jean-Clément Diambilay
                   </p>
                   <p className="mt-1 text-xs uppercase tracking-wider text-muted-foreground">
-                    {l === "de"
-                      ? "Gründer · DBC Group"
-                      : l === "fr"
-                        ? "Fondateur · DBC Group"
-                        : "Founder · DBC Group"}
+                    {t("about.founder.role")}
                   </p>
                 </figcaption>
               </figure>
@@ -333,17 +324,6 @@ export default async function AboutPage({
                         : l === "fr"
                           ? "Siège de DBC Germany : incubation, investissements, opérations."
                           : "DBC Germany HQ: incubation, investments, operations."}
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span aria-hidden className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary/70" />
-                    <span>
-                      <strong>Essen</strong> —{" "}
-                      {l === "de"
-                        ? "Veranstaltungsort Richesses d'Afrique 2026. Nur Event, kein Dauerstandort."
-                        : l === "fr"
-                          ? "Lieu de Richesses d'Afrique 2026. Événement ponctuel, pas de bureau permanent."
-                          : "Venue for Richesses d'Afrique 2026. Event only, not a permanent office."}
                     </span>
                   </li>
                   <li className="flex items-start gap-3">

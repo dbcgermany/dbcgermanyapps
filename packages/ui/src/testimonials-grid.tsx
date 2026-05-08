@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { Play, Star } from "lucide-react";
+import { Card, Eyebrow, Heading } from "./atoms";
 
 export type TestimonialItem = {
   id: string;
@@ -42,12 +43,10 @@ export function TestimonialsGrid({
 
   return (
     <section className={className ?? "mx-auto mt-16 max-w-6xl px-5 sm:px-8"}>
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-        {eyebrow}
-      </p>
-      <h2 className="mt-2 font-heading text-2xl font-bold tracking-tight sm:text-3xl">
+      <Eyebrow className="tracking-[0.18em]">{eyebrow}</Eyebrow>
+      <Heading level={2} className="mt-2">
         {title}
-      </h2>
+      </Heading>
       {subtitle && (
         <p className="mt-3 max-w-2xl text-base leading-7 text-muted-foreground">
           {subtitle}
@@ -55,9 +54,11 @@ export function TestimonialsGrid({
       )}
       <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {testimonials.map((t) => (
-          <article
+          <Card
             key={t.id}
-            className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-6 shadow-sm"
+            elevated
+            className="flex flex-col gap-4"
+            role="article"
           >
             <div className="flex items-center gap-3">
               {t.authorPhotoUrl ? (
@@ -114,7 +115,7 @@ export function TestimonialsGrid({
             <blockquote className="text-sm leading-6 text-foreground">
               &ldquo;{t.quote}&rdquo;
             </blockquote>
-          </article>
+          </Card>
         ))}
       </div>
     </section>

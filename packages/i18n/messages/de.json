@@ -249,7 +249,7 @@
         "done": "✓ Sie sind auf der Warteliste"
       },
       "list": {
-        "tag": "Internationaler Inkubator · DACH-Kapitel",
+        "tag": "Unternehmens-Inkubator und Accelerator · DACH-Kapitel",
         "title": "Live-Events.",
         "subtitle": "Masterclasses, Konferenzen und Meet-ups für Gründer, Investoren und Operatoren, die den EU ↔ Afrika-Korridor gestalten.",
         "noEvents": "Derzeit keine bevorstehenden Veranstaltungen. Schauen Sie bald wieder vorbei.",
@@ -1632,9 +1632,9 @@
       "sisterAcademie": "Académie Investir en Afrique"
     },
     "hero": {
-      "tag": "Internationaler Inkubator · DACH-Kapitel",
+      "tag": "Unternehmens-Inkubator und Accelerator · DACH-Kapitel",
       "title": "Wir bauen die nächste Generation afrikanischer Unternehmer.",
-      "subtitle": "DBC Germany ist das DACH-Kapitel des Diambilay Business Center — ein internationaler Inkubator für die afrikanische Diaspora.",
+      "subtitle": "DBC Germany ist das DACH-Kapitel des Diambilay Business Center — ein Unternehmens-Inkubator und Accelerator für die afrikanische Diaspora.",
       "ctaPrimary": "Richesses d'Afrique Germany entdecken",
       "ctaSecondary": "Mitglied werden"
     },
@@ -1696,7 +1696,7 @@
       "events": {
         "title": "Richesses d'Afrique Germany",
         "short": "Flaggschiff-Konferenzen und Masterclasses, die das Ökosystem in einem Raum versammeln.",
-        "long": "DBC-Masterclasses und Flaggschiff-Konferenzen, die das Ökosystem zusammenbringen. In Deutschland: die Richesses d'Afrique Germany Konferenz — Ausgabe 2026 am 13. Juni im Congress Center West, Messe Essen, mit 950+ Gründer, Investoren und Führungskräften.",
+        "long": "DBC-Masterclasses und Konferenzen, die das Ökosystem zusammenbringen. In Deutschland: Richesses d'Afrique Germany 2026 am 13. Juni im Congress Center West, Messe Essen, dazu ganzjährig Masterclasses, Dinner und Members-only-Sessions.",
         "bullets": [
           "Richesses d'Afrique Germany 2026 · 13. Juni · Essen",
           "DBC-Masterclasses wechseln zwischen afrikanischen und europäischen Hubs",
@@ -1762,10 +1762,18 @@
     },
     "about": {
       "eyebrow": "Über DBC",
-      "title": "Von Lubumbashi nach Düsseldorf — eine Mission.",
-      "body": "Gegründet in Lubumbashi von Dr. Jean-Clément Diambilay ist das Diambilay Business Center ein internationaler Inkubator, der eine neue Generation afrikanischer Unternehmer aufbaut. DBC Germany ist das DACH-Kapitel und liefert den gesamten DBC-Katalog — Inkubation, Kapital, Mentoring, Kurse, Events — an Gründer mit afrikanischen Wurzeln, auf Deutsch, Englisch und Französisch.",
-      "conviction": "Die stärksten Ideen verdienen solide Strukturen, um zu dauerhaften Unternehmen zu werden.",
-      "convictionAttribution": "Dr. Jean-Clément Diambilay, Gründer",
+      "title": "Ein Unternehmens-Inkubator und Accelerator für afrikanische Unternehmer.",
+      "body": "DBC ist der Unternehmens-Inkubator und Accelerator, den Dr. Jean-Clément Diambilay gegründet hat, um afrikanische Unternehmer von der Idee zum investierbaren Unternehmen zu bringen — Inkubation, Kapital, Mentoring und Kurse. DBC Germany ist das DACH-Kapitel und begleitet Gründer, die zwischen Europa und Afrika arbeiten.",
+      "conviction": "Unser Anspruch am Diambilay Business Center ist es, ein Ökosystem zu schaffen, das Innovation, Kompetenzentwicklung und nachhaltige Wertschöpfung fördert.",
+      "convictionAttribution": "Dr. Jean-Clément Diambilay · Forum Richesses d'Afrique, Paris 2025",
+      "founder": {
+        "heading": "Über Dr. Jean-Clément Diambilay",
+        "role": "Gründer · DBC Group",
+        "p1": "Dr. Jean-Clément Diambilay ist kongolesischer Ökonom und Unternehmer, Gründer des Diambilay Business Center.",
+        "p2": "Sein Werdegang beginnt in Lubumbashi, wo er 1999 sein Lizenziat in Wirtschaftswissenschaften an der Universität Lubumbashi erwarb. Nach einer Zertifizierung in internationaler Besteuerung und Umsatzsteuer in Norwegen verbrachte er drei Jahre (2010–2013) in der Steuerabteilung von DNB Bank ASA, dem größten Finanzdienstleister Norwegens.",
+        "p3": "Zurück in Zentralafrika gründete er Goodwin Trading Investments, J.C. Consulting, Neema Consulting Mining und Adon Technology — ein Portfolio aus Handel und Finanzen, strategischer Beratung, Bergbau und Digitalem.",
+        "p4": "2023 gründete er das Diambilay Business Center an der 378 Avenue Likasi in Lubumbashi, um afrikanische Unternehmer von der Idee zum investierbaren Unternehmen zu bringen. DBC wurde am 6. September 2024 in AfriLabs aufgenommen — das größte afrikanische Netzwerk von Innovationszentren — und ist seither zu einer länderübergreifenden Struktur in DR Kongo, Frankreich, Südafrika und Deutschland gewachsen. Er berief das erste Forum Richesses d'Afrique am 17. Mai 2025 im Palais des Sports Robert Charpentier in Issy-les-Moulineaux ein, mit der ehemaligen französischen Ministerin Élisabeth Moreno als Schirmherrin; eine zweite Edition folgte am 22. November in Montréal. Er hat über dreißig Bücher zu Unternehmertum, Leadership und Persönlichkeitsentwicklung verfasst."
+      },
       "ctaFounder": "Gründer kennenlernen",
       "ctaCareers": "Zum Team stoßen",
       "teamPreview": {
@@ -1808,7 +1816,7 @@
       "pressLabel": "Presse"
     },
     "footer": {
-      "tagline": "Internationaler Inkubator. DACH-Kapitel.",
+      "tagline": "Unternehmens-Inkubator und Accelerator. DACH-Kapitel.",
       "sections": {
         "services": "Leistungen",
         "company": "Unternehmen",
@@ -1919,7 +1927,7 @@
       }
     },
     "intros": {
-      "events": "DBC Germany veranstaltet Events, die die afrikanisch verwurzelte Business-Community in Europa gezielt zusammenbringen. Flagship ist die Richesses d'Afrique Germany 2026 — unsere Jahreskonferenz am 13. Juni in Essen mit 950+ Gründer, Investoren und Operatoren auf zwei Tracks. Zwischen den Jahreskonferenzen laufen kleinere Masterclasses, Dinner und Member-Sessions in Düsseldorf, Berlin, Hamburg und Paris. Jedes Format ist kuratiert: kurze Talks, enge Moderation, Räume, in denen man die Menschen tatsächlich trifft, wegen denen man gekommen ist. Tickets unter tickets.dbc-germany.com. Wenn Sie in diesem Feld bauen, investieren oder operativ arbeiten, zeigt der Kalender unten, wo wir als Nächstes sind.",
+      "events": "DBC Germany veranstaltet Events, die die Business-Community der afrikanischen Diaspora gezielt zusammenbringen. Richesses d'Afrique Germany 2026 — am 13. Juni in Essen — ist die nächste öffentliche Konferenz. Daneben laufen ganzjährig Masterclasses, Dinner und Members-only-Sessions in Düsseldorf, Berlin, Hamburg und Paris. Jedes Format ist kuratiert: kurze Talks, enge Moderation, Räume, in denen man die Menschen tatsächlich trifft, wegen denen man gekommen ist. Tickets unter tickets.dbc-germany.com.",
       "news": "Das Journal von DBC Germany berichtet über die afrikanisch verwurzelte Business-Community in Europa — Gründer-Stories, Policy-Briefings, Kapital-Updates und Longreads zu den Unternehmen, die die Diaspora-Wirtschaft prägen. Notizen aus Düsseldorf, Berlin, Paris und Lubumbashi sowie Berichte zu Richesses d'Afrique Germany 2026 und unseren Programmen. Wir publizieren in drei Sprachen; deutsche und französische Fassungen folgen der englischen in der Regel innerhalb weniger Tage. Newsletter unter /newsletter abonnieren, um einen kuratierten Brief pro Woche zu erhalten — das Archiv liegt unten.",
       "team": "Lernen Sie die Operatoren hinter DBC Germany kennen. Das Düsseldorfer Büro leitet Inkubation, Investment-Prep, Kurse, Mentoring und die jährliche Richesses-d'Afrique-Konferenz. Die Personen unten sind die, mit denen Sie tatsächlich arbeiten, wenn Sie sich für ein Programm bewerben, eine Partnerschaft pitchen oder zu einem Event kommen. Jedes Profil verlinkt auf den professionellen Hintergrund und die Programme der Person. Falls die benötigte Rolle nicht dabei ist: Kontaktieren Sie uns — wir stellen häufiger operativ starke Generalisten ein, als die Titel vermuten lassen.",
       "contact": "DBC Germany erreichen Sie über den Kanal, der zu Ihrem Anliegen passt. Presse- und Medienanfragen gehen an die Presse-Adresse; wir antworten werktags innerhalb von 24 Stunden. Bewerbungen für die Inkubation und unsere Programme liegen unter /services/incubation/apply und landen direkt in der Sichtungsliste. Partnerschaften und Sponsoring — auch die Pakete für Richesses d'Afrique Germany 2026 — gehen über das Formular unten oder an jay@dbc-germany.com. Für alles andere (allgemeine Fragen, Speaker-Vorschläge, nicht zeitkritische Medienanfragen) erreicht das Formular unten die richtige Person noch am selben Tag."

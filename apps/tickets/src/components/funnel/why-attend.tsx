@@ -109,7 +109,7 @@ export function WhyAttend({
         <div className="mt-8 flex flex-wrap items-center gap-4 sm:mt-10">
           <Link
             href={ctaHref}
-            className="inline-flex items-center gap-2 rounded-full bg-primary px-7 py-3.5 text-base font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-lg sm:text-lg"
+            className="animate-wiggle-cta inline-flex items-center gap-2 rounded-full bg-primary px-7 py-3.5 text-base font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-lg sm:text-lg"
           >
             {ctaLabel}
             <span aria-hidden>→</span>

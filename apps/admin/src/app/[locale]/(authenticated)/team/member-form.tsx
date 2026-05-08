@@ -27,7 +27,7 @@ const T = {
   en: {
     photoUploaded: "Photo uploaded.", saved: "Saved.",
     slug: "URL slug", slugHelp: "Shown in public profile URLs. Leave unchanged to keep the current one.",
-    email: "Email", linkedin: "LinkedIn URL", sortOrder: "Sort order",
+    email: "Email", linkedin: "LinkedIn URL", website: "Website URL", sortOrder: "Sort order",
     visibility: "Visibility",
     visPublic: "Public (shown on dbc-germany.com/team)",
     visInternal: "Internal (admin-only)",
@@ -46,7 +46,7 @@ const T = {
   de: {
     photoUploaded: "Foto hochgeladen.", saved: "Gespeichert.",
     slug: "URL-Kennung", slugHelp: "Teil der öffentlichen Profil-URL. Unverändert lassen, um die aktuelle beizubehalten.",
-    email: "E-Mail", linkedin: "LinkedIn-URL", sortOrder: "Sortierung",
+    email: "E-Mail", linkedin: "LinkedIn-URL", website: "Website-URL", sortOrder: "Sortierung",
     visibility: "Sichtbarkeit",
     visPublic: "Öffentlich (sichtbar auf dbc-germany.com/team)",
     visInternal: "Intern (nur Admin)",
@@ -65,7 +65,7 @@ const T = {
   fr: {
     photoUploaded: "Photo téléversée.", saved: "Enregistré.",
     slug: "Identifiant d’URL", slugHelp: "Visible dans l’URL du profil public. Laissez inchangé pour conserver l’actuel.",
-    email: "E-mail", linkedin: "URL LinkedIn", sortOrder: "Ordre",
+    email: "E-mail", linkedin: "URL LinkedIn", website: "URL site web", sortOrder: "Ordre",
     visibility: "Visibilité",
     visPublic: "Public (visible sur dbc-germany.com/team)",
     visInternal: "Interne (admin uniquement)",
@@ -245,6 +245,7 @@ export function TeamMemberForm({
         />
         <Field label={t.email} name="email" type="email" defaultValue={initial?.email ?? ""} />
         <Field label={t.linkedin} name="linkedin_url" type="url" defaultValue={initial?.linkedin_url ?? ""} />
+        <Field label={t.website} name="website_url" type="url" defaultValue={initial?.website_url ?? ""} />
         <Field label={t.sortOrder} name="sort_order" type="number" defaultValue={initial?.sort_order?.toString() ?? "100"} />
         <div>
           <label htmlFor="visibility" className="mb-1 block text-sm font-medium">

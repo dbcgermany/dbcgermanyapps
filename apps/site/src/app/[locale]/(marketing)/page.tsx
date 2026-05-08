@@ -128,7 +128,7 @@ export default async function HomePage({
             <div className="mt-10 flex flex-wrap items-center gap-4">
               <a
                 href={ticketsUrl}
-                className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-lg"
+                className="animate-wiggle-cta rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-lg"
               >
                 {t("hero.ctaPrimary")}
               </a>

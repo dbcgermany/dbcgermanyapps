@@ -22,6 +22,7 @@ type PublicMember = {
   photo_url: string | null;
   email: string | null;
   linkedin_url: string | null;
+  website_url: string | null;
 };
 
 async function getMember(slug: string): Promise<PublicMember | null> {
@@ -29,7 +30,7 @@ async function getMember(slug: string): Promise<PublicMember | null> {
   const { data } = await supabase
     .from("team_members")
     .select(
-      "id, slug, name, role_en, role_de, role_fr, bio_en, bio_de, bio_fr, photo_url, email, linkedin_url"
+      "id, slug, name, role_en, role_de, role_fr, bio_en, bio_de, bio_fr, photo_url, email, linkedin_url, website_url"
     )
     .eq("slug", slug)
     .eq("visibility", "public")
@@ -172,6 +173,19 @@ export default async function TeamMemberPage({
                   className="text-muted-foreground hover:text-foreground"
                 >
                   LinkedIn ↗
+                </a>
+              )}
+              {m.website_url && (
+                <a
+                  href={m.website_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  {m.website_url
+                    .replace(/^https?:\/\//, "")
+                    .replace(/\/$/, "")}{" "}
+                  ↗
                 </a>
               )}
             </div>

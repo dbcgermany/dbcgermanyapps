@@ -2,7 +2,9 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { Quote } from "lucide-react";
 import { Button, Card, Input, Label, Textarea } from "@dbc/ui";
+import { EmptyState } from "@/components/empty-state";
 import {
   createSiteTestimonial,
   deleteSiteTestimonial,
@@ -75,10 +77,10 @@ export function SiteTestimonialsClient({
       )}
 
       {initial.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-          No site testimonials yet. Add the first one to populate the marketing
-          site and event-page fallback.
-        </p>
+        <EmptyState
+          icon={Quote}
+          message="No site testimonials yet. Add the first one to populate the marketing site and event-page fallback."
+        />
       ) : (
         <ul className="space-y-3">
           {initial.map((t) => (

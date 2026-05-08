@@ -663,7 +663,7 @@ export default async function EventDetailPage({
               <div className="border-t border-border bg-muted/30 p-5">
                 <Link
                   href={checkoutHref}
-                  className="flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-lg"
+                  className="animate-wiggle-cta flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-lg"
                 >
                   {t("getTickets")}
                   <span aria-hidden>&rarr;</span>

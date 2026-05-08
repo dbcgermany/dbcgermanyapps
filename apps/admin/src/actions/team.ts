@@ -42,6 +42,7 @@ export interface TeamMember {
   photo_url: string | null;
   email: string | null;
   linkedin_url: string | null;
+  website_url: string | null;
   sort_order: number;
   visibility: TeamMemberVisibility;
   featured_on_about: boolean;
@@ -51,7 +52,7 @@ export interface TeamMember {
 }
 
 const COLUMNS =
-  "id, slug, name, first_name, last_name, gender, birthday, country, role_en, role_de, role_fr, bio_en, bio_de, bio_fr, photo_url, email, linkedin_url, sort_order, visibility, featured_on_about, profile_id, created_at, updated_at" as const;
+  "id, slug, name, first_name, last_name, gender, birthday, country, role_en, role_de, role_fr, bio_en, bio_de, bio_fr, photo_url, email, linkedin_url, website_url, sort_order, visibility, featured_on_about, profile_id, created_at, updated_at" as const;
 
 export async function getTeamMembers(): Promise<TeamMember[]> {
   await requireRole("manager");
@@ -185,6 +186,8 @@ export async function createTeamMember(formData: FormData) {
     email: ((formData.get("email") as string) || "").trim() || null,
     linkedin_url:
       ((formData.get("linkedin_url") as string) || "").trim() || null,
+    website_url:
+      ((formData.get("website_url") as string) || "").trim() || null,
     sort_order: parseInt((formData.get("sort_order") as string) || "100", 10),
     visibility: ((formData.get("visibility") as string) ||
       "internal") as TeamMemberVisibility,
@@ -242,6 +245,8 @@ export async function updateTeamMember(id: string, formData: FormData) {
     email: ((formData.get("email") as string) || "").trim() || null,
     linkedin_url:
       ((formData.get("linkedin_url") as string) || "").trim() || null,
+    website_url:
+      ((formData.get("website_url") as string) || "").trim() || null,
     sort_order: parseInt((formData.get("sort_order") as string) || "100", 10),
     visibility: ((formData.get("visibility") as string) ||
       "internal") as TeamMemberVisibility,

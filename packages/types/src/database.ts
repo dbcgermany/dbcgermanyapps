@@ -3121,6 +3121,7 @@ export type Database = {
           updated_at: string
           updated_by: string | null
           visibility: Database["public"]["Enums"]["team_member_visibility"]
+          website_url: string | null
         }
         Insert: {
           bio_de?: string | null
@@ -3147,6 +3148,7 @@ export type Database = {
           updated_at?: string
           updated_by?: string | null
           visibility?: Database["public"]["Enums"]["team_member_visibility"]
+          website_url?: string | null
         }
         Update: {
           bio_de?: string | null
@@ -3173,6 +3175,7 @@ export type Database = {
           updated_at?: string
           updated_by?: string | null
           visibility?: Database["public"]["Enums"]["team_member_visibility"]
+          website_url?: string | null
         }
         Relationships: [
           {

@@ -50,3 +50,23 @@ body {
   line-height: var(--dbc-text-small-line-height);
   letter-spacing: var(--dbc-text-small-letter-spacing);
 }
+
+/* Buy-CTA wiggle — same animation used in the tickets app, ported here
+   so cross-app CTAs that link into checkout share one motion vocabulary.
+   Fires for ~1.2s then pauses ~28.8s (one wiggle every 30s). Respects
+   reduce-motion. */
+@keyframes dbc-wiggle {
+  0%, 96%, 100% { transform: rotate(0deg); }
+  97%, 99% { transform: rotate(-3deg); }
+  98% { transform: rotate(3deg); }
+}
+.animate-wiggle-cta {
+  animation: dbc-wiggle 30s ease-in-out infinite;
+  transform-origin: center center;
+  will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-wiggle-cta {
+    animation: none;
+  }
+}
