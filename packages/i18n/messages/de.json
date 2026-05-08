@@ -258,6 +258,7 @@
       },
       "detail": {
         "back": "Alle Veranstaltungen",
+        "eventsBreadcrumb": "Veranstaltungen",
         "when": "Datum & Zeit",
         "venue": "Veranstaltungsort",
         "about": "Über die Masterclass",

@@ -32,6 +32,12 @@ import { FunnelClosingCta } from "@/components/funnel/funnel-closing-cta";
 import { FeaturedSpeakersStrip } from "@/components/speakers/featured-speakers-strip";
 import { SpeakersGrid } from "@/components/speakers/speakers-grid";
 import type { SpeakerCardData } from "@/components/speakers/speaker-card";
+import {
+  JsonLd,
+  breadcrumbJsonLd,
+  eventJsonLd,
+  faqJsonLd,
+} from "@/lib/json-ld";
 
 // 5-min ISR ceiling. Admin tier/coupon/event writes still trigger on-demand
 // revalidation via apps/admin/src/lib/revalidate.ts, so this is just the
@@ -200,31 +206,39 @@ export default async function EventDetailPage({
   const featuredSpeakers = speakerCards.filter((s) => s.isFeatured);
 
   const checkoutHref = `/${locale}/checkout/${slug}`;
+  const pageUrl = `https://tickets.dbc-germany.com/${locale}/events/${slug}`;
 
-  const eventJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Event",
+  const eventSchema = eventJsonLd({
     name: event.title_en,
-    description: event.description_en ?? "",
-    startDate: event.starts_at,
-    endDate: event.ends_at,
-    eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
-    eventStatus: "https://schema.org/EventScheduled",
-    image: event.cover_image_url ?? undefined,
-    location: event.venue_name ? {
-      "@type": "Place",
-      name: event.venue_name,
-      address: { "@type": "PostalAddress", addressLocality: event.city ?? undefined, addressCountry: event.country ?? "DE" },
-    } : undefined,
-    organizer: { "@type": "Organization", name: company?.legal_name ?? "DBC Germany", url: "https://dbc-germany.com" },
-    offers: minPrice != null ? {
-      "@type": "Offer",
-      url: `https://tickets.dbc-germany.com/en/events/${event.slug}`,
-      price: minPrice,
-      priceCurrency: tiers[0]?.currency ?? "EUR",
-      availability: "https://schema.org/InStock",
-    } : undefined,
-  };
+    description: event.description_en ?? null,
+    startsAt: event.starts_at,
+    endsAt: event.ends_at,
+    imageUrl: event.cover_image_url,
+    venueName: event.venue_name,
+    city: event.city,
+    country: event.country,
+    organizerName: company?.legal_name ?? "DBC Germany",
+    pageUrl,
+    minPrice,
+    priceCurrency: tiers[0]?.currency ?? null,
+  });
+
+  const breadcrumbSchema = breadcrumbJsonLd([
+    { name: "DBC Germany", url: `https://tickets.dbc-germany.com/${locale}` },
+    {
+      name: t("eventsBreadcrumb"),
+      url: `https://tickets.dbc-germany.com/${locale}/events`,
+    },
+    { name: event.title_en, url: pageUrl },
+  ]);
+
+  const faqSchema = faqJsonLd(
+    faqs.map((q) => ({
+      question:
+        (q[`question_${eff}` as const] as string | null) || q.question_en,
+      answer: (q[`answer_${eff}` as const] as string | null) || q.answer_en,
+    })),
+  );
 
   function loc(field: string) {
     const key = `${field}_${locale}` as keyof typeof event;
@@ -269,10 +283,9 @@ export default async function EventDetailPage({
 
   return (
     <main className="pb-20">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(eventJsonLd) }}
-      />
+      <JsonLd data={eventSchema} />
+      <JsonLd data={breadcrumbSchema} />
+      {faqSchema && <JsonLd data={faqSchema} />}
       <div className="mx-auto max-w-6xl px-5 pt-6 sm:px-8 sm:pt-10">
         <Link
           href={`/${locale}`}

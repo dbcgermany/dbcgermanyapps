@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Montserrat, Ubuntu, DM_Sans } from "next/font/google";
 import { ThemeProvider, CookieConsent, BRAND_HEX } from "@dbc/ui";
+import { Ga4WithConsent } from "@/components/ga4-with-consent";
 import "./globals.css";
 
 const montserrat = Montserrat({
@@ -74,6 +75,7 @@ export default function RootLayout({
             }}
           />
         </ThemeProvider>
+        <Ga4WithConsent gaId={process.env.NEXT_PUBLIC_GA4_ID} />
       </body>
     </html>
   );

@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "DBC Germany",
     short_name: "DBC Germany",
     description:
-      "DBC Germany — African-rooted business community in Europe. Richesses d'Afrique conferences, masterclasses, and diaspora events.",
+      "DBC Germany — business incubator and accelerator for the African diaspora. Richesses d'Afrique conferences, masterclasses and members-only sessions.",
     start_url: "/",
     display: "standalone",
     background_color: BRAND_HEX.paper,

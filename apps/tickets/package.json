@@ -16,6 +16,7 @@
     "@dbc/supabase": "workspace:*",
     "@dbc/types": "workspace:*",
     "@dbc/ui": "workspace:*",
+    "@next/third-parties": "16.2.3",
     "@sentry/nextjs": "^10.0.0",
     "@supabase/supabase-js": "^2.103.0",
     "lucide-react": "^1.8.0",

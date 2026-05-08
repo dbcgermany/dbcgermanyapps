@@ -38,6 +38,7 @@ export {
   hasConsentedToCookies,
   resetCookieConsent,
   CookieSettingsButton,
+  COOKIE_CONSENT_CHANGED_EVENT,
 } from "./cookie-consent";
 export { ConfirmDialog } from "./confirm-dialog";
 export type { ConfirmDialogProps } from "./confirm-dialog";

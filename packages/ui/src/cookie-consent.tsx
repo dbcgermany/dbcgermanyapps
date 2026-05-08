@@ -4,8 +4,13 @@ import { useState, useEffect, useCallback } from "react";
 
 const CONSENT_KEY = "dbc-cookie-consent";
 const RESET_EVENT = "cookie-consent-reset";
+const CHANGED_EVENT = "dbc-cookie-consent-changed";
 
 type ConsentState = "undecided" | "accepted" | "rejected";
+
+/** Window event name fired when consent transitions to accepted/rejected.
+ *  Listeners receive a CustomEvent<ConsentState>. Used by the GA4 gate. */
+export const COOKIE_CONSENT_CHANGED_EVENT = CHANGED_EVENT;
 
 export function CookieConsent({
   translations,
@@ -39,11 +44,17 @@ export function CookieConsent({
   function handleAccept() {
     localStorage.setItem(CONSENT_KEY, "accepted");
     setConsent("accepted");
+    window.dispatchEvent(
+      new CustomEvent<ConsentState>(CHANGED_EVENT, { detail: "accepted" }),
+    );
   }
 
   function handleReject() {
     localStorage.setItem(CONSENT_KEY, "rejected");
     setConsent("rejected");
+    window.dispatchEvent(
+      new CustomEvent<ConsentState>(CHANGED_EVENT, { detail: "rejected" }),
+    );
   }
 
   if (!mounted || consent !== "undecided") return null;
@@ -93,6 +104,11 @@ export function resetCookieConsent(): void {
   if (typeof window === "undefined") return;
   localStorage.removeItem(CONSENT_KEY);
   window.dispatchEvent(new Event(RESET_EVENT));
+  // Also fire the generic "changed" event so analytics gates can revert
+  // to a no-consent state immediately.
+  window.dispatchEvent(
+    new CustomEvent<ConsentState>(CHANGED_EVENT, { detail: "undecided" }),
+  );
 }
 
 export function CookieSettingsButton({

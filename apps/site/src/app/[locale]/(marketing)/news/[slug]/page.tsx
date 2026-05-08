@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { Reveal } from "@dbc/ui";
 import { createServerClient } from "@dbc/supabase/server";
 import { getCompanyInfo } from "@/lib/company-info";
-import { JsonLd, articleJsonLd } from "@/lib/json-ld";
+import { JsonLd, articleJsonLd, breadcrumbJsonLd } from "@/lib/json-ld";
 import { DBC } from "@/lib/dbc-assets";
 
 export const revalidate = 60;
@@ -102,10 +102,19 @@ export default async function NewsArticlePage({
     publisher: company?.legal_name ?? "DBC Germany",
     publisher_logo: company?.logo_light_url ?? null,
   });
+  const breadcrumb = breadcrumbJsonLd([
+    { name: "DBC Germany", url: `https://dbc-germany.com/${locale}` },
+    {
+      name: l === "de" ? "News" : l === "fr" ? "Actualités" : "News",
+      url: `https://dbc-germany.com/${locale}/news`,
+    },
+    { name: title, url: `https://dbc-germany.com/${locale}/news/${slug}` },
+  ]);
 
   return (
     <article className="mx-auto max-w-3xl px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
       <JsonLd data={jsonLd} />
+      <JsonLd data={breadcrumb} />
       <Link
         href={`/${locale}/news`}
         className="text-sm text-muted-foreground hover:text-foreground"

@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { Card, Container, Eyebrow, Heading, Reveal, Section } from "@dbc/ui";
 import { createServerClient } from "@dbc/supabase/server";
 import { buildPageMetadata } from "@/lib/seo";
-import { JsonLd, personJsonLd } from "@/lib/json-ld";
+import { JsonLd, personJsonLd, breadcrumbJsonLd } from "@/lib/json-ld";
 
 export const revalidate = 60;
 
@@ -116,10 +116,19 @@ export default async function TeamMemberPage({
     linkedinUrl: m.linkedin_url,
     locale: l,
   });
+  const breadcrumb = breadcrumbJsonLd([
+    { name: "DBC Germany", url: `https://dbc-germany.com/${locale}` },
+    {
+      name: l === "de" ? "Team" : l === "fr" ? "Équipe" : "Team",
+      url: `https://dbc-germany.com/${locale}/team`,
+    },
+    { name: m.name, url: `https://dbc-germany.com/${locale}/team/${m.slug}` },
+  ]);
 
   return (
     <Section>
       <JsonLd data={personSchema} />
+      <JsonLd data={breadcrumb} />
       <Container max="4xl">
         <Link
           href={`/${locale}/team`}

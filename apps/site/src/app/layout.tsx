@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { getCompanyInfo } from "@/lib/company-info";
 import { JsonLd, organizationJsonLd, websiteJsonLd } from "@/lib/json-ld";
+import { Ga4WithConsent } from "@/components/ga4-with-consent";
 import "./globals.css";
 
 const montserrat = Montserrat({
@@ -125,6 +126,7 @@ export default async function RootLayout({
         </ThemeProvider>
         <Analytics />
         <SpeedInsights />
+        <Ga4WithConsent gaId={process.env.NEXT_PUBLIC_GA4_ID} />
       </body>
     </html>
   );

@@ -5,7 +5,7 @@ import { getTranslations } from "next-intl/server";
 import type { Metadata } from "next";
 import { Reveal } from "@dbc/ui";
 import { seoFromI18n } from "@/lib/seo";
-import { JsonLd, serviceJsonLd } from "@/lib/json-ld";
+import { JsonLd, serviceJsonLd, breadcrumbJsonLd } from "@/lib/json-ld";
 import { DBC } from "@/lib/dbc-assets";
 
 const SERVICE_PAGE_KEY: Record<string, string> = {
@@ -73,10 +73,22 @@ export default async function ServiceDetailPage({
     url: `https://dbc-germany.com/${locale}/services/${service}`,
     image: SERVICE_PHOTOS[service as ValidService],
   });
+  const breadcrumb = breadcrumbJsonLd([
+    { name: "DBC Germany", url: `https://dbc-germany.com/${locale}` },
+    {
+      name: t("nav.services"),
+      url: `https://dbc-germany.com/${locale}/services`,
+    },
+    {
+      name: t(`services.${service}.title`),
+      url: `https://dbc-germany.com/${locale}/services/${service}`,
+    },
+  ]);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
       <JsonLd data={serviceSchema} />
+      <JsonLd data={breadcrumb} />
       <Link
         href={`/${locale}/services`}
         className="text-sm text-muted-foreground hover:text-foreground"
