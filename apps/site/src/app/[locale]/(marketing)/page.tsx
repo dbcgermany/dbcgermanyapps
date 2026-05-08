@@ -4,8 +4,10 @@ import { getTranslations } from "next-intl/server";
 import { HeroBanner, Reveal } from "@dbc/ui";
 import { getUpcomingEvents } from "@/lib/queries";
 import { getHomeHero } from "@/lib/home-hero";
+import { getFeaturedSiteTestimonials } from "@/lib/site-testimonials";
 import { DBC } from "@/lib/dbc-assets";
 import { ServiceIconBadge } from "@/components/service-icon-badge";
+import { TestimonialsSection } from "@/components/testimonials-section";
 
 export const revalidate = 60;
 
@@ -55,9 +57,10 @@ export default async function HomePage({
 }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "site" });
-  const [events, hero] = await Promise.all([
+  const [events, hero, testimonials] = await Promise.all([
     getUpcomingEvents(3),
     getHomeHero(),
+    getFeaturedSiteTestimonials(6),
   ]);
 
   const ticketsUrl =
@@ -224,6 +227,26 @@ export default async function HomePage({
           </div>
         </div>
       </section>
+
+      {/* Testimonials ---------------------------------------------------- */}
+      {testimonials.length > 0 && (
+        <section className="border-t border-border py-20 sm:py-24">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <Reveal>
+              <TestimonialsSection
+                testimonials={testimonials}
+                locale={locale}
+                eyebrow={t("testimonials.eyebrow")}
+                title={t("testimonials.title")}
+                subtitle={t("testimonials.subtitle")}
+                playLabel={t("testimonials.playLabel")}
+                viaLabel={t("testimonials.via")}
+                className=""
+              />
+            </Reveal>
+          </div>
+        </section>
+      )}
 
       {/* Events teaser ---------------------------------------------------- */}
       <section className="border-y border-border bg-muted/40 py-24 sm:py-32">

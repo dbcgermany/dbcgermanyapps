@@ -166,6 +166,8 @@ export interface EventTestimonial {
   rating: number | null;
   is_featured: boolean;
   sort_order: number;
+  source_url: string | null;
+  source_label: string | null;
 }
 
 export async function getTestimonialsForEvent(
@@ -176,7 +178,7 @@ export async function getTestimonialsForEvent(
   const { data, error } = await supabase
     .from("event_testimonials")
     .select(
-      "id, event_id, author_name, author_role_en, author_role_de, author_role_fr, author_photo_url, quote_en, quote_de, quote_fr, video_url, rating, is_featured, sort_order",
+      "id, event_id, author_name, author_role_en, author_role_de, author_role_fr, author_photo_url, quote_en, quote_de, quote_fr, video_url, rating, is_featured, sort_order, source_url, source_label",
     )
     .eq("event_id", eventId)
     .order("is_featured", { ascending: false })
@@ -205,6 +207,9 @@ function readTestimonialForm(formData: FormData) {
     rating: rating != null && rating >= 1 && rating <= 5 ? rating : null,
     is_featured: formData.get("is_featured") === "on",
     sort_order: parseInt((formData.get("sort_order") as string) || "100", 10),
+    source_url: ((formData.get("source_url") as string) || "").trim() || null,
+    source_label:
+      ((formData.get("source_label") as string) || "").trim() || null,
   };
 }
 

@@ -10,6 +10,7 @@ import {
   getEventSpeakers,
   getEventPillars,
   getEventTestimonials,
+  getSiteTestimonials,
   getEventFaqs,
 } from "@/lib/queries";
 import { getEventTriggers, TRIGGER_POLICY } from "@/actions/triggers";
@@ -101,16 +102,32 @@ export default async function EventDetailPage({
     | "de"
     | "fr";
 
-  const [tiers, schedule, triggers, eventSpeakers, pillars, testimonials, faqs] =
-    await Promise.all([
-      getPublicTiers(event.id),
-      getEventSchedule(event.id),
-      getEventTriggers(event.id, triggerLocale),
-      getEventSpeakers(event.id),
-      getEventPillars(event.id),
-      getEventTestimonials(event.id),
-      getEventFaqs(event.id),
-    ]);
+  const [
+    tiers,
+    schedule,
+    triggers,
+    eventSpeakers,
+    pillars,
+    eventTestimonials,
+    faqs,
+  ] = await Promise.all([
+    getPublicTiers(event.id),
+    getEventSchedule(event.id),
+    getEventTriggers(event.id, triggerLocale),
+    getEventSpeakers(event.id),
+    getEventPillars(event.id),
+    getEventTestimonials(event.id),
+    getEventFaqs(event.id),
+  ]);
+
+  // If this event has no event-specific testimonials yet, fall back to the
+  // top-N featured site-wide DBC/Richesses authority quotes so the funnel
+  // still has social proof from day one.
+  const siteTestimonials =
+    eventTestimonials.length === 0 ? await getSiteTestimonials(3) : [];
+  const testimonials =
+    eventTestimonials.length > 0 ? eventTestimonials : siteTestimonials;
+  const testimonialsAreSiteFallback = eventTestimonials.length === 0;
 
   const minPrice = tiers.length > 0
     ? Math.min(...tiers.map((tier) => tier.price_cents)) / 100
@@ -413,7 +430,9 @@ export default async function EventDetailPage({
         )}
       </div>
 
-      {/* Testimonials — past edition social proof */}
+      {/* Testimonials — past edition social proof. Falls back to site-wide
+          DBC/Richesses authority quotes when the event has none of its own,
+          so the funnel always has a credibility beat after the info card. */}
       <FunnelTestimonials
         testimonials={testimonials.map((tm) => ({
           id: tm.id,
@@ -426,10 +445,21 @@ export default async function EventDetailPage({
             (tm[`quote_${eff}` as const] as string | null) || tm.quote_en,
           videoUrl: tm.video_url,
           rating: tm.rating,
+          sourceUrl: tm.source_url,
+          sourceLabel: tm.source_label,
         }))}
-        eyebrow={f("testimonialsEyebrow")}
-        title={f("testimonialsTitle")}
+        eyebrow={
+          testimonialsAreSiteFallback
+            ? f("siteTestimonialsEyebrow")
+            : f("testimonialsEyebrow")
+        }
+        title={
+          testimonialsAreSiteFallback
+            ? f("siteTestimonialsTitle")
+            : f("testimonialsTitle")
+        }
         playLabel={f("playVideo")}
+        viaLabel={f("via")}
       />
 
       {/* CONTENT */}
@@ -489,7 +519,7 @@ export default async function EventDetailPage({
           {/* RIGHT: tickets */}
           <aside id="tickets-sidebar" className="lg:sticky lg:top-24 lg:self-start">
             <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-lg">
-              <div className="border-b border-border bg-gradient-to-r from-primary/10 via-primary/5 to-accent/10 px-6 py-5">
+              <div className="border-b border-border bg-linear-to-r from-primary/10 via-primary/5 to-accent/10 px-6 py-5">
                 <h2 className="font-heading text-lg font-bold">
                   {t("tickets")}
                 </h2>

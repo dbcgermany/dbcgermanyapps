@@ -1574,6 +1574,8 @@ export type Database = {
           quote_fr: string | null
           rating: number | null
           sort_order: number
+          source_label: string | null
+          source_url: string | null
           updated_at: string
           video_url: string | null
         }
@@ -1592,6 +1594,8 @@ export type Database = {
           quote_fr?: string | null
           rating?: number | null
           sort_order?: number
+          source_label?: string | null
+          source_url?: string | null
           updated_at?: string
           video_url?: string | null
         }
@@ -1610,6 +1614,8 @@ export type Database = {
           quote_fr?: string | null
           rating?: number | null
           sort_order?: number
+          source_label?: string | null
+          source_url?: string | null
           updated_at?: string
           video_url?: string | null
         }
@@ -2772,6 +2778,66 @@ export type Database = {
           phone?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           theme?: string
+        }
+        Relationships: []
+      }
+      site_testimonials: {
+        Row: {
+          author_name: string
+          author_photo_url: string | null
+          author_role_de: string | null
+          author_role_en: string | null
+          author_role_fr: string | null
+          created_at: string
+          id: string
+          is_featured: boolean
+          quote_de: string | null
+          quote_en: string
+          quote_fr: string | null
+          rating: number | null
+          sort_order: number
+          source_label: string | null
+          source_url: string | null
+          updated_at: string
+          video_url: string | null
+        }
+        Insert: {
+          author_name: string
+          author_photo_url?: string | null
+          author_role_de?: string | null
+          author_role_en?: string | null
+          author_role_fr?: string | null
+          created_at?: string
+          id?: string
+          is_featured?: boolean
+          quote_de?: string | null
+          quote_en: string
+          quote_fr?: string | null
+          rating?: number | null
+          sort_order?: number
+          source_label?: string | null
+          source_url?: string | null
+          updated_at?: string
+          video_url?: string | null
+        }
+        Update: {
+          author_name?: string
+          author_photo_url?: string | null
+          author_role_de?: string | null
+          author_role_en?: string | null
+          author_role_fr?: string | null
+          created_at?: string
+          id?: string
+          is_featured?: boolean
+          quote_de?: string | null
+          quote_en?: string
+          quote_fr?: string | null
+          rating?: number | null
+          sort_order?: number
+          source_label?: string | null
+          source_url?: string | null
+          updated_at?: string
+          video_url?: string | null
         }
         Relationships: []
       }

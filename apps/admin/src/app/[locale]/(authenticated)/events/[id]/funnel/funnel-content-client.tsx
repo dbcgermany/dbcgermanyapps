@@ -819,6 +819,27 @@ function TestimonialForm({
           <Textarea name="quote_fr" defaultValue={initial?.quote_fr ?? ""} placeholder="FR" rows={4} />
         </div>
       </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <Label htmlFor="source_url">Source URL (optional)</Label>
+          <Input
+            id="source_url"
+            name="source_url"
+            type="url"
+            placeholder="https://..."
+            defaultValue={initial?.source_url ?? ""}
+          />
+        </div>
+        <div>
+          <Label htmlFor="source_label">Source label (optional)</Label>
+          <Input
+            id="source_label"
+            name="source_label"
+            placeholder="e.g. Agence Ecofin"
+            defaultValue={initial?.source_label ?? ""}
+          />
+        </div>
+      </div>
       <div className="flex gap-3">
         <Button type="submit" disabled={pending}>
           {mode === "add" ? "Add testimonial" : "Save"}

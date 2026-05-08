@@ -4,6 +4,8 @@ import { Reveal } from "@dbc/ui";
 import { seoFromI18n } from "@/lib/seo";
 import { JsonLd, itemListJsonLd } from "@/lib/json-ld";
 import { getUpcomingEvents } from "@/lib/queries";
+import { getFeaturedSiteTestimonials } from "@/lib/site-testimonials";
+import { TestimonialsSection } from "@/components/testimonials-section";
 
 export const revalidate = 60;
 
@@ -23,7 +25,10 @@ export default async function EventsPage({
 }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "site" });
-  const events = await getUpcomingEvents(20);
+  const [events, testimonials] = await Promise.all([
+    getUpcomingEvents(20),
+    getFeaturedSiteTestimonials(6),
+  ]);
 
   const ticketsUrl =
     process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://tickets.dbc-germany.com";
@@ -66,6 +71,21 @@ export default async function EventsPage({
           {t("intros.events")}
         </p>
       </Reveal>
+
+      {testimonials.length > 0 && (
+        <Reveal delay={120}>
+          <TestimonialsSection
+            testimonials={testimonials}
+            locale={locale}
+            eyebrow={t("testimonials.eyebrow")}
+            title={t("testimonials.title")}
+            subtitle={t("testimonials.subtitle")}
+            playLabel={t("testimonials.playLabel")}
+            viaLabel={t("testimonials.via")}
+            className="mt-16"
+          />
+        </Reveal>
+      )}
 
       {events.length === 0 ? (
         <p className="mt-16 rounded-xl border border-dashed border-border p-16 text-center text-muted-foreground">

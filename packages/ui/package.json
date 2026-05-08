@@ -15,10 +15,12 @@
   "devDependencies": {
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "lucide-react": "^1.8.0",
     "next-intl": "^4.9.0",
     "typescript": "^5"
   },
   "peerDependencies": {
+    "lucide-react": "^1.0.0",
     "next-intl": "^4.0.0",
     "react": "^19",
     "react-dom": "^19"

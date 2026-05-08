@@ -301,7 +301,10 @@
         "pillarsTitle": "Warum Teilnehmer für dieses Event anreisen",
         "testimonialsEyebrow": "Aus früheren Editionen",
         "testimonialsTitle": "Was Teilnehmer im Nachhinein wirklich sagen",
+        "siteTestimonialsEyebrow": "Stimmen aus dem Netzwerk",
+        "siteTestimonialsTitle": "Was Persönlichkeiten über DBC und das Forum Richesses d'Afrique sagen",
         "playVideo": "Testimonial abspielen",
+        "via": "via",
         "galleryEyebrow": "Aus dem Saal",
         "galleryTitle": "Vergangene Edition in Bildern",
         "galleryViewAll": "Vollständige Galerie öffnen",
@@ -436,6 +439,7 @@
       "settings": "Einstellungen",
       "staff": "Team (intern)",
       "team": "Team (öffentlich)",
+      "testimonials": "Testimonials",
       "tickets": "Tickets"
     },
     "dashboard": {
@@ -1286,6 +1290,12 @@
         "jobTitle": "Position"
       }
     },
+    "testimonials": {
+      "page": {
+        "title": "Site-Testimonials",
+        "description": "Stimmen mit Autorität für die Marketing-Startseite, das öffentliche Eventarchiv und als Fallback auf Eventseiten ohne eigene Testimonials."
+      }
+    },
     "companyInfo": {
       "page": {
         "title": "Unternehmensdaten",
@@ -1742,6 +1752,13 @@
       "subtitle": "Live-Momente für Gründer, Investoren und die Diaspora, die Afrikas Wirtschaft prägt.",
       "cta": "Alle Veranstaltungen",
       "noUpcoming": "Unsere nächste Veranstaltung wird bald angekündigt. Tragen Sie sich unten ein."
+    },
+    "testimonials": {
+      "eyebrow": "Stimmen aus dem Netzwerk",
+      "title": "Was Persönlichkeiten über DBC und das Forum Richesses d'Afrique sagen.",
+      "subtitle": "Gründer, Führungskräfte und politische Entscheidungsträger, die auf unseren Bühnen standen oder unsere Arbeit unterzeichnet haben.",
+      "playLabel": "Testimonial abspielen",
+      "via": "via"
     },
     "about": {
       "eyebrow": "Über DBC",

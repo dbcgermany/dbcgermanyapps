@@ -55,6 +55,8 @@ export { AssetUpload } from "./asset-upload";
 export type { AssetUploadProps } from "./asset-upload";
 export { HeroBanner } from "./hero-banner";
 export type { HeroBannerProps } from "./hero-banner";
+export { TestimonialsGrid } from "./testimonials-grid";
+export type { TestimonialItem } from "./testimonials-grid";
 export { HeroVideoPlayer } from "./hero-video-player";
 export { HeroEmbed } from "./hero-embed";
 export { NotFoundHero } from "./not-found-hero";
