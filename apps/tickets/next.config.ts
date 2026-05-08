@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
     "@dbc/i18n",
     "@dbc/ui",
     "@dbc/email",
+    "@dbc/legal",
   ],
   images: {
     remotePatterns: [
