@@ -222,14 +222,18 @@ export type PublicTestimonial = {
 const TESTIMONIAL_COLUMNS =
   "id, author_name, author_role_en, author_role_de, author_role_fr, author_photo_url, quote_en, quote_de, quote_fr, video_url, rating, is_featured, sort_order, source_url, source_label";
 
-export async function getEventTestimonials(eventId: string): Promise<PublicTestimonial[]> {
+export async function getEventTestimonials(
+  eventId: string,
+  limit = 3,
+): Promise<PublicTestimonial[]> {
   const supabase = await createServerClient();
   const { data, error } = await supabase
     .from("event_testimonials")
     .select(TESTIMONIAL_COLUMNS)
     .eq("event_id", eventId)
     .order("is_featured", { ascending: false })
-    .order("sort_order", { ascending: true });
+    .order("sort_order", { ascending: true })
+    .limit(limit);
   if (error) return [];
   return (data ?? []) as PublicTestimonial[];
 }
