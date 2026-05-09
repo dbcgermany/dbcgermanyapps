@@ -60,7 +60,7 @@ export default async function HomePage({
   const [events, hero, testimonials] = await Promise.all([
     getUpcomingEvents(3),
     getHomeHero(),
-    getFeaturedSiteTestimonials(6),
+    getFeaturedSiteTestimonials(3),
   ]);
 
   const ticketsUrl =

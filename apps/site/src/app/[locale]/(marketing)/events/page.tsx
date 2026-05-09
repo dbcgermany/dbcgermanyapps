@@ -27,7 +27,7 @@ export default async function EventsPage({
   const t = await getTranslations({ locale, namespace: "site" });
   const [events, testimonials] = await Promise.all([
     getUpcomingEvents(20),
-    getFeaturedSiteTestimonials(6),
+    getFeaturedSiteTestimonials(3),
   ]);
 
   const ticketsUrl =
