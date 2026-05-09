@@ -314,34 +314,36 @@ export default async function AboutPage({
                       ? "Où nous sommes"
                       : "Where we operate"}
                 </h2>
-                <ul className="mt-4 space-y-3 text-base">
-                  <li className="flex items-start gap-3">
-                    <span aria-hidden className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary" />
-                    <span>
-                      <strong>Düsseldorf</strong> —{" "}
-                      {l === "de"
-                        ? "Sitz der DBC Germany: Inkubation, Investitionen, Operations."
-                        : l === "fr"
-                          ? "Siège de DBC Germany : incubation, investissements, opérations."
-                          : "DBC Germany HQ: incubation, investments, operations."}
-                    </span>
-                  </li>
+                <ul className="mt-4 space-y-4 text-base">
                   <li className="flex items-start gap-3">
                     <span aria-hidden className="mt-1 h-2 w-2 shrink-0 rounded-full bg-accent" />
                     <span>
-                      <strong>Lubumbashi, DR Congo</strong> —{" "}
+                      <strong>DBC International</strong>
+                      <br />
+                      378, Av Likasi, Lubumbashi,{" "}
                       {l === "de"
-                        ? "Mutterorganisation · 378, Av Likasi · +243 820 121 513"
+                        ? "Demokratische Republik Kongo"
                         : l === "fr"
-                          ? "Organisation mère · 378, Av Likasi · +243 820 121 513"
-                          : "Parent organisation · 378, Av Likasi · +243 820 121 513"}
+                          ? "République démocratique du Congo"
+                          : "Democratic Republic of the Congo"}
+                    </span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span aria-hidden className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary" />
+                    <span>
+                      <strong>DBC Germany UG</strong>
+                      <br />
+                      Speditionstraße 15a, 40221 Düsseldorf,{" "}
+                      {l === "fr" ? "Allemagne" : "Deutschland"}
                     </span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span aria-hidden className="mt-1 h-2 w-2 shrink-0 rounded-full bg-accent/70" />
                     <span>
-                      <strong>Herblay-sur-Seine, France</strong> —{" "}
-                      {"DBC France SAS (SIREN 940 839 145) · 43 Avenue du Gros Chêne"}
+                      <strong>DBC France SAS</strong>
+                      <br />
+                      43 Avenue du Gros Chêne, 95220 Herblay-sur-Seine,{" "}
+                      {l === "de" ? "Frankreich" : "France"}
                     </span>
                   </li>
                 </ul>
