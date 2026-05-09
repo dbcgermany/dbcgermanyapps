@@ -18,6 +18,7 @@ import {
 } from "@/components/about/about-sections";
 import { TeamPreviewStrip } from "@/components/about/team-preview-strip";
 import type { TeamMemberCardData } from "@/components/team/team-member-card";
+import { WhereWeOperateMap } from "@/components/where-we-operate-map";
 
 // Admin edits to company_info / team_members fire pingRevalidate on
 // /about so the minute TTL is mostly defensive.
@@ -296,14 +297,15 @@ export default async function AboutPage({
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           <Reveal>
             <div className="grid items-center gap-12 md:grid-cols-2">
-              <div className="relative order-last aspect-4/3 overflow-hidden rounded-2xl md:order-first">
-                <Image
-                  src={DBC.photo.cohort}
-                  alt="DBC Germany incubation cohort participants"
-                  fill
-                  sizes="(min-width: 768px) 50vw, 100vw"
-                  className="object-cover"
-                  referrerPolicy="no-referrer"
+              <div className="order-last md:order-first">
+                <WhereWeOperateMap
+                  ariaLabel={
+                    l === "de"
+                      ? "Karte der DBC-Standorte: Lubumbashi, Düsseldorf und Herblay-sur-Seine."
+                      : l === "fr"
+                        ? "Carte des bureaux DBC : Lubumbashi, Düsseldorf et Herblay-sur-Seine."
+                        : "Map showing DBC offices in Lubumbashi, Düsseldorf and Herblay-sur-Seine."
+                  }
                 />
               </div>
               <div>
