@@ -1695,13 +1695,13 @@
         ]
       },
       "events": {
-        "title": "Richesses d'Afrique Germany",
-        "short": "Conférences et masterclasses phares qui rassemblent l'écosystème.",
-        "long": "Masterclasses DBC et conférences qui rassemblent l'écosystème. En Allemagne : Richesses d'Afrique Germany 2026 au Congress Center West, Messe Essen, le 13 juin, ainsi que des masterclasses, dîners et sessions members-only tout au long de l'année.",
+        "title": "Business Events",
+        "short": "Conférences, masterclasses et sessions members-only où le réseau DBC se retrouve en personne.",
+        "long": "Le programme business-events de DBC couvre conférences, masterclasses, dîners de fondateurs et sessions members-only tout au long de l'année. Billetterie et inscriptions sur tickets.dbc-germany.com.",
         "bullets": [
-          "Richesses d'Afrique Germany 2026 · 13 juin · Essen",
-          "Les masterclasses DBC se déplacent entre hubs africains et européens",
-          "Billetterie sur tickets.dbc-germany.com"
+          "Conférences, masterclasses, dîners de fondateurs et sessions members-only",
+          "Formats récurrents en Europe et en Afrique",
+          "Billetterie et inscriptions sur tickets.dbc-germany.com"
         ]
       },
       "elearning": {
@@ -1738,8 +1738,8 @@
             "href": "/contact?topic=fund"
           },
           "tickets": {
-            "title": "Billets Richesses d'Afrique Germany",
-            "body": "La conférence phare — 13 juin 2026 au Congress Center West, Messe Essen.",
+            "title": "Billets d'événements",
+            "body": "Billetterie publique pour la prochaine conférence et les masterclasses.",
             "cta": "Obtenir des billets",
             "href": "https://tickets.dbc-germany.com"
           }
@@ -2081,8 +2081,8 @@
             "desc": "Matchings 1-à-1 avec celles et ceux qui ont déjà bâti."
           },
           "events": {
-            "title": "Événements",
-            "desc": "Richesses d'Afrique Germany, masterclasses, dîners de fondateurs."
+            "title": "Business Events",
+            "desc": "Conférences, masterclasses, dîners de fondateurs et sessions members-only."
           },
           "elearning": {
             "title": "E-learning",
@@ -2231,8 +2231,8 @@
           "desc": "Match 1-à-1 avec des opérateurs séniors."
         },
         "events": {
-          "title": "Événements",
-          "desc": "Richesses d'Afrique, masterclasses, dîners de fondateurs."
+          "title": "Business Events",
+          "desc": "Conférences, masterclasses, dîners de fondateurs et sessions members-only."
         },
         "elearning": {
           "title": "E-learning",

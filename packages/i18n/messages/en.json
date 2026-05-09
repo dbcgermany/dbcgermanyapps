@@ -1695,13 +1695,13 @@
         ]
       },
       "events": {
-        "title": "Richesses d'Afrique Germany",
-        "short": "Flagship conferences and masterclasses that bring the ecosystem to one room.",
-        "long": "DBC masterclasses and conferences that bring the ecosystem together. In Germany: Richesses d'Afrique Germany 2026 at Congress Center West, Messe Essen, on 13 June, alongside year-round masterclasses, dinners and members-only sessions.",
+        "title": "Business Events",
+        "short": "Conferences, masterclasses and members-only sessions where the DBC network meets in person.",
+        "long": "DBC's business-event programme covers conferences, masterclasses, founder dinners and members-only sessions throughout the year. Tickets and sign-ups live on tickets.dbc-germany.com.",
         "bullets": [
-          "Richesses d'Afrique Germany 2026 · 13 June · Essen",
-          "DBC masterclasses rotate between African and European hubs",
-          "Open ticket sales on tickets.dbc-germany.com"
+          "Conferences, masterclasses, founder dinners and members-only sessions",
+          "Recurring formats across Europe and Africa",
+          "Tickets and sign-ups on tickets.dbc-germany.com"
         ]
       },
       "elearning": {
@@ -1738,8 +1738,8 @@
             "href": "/contact?topic=fund"
           },
           "tickets": {
-            "title": "Richesses d'Afrique Germany tickets",
-            "body": "The flagship conference — 13 June 2026 at Congress Center West, Messe Essen.",
+            "title": "Event tickets",
+            "body": "Public ticket sales for the next conference and masterclasses.",
             "cta": "Get tickets",
             "href": "https://tickets.dbc-germany.com"
           }
@@ -2081,8 +2081,8 @@
             "desc": "1-on-1 matching with operators who have built what you're building."
           },
           "events": {
-            "title": "Events",
-            "desc": "Richesses d'Afrique Germany, masterclasses, founder dinners."
+            "title": "Business Events",
+            "desc": "Conferences, masterclasses, founder dinners and members-only sessions."
           },
           "elearning": {
             "title": "E-learning",
@@ -2231,8 +2231,8 @@
           "desc": "1-on-1 match with senior operators."
         },
         "events": {
-          "title": "Events",
-          "desc": "Richesses d'Afrique, masterclasses, founder dinners."
+          "title": "Business Events",
+          "desc": "Conferences, masterclasses, founder dinners and members-only sessions."
         },
         "elearning": {
           "title": "E-learning",
