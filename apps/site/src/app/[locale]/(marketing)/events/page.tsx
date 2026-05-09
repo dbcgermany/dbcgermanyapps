@@ -66,12 +66,6 @@ export default async function EventsPage({
         </div>
       </Reveal>
 
-      <Reveal delay={80}>
-        <p className="mt-8 max-w-3xl text-base leading-7 text-muted-foreground">
-          {t("intros.events")}
-        </p>
-      </Reveal>
-
       {testimonials.length > 0 && (
         <Reveal delay={120}>
           <TestimonialsSection
