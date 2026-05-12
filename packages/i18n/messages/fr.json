@@ -1709,6 +1709,26 @@
         "revokedToast": "Révoqué",
         "empty": "Aucun·e délégué·e dans cette vue."
       },
+      "outreach": {
+        "open": "Envoyer des e-mails d’invitation",
+        "close": "Fermer",
+        "audienceLabel": "Audience",
+        "audienceAmbassador": "Ambassadeur·rice·s d’antenne",
+        "audienceTeamMember": "Membres de l’équipe",
+        "audienceHelp_ambassador": "Les destinataires reçoivent la version « à transférer à l’équipe » avec l’avertissement sur l’accès au lieu.",
+        "audienceHelp_team_member": "Les destinataires reçoivent l’invitation directe les invitant à s’inscrire eux/elles-mêmes (et un·e +1).",
+        "languageLabel": "Langue",
+        "recipientsLabel": "Destinataires",
+        "recipientsHint": "Une adresse par ligne — ou `Nom <email@exemple.com>`. Le collage depuis un tableur fonctionne.",
+        "recipientsPlaceholder": "ada@dbc-france.org\nLin Tang <lin@dbc-belgium.org>",
+        "send": "Envoyer {count} e-mails d’invitation",
+        "send_zero": "Envoyer les e-mails d’invitation",
+        "sending": "Envoi…",
+        "sentToast": "{sent} envoyé(s)",
+        "failedToast": "{failed} échec(s)",
+        "skippedToast": "{skipped} ignoré(s) (invalides)",
+        "noValidRecipients": "Ajoutez au moins une adresse valide."
+      },
       "noEventFilter": "Astuce : filtrez par événement ci-dessous pour obtenir le lien d’inscription public et ajouter des délégué·e·s manuellement.",
       "recognisedChapters": "Antennes reconnues : {list}"
     },

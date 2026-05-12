@@ -16,6 +16,8 @@ import { StaffInviteEmail } from "./templates/staff-invite";
 import { StaffCredentialsEmail } from "./templates/staff-credentials";
 import { StaffEmailChangedEmail } from "./templates/staff-email-changed";
 import { StaffPausedEmail } from "./templates/staff-paused";
+import { ChapterDelegateAmbassadorInviteEmail } from "./templates/chapter-delegate-ambassador-invite";
+import { ChapterDelegateTeamMemberInviteEmail } from "./templates/chapter-delegate-team-member-invite";
 
 type Locale = "en" | "de" | "fr";
 
@@ -665,4 +667,161 @@ export async function sendStaffPaused(input: SendStaffPausedInput) {
   });
   if (res.error) throw new Error(`Resend: ${res.error.message}`);
   return { id: res.data?.id ?? "" };
+}
+
+// ---------------------------------------------------------------------------
+// Chapter-delegate outreach — single-recipient + batch send for both the
+// ambassador-targeted and team-member-targeted invite templates. The admin
+// outreach panel calls the bulk variant; both share the same audience+locale
+// matrix so subject lines and templates stay co-located here.
+// ---------------------------------------------------------------------------
+
+export type ChapterDelegateInviteKind = "ambassador" | "team_member";
+
+export interface SendChapterDelegateInviteInput {
+  to: string;
+  recipientName: string;
+  eventTitle: string;
+  eventDateLabel: string;
+  eventCity: string;
+  registrationUrl: string;
+  locale: Locale;
+  kind: ChapterDelegateInviteKind;
+}
+
+const CHAPTER_DELEGATE_INVITE_SUBJECT: Record<
+  ChapterDelegateInviteKind,
+  Record<Locale, string>
+> = {
+  ambassador: {
+    en: "Please forward — chapter delegate registration for {event}",
+    de: "Bitte weiterleiten — Sektions-Delegierten-Anmeldung für {event}",
+    fr: "À transférer — inscription délégué·e d’antenne pour {event}",
+  },
+  team_member: {
+    en: "Your invitation: {event} — please register",
+    de: "Deine Einladung: {event} — bitte registrieren",
+    fr: "Votre invitation : {event} — merci de vous inscrire",
+  },
+};
+
+async function renderChapterDelegateInvite(
+  input: SendChapterDelegateInviteInput
+) {
+  const Component =
+    input.kind === "ambassador"
+      ? ChapterDelegateAmbassadorInviteEmail
+      : ChapterDelegateTeamMemberInviteEmail;
+  return render(
+    React.createElement(Component, {
+      recipientName: input.recipientName,
+      eventTitle: input.eventTitle,
+      eventDateLabel: input.eventDateLabel,
+      eventCity: input.eventCity,
+      registrationUrl: input.registrationUrl,
+      locale: input.locale,
+    })
+  );
+}
+
+export async function sendChapterDelegateInvite(
+  input: SendChapterDelegateInviteInput
+) {
+  const html = await renderChapterDelegateInvite(input);
+  const resend = createEmailClient();
+  const subject = CHAPTER_DELEGATE_INVITE_SUBJECT[input.kind][input.locale]
+    .replace("{event}", input.eventTitle);
+  const res = await resend.emails.send({
+    from: transactionalFrom(),
+    to: input.to,
+    subject,
+    html,
+  });
+  if (res.error) throw new Error(`Resend: ${res.error.message}`);
+  return { id: res.data?.id ?? "" };
+}
+
+export interface SendChapterDelegateInvitesBatchResult {
+  sent: number;
+  failed: number;
+  errors: { email: string; error: string }[];
+}
+
+/**
+ * Send the same template+locale to many recipients. Uses Resend's batch
+ * endpoint (max 100 per call) so 1 admin click → 1 API call. Falls back to
+ * per-recipient send if the batch endpoint errors so a single bad recipient
+ * doesn't block the rest. Each `recipients[i].name` becomes the greeting.
+ */
+export async function sendChapterDelegateInvitesBatch(input: {
+  recipients: { email: string; name: string }[];
+  eventTitle: string;
+  eventDateLabel: string;
+  eventCity: string;
+  registrationUrl: string;
+  locale: Locale;
+  kind: ChapterDelegateInviteKind;
+}): Promise<SendChapterDelegateInvitesBatchResult> {
+  const resend = createEmailClient();
+  const subjectTemplate =
+    CHAPTER_DELEGATE_INVITE_SUBJECT[input.kind][input.locale];
+  const subject = subjectTemplate.replace("{event}", input.eventTitle);
+  const result: SendChapterDelegateInvitesBatchResult = {
+    sent: 0,
+    failed: 0,
+    errors: [],
+  };
+
+  // Resend batch caps at 100; chunk if larger.
+  const CHUNK = 100;
+  for (let i = 0; i < input.recipients.length; i += CHUNK) {
+    const slice = input.recipients.slice(i, i + CHUNK);
+
+    // Pre-render all HTMLs in parallel so we don't serialise React renders.
+    const rendered = await Promise.all(
+      slice.map((r) =>
+        renderChapterDelegateInvite({
+          to: r.email,
+          recipientName: r.name,
+          eventTitle: input.eventTitle,
+          eventDateLabel: input.eventDateLabel,
+          eventCity: input.eventCity,
+          registrationUrl: input.registrationUrl,
+          locale: input.locale,
+          kind: input.kind,
+        })
+      )
+    );
+    const payload = slice.map((r, idx) => ({
+      from: transactionalFrom(),
+      to: [r.email],
+      subject,
+      html: rendered[idx],
+    }));
+
+    const batchRes = await resend.batch.send(payload);
+    if (batchRes.error) {
+      // Fall back per-recipient so one rejected address doesn't kill the batch.
+      console.error(
+        "[sendChapterDelegateInvitesBatch] batch failed, falling back:",
+        batchRes.error
+      );
+      for (let j = 0; j < slice.length; j++) {
+        try {
+          await resend.emails.send(payload[j]);
+          result.sent += 1;
+        } catch (err) {
+          result.failed += 1;
+          result.errors.push({
+            email: slice[j].email,
+            error: err instanceof Error ? err.message : "unknown",
+          });
+        }
+      }
+    } else {
+      result.sent += slice.length;
+    }
+  }
+
+  return result;
 }

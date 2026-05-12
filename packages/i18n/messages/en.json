@@ -1709,6 +1709,26 @@
         "revokedToast": "Revoked",
         "empty": "No delegates in this view."
       },
+      "outreach": {
+        "open": "Send invite emails",
+        "close": "Close",
+        "audienceLabel": "Audience",
+        "audienceAmbassador": "Chapter Ambassadors",
+        "audienceTeamMember": "Team members",
+        "audienceHelp_ambassador": "Recipients receive the forward-this-to-your-team version with a venue-access warning.",
+        "audienceHelp_team_member": "Recipients receive the direct invite version, asking them to register themselves (and a +1) for the event.",
+        "languageLabel": "Language",
+        "recipientsLabel": "Recipients",
+        "recipientsHint": "One email per line — or `Name <email@example.com>`. Pasting from a spreadsheet works too.",
+        "recipientsPlaceholder": "ada@dbc-france.org\nLin Tang <lin@dbc-belgium.org>",
+        "send": "Send {count} invite emails",
+        "send_zero": "Send invite emails",
+        "sending": "Sending…",
+        "sentToast": "{sent} sent",
+        "failedToast": "{failed} failed",
+        "skippedToast": "{skipped} skipped (invalid)",
+        "noValidRecipients": "Add at least one valid email."
+      },
       "noEventFilter": "Tip: filter by event below to get the public registration link for that event and to add delegates manually.",
       "recognisedChapters": "Recognised chapters: {list}"
     },

@@ -20,8 +20,29 @@ import {
   createChapterDelegateManually,
   rejectChapterDelegate,
   revokeChapterDelegate,
+  sendChapterDelegateInvitesBatch,
   type ChapterDelegateRow,
 } from "@/actions/chapter-delegates";
+
+type OutreachLocale = "en" | "de" | "fr";
+type OutreachAudience = "ambassador" | "team_member";
+
+// Parses paste-friendly recipient input: one address per line, or
+// `Name <email@host.tld>` style. Empty lines + obvious junk are dropped.
+function parseRecipients(raw: string): { email: string; name: string }[] {
+  const out: { email: string; name: string }[] = [];
+  for (const line of raw.split(/\r?\n|,/)) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    const angle = trimmed.match(/^([^<]+?)\s*<([^>]+)>\s*$/);
+    if (angle) {
+      out.push({ name: angle[1].trim(), email: angle[2].trim() });
+    } else {
+      out.push({ name: "", email: trimmed });
+    }
+  }
+  return out;
+}
 
 type Status = "active" | "pending_approval" | "rejected" | "revoked";
 const STATUS_TAB_ORDER: Status[] = [
@@ -60,6 +81,48 @@ export function ChapterDelegatesClient({
   const [manualOpen, setManualOpen] = useState(false);
   const [manualBringsCompanion, setManualBringsCompanion] = useState(false);
   const [manualError, setManualError] = useState<string | null>(null);
+  const [outreachOpen, setOutreachOpen] = useState(false);
+  const [outreachAudience, setOutreachAudience] =
+    useState<OutreachAudience>("ambassador");
+  const [outreachLocale, setOutreachLocale] = useState<OutreachLocale>(
+    (locale === "de" || locale === "fr" ? locale : "en") as OutreachLocale
+  );
+  const [outreachRecipientsRaw, setOutreachRecipientsRaw] = useState("");
+  const outreachRecipients = parseRecipients(outreachRecipientsRaw);
+
+  function handleSendOutreach() {
+    if (!activeEvent) return;
+    if (outreachRecipients.length === 0) {
+      toast.error(t("outreach.noValidRecipients"));
+      return;
+    }
+    startTransition(async () => {
+      const res = await sendChapterDelegateInvitesBatch({
+        eventId: activeEvent.id,
+        locale: outreachLocale,
+        kind: outreachAudience,
+        recipients: outreachRecipients,
+      });
+      if (res.error) {
+        toast.error(res.error);
+        return;
+      }
+      const parts: string[] = [
+        t("outreach.sentToast", { sent: res.sent ?? 0 }),
+      ];
+      if ((res.failed ?? 0) > 0) {
+        parts.push(t("outreach.failedToast", { failed: res.failed ?? 0 }));
+      }
+      if ((res.skippedInvalid ?? 0) > 0) {
+        parts.push(
+          t("outreach.skippedToast", { skipped: res.skippedInvalid ?? 0 })
+        );
+      }
+      toast.success(parts.join(" · "));
+      setOutreachRecipientsRaw("");
+      setOutreachOpen(false);
+    });
+  }
 
   const ticketsBase =
     process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://tickets.dbc-germany.com";
@@ -223,13 +286,30 @@ export function ChapterDelegatesClient({
                   {t("linkBanner.hint")}
                 </p>
               </div>
-              <Button
-                variant="secondary"
-                onClick={() => setManualOpen((o) => !o)}
-                disabled={isPending}
-              >
-                {manualOpen ? t("manualAdd.cancel") : t("manualAdd.open")}
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setOutreachOpen((o) => !o);
+                    if (manualOpen) setManualOpen(false);
+                  }}
+                  disabled={isPending}
+                >
+                  {outreachOpen
+                    ? t("outreach.close")
+                    : t("outreach.open")}
+                </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setManualOpen((o) => !o);
+                    if (outreachOpen) setOutreachOpen(false);
+                  }}
+                  disabled={isPending}
+                >
+                  {manualOpen ? t("manualAdd.cancel") : t("manualAdd.open")}
+                </Button>
+              </div>
             </div>
             <button
               type="button"
@@ -266,6 +346,107 @@ export function ChapterDelegatesClient({
                 {t("linkBanner.openTab")}
               </a>
             </div>
+
+            {outreachOpen && (
+              <div className="space-y-3 rounded-md border border-border bg-background p-4">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-[11px] uppercase tracking-wide text-muted-foreground mb-1.5">
+                      {t("outreach.audienceLabel")}
+                    </label>
+                    <div className="flex gap-1 rounded-md border border-input p-0.5 text-xs">
+                      {(
+                        [
+                          ["ambassador", t("outreach.audienceAmbassador")],
+                          ["team_member", t("outreach.audienceTeamMember")],
+                        ] as const
+                      ).map(([key, label]) => {
+                        const active = outreachAudience === key;
+                        return (
+                          <button
+                            key={key}
+                            type="button"
+                            onClick={() => setOutreachAudience(key)}
+                            className={`flex-1 rounded px-3 py-1.5 transition-colors ${
+                              active
+                                ? "bg-primary text-primary-foreground"
+                                : "hover:bg-muted"
+                            }`}
+                          >
+                            {label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[11px] uppercase tracking-wide text-muted-foreground mb-1.5">
+                      {t("outreach.languageLabel")}
+                    </label>
+                    <div className="flex gap-1 rounded-md border border-input p-0.5 text-xs">
+                      {(["de", "en", "fr"] as const).map((loc) => {
+                        const active = outreachLocale === loc;
+                        return (
+                          <button
+                            key={loc}
+                            type="button"
+                            onClick={() => setOutreachLocale(loc)}
+                            className={`flex-1 rounded px-3 py-1.5 uppercase transition-colors ${
+                              active
+                                ? "bg-primary text-primary-foreground"
+                                : "hover:bg-muted"
+                            }`}
+                          >
+                            {loc}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-muted-foreground">
+                  {t(
+                    `outreach.audienceHelp_${outreachAudience}` as
+                      | "outreach.audienceHelp_ambassador"
+                      | "outreach.audienceHelp_team_member"
+                  )}
+                </p>
+
+                <div>
+                  <label className="block text-[11px] uppercase tracking-wide text-muted-foreground mb-1.5">
+                    {t("outreach.recipientsLabel")}
+                  </label>
+                  <textarea
+                    value={outreachRecipientsRaw}
+                    onChange={(e) => setOutreachRecipientsRaw(e.target.value)}
+                    placeholder={t("outreach.recipientsPlaceholder")}
+                    rows={5}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono"
+                  />
+                  <p className="mt-1 text-[11px] text-muted-foreground">
+                    {t("outreach.recipientsHint")}
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-end">
+                  <Button
+                    onClick={handleSendOutreach}
+                    disabled={
+                      isPending || outreachRecipients.length === 0
+                    }
+                  >
+                    {isPending
+                      ? t("outreach.sending")
+                      : outreachRecipients.length === 0
+                        ? t("outreach.send_zero")
+                        : t("outreach.send", {
+                            count: outreachRecipients.length,
+                          })}
+                  </Button>
+                </div>
+              </div>
+            )}
 
             {manualOpen && (
               <form

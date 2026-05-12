@@ -1709,6 +1709,26 @@
         "revokedToast": "Widerrufen",
         "empty": "Keine Delegierten in dieser Ansicht."
       },
+      "outreach": {
+        "open": "Einladungs-E-Mails senden",
+        "close": "Schließen",
+        "audienceLabel": "Zielgruppe",
+        "audienceAmbassador": "Sektions-Botschafter:innen",
+        "audienceTeamMember": "Team-Mitglieder",
+        "audienceHelp_ambassador": "Empfänger:innen erhalten die Weiterleiten-an-Team-Variante mit Hinweis auf die Einlasspflicht.",
+        "audienceHelp_team_member": "Empfänger:innen erhalten die direkte Einladung mit Bitte, sich (und ggf. eine Begleitperson) selbst zu registrieren.",
+        "languageLabel": "Sprache",
+        "recipientsLabel": "Empfänger:innen",
+        "recipientsHint": "Eine E-Mail pro Zeile — oder `Name <email@beispiel.com>`. Aus einer Tabelle einfügen geht auch.",
+        "recipientsPlaceholder": "ada@dbc-france.org\nLin Tang <lin@dbc-belgium.org>",
+        "send": "{count} Einladungs-E-Mails senden",
+        "send_zero": "Einladungs-E-Mails senden",
+        "sending": "Wird gesendet…",
+        "sentToast": "{sent} versendet",
+        "failedToast": "{failed} fehlgeschlagen",
+        "skippedToast": "{skipped} übersprungen (ungültig)",
+        "noValidRecipients": "Bitte mindestens eine gültige E-Mail eingeben."
+      },
       "noEventFilter": "Tipp: Filtere unten nach Veranstaltung, um den öffentlichen Anmeldelink zu erhalten und Delegierte manuell anzulegen.",
       "recognisedChapters": "Anerkannte Sektionen: {list}"
     },

@@ -881,3 +881,126 @@ export async function createChapterDelegateManually(formData: FormData) {
   revalidatePath(`/${locale}/chapter-delegates`);
   return { success: true, companionIssued: companionTicketIssued };
 }
+
+/**
+ * Bulk outreach: send the branded chapter-delegate invite email to many
+ * recipients in one click. Used by the outreach panel on /chapter-delegates.
+ *
+ * `kind` selects which template:
+ *   - "ambassador"  → forwards-to-team copy with the venue-access warning
+ *   - "team_member" → direct-to-attendee copy with bulleted instructions
+ *
+ * Recipients are de-duplicated by lowercased email; names default to the
+ * email local-part when no name is provided. Sender is admin/super_admin.
+ */
+export async function sendChapterDelegateInvitesBatch(input: {
+  eventId: string;
+  locale: "en" | "de" | "fr";
+  kind: "ambassador" | "team_member";
+  recipients: { email: string; name?: string }[];
+}) {
+  const actor = await requireRole("admin");
+  const service = getServiceClient();
+
+  if (!input.recipients || input.recipients.length === 0) {
+    return { error: "Add at least one recipient." };
+  }
+
+  // Look the event up to build subject + URL + date label.
+  const { data: event } = await service
+    .from("events")
+    .select(
+      "id, slug, title_en, title_de, title_fr, starts_at, city, chapter_delegate_program_enabled"
+    )
+    .eq("id", input.eventId)
+    .single();
+  if (!event) return { error: "Event not found." };
+  if (!event.chapter_delegate_program_enabled) {
+    return {
+      error: "Chapter delegate program is disabled for this event.",
+    };
+  }
+  const ticketsBase =
+    process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://tickets.dbc-germany.com";
+  const registrationUrl = `${ticketsBase}/${input.locale}/chapter-delegate/${event.slug}/register`;
+  const eventTitle =
+    ((event[`title_${input.locale}` as keyof typeof event] as string) ||
+      event.title_en) ??
+    event.slug;
+  const eventDateLabel = new Date(event.starts_at).toLocaleDateString(
+    input.locale,
+    { year: "numeric", month: "long", day: "numeric" }
+  );
+
+  // De-dupe + sanitize recipients.
+  const seen = new Set<string>();
+  const cleaned: { email: string; name: string }[] = [];
+  const skipped: string[] = [];
+  for (const r of input.recipients) {
+    const email = (r.email ?? "").trim().toLowerCase();
+    if (!email) continue;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      skipped.push(email);
+      continue;
+    }
+    if (seen.has(email)) continue;
+    seen.add(email);
+    cleaned.push({
+      email,
+      name: (r.name ?? "").trim() || email.split("@")[0],
+    });
+  }
+  if (cleaned.length === 0) {
+    return { error: "No valid recipients after parsing." };
+  }
+
+  let sent = 0;
+  let failed = 0;
+  let errors: { email: string; error: string }[] = [];
+  try {
+    const { sendChapterDelegateInvitesBatch: sendBatch } = await import(
+      "@dbc/email"
+    );
+    const res = await sendBatch({
+      recipients: cleaned,
+      eventTitle,
+      eventDateLabel,
+      eventCity: event.city ?? "",
+      registrationUrl,
+      locale: input.locale,
+      kind: input.kind,
+    });
+    sent = res.sent;
+    failed = res.failed;
+    errors = res.errors;
+  } catch (err) {
+    console.error("[sendChapterDelegateInvitesBatch] failed:", err);
+    return {
+      error: err instanceof Error ? err.message : "Failed to send invites.",
+    };
+  }
+
+  await service.from("audit_log").insert({
+    user_id: actor.userId,
+    action: "send_chapter_delegate_invites",
+    entity_type: "events",
+    entity_id: input.eventId,
+    details: {
+      kind: input.kind,
+      locale: input.locale,
+      attempted: cleaned.length,
+      sent,
+      failed,
+      skipped_invalid: skipped.length,
+    },
+  });
+
+  return {
+    success: true,
+    attempted: cleaned.length,
+    sent,
+    failed,
+    skippedInvalid: skipped.length,
+    errors,
+  };
+}

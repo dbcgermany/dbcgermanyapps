@@ -40,6 +40,8 @@ export {
   sendStaffCredentials,
   sendStaffEmailChanged,
   sendStaffPaused,
+  sendChapterDelegateInvite,
+  sendChapterDelegateInvitesBatch,
 } from "./send-transactional";
 export type {
   SendTransferConfirmationInput,
@@ -94,6 +96,10 @@ export { StaffEmailChangedEmail } from "./templates/staff-email-changed";
 export type { StaffEmailChangedEmailProps } from "./templates/staff-email-changed";
 export { StaffPausedEmail } from "./templates/staff-paused";
 export type { StaffPausedEmailProps } from "./templates/staff-paused";
+export { ChapterDelegateAmbassadorInviteEmail } from "./templates/chapter-delegate-ambassador-invite";
+export type { ChapterDelegateAmbassadorInviteEmailProps } from "./templates/chapter-delegate-ambassador-invite";
+export { ChapterDelegateTeamMemberInviteEmail } from "./templates/chapter-delegate-team-member-invite";
+export type { ChapterDelegateTeamMemberInviteEmailProps } from "./templates/chapter-delegate-team-member-invite";
 export { AskSpeakersEmail } from "./templates/ask-speakers";
 export type {
   AskSpeakersEmailProps,
