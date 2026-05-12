@@ -762,10 +762,25 @@
         "teamMember": "Teammitglied",
         "manager": "Manager",
         "admin": "Admin",
-        "super_admin": "Super Admin"
+        "super_admin": "Super Admin",
+        "emailCopied": "E-Mail kopiert",
+        "passwordCopied": "Passwort kopiert",
+        "paused": "Konto pausiert",
+        "unpaused": "Konto wieder aktiv",
+        "removed": "Aus dem Team entfernt",
+        "roleUpdated": "Rolle aktualisiert",
+        "eventAssignmentSaved": "Gespeichert",
+        "actionFailed": "Aktion fehlgeschlagen: {error}"
       },
       "detail": {
-        "teamProfile": "Öffentliches Profil →"
+        "teamProfile": "Öffentliches Profil →",
+        "emailChangedToast": "E-Mail geändert",
+        "passwordResetToast": "Passwort zurückgesetzt & per E-Mail versendet",
+        "passwordCopied": "Passwort kopiert",
+        "activeSessionsRevokedToast": "Aktive Sitzungen beendet",
+        "accountPausedToast": "Konto pausiert",
+        "accountUnpausedToast": "Konto wieder aktiv",
+        "accountDeletedToast": "Konto gelöscht"
       }
     },
     "refund": {
@@ -947,6 +962,10 @@
       "createContact": "Kontakt hinzufügen",
       "newTitle": "Neuer Kontakt",
       "newDescription": "Sponsoren, Partner, Dienstleister, Speaker oder andere Personen manuell in unsere Daten aufnehmen.",
+      "deleteButton": "Kontakt löschen",
+      "deleteConfirmTitle": "Kontakt dauerhaft löschen",
+      "deleteConfirmDescription": "Damit werden {email} sowie alle Nachrichten, Kategorien-Verknüpfungen und Event-Beteiligungen unwiderruflich entfernt. Verknüpfte Tickets und Bestellungen bleiben erhalten, verlieren aber den Kontaktbezug. Diese Aktion ist nicht umkehrbar.",
+      "deletedToast": "Kontakt gelöscht",
       "search": "Name oder E-Mail suchen",
       "categoryFilter": "Kategorie",
       "allCategories": "Alle Kategorien",

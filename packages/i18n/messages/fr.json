@@ -762,10 +762,25 @@
         "teamMember": "Membre",
         "manager": "Manager",
         "admin": "Admin",
-        "super_admin": "Super admin"
+        "super_admin": "Super admin",
+        "emailCopied": "E-mail copié",
+        "passwordCopied": "Mot de passe copié",
+        "paused": "Compte suspendu",
+        "unpaused": "Compte réactivé",
+        "removed": "Retiré·e de l’équipe",
+        "roleUpdated": "Rôle mis à jour",
+        "eventAssignmentSaved": "Enregistré",
+        "actionFailed": "Action échouée : {error}"
       },
       "detail": {
-        "teamProfile": "Profil public →"
+        "teamProfile": "Profil public →",
+        "emailChangedToast": "E-mail modifié",
+        "passwordResetToast": "Mot de passe réinitialisé & envoyé par e-mail",
+        "passwordCopied": "Mot de passe copié",
+        "activeSessionsRevokedToast": "Sessions actives révoquées",
+        "accountPausedToast": "Compte suspendu",
+        "accountUnpausedToast": "Compte réactivé",
+        "accountDeletedToast": "Compte supprimé"
       }
     },
     "refund": {
@@ -947,6 +962,10 @@
       "createContact": "Ajouter un contact",
       "newTitle": "Nouveau contact",
       "newDescription": "Ajouter manuellement un sponsor, partenaire, prestataire, intervenant ou toute autre personne à nos registres.",
+      "deleteButton": "Supprimer le contact",
+      "deleteConfirmTitle": "Supprimer définitivement le contact",
+      "deleteConfirmDescription": "Cela supprime définitivement {email} ainsi que ses messages, liens de catégorie et implications dans les événements. Les billets et commandes liés sont conservés mais perdent la référence au contact. Action irréversible.",
+      "deletedToast": "Contact supprimé",
       "search": "Rechercher nom ou e-mail",
       "categoryFilter": "Catégorie",
       "allCategories": "Toutes les catégories",

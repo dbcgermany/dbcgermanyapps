@@ -2,6 +2,7 @@
 
 import { Fragment, useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import type { UserRole } from "@dbc/types";
@@ -66,6 +67,7 @@ export function StaffClient({
   pendingInvitations: PendingInvitation[];
 }) {
   const t = useTranslations("admin.staff.client");
+  const router = useRouter();
   const [expandedStaffId, setExpandedStaffId] = useState<string | null>(null);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteError, setInviteError] = useState<string | null>(null);
@@ -108,7 +110,15 @@ export function StaffClient({
 
   function handleRoleChange(staffId: string, role: UserRole) {
     startTransition(async () => {
-      await updateStaffRole(staffId, role, locale);
+      const res = await updateStaffRole(staffId, role, locale);
+      if (res.error) {
+        toast.error(t("actionFailed", { error: res.error }));
+        // Force a re-fetch so the dropdown reverts to the server's truth.
+        router.refresh();
+      } else {
+        toast.success(t("roleUpdated"));
+        router.refresh();
+      }
     });
   }
 
@@ -118,16 +128,29 @@ export function StaffClient({
     currentlyAssigned: boolean
   ) {
     startTransition(async () => {
-      if (currentlyAssigned) {
-        await unassignStaffFromEvent(staffId, eventId, locale);
+      const res = currentlyAssigned
+        ? await unassignStaffFromEvent(staffId, eventId, locale)
+        : await assignStaffToEvent(staffId, eventId, locale);
+      if (res?.error) {
+        toast.error(t("actionFailed", { error: res.error }));
+        router.refresh();
       } else {
-        await assignStaffToEvent(staffId, eventId, locale);
+        toast.success(t("eventAssignmentSaved"));
+        router.refresh();
       }
     });
   }
 
-  async function runRemove(staffId: string) {
-    await removeStaff(staffId, locale);
+  function handleRemove(staffId: string) {
+    startTransition(async () => {
+      const res = await removeStaff(staffId, locale);
+      if (res?.error) {
+        toast.error(t("actionFailed", { error: res.error }));
+      } else {
+        toast.success(t("removed"));
+        router.refresh();
+      }
+    });
   }
 
   function handleResendInvite(staffId: string) {
@@ -143,8 +166,12 @@ export function StaffClient({
       const res = currentlyPaused
         ? await unpauseStaff(staffId, locale)
         : await pauseStaff(staffId, locale);
-      if (res.error) toast.error(res.error);
-      else toast.success(currentlyPaused ? "Account unpaused" : "Account paused");
+      if (res.error) {
+        toast.error(t("actionFailed", { error: res.error }));
+        return;
+      }
+      toast.success(currentlyPaused ? t("unpaused") : t("paused"));
+      router.refresh();
     });
   }
 
@@ -242,7 +269,7 @@ export function StaffClient({
                   type="button"
                   onClick={() => {
                     navigator.clipboard.writeText(createdCredentials.email);
-                    toast.success("Email copied");
+                    toast.success(t("emailCopied"));
                   }}
                   className="text-foreground hover:text-primary"
                 >
@@ -255,7 +282,7 @@ export function StaffClient({
                   type="button"
                   onClick={() => {
                     navigator.clipboard.writeText(createdCredentials.password);
-                    toast.success("Password copied");
+                    toast.success(t("passwordCopied"));
                   }}
                   className="text-foreground hover:text-primary"
                 >
@@ -660,7 +687,7 @@ export function StaffClient({
                               variant="danger"
                               confirmLabel={t("remove")}
                               onConfirm={() =>
-                                startTransition(() => runRemove(s.id))
+                                handleRemove(s.id)
                               }
                             />
                           </>

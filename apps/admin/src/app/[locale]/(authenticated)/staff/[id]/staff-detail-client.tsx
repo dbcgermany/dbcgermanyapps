@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { Badge, Button, ConfirmDialog } from "@dbc/ui";
 import type { AdminModule, UserRole } from "@dbc/types";
 import { canDo } from "@dbc/types";
@@ -74,6 +75,7 @@ export function StaffDetailClient({
   locale: string;
 }) {
   const router = useRouter();
+  const tToast = useTranslations("admin.staff.detail");
   const [isPending, startTransition] = useTransition();
   const [emailEditOpen, setEmailEditOpen] = useState(false);
   const [emailDraft, setEmailDraft] = useState(profile.email);
@@ -184,7 +186,7 @@ export function StaffDetailClient({
         return;
       }
       if (res.warning) toast.warning(res.warning);
-      else toast.success("Email changed");
+      else toast.success(tToast("emailChangedToast"));
       setEmailEditOpen(false);
       router.refresh();
     });
@@ -196,7 +198,7 @@ export function StaffDetailClient({
       if (res.error) toast.error(res.error);
       else if (res.password) {
         setResetReveal(res.password);
-        toast.success("Password reset & emailed to user");
+        toast.success(tToast("passwordResetToast"));
       }
     });
   }
@@ -205,7 +207,7 @@ export function StaffDetailClient({
     startTransition(async () => {
       const res = await forceSignOutStaff(profile.id, locale);
       if (res.error) toast.error(res.error);
-      else toast.success("Active sessions revoked");
+      else toast.success(tToast("activeSessionsRevokedToast"));
     });
   }
 
@@ -216,7 +218,11 @@ export function StaffDetailClient({
         : await pauseStaff(profile.id, locale);
       if (res.error) toast.error(res.error);
       else {
-        toast.success(isPaused ? "Account unpaused" : "Account paused");
+        toast.success(
+          isPaused
+            ? tToast("accountUnpausedToast")
+            : tToast("accountPausedToast")
+        );
         router.refresh();
       }
     });
@@ -227,7 +233,7 @@ export function StaffDetailClient({
       const res = await deleteStaffHard(profile.id, locale);
       if (res.error) toast.error(res.error);
       else {
-        toast.success("Account deleted");
+        toast.success(tToast("accountDeletedToast"));
         router.push(`/${locale}/staff`);
       }
     });
@@ -407,7 +413,7 @@ export function StaffDetailClient({
               type="button"
               onClick={() => {
                 navigator.clipboard.writeText(resetReveal);
-                toast.success("Password copied");
+                toast.success(tToast("passwordCopied"));
               }}
               className="mt-2 block w-full rounded-md bg-background px-3 py-2 text-left font-mono text-xs hover:text-primary"
             >

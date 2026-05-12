@@ -3,6 +3,7 @@
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { ConfirmDialog } from "@dbc/ui";
 import { deleteContact } from "@/actions/contacts";
 
@@ -16,6 +17,7 @@ export function DeleteContactButton({
   locale: string;
 }) {
   const router = useRouter();
+  const t = useTranslations("admin.contacts");
   const [isPending, startTransition] = useTransition();
 
   function handleDelete() {
@@ -25,7 +27,7 @@ export function DeleteContactButton({
         toast.error(res.error);
         return;
       }
-      toast.success("Contact deleted");
+      toast.success(t("deletedToast"));
       router.push(`/${locale}/contacts`);
     });
   }
@@ -38,13 +40,13 @@ export function DeleteContactButton({
           disabled={isPending}
           className="rounded-md border border-danger px-3 py-1.5 text-xs font-medium text-danger hover:bg-danger-soft/40 disabled:opacity-50"
         >
-          Delete contact
+          {t("deleteButton")}
         </button>
       }
-      title="Delete contact permanently"
-      description={`This permanently removes ${contactEmail} along with their messages, category links and event involvements. Linked tickets and orders are preserved without the contact reference. This cannot be undone.`}
+      title={t("deleteConfirmTitle")}
+      description={t("deleteConfirmDescription", { email: contactEmail })}
       variant="danger"
-      confirmLabel="Delete contact"
+      confirmLabel={t("deleteButton")}
       onConfirm={handleDelete}
     />
   );

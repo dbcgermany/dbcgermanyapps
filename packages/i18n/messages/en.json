@@ -762,10 +762,25 @@
         "teamMember": "Team member",
         "manager": "Manager",
         "admin": "Admin",
-        "super_admin": "Super admin"
+        "super_admin": "Super admin",
+        "emailCopied": "Email copied",
+        "passwordCopied": "Password copied",
+        "paused": "Account paused",
+        "unpaused": "Account unpaused",
+        "removed": "Removed from staff",
+        "roleUpdated": "Role updated",
+        "eventAssignmentSaved": "Saved",
+        "actionFailed": "Action failed: {error}"
       },
       "detail": {
-        "teamProfile": "Team profile →"
+        "teamProfile": "Team profile →",
+        "emailChangedToast": "Email changed",
+        "passwordResetToast": "Password reset & emailed to user",
+        "passwordCopied": "Password copied",
+        "activeSessionsRevokedToast": "Active sessions revoked",
+        "accountPausedToast": "Account paused",
+        "accountUnpausedToast": "Account unpaused",
+        "accountDeletedToast": "Account deleted"
       }
     },
     "refund": {
@@ -947,6 +962,10 @@
       "createContact": "Add contact",
       "newTitle": "New contact",
       "newDescription": "Manually add a sponsor, partner, contractor, speaker, or any other person we need in our records.",
+      "deleteButton": "Delete contact",
+      "deleteConfirmTitle": "Delete contact permanently",
+      "deleteConfirmDescription": "This permanently removes {email} along with their messages, category links and event involvements. Linked tickets and orders are preserved without the contact reference. This cannot be undone.",
+      "deletedToast": "Contact deleted",
       "search": "Search name or email",
       "categoryFilter": "Category",
       "allCategories": "All categories",
