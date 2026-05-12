@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { Button, Card, ConfirmDialog } from "@dbc/ui";
 import {
   issueTeamFriendCoupons,
@@ -39,16 +40,14 @@ export function EventInvitesClient({
   userId: string;
   events: EventOption[];
 }) {
+  const t = useTranslations("admin.eventInvites");
   const [isPending, startTransition] = useTransition();
 
   return (
     <div className="mt-6 space-y-6">
       {events.length === 0 && (
         <Card padding="md" className="rounded-lg">
-          <p className="text-sm text-muted-foreground">
-            No upcoming event has a team-friend program configured yet. Once
-            an admin sets one up you&apos;ll see your invite slots here.
-          </p>
+          <p className="text-sm text-muted-foreground">{t("noPrograms")}</p>
         </Card>
       )}
       {events.map((ev) => (
@@ -78,6 +77,7 @@ function EventCard({
   isParentPending: boolean;
   startTransition: ReturnType<typeof useTransition>[1];
 }) {
+  const t = useTranslations("admin.eventInvites");
   const [coupons, setCoupons] = useState<CouponRow[] | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -105,8 +105,8 @@ function EventCard({
       else {
         toast.success(
           res.created
-            ? `${res.created} code${res.created === 1 ? "" : "s"} generated`
-            : res.message ?? "Up to date"
+            ? t("generatedToast", { count: res.created })
+            : res.message ?? t("upToDateToast")
         );
         await refresh();
       }
@@ -118,7 +118,7 @@ function EventCard({
       const res = await revokeTeamFriendCoupon(couponId);
       if (res.error) toast.error(res.error);
       else {
-        toast.success("Code revoked");
+        toast.success(t("revokedToast"));
         await refresh();
       }
     });
@@ -140,14 +140,21 @@ function EventCard({
           <p className="text-base font-semibold">{event.title}</p>
           <p className="text-xs text-muted-foreground">{startsLabel}</p>
           {event.targetTierName && event.targetPriceEur && (
-            <p className="mt-1 text-xs text-muted-foreground">
-              Friends pay <strong>€{event.targetPriceEur}</strong> ({event.targetTierName} price) when using your code.
-            </p>
+            <p
+              className="mt-1 text-xs text-muted-foreground"
+              // i18n string contains a single <strong> tag, safely templated.
+              dangerouslySetInnerHTML={{
+                __html: t("priceHint", {
+                  price: event.targetPriceEur,
+                  tierName: event.targetTierName,
+                }),
+              }}
+            />
           )}
         </div>
         <div className="text-right">
           <p className="text-xs uppercase tracking-wide text-muted-foreground">
-            Slots
+            {t("slots")}
           </p>
           <p className="text-2xl font-semibold">
             {issued}/{event.quota}
@@ -158,20 +165,23 @@ function EventCard({
               disabled={isParentPending}
               className="mt-1"
             >
-              {isParentPending ? "Generating…" : `Generate ${remaining}`}
+              {isParentPending
+                ? t("generating")
+                : t("generate", { count: remaining })}
             </Button>
           )}
         </div>
       </div>
 
       {loading && (
-        <p className="mt-4 text-xs text-muted-foreground">Loading codes…</p>
+        <p className="mt-4 text-xs text-muted-foreground">{t("loading")}</p>
       )}
 
       {!loading && coupons && coupons.length > 0 && (
         <div className="mt-4 space-y-2">
           {coupons.map((c) => {
             const usable = c.is_active && c.times_used === 0;
+            const discount = (c.discount_value / 100).toFixed(2);
             return (
               <div
                 key={c.id}
@@ -182,7 +192,7 @@ function EventCard({
                     type="button"
                     onClick={() => {
                       navigator.clipboard.writeText(c.code);
-                      toast.success("Copied");
+                      toast.success(t("copied"));
                     }}
                     className="font-mono text-sm font-medium hover:text-primary"
                   >
@@ -190,10 +200,10 @@ function EventCard({
                   </button>
                   <p className="text-xs text-muted-foreground">
                     {!c.is_active
-                      ? "Revoked"
+                      ? t("codeRevoked")
                       : c.times_used > 0
-                        ? `Used (€${(c.discount_value / 100).toFixed(2)} off)`
-                        : `Unused · €${(c.discount_value / 100).toFixed(2)} off`}
+                        ? t("codeUsed", { discount })
+                        : t("codeUnused", { discount })}
                   </p>
                 </div>
                 {usable && (
@@ -203,13 +213,13 @@ function EventCard({
                         type="button"
                         className="text-xs text-danger hover:opacity-80"
                       >
-                        Revoke
+                        {t("revoke")}
                       </button>
                     }
-                    title="Revoke this code"
-                    description="The code will stop working immediately. You'll get the slot back."
+                    title={t("revokeConfirmTitle")}
+                    description={t("revokeConfirmDescription")}
                     variant="danger"
-                    confirmLabel="Revoke"
+                    confirmLabel={t("revoke")}
                     onConfirm={() => handleRevoke(c.id)}
                   />
                 )}
@@ -221,7 +231,7 @@ function EventCard({
 
       {!loading && active.length > 0 && (
         <p className="mt-3 text-[11px] text-muted-foreground">
-          Share a code: friend pastes it at checkout on tickets.dbc-germany.com.
+          {t("shareHint")}
         </p>
       )}
     </Card>

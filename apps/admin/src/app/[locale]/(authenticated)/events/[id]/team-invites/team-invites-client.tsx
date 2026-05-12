@@ -3,6 +3,7 @@
 import { Fragment, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { Button, Card, ConfirmDialog } from "@dbc/ui";
 import {
   issueTeamFriendCoupons,
@@ -21,6 +22,7 @@ export function TeamInvitesClient({
   summaries: TeamMemberInviteSummary[];
 }) {
   const router = useRouter();
+  const t = useTranslations("admin.teamInvites");
   const [isPending, startTransition] = useTransition();
   const [expandedProfileId, setExpandedProfileId] = useState<string | null>(null);
 
@@ -31,8 +33,8 @@ export function TeamInvitesClient({
       else {
         toast.success(
           res.created
-            ? `${res.created} code${res.created === 1 ? "" : "s"} generated`
-            : res.message ?? "Up to date"
+            ? t("generatedToast", { count: res.created })
+            : res.message ?? t("upToDateToast")
         );
         router.refresh();
       }
@@ -44,7 +46,7 @@ export function TeamInvitesClient({
       const res = await revokeTeamFriendCoupon(couponId);
       if (res.error) toast.error(res.error);
       else {
-        toast.success("Code revoked");
+        toast.success(t("revokedToast"));
         router.refresh();
       }
     });
@@ -54,14 +56,14 @@ export function TeamInvitesClient({
     const raw = (formData.get("quota") as string) || "";
     const parsed = parseInt(raw, 10);
     if (!Number.isFinite(parsed) || parsed < 0) {
-      toast.error("Quota must be a non-negative integer");
+      toast.error(t("quotaMustBeNonNegative"));
       return;
     }
     startTransition(async () => {
       const res = await overrideTeamMemberQuota(eventId, profileId, parsed);
       if (res.error) toast.error(res.error);
       else {
-        toast.success("Quota updated");
+        toast.success(t("quotaUpdatedToast"));
         router.refresh();
       }
     });
@@ -70,9 +72,7 @@ export function TeamInvitesClient({
   if (summaries.length === 0) {
     return (
       <Card padding="md" className="mt-6 rounded-lg">
-        <p className="text-sm text-muted-foreground">
-          No staff profiles found.
-        </p>
+        <p className="text-sm text-muted-foreground">{t("noStaff")}</p>
       </Card>
     );
   }
@@ -82,12 +82,12 @@ export function TeamInvitesClient({
       <table className="w-full min-w-160 text-sm">
         <thead>
           <tr className="border-b border-border bg-muted/50">
-            <th className="px-4 py-3 text-left font-medium">Team member</th>
-            <th className="px-4 py-3 text-left font-medium">Role</th>
-            <th className="px-4 py-3 text-left font-medium">Quota</th>
-            <th className="px-4 py-3 text-left font-medium">Issued</th>
-            <th className="px-4 py-3 text-left font-medium">Used</th>
-            <th className="px-4 py-3 text-right font-medium">Actions</th>
+            <th className="px-4 py-3 text-left font-medium">{t("columns.teamMember")}</th>
+            <th className="px-4 py-3 text-left font-medium">{t("columns.role")}</th>
+            <th className="px-4 py-3 text-left font-medium">{t("columns.quota")}</th>
+            <th className="px-4 py-3 text-left font-medium">{t("columns.issued")}</th>
+            <th className="px-4 py-3 text-left font-medium">{t("columns.used")}</th>
+            <th className="px-4 py-3 text-right font-medium">{t("columns.actions")}</th>
           </tr>
         </thead>
         <tbody>
@@ -107,7 +107,7 @@ export function TeamInvitesClient({
                     <span className="font-medium">{s.quota}</span>
                     {s.isOverride && (
                       <span className="ml-1 rounded-full bg-accent/30 px-1.5 py-0.5 text-[10px] font-medium">
-                        override
+                        {t("overrideBadge")}
                       </span>
                     )}
                   </td>
@@ -121,7 +121,7 @@ export function TeamInvitesClient({
                         disabled={isPending}
                         className="text-xs text-primary hover:opacity-80"
                       >
-                        Generate {s.remaining}
+                        {t("generate", { count: s.remaining })}
                       </button>
                     )}
                     <button
@@ -133,7 +133,7 @@ export function TeamInvitesClient({
                       }
                       className="text-xs text-primary hover:opacity-80"
                     >
-                      {isExpanded ? "Hide" : "Details"}
+                      {isExpanded ? t("hide") : t("details")}
                     </button>
                   </td>
                 </tr>
@@ -143,11 +143,11 @@ export function TeamInvitesClient({
                       <div className="grid gap-4 sm:grid-cols-2">
                         <div>
                           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                            Codes
+                            {t("codes")}
                           </p>
                           {s.coupons.length === 0 ? (
                             <p className="mt-2 text-xs text-muted-foreground">
-                              None issued yet.
+                              {t("noneIssued")}
                             </p>
                           ) : (
                             <ul className="mt-2 space-y-1">
@@ -161,10 +161,10 @@ export function TeamInvitesClient({
                                   </span>
                                   <span className="text-[11px] text-muted-foreground">
                                     {!c.isActive
-                                      ? "Revoked"
+                                      ? t("codeStatus.revoked")
                                       : c.timesUsed > 0
-                                        ? "Used"
-                                        : "Unused"}
+                                        ? t("codeStatus.used")
+                                        : t("codeStatus.unused")}
                                   </span>
                                   {c.isActive && c.timesUsed === 0 && (
                                     <ConfirmDialog
@@ -173,13 +173,13 @@ export function TeamInvitesClient({
                                           type="button"
                                           className="text-[11px] text-danger hover:opacity-80"
                                         >
-                                          Revoke
+                                          {t("revoke")}
                                         </button>
                                       }
-                                      title="Revoke code"
-                                      description="The code will stop working immediately."
+                                      title={t("revokeConfirmTitle")}
+                                      description={t("revokeConfirmDescription")}
                                       variant="danger"
-                                      confirmLabel="Revoke"
+                                      confirmLabel={t("revoke")}
                                       onConfirm={() => handleRevoke(c.id)}
                                     />
                                   )}
@@ -190,7 +190,7 @@ export function TeamInvitesClient({
                         </div>
                         <div>
                           <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                            Override quota
+                            {t("overrideQuota")}
                           </p>
                           <form
                             action={(fd) => handleQuotaSubmit(s.profileId, fd)}
@@ -204,10 +204,10 @@ export function TeamInvitesClient({
                               className="w-20 rounded-md border border-input bg-background px-2 py-1 text-sm"
                             />
                             <Button type="submit" disabled={isPending}>
-                              Save
+                              {t("save")}
                             </Button>
                             <span className="text-[11px] text-muted-foreground">
-                              Event default: {defaultQuota}
+                              {t("eventDefault", { defaultQuota })}
                             </span>
                           </form>
                         </div>

@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { requireRole } from "@dbc/supabase/server";
 import { createServerClient } from "@dbc/supabase/server";
 import { PageHeader } from "@/components/page-header";
@@ -11,6 +12,10 @@ export default async function EventInvitesPage({
   const { locale } = await params;
   const user = await requireRole("team_member");
   const supabase = await createServerClient();
+  const t = await getTranslations({
+    locale,
+    namespace: "admin.eventInvites",
+  });
 
   // Active events with a team-friend program configured + this user is a
   // staff role. We deliberately don't gate on "has tickets sold" — admin
@@ -26,10 +31,7 @@ export default async function EventInvitesPage({
 
   return (
     <div>
-      <PageHeader
-        title="Your event invites"
-        description="Personal coupon codes to share with friends. Each code is single-use and reduces a public tier to the team-friend price."
-      />
+      <PageHeader title={t("title")} description={t("description")} />
       <EventInvitesClient
         locale={locale}
         userId={user.userId}

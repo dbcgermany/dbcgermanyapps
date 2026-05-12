@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { PageHeader } from "@/components/page-header";
 import { listEventTeamInvites } from "@/actions/team-friend-invites";
 import { getEvent } from "@/actions/events";
@@ -10,33 +11,35 @@ export default async function EventTeamInvitesPage({
   params: Promise<{ locale: string; id: string }>;
 }) {
   const { locale, id } = await params;
-  const [event, summaries] = await Promise.all([
+  const [event, summaries, t, tBack] = await Promise.all([
     getEvent(id),
     listEventTeamInvites(id),
+    getTranslations({ locale, namespace: "admin.teamInvites" }),
+    getTranslations({ locale, namespace: "admin.back" }),
   ]);
 
   return (
     <div>
       <PageHeader
-        title="Team-friend invites"
+        title={t("title")}
         description={event.title_en}
-        back={{ href: `/${locale}/events/${id}`, label: "Event" }}
+        back={{ href: `/${locale}/events/${id}`, label: tBack("event") }}
       />
 
       {!event.team_invite_tier_id && (
         <div className="mt-6 rounded-lg border border-warning-border bg-warning-soft/40 p-4 text-sm">
           <p className="font-medium text-warning">
-            Team-friend invites aren&apos;t configured for this event.
+            {t("notConfiguredTitle")}
           </p>
           <p className="mt-1 text-xs text-muted-foreground">
-            Open{" "}
+            {t("notConfiguredHint")}{" "}
             <Link
               href={`/${locale}/events/${id}/edit`}
               className="underline hover:text-primary"
             >
-              event settings
-            </Link>{" "}
-            and pick a target tier under <em>Guest program configuration</em>.
+              {t("eventSettingsLink")}
+            </Link>
+            .
           </p>
         </div>
       )}

@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { Button, Card, ConfirmDialog } from "@dbc/ui";
 import {
   createCateringMenuItem,
@@ -17,15 +18,6 @@ import {
   type CateringMenuItem,
 } from "@/lib/catering-types";
 
-const CATEGORY_LABEL: Record<CateringCategory, string> = {
-  starter: "Starters",
-  main: "Mains",
-  dessert: "Desserts",
-  drink_non_alcoholic: "Non-alcoholic drinks",
-  drink_alcoholic: "Alcoholic drinks",
-  snack: "Snacks",
-};
-
 export function CateringMenuClient({
   eventId,
   locale,
@@ -36,6 +28,7 @@ export function CateringMenuClient({
   items: CateringMenuItem[];
 }) {
   const router = useRouter();
+  const t = useTranslations("admin.catering");
   const [isPending, startTransition] = useTransition();
   const [addOpenForCategory, setAddOpenForCategory] =
     useState<CateringCategory | null>(null);
@@ -57,7 +50,7 @@ export function CateringMenuClient({
         setFormError(res.error);
         return;
       }
-      toast.success("Menu item added");
+      toast.success(t("addedToast"));
       setAddOpenForCategory(null);
       router.refresh();
     });
@@ -71,7 +64,7 @@ export function CateringMenuClient({
         setFormError(res.error);
         return;
       }
-      toast.success("Saved");
+      toast.success(t("savedToast"));
       setEditingId(null);
       router.refresh();
     });
@@ -82,7 +75,7 @@ export function CateringMenuClient({
       const res = await deleteCateringMenuItem(itemId);
       if (res.error) toast.error(res.error);
       else {
-        toast.success("Deleted");
+        toast.success(t("deletedToast"));
         router.refresh();
       }
     });
@@ -143,9 +136,9 @@ export function CateringMenuClient({
         a.click();
         a.remove();
         URL.revokeObjectURL(url);
-        toast.success(`Exported ${rows.length} selection${rows.length === 1 ? "" : "s"}`);
+        toast.success(t("exportedToast", { count: rows.length }));
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Export failed");
+        toast.error(err instanceof Error ? err.message : t("exportFailed"));
       }
     });
   }
@@ -154,10 +147,10 @@ export function CateringMenuClient({
     <div className="mt-6 space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">
-          {items.length} item{items.length === 1 ? "" : "s"} in this event&apos;s menu
+          {t("itemCount", { count: items.length })}
         </p>
         <Button onClick={handleExport} disabled={isPending}>
-          Export selections (CSV)
+          {t("exportCsv")}
         </Button>
       </div>
 
@@ -167,7 +160,7 @@ export function CateringMenuClient({
           <section key={category}>
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                {CATEGORY_LABEL[category]}
+                {t(`categories.${category}`)}
               </h2>
               <button
                 type="button"
@@ -178,7 +171,7 @@ export function CateringMenuClient({
                 }
                 className="text-xs font-medium text-primary hover:opacity-80"
               >
-                {addOpenForCategory === category ? "Cancel" : "Add item"}
+                {addOpenForCategory === category ? t("cancel") : t("addItem")}
               </button>
             </div>
 
@@ -195,7 +188,7 @@ export function CateringMenuClient({
                   )}
                   <MenuItemFields locale={locale} />
                   <Button type="submit" disabled={isPending}>
-                    Save item
+                    {t("saveItem")}
                   </Button>
                 </form>
               </Card>
@@ -203,7 +196,7 @@ export function CateringMenuClient({
 
             {rows.length === 0 ? (
               <p className="mt-2 text-xs text-muted-foreground">
-                No items in this category yet.
+                {t("noneInCategory")}
               </p>
             ) : (
               <div className="mt-3 space-y-2">
@@ -223,14 +216,14 @@ export function CateringMenuClient({
                           <MenuItemFields locale={locale} item={item} />
                           <div className="flex gap-2">
                             <Button type="submit" disabled={isPending}>
-                              Save
+                              {t("save")}
                             </Button>
                             <button
                               type="button"
                               onClick={() => setEditingId(null)}
                               className="rounded-md border border-input px-4 py-2 text-sm hover:bg-muted"
                             >
-                              Cancel
+                              {t("cancel")}
                             </button>
                           </div>
                         </form>
@@ -245,7 +238,7 @@ export function CateringMenuClient({
                             {item.name_de || item.name_en}
                             {!item.is_active && (
                               <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-[10px] uppercase tracking-wide text-muted-foreground">
-                                Hidden
+                                {t("hiddenBadge")}
                               </span>
                             )}
                           </p>
@@ -255,17 +248,17 @@ export function CateringMenuClient({
                           <div className="mt-1 flex flex-wrap gap-1 text-[10px] uppercase tracking-wide">
                             {item.is_vegetarian && (
                               <span className="rounded bg-success-soft px-1.5 py-0.5 text-success">
-                                Veg
+                                {t("fields.vegetarian")}
                               </span>
                             )}
                             {item.is_vegan && (
                               <span className="rounded bg-success-soft px-1.5 py-0.5 text-success">
-                                Vegan
+                                {t("fields.vegan")}
                               </span>
                             )}
                             {item.is_halal && (
                               <span className="rounded bg-success-soft px-1.5 py-0.5 text-success">
-                                Halal
+                                {t("fields.halal")}
                               </span>
                             )}
                             {(item.allergens ?? []).map((a) => (
@@ -278,10 +271,13 @@ export function CateringMenuClient({
                             ))}
                           </div>
                           <p className="mt-1 text-[11px] text-muted-foreground">
-                            {item.selections_count} selected
-                            {item.max_selections_per_event != null
-                              ? ` / ${item.max_selections_per_event} cap`
-                              : ""}
+                            {t("selectedSummary", {
+                              count: item.selections_count,
+                              cap:
+                                item.max_selections_per_event != null
+                                  ? String(item.max_selections_per_event)
+                                  : "none",
+                            })}
                           </p>
                         </div>
                         <div className="flex flex-wrap gap-2 text-xs">
@@ -293,25 +289,27 @@ export function CateringMenuClient({
                             }}
                             className="text-primary hover:opacity-80"
                           >
-                            Edit
+                            {t("edit")}
                           </button>
                           <button
                             type="button"
                             onClick={() => handleToggle(item.id, item.is_active)}
                             className="text-muted-foreground hover:text-foreground"
                           >
-                            {item.is_active ? "Hide" : "Show"}
+                            {item.is_active ? t("hide") : t("show")}
                           </button>
                           <ConfirmDialog
                             trigger={
                               <button type="button" className="text-danger hover:opacity-80">
-                                Delete
+                                {t("delete")}
                               </button>
                             }
-                            title="Delete menu item"
-                            description={`Permanently delete "${item.name_de || item.name_en}". Only allowed when no guest has selected it; otherwise hide instead.`}
+                            title={t("deleteConfirmTitle")}
+                            description={t("deleteConfirmDescription", {
+                              name: item.name_de || item.name_en,
+                            })}
                             variant="danger"
-                            confirmLabel="Delete"
+                            confirmLabel={t("delete")}
                             onConfirm={() => handleDelete(item.id)}
                           />
                         </div>
@@ -334,6 +332,7 @@ function MenuItemFields({
   locale: string;
   item?: CateringMenuItem;
 }) {
+  const t = useTranslations("admin.catering.fields");
   const inputClass =
     "w-full rounded-md border border-input bg-background px-3 py-2 text-sm";
   return (
@@ -341,7 +340,7 @@ function MenuItemFields({
       <div className="grid gap-3 sm:grid-cols-3">
         <div>
           <label className="block text-xs text-muted-foreground mb-1">
-            Name (EN)
+            {t("nameEn")}
           </label>
           <input
             name="name_en"
@@ -353,7 +352,7 @@ function MenuItemFields({
         </div>
         <div>
           <label className="block text-xs text-muted-foreground mb-1">
-            Name (DE)
+            {t("nameDe")}
           </label>
           <input
             name="name_de"
@@ -364,7 +363,7 @@ function MenuItemFields({
         </div>
         <div>
           <label className="block text-xs text-muted-foreground mb-1">
-            Name (FR)
+            {t("nameFr")}
           </label>
           <input
             name="name_fr"
@@ -377,7 +376,7 @@ function MenuItemFields({
       <div className="grid gap-3 sm:grid-cols-3">
         <div>
           <label className="block text-xs text-muted-foreground mb-1">
-            Description (EN)
+            {t("descEn")}
           </label>
           <textarea
             name="description_en"
@@ -388,7 +387,7 @@ function MenuItemFields({
         </div>
         <div>
           <label className="block text-xs text-muted-foreground mb-1">
-            Description (DE)
+            {t("descDe")}
           </label>
           <textarea
             name="description_de"
@@ -399,7 +398,7 @@ function MenuItemFields({
         </div>
         <div>
           <label className="block text-xs text-muted-foreground mb-1">
-            Description (FR)
+            {t("descFr")}
           </label>
           <textarea
             name="description_fr"
@@ -412,19 +411,19 @@ function MenuItemFields({
       <div className="grid gap-3 sm:grid-cols-3">
         <div>
           <label className="block text-xs text-muted-foreground mb-1">
-            Allergens (comma-separated)
+            {t("allergens")}
           </label>
           <input
             name="allergens"
             type="text"
             defaultValue={(item?.allergens ?? []).join(", ")}
-            placeholder="gluten, nuts, soy"
+            placeholder={t("allergensPh")}
             className={inputClass}
           />
         </div>
         <div>
           <label className="block text-xs text-muted-foreground mb-1">
-            Max selections (blank = unlimited)
+            {t("maxSelections")}
           </label>
           <input
             name="max_selections_per_event"
@@ -436,7 +435,7 @@ function MenuItemFields({
         </div>
         <div>
           <label className="block text-xs text-muted-foreground mb-1">
-            Sort order
+            {t("sortOrder")}
           </label>
           <input
             name="sort_order"
@@ -456,7 +455,7 @@ function MenuItemFields({
             defaultChecked={!!item?.is_vegetarian}
             className="accent-primary"
           />
-          Vegetarian
+          {t("vegetarian")}
         </label>
         <label className="flex items-center gap-2 text-sm">
           <input type="hidden" name="is_vegan" value="false" />
@@ -467,7 +466,7 @@ function MenuItemFields({
             defaultChecked={!!item?.is_vegan}
             className="accent-primary"
           />
-          Vegan
+          {t("vegan")}
         </label>
         <label className="flex items-center gap-2 text-sm">
           <input type="hidden" name="is_halal" value="false" />
@@ -478,7 +477,7 @@ function MenuItemFields({
             defaultChecked={!!item?.is_halal}
             className="accent-primary"
           />
-          Halal
+          {t("halal")}
         </label>
         <label className="flex items-center gap-2 text-sm">
           <input type="hidden" name="is_active" value="false" />
@@ -489,7 +488,7 @@ function MenuItemFields({
             defaultChecked={item ? item.is_active : true}
             className="accent-primary"
           />
-          Active (shown to guests)
+          {t("active")}
         </label>
       </div>
     </>
