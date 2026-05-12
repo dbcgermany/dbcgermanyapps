@@ -361,6 +361,7 @@ export default async function EventDetailPage({
           <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <HubLink href={`/${locale}/events/${id}/tiers`} icon={Tag} title={t("ticketTiers")} desc={t("ticketTiersDesc")} />
             <HubLink href={`/${locale}/events/${id}/coupons`} icon={Scissors} title={t("couponCodes")} desc={t("couponCodesDesc")} />
+            <HubLink href={`/${locale}/events/${id}/team-invites`} icon={Scissors} title="Team-friend invites" desc="Quotas & coupons per team member" />
             <HubLink href={`/${locale}/events/${id}/schedule`} icon={Calendar} title={t("scheduleSpeakers")} desc={t("scheduleSpeakersDesc")} />
             <HubLink href={`/${locale}/events/${id}/ticket-preview`} icon={TicketCheck} title={t("ticketPreview")} desc={t("ticketPreviewDesc")} />
           </div>
