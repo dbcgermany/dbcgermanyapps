@@ -20,6 +20,7 @@ import {
   LineChart,
   Megaphone,
   Mail,
+  Globe,
   Newspaper,
   Quote,
   Scale,
@@ -56,6 +57,7 @@ const NAV_ITEMS: NavItem[] = [
   { labelKey: "orders", href: "/orders", icon: ShoppingCart, mod: "orders" },
   { labelKey: "doorSale", href: "/door-sale", icon: DoorOpen, mod: "doorSale" },
   { labelKey: "scan", href: "/scan", icon: ScanLine, mod: "scan" },
+  { labelKey: "chapterDelegates", href: "/chapter-delegates", icon: Globe, mod: "events" },
 
   { labelKey: "news", href: "/news", icon: Newspaper, mod: "news", dividerAbove: true },
   { labelKey: "newsletters", href: "/newsletters", icon: Mail, mod: "newsletters" },

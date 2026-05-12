@@ -287,6 +287,25 @@ export function ScanClient({
               <p className="font-heading text-4xl font-bold text-success">
                 ✓ {t("checkedIn")}
               </p>
+              {status.result.tierBadgeLabel && (
+                <p className="mt-2">
+                  <span
+                    className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-bold uppercase tracking-wide ${
+                      status.result.isTeam
+                        ? "bg-success-strong text-white"
+                        : status.result.tierPurpose === "vip"
+                          ? "bg-purple-600 text-white"
+                          : status.result.tierPurpose === "speaker"
+                            ? "bg-orange-500 text-white"
+                            : status.result.isCompanion
+                              ? "bg-neutral-300 text-neutral-800"
+                              : "bg-neutral-100 text-neutral-700"
+                    }`}
+                  >
+                    {status.result.tierBadgeLabel}
+                  </span>
+                </p>
+              )}
               <p className="mt-3 text-xl font-semibold text-foreground">
                 {status.result.attendeeName}
               </p>

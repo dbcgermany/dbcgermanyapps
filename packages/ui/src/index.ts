@@ -44,6 +44,14 @@ export { ConfirmDialog } from "./confirm-dialog";
 export type { ConfirmDialogProps } from "./confirm-dialog";
 export { CountrySelect } from "./country-select";
 export type { CountrySelectProps } from "./country-select";
+export {
+  ChapterSelect,
+  DBC_CHAPTER_COUNTRY_CODES,
+} from "./chapter-select";
+export type {
+  ChapterSelectProps,
+  DbcChapterCountry,
+} from "./chapter-select";
 export { PhoneInput, isValidE164, normalizeE164 } from "./phone-input";
 export type { PhoneInputProps } from "./phone-input";
 export { Toggle } from "./toggle";

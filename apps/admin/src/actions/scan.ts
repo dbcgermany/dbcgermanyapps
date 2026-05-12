@@ -66,6 +66,10 @@ export interface ScanResult {
   attendeeName?: string;
   attendeeEmail?: string;
   tierName?: string;
+  tierBadgeLabel?: string | null;
+  tierPurpose?: string | null;
+  isTeam?: boolean;
+  isCompanion?: boolean;
   alreadyCheckedInAt?: string;
   alreadyCheckedInBy?: string;
   error?: string;
@@ -105,6 +109,36 @@ export async function checkInTicket(
       return { success: false, error: "Invalid ticket code" };
     }
 
+    // Revocation gate — chapter delegate / staff lifecycle can flag a
+    // ticket as revoked. The check_in_ticket RPC doesn't know about this
+    // column, so we pre-check here before claiming the seat.
+    const { data: ticketStatus } = await supabase
+      .from("tickets")
+      .select(
+        "id, revoked_at, revocation_reason, tier_id, ticket_tiers:ticket_tiers(scanner_badge_label, purpose, is_team, is_companion, name_en, name_de, name_fr)"
+      )
+      .eq("ticket_token", trimmed)
+      .maybeSingle();
+    if (ticketStatus?.revoked_at) {
+      return {
+        success: false,
+        error:
+          ticketStatus.revocation_reason
+            ? `Ticket revoked: ${ticketStatus.revocation_reason}`
+            : "Ticket revoked",
+      };
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const tierFlags = (ticketStatus as any)?.ticket_tiers as
+      | {
+          scanner_badge_label: string | null;
+          purpose: string | null;
+          is_team: boolean | null;
+          is_companion: boolean | null;
+        }
+      | null
+      | undefined;
+
     const { data, error } = await supabase.rpc("check_in_ticket", {
       p_ticket_token: trimmed,
       p_event_id: eventId,
@@ -140,6 +174,10 @@ export async function checkInTicket(
         attendeeName: row.attendee_name,
         attendeeEmail: row.attendee_email,
         tierName: row.tier_name,
+        tierBadgeLabel: tierFlags?.scanner_badge_label ?? null,
+        tierPurpose: tierFlags?.purpose ?? null,
+        isTeam: !!tierFlags?.is_team,
+        isCompanion: !!tierFlags?.is_companion,
       };
     }
 
@@ -149,6 +187,10 @@ export async function checkInTicket(
       attendeeName: row.attendee_name,
       attendeeEmail: row.attendee_email,
       tierName: row.tier_name,
+      tierBadgeLabel: tierFlags?.scanner_badge_label ?? null,
+      tierPurpose: tierFlags?.purpose ?? null,
+      isTeam: !!tierFlags?.is_team,
+      isCompanion: !!tierFlags?.is_companion,
       alreadyCheckedInAt: row.already_checked_in_at,
       alreadyCheckedInBy: row.already_checked_in_by ?? "Unknown staff",
     };
