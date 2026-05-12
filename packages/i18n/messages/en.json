@@ -596,6 +596,12 @@
         "couponCodesDesc": "Create discount codes for this event",
         "scheduleSpeakers": "Schedule & Speakers",
         "scheduleSpeakersDesc": "Manage the event agenda and speakers",
+        "teamFriendInvites": "Team-friend invites",
+        "teamFriendInvitesDesc": "Quotas & coupons per team member",
+        "chapterDelegates": "Chapter delegates",
+        "chapterDelegatesDesc": "Public link, share & approval queue for this event",
+        "cateringMenu": "Catering menu",
+        "cateringMenuDesc": "Menu items, dietary flags, allergens, CSV export",
         "ticketPreview": "Ticket Preview",
         "ticketPreviewDesc": "Preview the PDF ticket design",
         "emailSequences": "Email Sequences",
@@ -1508,6 +1514,94 @@
       "new": {
         "title": "New funnel"
       }
+    },
+    "chapterDelegates": {
+      "title": "Chapter delegates",
+      "description": "Self-serve registrations from other DBC chapters. Approve to issue free team + companion tickets.",
+      "tabs": {
+        "pending_approval": "Pending",
+        "active": "Active",
+        "rejected": "Rejected",
+        "revoked": "Revoked"
+      },
+      "filters": {
+        "event": "Event",
+        "allEvents": "All events",
+        "chapter": "Chapter",
+        "allChapters": "All chapters",
+        "search": "Search name / email / position",
+        "searchPlaceholder": "search…"
+      },
+      "linkBanner": {
+        "title": "Public registration link · {eventTitle}",
+        "hint": "Share with chapter leads — anyone with the link can register their team; submissions land in this approval queue.",
+        "copyHint": "Click to copy",
+        "copy": "Copy",
+        "copied": "Link copied — paste it anywhere",
+        "whatsapp": "Send via WhatsApp",
+        "email": "Email",
+        "openTab": "Open in new tab",
+        "whatsappBody": "Hi! Please use this link to register as a DBC chapter delegate for {eventTitle}:\n{url}",
+        "emailSubject": "DBC chapter delegate registration — {eventTitle}",
+        "emailBody": "Please use this link to register your team for {eventTitle}:\n\n{url}\n\nLet us know if you have any questions."
+      },
+      "manualAdd": {
+        "open": "Add delegate manually",
+        "cancel": "Cancel",
+        "subtitle": "Skips the approval queue — ticket emails go out immediately.",
+        "firstName": "First name",
+        "lastName": "Last name",
+        "email": "Email",
+        "chapterLabel": "Chapter",
+        "pickChapter": "— Select chapter —",
+        "position": "Position / role",
+        "positionPh": "Community lead, treasurer, …",
+        "leadName": "Chapter lead name (optional)",
+        "leadEmail": "Chapter lead email (optional, CC'd)",
+        "bringsCompanion": "Bringing a +1 companion",
+        "companionFirst": "Companion first name",
+        "companionLast": "Companion last name",
+        "companionEmail": "Companion email",
+        "submit": "Add delegate",
+        "submitting": "Adding…",
+        "addedDelegate": "Delegate added, ticket emailed",
+        "addedWithCompanion": "Delegate + companion added, tickets emailed"
+      },
+      "bulk": {
+        "selected": "{count} selected",
+        "approveAll": "Approve all",
+        "rejectAll": "Reject all",
+        "rejectNote": "Reject note (optional)",
+        "clear": "Clear",
+        "rejectConfirmTitle": "Reject selected delegates",
+        "rejectConfirmDescription": "Reject {count} pending registration(s). Each delegate (and lead if provided) will receive a polite rejection email.",
+        "approvedToast": "{count} approved",
+        "rejectedToast": "{count} rejected",
+        "withFailures": " ({failed} failed)"
+      },
+      "table": {
+        "delegate": "Delegate",
+        "chapter": "Chapter",
+        "position": "Position",
+        "companion": "Companion",
+        "event": "Event",
+        "submitted": "Submitted",
+        "actions": "Actions",
+        "leadPrefix": "Lead",
+        "approve": "Approve",
+        "reject": "Reject",
+        "revoke": "Revoke",
+        "rejectConfirmTitle": "Reject delegate",
+        "rejectConfirmDescription": "Reject {name}. A rejection email will be sent.",
+        "revokeConfirmTitle": "Revoke delegate",
+        "revokeConfirmDescription": "Revoke {name}'s registration. Their ticket (and companion's, if any) will be invalidated.",
+        "approvedToast": "Delegate approved; tickets issued",
+        "rejectedToast": "Rejected",
+        "revokedToast": "Revoked",
+        "empty": "No delegates in this view."
+      },
+      "noEventFilter": "Tip: filter by event below to get the public registration link for that event and to add delegates manually.",
+      "recognisedChapters": "Recognised chapters: {list}"
     },
     "jobOffers": {
       "list": {

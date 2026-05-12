@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import {
   Button,
   Card,
@@ -23,12 +24,11 @@ import {
 } from "@/actions/chapter-delegates";
 
 type Status = "active" | "pending_approval" | "rejected" | "revoked";
-
-const STATUS_TABS: { key: Status; label: string }[] = [
-  { key: "pending_approval", label: "Pending" },
-  { key: "active", label: "Active" },
-  { key: "rejected", label: "Rejected" },
-  { key: "revoked", label: "Revoked" },
+const STATUS_TAB_ORDER: Status[] = [
+  "pending_approval",
+  "active",
+  "rejected",
+  "revoked",
 ];
 
 // flag + chapter label both come from @dbc/ui — single source of truth.
@@ -53,6 +53,7 @@ export function ChapterDelegatesClient({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const t = useTranslations("admin.chapterDelegates");
   const [isPending, startTransition] = useTransition();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [rejectNote, setRejectNote] = useState("");
@@ -71,22 +72,29 @@ export function ChapterDelegatesClient({
   function copyRegistrationUrl() {
     if (!registrationUrl) return;
     navigator.clipboard.writeText(registrationUrl);
-    toast.success("Link copied — paste it anywhere");
+    toast.success(t("linkBanner.copied"));
   }
 
   function whatsappShareUrl() {
     if (!registrationUrl || !activeEvent) return "";
-    const msg = `Hi! Please use this link to register as a DBC chapter delegate for ${activeEvent.title}:\n${registrationUrl}`;
-    return `https://wa.me/?text=${encodeURIComponent(msg)}`;
+    return `https://wa.me/?text=${encodeURIComponent(
+      t("linkBanner.whatsappBody", {
+        eventTitle: activeEvent.title,
+        url: registrationUrl,
+      })
+    )}`;
   }
 
   function mailtoShareUrl() {
     if (!registrationUrl || !activeEvent) return "";
-    const subject = `DBC chapter delegate registration — ${activeEvent.title}`;
-    const body = `Please use this link to register your team for ${activeEvent.title}:\n\n${registrationUrl}\n\nLet us know if you have any questions.`;
     return `mailto:?subject=${encodeURIComponent(
-      subject
-    )}&body=${encodeURIComponent(body)}`;
+      t("linkBanner.emailSubject", { eventTitle: activeEvent.title })
+    )}&body=${encodeURIComponent(
+      t("linkBanner.emailBody", {
+        eventTitle: activeEvent.title,
+        url: registrationUrl,
+      })
+    )}`;
   }
 
   function handleManualSubmit(formData: FormData) {
@@ -103,8 +111,8 @@ export function ChapterDelegatesClient({
       }
       toast.success(
         res.companionIssued
-          ? "Delegate + companion added, tickets emailed"
-          : "Delegate added, ticket emailed"
+          ? t("manualAdd.addedWithCompanion")
+          : t("manualAdd.addedDelegate")
       );
       setManualOpen(false);
       setManualBringsCompanion(false);
@@ -142,7 +150,7 @@ export function ChapterDelegatesClient({
       const res = await approveChapterDelegate(id, locale);
       if (res.error) toast.error(res.error);
       else {
-        toast.success("Delegate approved; tickets issued");
+        toast.success(t("table.approvedToast"));
         router.refresh();
       }
     });
@@ -153,7 +161,7 @@ export function ChapterDelegatesClient({
       const res = await rejectChapterDelegate(id, locale, rejectNote || undefined);
       if (res.error) toast.error(res.error);
       else {
-        toast.success("Rejected");
+        toast.success(t("table.rejectedToast"));
         router.refresh();
       }
     });
@@ -164,7 +172,7 @@ export function ChapterDelegatesClient({
       const res = await revokeChapterDelegate(id, locale);
       if (res.error) toast.error(res.error);
       else {
-        toast.success("Revoked");
+        toast.success(t("table.revokedToast"));
         router.refresh();
       }
     });
@@ -174,7 +182,11 @@ export function ChapterDelegatesClient({
     const ids = Array.from(selected);
     startTransition(async () => {
       const res = await bulkApproveChapterDelegates(ids, locale);
-      toast.success(`${res.approved} approved${res.failed ? `, ${res.failed} failed` : ""}`);
+      const failTail =
+        res.failed > 0 ? t("bulk.withFailures", { failed: res.failed }) : "";
+      toast.success(
+        t("bulk.approvedToast", { count: res.approved }) + failTail
+      );
       clearSelection();
       router.refresh();
     });
@@ -184,7 +196,11 @@ export function ChapterDelegatesClient({
     const ids = Array.from(selected);
     startTransition(async () => {
       const res = await bulkRejectChapterDelegates(ids, locale, rejectNote || undefined);
-      toast.success(`${res.rejected} rejected${res.failed ? `, ${res.failed} failed` : ""}`);
+      const failTail =
+        res.failed > 0 ? t("bulk.withFailures", { failed: res.failed }) : "";
+      toast.success(
+        t("bulk.rejectedToast", { count: res.rejected }) + failTail
+      );
       clearSelection();
       router.refresh();
     });
@@ -201,11 +217,10 @@ export function ChapterDelegatesClient({
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Public registration link · {activeEvent.title}
+                  {t("linkBanner.title", { eventTitle: activeEvent.title })}
                 </p>
                 <p className="mt-1 text-[11px] text-muted-foreground">
-                  Share with chapter leads — anyone with the link can register
-                  their team; submissions land in this approval queue.
+                  {t("linkBanner.hint")}
                 </p>
               </div>
               <Button
@@ -213,18 +228,18 @@ export function ChapterDelegatesClient({
                 onClick={() => setManualOpen((o) => !o)}
                 disabled={isPending}
               >
-                {manualOpen ? "Cancel" : "Add delegate manually"}
+                {manualOpen ? t("manualAdd.cancel") : t("manualAdd.open")}
               </Button>
             </div>
             <button
               type="button"
               onClick={copyRegistrationUrl}
               className="group flex w-full items-center justify-between gap-3 rounded-md border border-border bg-background px-3 py-2 text-left font-mono text-xs hover:border-primary/50"
-              title="Click to copy"
+              title={t("linkBanner.copyHint")}
             >
               <span className="truncate">{registrationUrl}</span>
               <span className="rounded bg-primary px-2 py-0.5 text-[10px] uppercase tracking-wide text-primary-foreground opacity-80 group-hover:opacity-100">
-                Copy
+                {t("linkBanner.copy")}
               </span>
             </button>
             <div className="flex flex-wrap gap-2">
@@ -234,13 +249,13 @@ export function ChapterDelegatesClient({
                 rel="noopener noreferrer"
                 className="rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium hover:border-primary/50"
               >
-                Send via WhatsApp
+                {t("linkBanner.whatsapp")}
               </a>
               <a
                 href={mailtoShareUrl()}
                 className="rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium hover:border-primary/50"
               >
-                Email
+                {t("linkBanner.email")}
               </a>
               <a
                 href={registrationUrl}
@@ -248,7 +263,7 @@ export function ChapterDelegatesClient({
                 rel="noopener noreferrer"
                 className="rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium hover:border-primary/50"
               >
-                Open in new tab
+                {t("linkBanner.openTab")}
               </a>
             </div>
 
@@ -258,7 +273,7 @@ export function ChapterDelegatesClient({
                 className="mt-2 space-y-3 rounded-md border border-border bg-background p-4"
               >
                 <p className="text-xs text-muted-foreground">
-                  Skips the approval queue — ticket emails go out immediately.
+                  {t("manualAdd.subtitle")}
                 </p>
                 {manualError && (
                   <div className="rounded-md bg-danger-soft p-3 text-sm text-danger">
@@ -268,7 +283,7 @@ export function ChapterDelegatesClient({
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div>
                     <label className="block text-xs text-muted-foreground mb-1">
-                      First name
+                      {t("manualAdd.firstName")}
                     </label>
                     <input
                       name="first_name"
@@ -279,7 +294,7 @@ export function ChapterDelegatesClient({
                   </div>
                   <div>
                     <label className="block text-xs text-muted-foreground mb-1">
-                      Last name
+                      {t("manualAdd.lastName")}
                     </label>
                     <input
                       name="last_name"
@@ -290,7 +305,7 @@ export function ChapterDelegatesClient({
                   </div>
                   <div>
                     <label className="block text-xs text-muted-foreground mb-1">
-                      Email
+                      {t("manualAdd.email")}
                     </label>
                     <input
                       name="email"
@@ -301,30 +316,30 @@ export function ChapterDelegatesClient({
                   </div>
                   <div>
                     <label className="block text-xs text-muted-foreground mb-1">
-                      Chapter
+                      {t("manualAdd.chapterLabel")}
                     </label>
                     <ChapterSelect
                       locale={locale}
                       name="chapter_country"
                       required
-                      placeholder="— Select chapter —"
+                      placeholder={t("manualAdd.pickChapter")}
                     />
                   </div>
                   <div className="sm:col-span-2">
                     <label className="block text-xs text-muted-foreground mb-1">
-                      Position / role
+                      {t("manualAdd.position")}
                     </label>
                     <input
                       name="position"
                       type="text"
                       required
-                      placeholder="Community lead, treasurer, …"
+                      placeholder={t("manualAdd.positionPh")}
                       className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                     />
                   </div>
                   <div>
                     <label className="block text-xs text-muted-foreground mb-1">
-                      Chapter lead name (optional)
+                      {t("manualAdd.leadName")}
                     </label>
                     <input
                       name="chapter_lead_name"
@@ -334,7 +349,7 @@ export function ChapterDelegatesClient({
                   </div>
                   <div>
                     <label className="block text-xs text-muted-foreground mb-1">
-                      Chapter lead email (optional, CC&apos;d)
+                      {t("manualAdd.leadEmail")}
                     </label>
                     <input
                       name="chapter_lead_email"
@@ -352,13 +367,13 @@ export function ChapterDelegatesClient({
                     }
                     className="accent-primary"
                   />
-                  Bringing a +1 companion
+                  {t("manualAdd.bringsCompanion")}
                 </label>
                 {manualBringsCompanion && (
                   <div className="grid gap-3 sm:grid-cols-3 rounded-md border border-border bg-muted/30 p-3">
                     <div>
                       <label className="block text-xs text-muted-foreground mb-1">
-                        Companion first name
+                        {t("manualAdd.companionFirst")}
                       </label>
                       <input
                         name="companion_first_name"
@@ -369,7 +384,7 @@ export function ChapterDelegatesClient({
                     </div>
                     <div>
                       <label className="block text-xs text-muted-foreground mb-1">
-                        Companion last name
+                        {t("manualAdd.companionLast")}
                       </label>
                       <input
                         name="companion_last_name"
@@ -380,7 +395,7 @@ export function ChapterDelegatesClient({
                     </div>
                     <div>
                       <label className="block text-xs text-muted-foreground mb-1">
-                        Companion email
+                        {t("manualAdd.companionEmail")}
                       </label>
                       <input
                         name="companion_email"
@@ -393,7 +408,7 @@ export function ChapterDelegatesClient({
                 )}
                 <div className="flex gap-2">
                   <Button type="submit" disabled={isPending}>
-                    {isPending ? "Adding…" : "Add delegate"}
+                    {isPending ? t("manualAdd.submitting") : t("manualAdd.submit")}
                   </Button>
                   <button
                     type="button"
@@ -403,7 +418,7 @@ export function ChapterDelegatesClient({
                     }}
                     className="rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
                   >
-                    Cancel
+                    {t("manualAdd.cancel")}
                   </button>
                 </div>
               </form>
@@ -415,27 +430,27 @@ export function ChapterDelegatesClient({
       {!activeEvent && (
         <Card padding="sm" className="rounded-lg border-dashed">
           <p className="text-xs text-muted-foreground">
-            Tip: filter by event below to get the public registration link for that event and to add delegates manually.
+            {t("noEventFilter")}
           </p>
         </Card>
       )}
 
       {/* Tabs */}
       <div className="flex flex-wrap gap-2 border-b border-border">
-        {STATUS_TABS.map((tab) => {
-          const active = currentStatus === tab.key;
+        {STATUS_TAB_ORDER.map((key) => {
+          const active = currentStatus === key;
           return (
             <button
-              key={tab.key}
+              key={key}
               type="button"
-              onClick={() => setQueryParam("status", tab.key)}
+              onClick={() => setQueryParam("status", key)}
               className={`-mb-px border-b-2 px-3 py-2 text-sm font-medium transition-colors ${
                 active
                   ? "border-primary text-foreground"
                   : "border-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
-              {tab.label}
+              {t(`tabs.${key}`)}
             </button>
           );
         })}
@@ -445,14 +460,14 @@ export function ChapterDelegatesClient({
       <div className="grid gap-3 sm:grid-cols-4">
         <div>
           <label className="block text-xs text-muted-foreground mb-1">
-            Event
+            {t("filters.event")}
           </label>
           <select
             value={currentEventId ?? ""}
             onChange={(e) => setQueryParam("event", e.target.value || null)}
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
           >
-            <option value="">All events</option>
+            <option value="">{t("filters.allEvents")}</option>
             {events.map((ev) => (
               <option key={ev.id} value={ev.id}>
                 {ev.title}
@@ -462,18 +477,18 @@ export function ChapterDelegatesClient({
         </div>
         <div>
           <label className="block text-xs text-muted-foreground mb-1">
-            Chapter
+            {t("filters.chapter")}
           </label>
           <ChapterSelect
             locale={locale}
             value={currentChapter ?? ""}
             onChange={(e) => setQueryParam("chapter", e.target.value || null)}
-            placeholder="All chapters"
+            placeholder={t("filters.allChapters")}
           />
         </div>
         <div className="sm:col-span-2">
           <label className="block text-xs text-muted-foreground mb-1">
-            Search name / email / position
+            {t("filters.search")}
           </label>
           <input
             type="text"
@@ -481,7 +496,7 @@ export function ChapterDelegatesClient({
             onBlur={(e) =>
               setQueryParam("q", e.target.value.trim() || null)
             }
-            placeholder="search…"
+            placeholder={t("filters.searchPlaceholder")}
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
           />
         </div>
@@ -492,7 +507,7 @@ export function ChapterDelegatesClient({
         <Card padding="sm" className="rounded-lg border-primary/30 bg-accent/10">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm">
-              <strong>{selected.size}</strong> selected
+              {t("bulk.selected", { count: selected.size })}
             </p>
             <div className="flex flex-wrap items-center gap-2">
               {currentStatus === "pending_approval" && (
@@ -501,7 +516,7 @@ export function ChapterDelegatesClient({
                     type="text"
                     value={rejectNote}
                     onChange={(e) => setRejectNote(e.target.value)}
-                    placeholder="Reject note (optional)"
+                    placeholder={t("bulk.rejectNote")}
                     className="w-60 rounded-md border border-input bg-background px-3 py-1.5 text-xs"
                   />
                   <ConfirmDialog
@@ -511,17 +526,19 @@ export function ChapterDelegatesClient({
                         disabled={isPending}
                         className="rounded-md border border-danger px-3 py-1.5 text-xs font-medium text-danger hover:bg-danger-soft/40 disabled:opacity-50"
                       >
-                        Reject all
+                        {t("bulk.rejectAll")}
                       </button>
                     }
-                    title="Reject selected delegates"
-                    description={`Reject ${selected.size} pending registration${selected.size === 1 ? "" : "s"}. Each delegate (and lead if provided) will receive a polite rejection email.`}
+                    title={t("bulk.rejectConfirmTitle")}
+                    description={t("bulk.rejectConfirmDescription", {
+                      count: selected.size,
+                    })}
                     variant="danger"
-                    confirmLabel="Reject"
+                    confirmLabel={t("table.reject")}
                     onConfirm={handleBulkReject}
                   />
                   <Button onClick={handleBulkApprove} disabled={isPending}>
-                    Approve all
+                    {t("bulk.approveAll")}
                   </Button>
                 </>
               )}
@@ -530,7 +547,7 @@ export function ChapterDelegatesClient({
                 onClick={clearSelection}
                 className="text-xs text-muted-foreground hover:text-foreground"
               >
-                Clear
+                {t("bulk.clear")}
               </button>
             </div>
           </div>
@@ -541,7 +558,7 @@ export function ChapterDelegatesClient({
       {rows.length === 0 ? (
         <Card padding="md" className="rounded-lg">
           <p className="text-sm text-muted-foreground">
-            No delegates in this view.
+            {t("table.empty")}
           </p>
         </Card>
       ) : (
@@ -560,13 +577,13 @@ export function ChapterDelegatesClient({
                     }
                   />
                 </th>
-                <th className="px-3 py-3 text-left font-medium">Delegate</th>
-                <th className="px-3 py-3 text-left font-medium">Chapter</th>
-                <th className="px-3 py-3 text-left font-medium">Position</th>
-                <th className="px-3 py-3 text-left font-medium">Companion</th>
-                <th className="px-3 py-3 text-left font-medium">Event</th>
-                <th className="px-3 py-3 text-left font-medium">Submitted</th>
-                <th className="px-3 py-3 text-right font-medium">Actions</th>
+                <th className="px-3 py-3 text-left font-medium">{t("table.delegate")}</th>
+                <th className="px-3 py-3 text-left font-medium">{t("table.chapter")}</th>
+                <th className="px-3 py-3 text-left font-medium">{t("table.position")}</th>
+                <th className="px-3 py-3 text-left font-medium">{t("table.companion")}</th>
+                <th className="px-3 py-3 text-left font-medium">{t("table.event")}</th>
+                <th className="px-3 py-3 text-left font-medium">{t("table.submitted")}</th>
+                <th className="px-3 py-3 text-right font-medium">{t("table.actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -585,7 +602,7 @@ export function ChapterDelegatesClient({
                     <p className="text-xs text-muted-foreground">{r.email}</p>
                     {r.chapterLeadEmail && (
                       <p className="text-[11px] text-muted-foreground">
-                        Lead: {r.chapterLeadEmail}
+                        {t("table.leadPrefix")}: {r.chapterLeadEmail}
                       </p>
                     )}
                   </td>
@@ -636,7 +653,7 @@ export function ChapterDelegatesClient({
                           disabled={isPending}
                           className="text-xs font-medium text-primary hover:opacity-80"
                         >
-                          Approve
+                          {t("table.approve")}
                         </button>
                         <ConfirmDialog
                           trigger={
@@ -644,13 +661,15 @@ export function ChapterDelegatesClient({
                               type="button"
                               className="text-xs font-medium text-danger hover:opacity-80"
                             >
-                              Reject
+                              {t("table.reject")}
                             </button>
                           }
-                          title="Reject delegate"
-                          description={`Reject ${r.displayName}. A rejection email will be sent.`}
+                          title={t("table.rejectConfirmTitle")}
+                          description={t("table.rejectConfirmDescription", {
+                            name: r.displayName,
+                          })}
                           variant="danger"
-                          confirmLabel="Reject"
+                          confirmLabel={t("table.reject")}
                           onConfirm={() => handleReject(r.involvementId)}
                         />
                       </>
@@ -662,13 +681,15 @@ export function ChapterDelegatesClient({
                             type="button"
                             className="text-xs font-medium text-danger hover:opacity-80"
                           >
-                            Revoke
+                            {t("table.revoke")}
                           </button>
                         }
-                        title="Revoke delegate"
-                        description={`Revoke ${r.displayName}'s registration. Their ticket (and companion's, if any) will be invalidated.`}
+                        title={t("table.revokeConfirmTitle")}
+                        description={t("table.revokeConfirmDescription", {
+                          name: r.displayName,
+                        })}
                         variant="danger"
-                        confirmLabel="Revoke"
+                        confirmLabel={t("table.revoke")}
                         onConfirm={() => handleRevoke(r.involvementId)}
                       />
                     )}
@@ -681,10 +702,11 @@ export function ChapterDelegatesClient({
       )}
 
       <p className="text-xs text-muted-foreground">
-        Recognised chapters:{" "}
-        {DBC_CHAPTER_COUNTRY_CODES.map((c) => dbcChapterLabel(c, locale)).join(
-          " · "
-        )}
+        {t("recognisedChapters", {
+          list: DBC_CHAPTER_COUNTRY_CODES.map((c) =>
+            dbcChapterLabel(c, locale)
+          ).join(" · "),
+        })}
       </p>
     </div>
   );

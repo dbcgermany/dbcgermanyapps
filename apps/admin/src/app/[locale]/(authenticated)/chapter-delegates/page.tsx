@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { PageHeader } from "@/components/page-header";
 import {
   listChapterDelegates,
@@ -21,6 +22,10 @@ export default async function ChapterDelegatesPage({
 }) {
   const { locale } = await params;
   const sp = await searchParams;
+  const t = await getTranslations({
+    locale,
+    namespace: "admin.chapterDelegates",
+  });
   const allowedStatuses: Status[] = [
     "pending_approval",
     "active",
@@ -44,10 +49,7 @@ export default async function ChapterDelegatesPage({
 
   return (
     <div>
-      <PageHeader
-        title="Chapter delegates"
-        description="Self-serve registrations from other DBC chapters. Approve to issue free team + companion tickets."
-      />
+      <PageHeader title={t("title")} description={t("description")} />
       <ChapterDelegatesClient
         locale={locale}
         currentStatus={status}
