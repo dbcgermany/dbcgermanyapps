@@ -3,43 +3,12 @@
 import { requireRole } from "@dbc/supabase/server";
 import { createClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
-
-export type CateringCategory =
-  | "starter"
-  | "main"
-  | "dessert"
-  | "drink_non_alcoholic"
-  | "drink_alcoholic"
-  | "snack";
-
-export const CATERING_CATEGORIES: readonly CateringCategory[] = [
-  "starter",
-  "main",
-  "dessert",
-  "drink_non_alcoholic",
-  "drink_alcoholic",
-  "snack",
-];
-
-export interface CateringMenuItem {
-  id: string;
-  event_id: string;
-  category: CateringCategory;
-  name_en: string;
-  name_de: string;
-  name_fr: string;
-  description_en: string | null;
-  description_de: string | null;
-  description_fr: string | null;
-  is_vegetarian: boolean | null;
-  is_vegan: boolean | null;
-  is_halal: boolean | null;
-  allergens: string[] | null;
-  sort_order: number | null;
-  is_active: boolean;
-  max_selections_per_event: number | null;
-  selections_count: number;
-}
+import {
+  CATERING_CATEGORIES,
+  type CateringCategory,
+  type CateringMenuItem,
+  type CateringSelectionExportRow,
+} from "@/lib/catering-types";
 
 function getServiceClient() {
   return createClient(
@@ -210,20 +179,6 @@ export async function toggleCateringMenuItemActive(
   });
   revalidatePath(`/[locale]/events/${data.event_id}/catering`, "layout");
   return { success: true };
-}
-
-export interface CateringSelectionExportRow {
-  ticketShortId: string;
-  attendeeName: string;
-  attendeeEmail: string;
-  tierName: string;
-  tierPurpose: string | null;
-  category: CateringCategory;
-  itemName: string;
-  allergens: string[];
-  dietary: string;
-  notes: string;
-  selectionCreatedAt: string;
 }
 
 export async function exportCateringSelections(

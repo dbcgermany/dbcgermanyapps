@@ -5,15 +5,17 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button, Card, ConfirmDialog } from "@dbc/ui";
 import {
-  CATERING_CATEGORIES,
-  type CateringCategory,
-  type CateringMenuItem,
   createCateringMenuItem,
   deleteCateringMenuItem,
   exportCateringSelections,
   toggleCateringMenuItemActive,
   updateCateringMenuItem,
 } from "@/actions/catering";
+import {
+  CATERING_CATEGORIES,
+  type CateringCategory,
+  type CateringMenuItem,
+} from "@/lib/catering-types";
 
 const CATEGORY_LABEL: Record<CateringCategory, string> = {
   starter: "Starters",
