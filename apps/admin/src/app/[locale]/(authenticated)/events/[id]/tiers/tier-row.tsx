@@ -1,6 +1,8 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { updateTier, toggleTierPublic, deleteTier } from "@/actions/tiers";
 import { Button, ConfirmDialog } from "@dbc/ui";
 
@@ -87,6 +89,7 @@ export function TierRow({
   eventId: string;
   locale: string;
 }) {
+  const router = useRouter();
   const [mode, setMode] = useState<"view" | "edit">("view");
   const t = TR_T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof TR_T];
 
@@ -399,7 +402,13 @@ export function TierRow({
           cancelLabel={t.cancel}
           variant="danger"
           onConfirm={async () => {
-            await deleteTier(tier.id, eventId, locale);
+            const res = await deleteTier(tier.id, eventId, locale);
+            if (res?.error) {
+              toast.error(res.error);
+              return;
+            }
+            toast.success(t.delete);
+            router.refresh();
           }}
         />
       </div>
