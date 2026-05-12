@@ -655,8 +655,214 @@ export async function listChapterDelegateEvents() {
   const supabase = await createServerClient();
   const { data } = await supabase
     .from("events")
-    .select("id, title_en, title_de, title_fr, starts_at")
+    .select("id, slug, title_en, title_de, title_fr, starts_at")
     .gte("ends_at", new Date(Date.now() - 86400000 * 30).toISOString())
     .order("starts_at", { ascending: true });
   return data ?? [];
+}
+
+/**
+ * Admin-only: create a chapter delegate (and optionally their companion)
+ * directly. Bypasses the approval queue — the admin is the trust signal.
+ * Tickets and emails go out immediately, same shape as approveChapterDelegate.
+ */
+export async function createChapterDelegateManually(formData: FormData) {
+  const actor = await requireRole("admin");
+  const service = getServiceClient();
+
+  const eventId = ((formData.get("event_id") as string) ?? "").trim();
+  const locale = ((formData.get("locale") as string) ?? "en").trim();
+  const firstName = ((formData.get("first_name") as string) ?? "").trim();
+  const lastName = ((formData.get("last_name") as string) ?? "").trim();
+  const email = ((formData.get("email") as string) ?? "").trim().toLowerCase();
+  const position = ((formData.get("position") as string) ?? "").trim();
+  const chapter = ((formData.get("chapter_country") as string) ?? "")
+    .trim()
+    .toUpperCase();
+  const leadName = ((formData.get("chapter_lead_name") as string) ?? "").trim() || null;
+  const leadEmail =
+    ((formData.get("chapter_lead_email") as string) ?? "").trim().toLowerCase() ||
+    null;
+
+  if (!eventId) return { error: "Missing event." };
+  if (!firstName || !lastName || !email || !position || !chapter) {
+    return { error: "Please fill in name, email, position and chapter." };
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return { error: "Invalid email address." };
+  }
+
+  const bringsCompanion = formData.get("brings_companion") === "true";
+  let companion: {
+    firstName: string;
+    lastName: string;
+    email: string;
+  } | null = null;
+  if (bringsCompanion) {
+    const cfn = ((formData.get("companion_first_name") as string) ?? "").trim();
+    const cln = ((formData.get("companion_last_name") as string) ?? "").trim();
+    const cem = ((formData.get("companion_email") as string) ?? "")
+      .trim()
+      .toLowerCase();
+    if (!cfn || !cln || !cem) {
+      return {
+        error: "Complete the companion's details, or untick the +1.",
+      };
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cem)) {
+      return { error: "Invalid companion email." };
+    }
+    if (cem === email) {
+      return { error: "Companion email must differ from delegate's." };
+    }
+    companion = { firstName: cfn, lastName: cln, email: cem };
+  }
+
+  // Read tier wiring + program-enabled flag from the event row.
+  const { data: event } = await service
+    .from("events")
+    .select(
+      "id, chapter_delegate_tier_id, chapter_companion_tier_id, chapter_delegate_program_enabled, title_en, title_de, title_fr, slug"
+    )
+    .eq("id", eventId)
+    .single();
+  if (!event) return { error: "Event not found." };
+  if (!event.chapter_delegate_tier_id) {
+    return {
+      error:
+        "Chapter delegate tier isn't configured on this event. Edit event settings first.",
+    };
+  }
+
+  // Upsert contacts (reuses the existing RPC the public form uses too — SSOT).
+  const { data: delegateContactId } = await service.rpc(
+    "upsert_contact_from_checkout",
+    {
+      p_email: email,
+      p_first_name: firstName,
+      p_last_name: lastName,
+      p_phone: null,
+      p_country: chapter,
+      p_extra_category_slugs: ["invited_guests"],
+    }
+  );
+  if (!delegateContactId) return { error: "Couldn't upsert delegate contact." };
+
+  let companionContactId: string | null = null;
+  if (companion) {
+    const { data: cId } = await service.rpc("upsert_contact_from_checkout", {
+      p_email: companion.email,
+      p_first_name: companion.firstName,
+      p_last_name: companion.lastName,
+      p_phone: null,
+      p_country: chapter,
+      p_extra_category_slugs: ["invited_guests"],
+    });
+    companionContactId = cId ?? null;
+  }
+
+  // Insert involvement rows in active status — admin is the trust signal,
+  // so we skip the pending_approval gate the public form uses.
+  const nowIso = new Date().toISOString();
+  const { data: delegateInvolvement, error: insErr } = await service
+    .from("contact_event_involvements")
+    .insert({
+      contact_id: delegateContactId,
+      event_id: eventId,
+      role: "chapter_delegate",
+      status: "active",
+      chapter_country: chapter,
+      chapter_position: position,
+      companion_contact_id: companionContactId,
+      submission_metadata: { created_by_admin: actor.userId },
+      chapter_lead_email: leadEmail,
+      chapter_lead_name: leadName,
+      reviewed_by: actor.userId,
+      reviewed_at: nowIso,
+    })
+    .select("id")
+    .single();
+  if (insErr || !delegateInvolvement) {
+    return {
+      error:
+        insErr?.message ?? "Couldn't create delegate involvement record.",
+    };
+  }
+  if (companionContactId) {
+    await service.from("contact_event_involvements").insert({
+      contact_id: companionContactId,
+      event_id: eventId,
+      role: "delegate_companion",
+      status: "active",
+      chapter_country: chapter,
+      submission_metadata: {
+        created_by_admin: actor.userId,
+        delegate_involvement_id: delegateInvolvement.id,
+      },
+      reviewed_by: actor.userId,
+      reviewed_at: nowIso,
+    });
+  }
+
+  // Issue delegate ticket via the existing createInvitation flow (reuses
+  // ticket reservation, contact tagging, ticket-with-letter email + catering
+  // URL injection). Same shape as approveChapterDelegate so behaviour is
+  // identical regardless of whether the registration came in via the public
+  // form or the admin form.
+  const chapterLabelSuffix = chapter ? ` (Chapter: ${chapter})` : "";
+  const delegateRes = await createInvitation({
+    eventId,
+    tierId: event.chapter_delegate_tier_id,
+    firstName,
+    lastName,
+    email,
+    country: chapter,
+    locale,
+    sendEmail: true,
+    deliveryMode: "ticket_with_letter",
+    acquisitionType: "invited",
+    customBody: `Du bist als Team-Mitglied${chapterLabelSuffix} registriert. Bitte bringe dein Ticket zum Einlass mit.`,
+  });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  if ((delegateRes as any).error) {
+    return {
+      error:
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        `Delegate created in DB but ticket issuance failed: ${(delegateRes as any).error}`,
+    };
+  }
+
+  let companionTicketIssued = false;
+  if (companion && event.chapter_companion_tier_id) {
+    const compRes = await createInvitation({
+      eventId,
+      tierId: event.chapter_companion_tier_id,
+      firstName: companion.firstName,
+      lastName: companion.lastName,
+      email: companion.email,
+      country: chapter,
+      locale,
+      sendEmail: true,
+      deliveryMode: "ticket_only",
+      acquisitionType: "invited",
+    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (!(compRes as any).error) companionTicketIssued = true;
+  }
+
+  await service.from("audit_log").insert({
+    user_id: actor.userId,
+    action: "create_chapter_delegate_manual",
+    entity_type: "contact_event_involvements",
+    entity_id: delegateInvolvement.id,
+    details: {
+      event_id: eventId,
+      email,
+      chapter,
+      companion_issued: companionTicketIssued,
+    },
+  });
+
+  revalidatePath(`/${locale}/chapter-delegates`);
+  return { success: true, companionIssued: companionTicketIssued };
 }

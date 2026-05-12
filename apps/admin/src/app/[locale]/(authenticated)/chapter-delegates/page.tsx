@@ -57,6 +57,7 @@ export default async function ChapterDelegatesPage({
         rows={rows}
         events={events.map((e) => ({
           id: e.id,
+          slug: e.slug,
           title:
             (e[`title_${locale}` as keyof typeof e] as string) || e.title_en,
         }))}

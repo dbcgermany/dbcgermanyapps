@@ -22,16 +22,39 @@ export const DBC_CHAPTER_COUNTRY_CODES = [
 
 export type DbcChapterCountry = (typeof DBC_CHAPTER_COUNTRY_CODES)[number];
 
-function buildOptions(locale: string) {
+/**
+ * Build the "DBC <Country>" label for a chapter code. Single source of truth
+ * for every place chapter names render — admin filters, dropdowns, list cells,
+ * email subjects, scanner badges. If you ever rename a chapter, do it here.
+ */
+export function dbcChapterLabel(code: string, locale = "en"): string {
   let displayNames: Intl.DisplayNames | null = null;
   try {
     displayNames = new Intl.DisplayNames([locale], { type: "region" });
   } catch {
     displayNames = new Intl.DisplayNames(["en"], { type: "region" });
   }
+  const country = displayNames?.of(code.toUpperCase()) ?? code.toUpperCase();
+  return `DBC ${country}`;
+}
+
+/**
+ * Flag emoji for an ISO-3166 alpha-2 code (purely visual, no semantic role).
+ */
+export function chapterFlag(code: string | null): string {
+  if (!code) return "";
+  const upper = code.toUpperCase();
+  if (upper.length !== 2) return "";
+  return upper
+    .split("")
+    .map((c) => String.fromCodePoint(127397 + c.charCodeAt(0)))
+    .join("");
+}
+
+function buildOptions(locale: string) {
   const options = DBC_CHAPTER_COUNTRY_CODES.map((code) => ({
     code,
-    name: displayNames?.of(code) ?? code,
+    name: dbcChapterLabel(code, locale),
   }));
   const collator = new Intl.Collator(locale, { sensitivity: "base" });
   options.sort((a, b) => collator.compare(a.name, b.name));

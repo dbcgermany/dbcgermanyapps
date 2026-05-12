@@ -47,6 +47,8 @@ export type { CountrySelectProps } from "./country-select";
 export {
   ChapterSelect,
   DBC_CHAPTER_COUNTRY_CODES,
+  dbcChapterLabel,
+  chapterFlag,
 } from "./chapter-select";
 export type {
   ChapterSelectProps,

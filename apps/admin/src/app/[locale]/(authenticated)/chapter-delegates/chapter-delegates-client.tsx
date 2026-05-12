@@ -9,11 +9,14 @@ import {
   ChapterSelect,
   ConfirmDialog,
   DBC_CHAPTER_COUNTRY_CODES,
+  chapterFlag,
+  dbcChapterLabel,
 } from "@dbc/ui";
 import {
   approveChapterDelegate,
   bulkApproveChapterDelegates,
   bulkRejectChapterDelegates,
+  createChapterDelegateManually,
   rejectChapterDelegate,
   revokeChapterDelegate,
   type ChapterDelegateRow,
@@ -28,11 +31,7 @@ const STATUS_TABS: { key: Status; label: string }[] = [
   { key: "revoked", label: "Revoked" },
 ];
 
-function flag(country: string | null) {
-  if (!country) return "—";
-  const codes = country.toUpperCase().split("");
-  return codes.map((c) => String.fromCodePoint(127397 + c.charCodeAt(0))).join("");
-}
+// flag + chapter label both come from @dbc/ui — single source of truth.
 
 export function ChapterDelegatesClient({
   locale,
@@ -49,7 +48,7 @@ export function ChapterDelegatesClient({
   currentChapter: string | null;
   currentSearch: string | null;
   rows: ChapterDelegateRow[];
-  events: { id: string; title: string }[];
+  events: { id: string; slug: string; title: string }[];
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -57,6 +56,61 @@ export function ChapterDelegatesClient({
   const [isPending, startTransition] = useTransition();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [rejectNote, setRejectNote] = useState("");
+  const [manualOpen, setManualOpen] = useState(false);
+  const [manualBringsCompanion, setManualBringsCompanion] = useState(false);
+  const [manualError, setManualError] = useState<string | null>(null);
+
+  const ticketsBase =
+    process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://tickets.dbc-germany.com";
+  const activeEvent =
+    events.find((e) => e.id === currentEventId) ?? null;
+  const registrationUrl = activeEvent
+    ? `${ticketsBase}/${locale}/chapter-delegate/${activeEvent.slug}/register`
+    : null;
+
+  function copyRegistrationUrl() {
+    if (!registrationUrl) return;
+    navigator.clipboard.writeText(registrationUrl);
+    toast.success("Link copied — paste it anywhere");
+  }
+
+  function whatsappShareUrl() {
+    if (!registrationUrl || !activeEvent) return "";
+    const msg = `Hi! Please use this link to register as a DBC chapter delegate for ${activeEvent.title}:\n${registrationUrl}`;
+    return `https://wa.me/?text=${encodeURIComponent(msg)}`;
+  }
+
+  function mailtoShareUrl() {
+    if (!registrationUrl || !activeEvent) return "";
+    const subject = `DBC chapter delegate registration — ${activeEvent.title}`;
+    const body = `Please use this link to register your team for ${activeEvent.title}:\n\n${registrationUrl}\n\nLet us know if you have any questions.`;
+    return `mailto:?subject=${encodeURIComponent(
+      subject
+    )}&body=${encodeURIComponent(body)}`;
+  }
+
+  function handleManualSubmit(formData: FormData) {
+    if (!activeEvent) return;
+    setManualError(null);
+    formData.set("event_id", activeEvent.id);
+    formData.set("locale", locale);
+    formData.set("brings_companion", manualBringsCompanion ? "true" : "false");
+    startTransition(async () => {
+      const res = await createChapterDelegateManually(formData);
+      if (res.error) {
+        setManualError(res.error);
+        return;
+      }
+      toast.success(
+        res.companionIssued
+          ? "Delegate + companion added, tickets emailed"
+          : "Delegate added, ticket emailed"
+      );
+      setManualOpen(false);
+      setManualBringsCompanion(false);
+      router.refresh();
+    });
+  }
 
   function setQueryParam(key: string, value: string | null) {
     const params = new URLSearchParams(searchParams.toString());
@@ -138,6 +192,234 @@ export function ChapterDelegatesClient({
 
   return (
     <div className="mt-6 space-y-4">
+      {/* Per-event context banner — shows when an event is filtered. Surfaces
+          the public registration URL with copy + share buttons, and lets
+          admin add a delegate directly without waiting for a public form. */}
+      {activeEvent && registrationUrl && (
+        <Card padding="md" className="rounded-lg border-primary/40 bg-accent/10">
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Public registration link · {activeEvent.title}
+                </p>
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  Share with chapter leads — anyone with the link can register
+                  their team; submissions land in this approval queue.
+                </p>
+              </div>
+              <Button
+                variant="secondary"
+                onClick={() => setManualOpen((o) => !o)}
+                disabled={isPending}
+              >
+                {manualOpen ? "Cancel" : "Add delegate manually"}
+              </Button>
+            </div>
+            <button
+              type="button"
+              onClick={copyRegistrationUrl}
+              className="group flex w-full items-center justify-between gap-3 rounded-md border border-border bg-background px-3 py-2 text-left font-mono text-xs hover:border-primary/50"
+              title="Click to copy"
+            >
+              <span className="truncate">{registrationUrl}</span>
+              <span className="rounded bg-primary px-2 py-0.5 text-[10px] uppercase tracking-wide text-primary-foreground opacity-80 group-hover:opacity-100">
+                Copy
+              </span>
+            </button>
+            <div className="flex flex-wrap gap-2">
+              <a
+                href={whatsappShareUrl()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium hover:border-primary/50"
+              >
+                Send via WhatsApp
+              </a>
+              <a
+                href={mailtoShareUrl()}
+                className="rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium hover:border-primary/50"
+              >
+                Email
+              </a>
+              <a
+                href={registrationUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium hover:border-primary/50"
+              >
+                Open in new tab
+              </a>
+            </div>
+
+            {manualOpen && (
+              <form
+                action={handleManualSubmit}
+                className="mt-2 space-y-3 rounded-md border border-border bg-background p-4"
+              >
+                <p className="text-xs text-muted-foreground">
+                  Skips the approval queue — ticket emails go out immediately.
+                </p>
+                {manualError && (
+                  <div className="rounded-md bg-danger-soft p-3 text-sm text-danger">
+                    {manualError}
+                  </div>
+                )}
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-xs text-muted-foreground mb-1">
+                      First name
+                    </label>
+                    <input
+                      name="first_name"
+                      type="text"
+                      required
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-muted-foreground mb-1">
+                      Last name
+                    </label>
+                    <input
+                      name="last_name"
+                      type="text"
+                      required
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-muted-foreground mb-1">
+                      Email
+                    </label>
+                    <input
+                      name="email"
+                      type="email"
+                      required
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-muted-foreground mb-1">
+                      Chapter
+                    </label>
+                    <ChapterSelect
+                      locale={locale}
+                      name="chapter_country"
+                      required
+                      placeholder="— Select chapter —"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs text-muted-foreground mb-1">
+                      Position / role
+                    </label>
+                    <input
+                      name="position"
+                      type="text"
+                      required
+                      placeholder="Community lead, treasurer, …"
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-muted-foreground mb-1">
+                      Chapter lead name (optional)
+                    </label>
+                    <input
+                      name="chapter_lead_name"
+                      type="text"
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-muted-foreground mb-1">
+                      Chapter lead email (optional, CC&apos;d)
+                    </label>
+                    <input
+                      name="chapter_lead_email"
+                      type="email"
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    />
+                  </div>
+                </div>
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={manualBringsCompanion}
+                    onChange={(e) =>
+                      setManualBringsCompanion(e.target.checked)
+                    }
+                    className="accent-primary"
+                  />
+                  Bringing a +1 companion
+                </label>
+                {manualBringsCompanion && (
+                  <div className="grid gap-3 sm:grid-cols-3 rounded-md border border-border bg-muted/30 p-3">
+                    <div>
+                      <label className="block text-xs text-muted-foreground mb-1">
+                        Companion first name
+                      </label>
+                      <input
+                        name="companion_first_name"
+                        type="text"
+                        required={manualBringsCompanion}
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-muted-foreground mb-1">
+                        Companion last name
+                      </label>
+                      <input
+                        name="companion_last_name"
+                        type="text"
+                        required={manualBringsCompanion}
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-muted-foreground mb-1">
+                        Companion email
+                      </label>
+                      <input
+                        name="companion_email"
+                        type="email"
+                        required={manualBringsCompanion}
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                      />
+                    </div>
+                  </div>
+                )}
+                <div className="flex gap-2">
+                  <Button type="submit" disabled={isPending}>
+                    {isPending ? "Adding…" : "Add delegate"}
+                  </Button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setManualOpen(false);
+                      setManualBringsCompanion(false);
+                    }}
+                    className="rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </Card>
+      )}
+
+      {!activeEvent && (
+        <Card padding="sm" className="rounded-lg border-dashed">
+          <p className="text-xs text-muted-foreground">
+            Tip: filter by event below to get the public registration link for that event and to add delegates manually.
+          </p>
+        </Card>
+      )}
+
       {/* Tabs */}
       <div className="flex flex-wrap gap-2 border-b border-border">
         {STATUS_TABS.map((tab) => {
@@ -308,10 +590,16 @@ export function ChapterDelegatesClient({
                     )}
                   </td>
                   <td className="px-3 py-3">
-                    <span className="mr-1" aria-hidden>
-                      {flag(r.chapterCountry)}
-                    </span>
-                    {r.chapterCountry ?? "—"}
+                    {r.chapterCountry ? (
+                      <>
+                        <span className="mr-1" aria-hidden>
+                          {chapterFlag(r.chapterCountry)}
+                        </span>
+                        {dbcChapterLabel(r.chapterCountry, locale)}
+                      </>
+                    ) : (
+                      "—"
+                    )}
                   </td>
                   <td className="px-3 py-3 text-muted-foreground">
                     {r.position ?? "—"}
@@ -393,12 +681,10 @@ export function ChapterDelegatesClient({
       )}
 
       <p className="text-xs text-muted-foreground">
-        Public registration link:{" "}
-        <code className="rounded bg-muted px-1.5 py-0.5">
-          https://tickets.dbc-germany.com/{locale}/chapter-delegate/&lt;event-slug&gt;/register
-        </code>
-        {" · "}
-        Recognised chapters: {DBC_CHAPTER_COUNTRY_CODES.join(", ")}
+        Recognised chapters:{" "}
+        {DBC_CHAPTER_COUNTRY_CODES.map((c) => dbcChapterLabel(c, locale)).join(
+          " · "
+        )}
       </p>
     </div>
   );
