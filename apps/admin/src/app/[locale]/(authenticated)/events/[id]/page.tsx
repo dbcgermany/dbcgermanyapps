@@ -362,6 +362,7 @@ export default async function EventDetailPage({
             <HubLink href={`/${locale}/events/${id}/tiers`} icon={Tag} title={t("ticketTiers")} desc={t("ticketTiersDesc")} />
             <HubLink href={`/${locale}/events/${id}/coupons`} icon={Scissors} title={t("couponCodes")} desc={t("couponCodesDesc")} />
             <HubLink href={`/${locale}/events/${id}/team-invites`} icon={Scissors} title="Team-friend invites" desc="Quotas & coupons per team member" />
+            <HubLink href={`/${locale}/events/${id}/catering`} icon={Tag} title="Catering menu" desc="Menu items, dietary flags, allergens, CSV export" />
             <HubLink href={`/${locale}/events/${id}/schedule`} icon={Calendar} title={t("scheduleSpeakers")} desc={t("scheduleSpeakersDesc")} />
             <HubLink href={`/${locale}/events/${id}/ticket-preview`} icon={TicketCheck} title={t("ticketPreview")} desc={t("ticketPreviewDesc")} />
           </div>
