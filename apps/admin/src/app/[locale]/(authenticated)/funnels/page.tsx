@@ -4,6 +4,7 @@ import { Badge, Card, LinkButton } from "@dbc/ui";
 import { listFunnels } from "@/actions/funnels";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
+import { captureServerError } from "@/lib/observe";
 
 function statusVariant(status: "draft" | "published" | "archived") {
   if (status === "published") return "success" as const;
@@ -22,7 +23,14 @@ export default async function FunnelsIndexPage({
 }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "admin.funnels.list" });
-  const funnels = await listFunnels();
+  let funnels: Awaited<ReturnType<typeof listFunnels>> = [];
+  let loadError: string | null = null;
+  try {
+    funnels = await listFunnels();
+  } catch (err) {
+    captureServerError(err, { scope: "funnels.listPage", data: { locale } });
+    loadError = err instanceof Error ? err.message : "Unknown error";
+  }
 
   return (
     <div>
@@ -31,7 +39,12 @@ export default async function FunnelsIndexPage({
         cta={<LinkButton href={`/${locale}/funnels/new`}>{t("newFunnel")}</LinkButton>}
       />
 
-      {funnels.length === 0 ? (
+      {loadError ? (
+        <div className="mt-8 rounded-lg border border-danger-border bg-danger-soft/40 p-4 text-sm">
+          <p className="font-medium text-danger">Couldn&apos;t load funnels</p>
+          <p className="mt-1 font-mono text-xs text-muted-foreground">{loadError}</p>
+        </div>
+      ) : funnels.length === 0 ? (
         <EmptyState
           message={t("empty")}
           cta={{ label: t("newFunnel"), href: `/${locale}/funnels/new` }}

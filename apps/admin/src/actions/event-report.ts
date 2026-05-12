@@ -131,13 +131,19 @@ export async function getEventReportData(opts: {
       .from("orders")
       .select("status, acquisition_type, total_cents, currency")
       .eq("event_id", opts.eventId);
-    // Only count tickets whose parent order is paid or comped. Without
-    // the inner-join filter, every abandoned-cart reservation inflates
-    // "tickets sold" on the event report.
+    // "Tickets sold" = paid/comped tickets whose tier counts as sold.
+    // Free comp tiers (team / companion / chapter-delegate) carry
+    // counts_as_sold=false so they're excluded from the headline metric;
+    // they still show in the per-tier breakdown via the orders + acquisition
+    // counts below.
     const { count: ticketCount } = await supabase
       .from("tickets")
-      .select("id, orders!inner(status)", { count: "exact", head: true })
+      .select(
+        "id, orders!inner(status), ticket_tiers!inner(counts_as_sold)",
+        { count: "exact", head: true }
+      )
       .in("orders.status", ["paid", "comped"])
+      .eq("ticket_tiers.counts_as_sold", true)
       .eq("event_id", opts.eventId);
     const { count: checkedInCount } = await supabase
       .from("tickets")

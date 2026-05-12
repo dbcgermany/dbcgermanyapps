@@ -66,6 +66,12 @@ type Tier = {
   sales_end_at: string | null;
   is_public: boolean;
   sort_order: number;
+  purpose: string | null;
+  catering_included: boolean | null;
+  is_team: boolean | null;
+  is_companion: boolean | null;
+  counts_as_sold: boolean | null;
+  scanner_badge_label: string | null;
 };
 
 function toLocal(iso: string | null) {
@@ -233,6 +239,89 @@ export function TierRow({
             className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
           />
         </div>
+        <fieldset className="rounded-md border border-border bg-muted/20 p-3 space-y-3">
+          <legend className="px-1 text-xs uppercase tracking-wide text-muted-foreground">
+            Role & flags
+          </legend>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <label className="block text-xs text-muted-foreground mb-1">Purpose</label>
+              <select
+                name="purpose"
+                defaultValue={tier.purpose ?? "public"}
+                className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
+              >
+                <option value="public">Public (paid attendee)</option>
+                <option value="vip">VIP</option>
+                <option value="speaker">Speaker</option>
+                <option value="team_germany">Team Germany</option>
+                <option value="team_external">Team International</option>
+                <option value="companion">Companion (+1)</option>
+                <option value="team_friend">Team friend (discounted)</option>
+                <option value="press">Press</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-muted-foreground mb-1">
+                Scanner badge label
+              </label>
+              <input
+                name="scanner_badge_label"
+                type="text"
+                defaultValue={tier.scanner_badge_label ?? ""}
+                placeholder="VIP / TEAM (DE) / SPEAKER…"
+                className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
+              />
+            </div>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <label className="flex items-center gap-2 text-sm">
+              <input type="hidden" name="catering_included" value="false" />
+              <input
+                type="checkbox"
+                name="catering_included"
+                value="true"
+                defaultChecked={!!tier.catering_included}
+                className="accent-primary"
+              />
+              Catering included
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input type="hidden" name="counts_as_sold" value="false" />
+              <input
+                type="checkbox"
+                name="counts_as_sold"
+                value="true"
+                defaultChecked={tier.counts_as_sold !== false}
+                className="accent-primary"
+              />
+              Counts as sold
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input type="hidden" name="is_team" value="false" />
+              <input
+                type="checkbox"
+                name="is_team"
+                value="true"
+                defaultChecked={!!tier.is_team}
+                className="accent-primary"
+              />
+              Team ticket
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input type="hidden" name="is_companion" value="false" />
+              <input
+                type="checkbox"
+                name="is_companion"
+                value="true"
+                defaultChecked={!!tier.is_companion}
+                className="accent-primary"
+              />
+              Companion ticket
+            </label>
+          </div>
+        </fieldset>
         <div className="flex gap-2">
           <Button type="submit"
             disabled={isPending}>

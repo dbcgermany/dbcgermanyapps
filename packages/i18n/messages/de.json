@@ -593,8 +593,8 @@
         "ticketTiersDesc": "Ticketpreise erstellen und verwalten",
         "couponCodes": "Rabattcodes",
         "couponCodesDesc": "Rabattcodes für diese Veranstaltung erstellen",
-        "scheduleSpeakers": "Programm & Sprecher",
-        "scheduleSpeakersDesc": "Agenda und Sprecher verwalten",
+        "scheduleSpeakers": "Programm & Speaker",
+        "scheduleSpeakersDesc": "Agenda und Speaker verwalten",
         "ticketPreview": "Ticket-Vorschau",
         "ticketPreviewDesc": "Vorschau des PDF-Ticketdesigns",
         "emailSequences": "E-Mail-Sequenzen",
@@ -645,7 +645,7 @@
         "downloadPdf": "PDF herunterladen"
       },
       "schedule": {
-        "title": "Programm & Sprecher",
+        "title": "Programm & Speaker",
         "addItem": "Programmpunkt hinzufügen"
       },
       "tiers": {
@@ -939,7 +939,7 @@
       "title": "Kontakte",
       "createContact": "Kontakt hinzufügen",
       "newTitle": "Neuer Kontakt",
-      "newDescription": "Sponsoren, Partner, Dienstleister, Sprecher oder andere Personen manuell in unsere Daten aufnehmen.",
+      "newDescription": "Sponsoren, Partner, Dienstleister, Speaker oder andere Personen manuell in unsere Daten aufnehmen.",
       "search": "Name oder E-Mail suchen",
       "categoryFilter": "Kategorie",
       "allCategories": "Alle Kategorien",
@@ -977,7 +977,7 @@
         "sponsor": "Sponsor",
         "partner": "Partner",
         "contractor": "Dienstleister",
-        "speaker": "Sprecher",
+        "speaker": "Speaker",
         "moderator": "Moderator",
         "volunteer": "Helfer",
         "staff": "Team",

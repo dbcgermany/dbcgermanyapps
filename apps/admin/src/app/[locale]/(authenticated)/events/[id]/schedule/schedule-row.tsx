@@ -17,7 +17,7 @@ const SR_T = {
   },
   de: {
     titleEn: "Titel (EN)", titleDe: "Titel (DE)", titleFr: "Titel (FR)",
-    speakerName: "Name Sprecher", speakerTitle: "Titel Sprecher", sort: "Sort.",
+    speakerName: "Name Speaker", speakerTitle: "Titel Speaker", sort: "Sort.",
     descEn: "Beschreibung (EN)", descDe: "Beschreibung (DE)", descFr: "Beschreibung (FR)",
     saving: "Wird gespeichert…", save: "Speichern", cancel: "Abbrechen",
     edit: "Bearbeiten", delete: "Löschen", deleteConfirm: "„{title}“ löschen?",

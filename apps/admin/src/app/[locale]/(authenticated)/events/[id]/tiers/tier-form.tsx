@@ -247,6 +247,93 @@ export function TierForm({
         </p>
       </div>
 
+      {/* Role & flags — drive scanner badge + catering eligibility + revenue counting */}
+      <fieldset className="rounded-md border border-border bg-muted/20 p-3 space-y-3">
+        <legend className="px-1 text-xs uppercase tracking-wide text-muted-foreground">
+          Role & flags
+        </legend>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div>
+            <label htmlFor="purpose" className="block text-xs text-muted-foreground mb-1">
+              Purpose
+            </label>
+            <select
+              id="purpose"
+              name="purpose"
+              defaultValue="public"
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="public">Public (paid attendee)</option>
+              <option value="vip">VIP</option>
+              <option value="speaker">Speaker</option>
+              <option value="team_germany">Team Germany</option>
+              <option value="team_external">Team International</option>
+              <option value="companion">Companion (+1)</option>
+              <option value="team_friend">Team friend (discounted)</option>
+              <option value="press">Press</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label htmlFor="scanner_badge_label" className="block text-xs text-muted-foreground mb-1">
+              Scanner badge label
+            </label>
+            <input
+              id="scanner_badge_label"
+              name="scanner_badge_label"
+              type="text"
+              placeholder="VIP / TEAM (DE) / SPEAKER…"
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              Shown to the door staff after scan. Empty = no badge.
+            </p>
+          </div>
+        </div>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <label className="flex items-start gap-2 text-sm">
+            <input type="hidden" name="catering_included" value="false" />
+            <input type="checkbox" name="catering_included" value="true" className="mt-0.5 accent-primary" />
+            <span>
+              <span className="block font-medium">Catering included</span>
+              <span className="block text-[11px] text-muted-foreground">
+                Tickets in this tier can submit catering selections.
+              </span>
+            </span>
+          </label>
+          <label className="flex items-start gap-2 text-sm">
+            <input type="hidden" name="counts_as_sold" value="false" />
+            <input type="checkbox" name="counts_as_sold" value="true" defaultChecked className="mt-0.5 accent-primary" />
+            <span>
+              <span className="block font-medium">Counts as sold</span>
+              <span className="block text-[11px] text-muted-foreground">
+                Uncheck for comp / team / companion tiers so they stay out of revenue numbers.
+              </span>
+            </span>
+          </label>
+          <label className="flex items-start gap-2 text-sm">
+            <input type="hidden" name="is_team" value="false" />
+            <input type="checkbox" name="is_team" value="true" className="mt-0.5 accent-primary" />
+            <span>
+              <span className="block font-medium">Team ticket</span>
+              <span className="block text-[11px] text-muted-foreground">
+                Scanner shows the badge in green; identifies the holder as DBC team.
+              </span>
+            </span>
+          </label>
+          <label className="flex items-start gap-2 text-sm">
+            <input type="hidden" name="is_companion" value="false" />
+            <input type="checkbox" name="is_companion" value="true" className="mt-0.5 accent-primary" />
+            <span>
+              <span className="block font-medium">Companion ticket</span>
+              <span className="block text-[11px] text-muted-foreground">
+                Holder is a +1 of a team member.
+              </span>
+            </span>
+          </label>
+        </div>
+      </fieldset>
+
       <Button type="submit"
         disabled={isPending}>
         {isPending ? t.adding : t.addTier}

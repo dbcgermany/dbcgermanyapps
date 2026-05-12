@@ -284,6 +284,72 @@ export async function updateEvent(id: string, formData: FormData) {
           parseFloat(formData.get("sales_target_revenue_eur") as string) * 100
         )
       : null,
+    // Guest programs + per-event flexibility knobs (admin-owned dial)
+    team_invite_quota: formData.get("team_invite_quota")
+      ? Math.max(0, parseInt(formData.get("team_invite_quota") as string, 10))
+      : 3,
+    team_invite_tier_id:
+      ((formData.get("team_invite_tier_id") as string) || "").trim() || null,
+    chapter_delegate_tier_id:
+      ((formData.get("chapter_delegate_tier_id") as string) || "").trim() ||
+      null,
+    chapter_companion_tier_id:
+      ((formData.get("chapter_companion_tier_id") as string) || "").trim() ||
+      null,
+    team_member_tier_id:
+      ((formData.get("team_member_tier_id") as string) || "").trim() || null,
+    chapter_delegate_program_enabled:
+      formData.get("chapter_delegate_program_enabled") === "true",
+    catering_enabled: formData.get("catering_enabled") === "true",
+    delegate_review_notify_email:
+      ((formData.get("delegate_review_notify_email") as string) || "").trim() ||
+      null,
+    door_sale_enabled: formData.get("door_sale_enabled") === "true",
+    coupons_enabled: formData.get("coupons_enabled") === "true",
+    waitlist_enabled: formData.get("waitlist_enabled") === "true",
+    ticket_transfer_enabled: formData.get("ticket_transfer_enabled") === "true",
+    ticket_transfer_cutoff_hours: formData.get("ticket_transfer_cutoff_hours")
+      ? parseInt(formData.get("ticket_transfer_cutoff_hours") as string, 10)
+      : 24,
+    refund_policy_days: formData.get("refund_policy_days")
+      ? parseInt(formData.get("refund_policy_days") as string, 10)
+      : 14,
+    refund_policy_text_de:
+      ((formData.get("refund_policy_text_de") as string) || "").trim() || null,
+    refund_policy_text_en:
+      ((formData.get("refund_policy_text_en") as string) || "").trim() || null,
+    refund_policy_text_fr:
+      ((formData.get("refund_policy_text_fr") as string) || "").trim() || null,
+    requires_photo_consent:
+      formData.get("requires_photo_consent") === "true",
+    photo_consent_text_de:
+      ((formData.get("photo_consent_text_de") as string) || "").trim() || null,
+    photo_consent_text_en:
+      ((formData.get("photo_consent_text_en") as string) || "").trim() || null,
+    photo_consent_text_fr:
+      ((formData.get("photo_consent_text_fr") as string) || "").trim() || null,
+    aftercare_emails_enabled:
+      formData.get("aftercare_emails_enabled") === "true",
+    check_in_opens_minutes_before: formData.get("check_in_opens_minutes_before")
+      ? parseInt(
+          formData.get("check_in_opens_minutes_before") as string,
+          10
+        )
+      : 60,
+    check_in_closes_minutes_after: formData.get("check_in_closes_minutes_after")
+      ? parseInt(
+          formData.get("check_in_closes_minutes_after") as string,
+          10
+        )
+      : 180,
+    max_total_tickets: formData.get("max_total_tickets")
+      ? parseInt(formData.get("max_total_tickets") as string, 10)
+      : null,
+    ticket_pdf_hero_url:
+      ((formData.get("ticket_pdf_hero_url") as string) || "").trim() || null,
+    funnel_brand_accent_hex:
+      ((formData.get("funnel_brand_accent_hex") as string) || "").trim() ||
+      null,
   };
 
   // Optional: admin can rename the slug. If provided, sanitise + ensure uniqueness.

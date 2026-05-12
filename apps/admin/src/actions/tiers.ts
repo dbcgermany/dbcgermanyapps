@@ -42,7 +42,38 @@ async function persistStripeIdsForTier(
 }
 
 const TIER_COLUMNS =
-  "id, event_id, name_en, name_de, name_fr, description_en, description_de, description_fr, price_cents, original_price_cents, currency, max_quantity, quantity_sold, low_stock_threshold_pct, sales_start_at, sales_end_at, is_public, sort_order, stripe_product_id, stripe_price_id, stripe_price_archived_ids, created_at" as const;
+  "id, event_id, name_en, name_de, name_fr, description_en, description_de, description_fr, price_cents, original_price_cents, currency, max_quantity, quantity_sold, low_stock_threshold_pct, sales_start_at, sales_end_at, is_public, sort_order, stripe_product_id, stripe_price_id, stripe_price_archived_ids, created_at, purpose, catering_included, is_team, is_companion, counts_as_sold, scanner_badge_label" as const;
+
+const TIER_PURPOSES = [
+  "public",
+  "vip",
+  "speaker",
+  "team_germany",
+  "team_external",
+  "companion",
+  "team_friend",
+  "press",
+  "other",
+] as const;
+type TierPurpose = (typeof TIER_PURPOSES)[number];
+
+function parseTierFlags(formData: FormData) {
+  const rawPurpose = (formData.get("purpose") as string) || "public";
+  const purpose: TierPurpose = (TIER_PURPOSES as readonly string[]).includes(
+    rawPurpose
+  )
+    ? (rawPurpose as TierPurpose)
+    : "public";
+  const badge = ((formData.get("scanner_badge_label") as string) ?? "").trim();
+  return {
+    purpose,
+    catering_included: formData.get("catering_included") === "true",
+    is_team: formData.get("is_team") === "true",
+    is_companion: formData.get("is_companion") === "true",
+    counts_as_sold: formData.get("counts_as_sold") !== "false",
+    scanner_badge_label: badge.length > 0 ? badge : null,
+  };
+}
 
 function parseLowStockThresholdPct(
   raw: FormDataEntryValue | null
@@ -137,6 +168,7 @@ export async function createTier(formData: FormData) {
     sales_end_at: (formData.get("sales_end_at") as string) || null,
     is_public: formData.get("is_public") === "true",
     sort_order: parseInt((formData.get("sort_order") as string) || "0", 10),
+    ...parseTierFlags(formData),
   };
 
   const { data, error } = await supabase
@@ -218,6 +250,7 @@ export async function updateTier(tierId: string, formData: FormData) {
     sales_start_at: (formData.get("sales_start_at") as string) || null,
     sales_end_at: (formData.get("sales_end_at") as string) || null,
     sort_order: parseInt((formData.get("sort_order") as string) || "0", 10),
+    ...parseTierFlags(formData),
   };
 
   const { error } = await supabase

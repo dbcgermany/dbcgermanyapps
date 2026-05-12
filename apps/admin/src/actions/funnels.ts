@@ -128,22 +128,27 @@ export async function listFunnels(): Promise<FunnelListRow[]> {
   const rows = (data ?? []) as FunnelRow[];
 
   // Pull last-7-days event counts in one query so the list page can show
-  // per-row Views / Clicks chips without N+1 lookups.
+  // per-row Views / Clicks chips without N+1 lookups. Tolerate a missing
+  // or unreachable funnel_events table so the list still renders if the
+  // analytics table has been moved / recreated — we just show 0s.
   const sinceIso = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-  const { data: events } = await supabase
-    .from("funnel_events")
-    .select("funnel_id, event_type")
-    .gte("happened_at", sinceIso);
-
   const counts = new Map<string, { views: number; clicks: number }>();
-  for (const e of (events ?? []) as {
-    funnel_id: string;
-    event_type: string;
-  }[]) {
-    const current = counts.get(e.funnel_id) ?? { views: 0, clicks: 0 };
-    if (e.event_type === "view") current.views += 1;
-    else if (e.event_type === "cta_click") current.clicks += 1;
-    counts.set(e.funnel_id, current);
+  try {
+    const { data: events } = await supabase
+      .from("funnel_events")
+      .select("funnel_id, event_type")
+      .gte("happened_at", sinceIso);
+    for (const e of (events ?? []) as {
+      funnel_id: string;
+      event_type: string;
+    }[]) {
+      const current = counts.get(e.funnel_id) ?? { views: 0, clicks: 0 };
+      if (e.event_type === "view") current.views += 1;
+      else if (e.event_type === "cta_click") current.clicks += 1;
+      counts.set(e.funnel_id, current);
+    }
+  } catch (err) {
+    console.error("[listFunnels] funnel_events lookup failed:", err);
   }
 
   return rows.map((r) => {
