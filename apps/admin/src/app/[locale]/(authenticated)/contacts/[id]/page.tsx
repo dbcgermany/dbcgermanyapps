@@ -4,6 +4,7 @@ import { getContact } from "@/actions/contacts";
 import { listContactMessages } from "@/actions/contact-messages";
 import { ContactProfileTabs } from "./profile-tabs";
 import { ComposeDialog } from "./compose-dialog";
+import { DeleteContactButton } from "./delete-contact-button";
 
 export default async function ContactDetailPage({
   params,
@@ -54,11 +55,18 @@ export default async function ContactDetailPage({
             ))}
           </div>
         </div>
-        <ComposeDialog
-          contactId={data.contact.id}
-          contactEmail={data.contact.email}
-          defaultLocale={locale}
-        />
+        <div className="flex items-center gap-2">
+          <ComposeDialog
+            contactId={data.contact.id}
+            contactEmail={data.contact.email}
+            defaultLocale={locale}
+          />
+          <DeleteContactButton
+            contactId={data.contact.id}
+            contactEmail={data.contact.email}
+            locale={locale}
+          />
+        </div>
       </div>
 
       <ContactProfileTabs

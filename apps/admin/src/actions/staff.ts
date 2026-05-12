@@ -6,6 +6,21 @@ import { revalidatePath } from "next/cache";
 import { STAFF_ROLES } from "@dbc/types";
 import type { UserRole } from "@dbc/types";
 import { buildAuthConfirmUrl } from "@/lib/auth-confirm-url";
+import { randomBytes } from "crypto";
+
+function generateTempPassword() {
+  // 16 chars, URL-safe alphabet — strong enough as a one-time bootstrap
+  // password since must_change_password=true forces a rotation on first login.
+  return randomBytes(12).toString("base64url");
+}
+
+function adminUrl() {
+  return process.env.NEXT_PUBLIC_ADMIN_URL ?? "https://admin.dbc-germany.com";
+}
+
+function resolveLocale(value: string | null | undefined): "en" | "de" | "fr" {
+  return value === "de" || value === "fr" ? value : "en";
+}
 
 function getServiceClient() {
   return createClient(
@@ -31,10 +46,18 @@ export async function getStaff() {
   const staffWithEmail = await Promise.all(
     (profiles ?? []).map(async (p) => {
       const { data } = await service.auth.admin.getUserById(p.id);
+      const bannedUntilRaw =
+        (data.user as { banned_until?: string | null } | null)?.banned_until ??
+        null;
+      const bannedUntil =
+        bannedUntilRaw && new Date(bannedUntilRaw).getTime() > Date.now()
+          ? bannedUntilRaw
+          : null;
       return {
         ...p,
         email: data.user?.email ?? "",
         lastSignInAt: data.user?.last_sign_in_at ?? null,
+        bannedUntil,
       };
     })
   );
@@ -90,6 +113,13 @@ export async function getStaffMember(staffId: string) {
 
   const { data: authData } = await service.auth.admin.getUserById(staffId);
   const email = authData.user?.email ?? "";
+  const bannedUntilRaw =
+    (authData.user as { banned_until?: string | null } | null)?.banned_until ??
+    null;
+  const bannedUntil =
+    bannedUntilRaw && new Date(bannedUntilRaw).getTime() > Date.now()
+      ? bannedUntilRaw
+      : null;
 
   const [assignmentsRes, auditRes, teamMemberRes] = await Promise.all([
     supabase
@@ -110,7 +140,7 @@ export async function getStaffMember(staffId: string) {
   ]);
 
   return {
-    profile: { ...profile, email },
+    profile: { ...profile, email, bannedUntil },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     assignments: (assignmentsRes.data ?? []).map((a: any) => a.events).filter(Boolean),
     auditLog: auditRes.data ?? [],
@@ -620,6 +650,428 @@ export async function assignRoleAndResendInvite(
     entity_id: userId,
     details: { email, role: newRole },
   });
+
+  revalidatePath(`/${locale}/staff`);
+  return { success: true };
+}
+
+// ---------------------------------------------------------------------------
+// Lifecycle actions: email change, create-without-invite, pause/unpause,
+// reset password, force sign-out, hard delete. Self-protection and
+// "can't touch a super_admin unless I am one" checks live in each action.
+// ---------------------------------------------------------------------------
+
+async function loadTargetProfile(staffId: string) {
+  const service = getServiceClient();
+  const { data: profile } = await service
+    .from("profiles")
+    .select("id, role, locale, first_name, last_name, display_name")
+    .eq("id", staffId)
+    .single();
+  return profile as
+    | {
+        id: string;
+        role: UserRole;
+        locale: string | null;
+        first_name: string | null;
+        last_name: string | null;
+        display_name: string | null;
+      }
+    | null;
+}
+
+export async function updateStaffEmail(
+  staffId: string,
+  newEmail: string,
+  locale: string
+) {
+  const actor = await requireRole("admin");
+  if (staffId === actor.userId) {
+    return { error: "Use account settings to change your own email." };
+  }
+  const clean = newEmail.trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean)) {
+    return { error: "Invalid email address." };
+  }
+
+  const service = getServiceClient();
+  const target = await loadTargetProfile(staffId);
+  if (!target) return { error: "User not found" };
+  if (target.role === "super_admin" && actor.role !== "super_admin") {
+    return { error: "Only super admin can edit a super admin." };
+  }
+
+  const { data: existing } = await service.auth.admin.getUserById(staffId);
+  const oldEmail = existing.user?.email ?? "";
+  if (oldEmail.toLowerCase() === clean) {
+    return { error: "That is already the current email." };
+  }
+
+  const { error: updateErr } = await service.auth.admin.updateUserById(
+    staffId,
+    { email: clean, email_confirm: true }
+  );
+  if (updateErr) return { error: updateErr.message };
+
+  try {
+    const { sendStaffEmailChanged } = await import("@dbc/email");
+    const recipientName =
+      target.display_name ?? target.first_name ?? oldEmail.split("@")[0];
+    const userLocale = resolveLocale(target.locale);
+    const loginUrl = `${adminUrl()}/${userLocale}/login`;
+
+    await Promise.all([
+      sendStaffEmailChanged({
+        to: clean,
+        recipientName,
+        oldEmail,
+        newEmail: clean,
+        loginUrl,
+        locale: userLocale,
+        side: "new",
+      }),
+      oldEmail
+        ? sendStaffEmailChanged({
+            to: oldEmail,
+            recipientName,
+            oldEmail,
+            newEmail: clean,
+            loginUrl,
+            locale: userLocale,
+            side: "old",
+          })
+        : Promise.resolve(),
+    ]);
+  } catch (err) {
+    console.error("[updateStaffEmail] email notice failed:", err);
+    // Email rotated successfully on Supabase even if our notice failed —
+    // surface a non-fatal warning so the admin knows to follow up out-of-band.
+    await service.from("audit_log").insert({
+      user_id: actor.userId,
+      action: "update_staff_email",
+      entity_type: "profiles",
+      entity_id: staffId,
+      details: {
+        from_email: oldEmail,
+        to_email: clean,
+        notice_email_failed: true,
+      },
+    });
+    revalidatePath(`/${locale}/staff`);
+    return {
+      success: true,
+      warning: "Email changed, but the notice email failed to send.",
+    };
+  }
+
+  await service.from("audit_log").insert({
+    user_id: actor.userId,
+    action: "update_staff_email",
+    entity_type: "profiles",
+    entity_id: staffId,
+    details: { from_email: oldEmail, to_email: clean },
+  });
+
+  revalidatePath(`/${locale}/staff`);
+  revalidatePath(`/${locale}/staff/${staffId}`);
+  return { success: true };
+}
+
+export async function createStaffWithoutInvite(formData: FormData) {
+  const actor = await requireRole("admin");
+  const service = getServiceClient();
+
+  const email = ((formData.get("email") as string) ?? "").trim().toLowerCase();
+  const firstName = ((formData.get("first_name") as string) ?? "").trim();
+  const lastName = ((formData.get("last_name") as string) ?? "").trim();
+  const role = formData.get("role") as UserRole;
+  const locale = ((formData.get("locale") as string) ?? "en").trim();
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return { error: "Invalid email address." };
+  }
+  if (!STAFF_ROLES.includes(role)) {
+    return { error: "Invalid role." };
+  }
+  if (role === "super_admin" && actor.role !== "super_admin") {
+    return { error: "Only super admin can create super admins." };
+  }
+  if (role === "admin" && actor.role !== "super_admin" && actor.role !== "admin") {
+    return { error: "You do not have permission to create admins." };
+  }
+
+  const password = generateTempPassword();
+  const userLocale = resolveLocale(locale);
+  const recipientName =
+    [firstName, lastName].filter(Boolean).join(" ").trim() ||
+    email.split("@")[0];
+
+  const { data: created, error: createErr } = await service.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+    user_metadata: {
+      first_name: firstName || null,
+      last_name: lastName || null,
+      locale: userLocale,
+      must_change_password: true,
+    },
+  });
+  if (createErr || !created.user) {
+    return { error: createErr?.message ?? "Failed to create user." };
+  }
+
+  // on_auth_user_created creates the profile with role=buyer; upgrade + names.
+  await service
+    .from("profiles")
+    .update({
+      role,
+      first_name: firstName || null,
+      last_name: lastName || null,
+      locale: userLocale,
+    })
+    .eq("id", created.user.id);
+
+  const loginUrl = `${adminUrl()}/${userLocale}/login`;
+
+  try {
+    const { sendStaffCredentials } = await import("@dbc/email");
+    await sendStaffCredentials({
+      to: email,
+      recipientName,
+      email,
+      temporaryPassword: password,
+      loginUrl,
+      locale: userLocale,
+      reason: "created",
+    });
+  } catch (err) {
+    console.error("[createStaffWithoutInvite] email failed:", err);
+    // Account exists but email failed. The dialog will still reveal the password
+    // to the admin so they can share it out-of-band.
+  }
+
+  await service.from("audit_log").insert({
+    user_id: actor.userId,
+    action: "create_staff_no_invite",
+    entity_type: "profiles",
+    entity_id: created.user.id,
+    details: { email, role },
+  });
+
+  revalidatePath(`/${locale}/staff`);
+  return {
+    success: true,
+    userId: created.user.id,
+    password,
+  };
+}
+
+export async function pauseStaff(staffId: string, locale: string) {
+  const actor = await requireRole("admin");
+  if (staffId === actor.userId) return { error: "You cannot pause yourself." };
+
+  const service = getServiceClient();
+  const target = await loadTargetProfile(staffId);
+  if (!target) return { error: "User not found" };
+  if (target.role === "super_admin" && actor.role !== "super_admin") {
+    return { error: "Only super admin can pause a super admin." };
+  }
+
+  const { error: banErr } = await service.auth.admin.updateUserById(staffId, {
+    ban_duration: "876000h",
+  });
+  if (banErr) return { error: banErr.message };
+
+  // Kill any active sessions so the pause takes effect immediately.
+  await service.auth.admin.signOut(staffId, "global");
+
+  try {
+    const { data: authData } = await service.auth.admin.getUserById(staffId);
+    const email = authData.user?.email ?? "";
+    if (email) {
+      const { sendStaffPaused } = await import("@dbc/email");
+      await sendStaffPaused({
+        to: email,
+        recipientName:
+          target.display_name ?? target.first_name ?? email.split("@")[0],
+        locale: resolveLocale(target.locale),
+        state: "paused",
+      });
+    }
+  } catch (err) {
+    console.error("[pauseStaff] notice email failed:", err);
+  }
+
+  await service.from("audit_log").insert({
+    user_id: actor.userId,
+    action: "pause_staff",
+    entity_type: "profiles",
+    entity_id: staffId,
+  });
+
+  revalidatePath(`/${locale}/staff`);
+  revalidatePath(`/${locale}/staff/${staffId}`);
+  return { success: true };
+}
+
+export async function unpauseStaff(staffId: string, locale: string) {
+  const actor = await requireRole("admin");
+  const service = getServiceClient();
+  const target = await loadTargetProfile(staffId);
+  if (!target) return { error: "User not found" };
+  if (target.role === "super_admin" && actor.role !== "super_admin") {
+    return { error: "Only super admin can unpause a super admin." };
+  }
+
+  const { error: unbanErr } = await service.auth.admin.updateUserById(staffId, {
+    ban_duration: "none",
+  });
+  if (unbanErr) return { error: unbanErr.message };
+
+  try {
+    const { data: authData } = await service.auth.admin.getUserById(staffId);
+    const email = authData.user?.email ?? "";
+    if (email) {
+      const { sendStaffPaused } = await import("@dbc/email");
+      await sendStaffPaused({
+        to: email,
+        recipientName:
+          target.display_name ?? target.first_name ?? email.split("@")[0],
+        locale: resolveLocale(target.locale),
+        state: "unpaused",
+      });
+    }
+  } catch (err) {
+    console.error("[unpauseStaff] notice email failed:", err);
+  }
+
+  await service.from("audit_log").insert({
+    user_id: actor.userId,
+    action: "unpause_staff",
+    entity_type: "profiles",
+    entity_id: staffId,
+  });
+
+  revalidatePath(`/${locale}/staff`);
+  revalidatePath(`/${locale}/staff/${staffId}`);
+  return { success: true };
+}
+
+export async function resetStaffPassword(staffId: string, locale: string) {
+  const actor = await requireRole("admin");
+  if (staffId === actor.userId) {
+    return { error: "Use account settings to change your own password." };
+  }
+  const service = getServiceClient();
+  const target = await loadTargetProfile(staffId);
+  if (!target) return { error: "User not found" };
+  if (target.role === "super_admin" && actor.role !== "super_admin") {
+    return { error: "Only super admin can reset a super admin's password." };
+  }
+
+  const { data: existing } = await service.auth.admin.getUserById(staffId);
+  const email = existing.user?.email ?? "";
+  const existingMetadata = existing.user?.user_metadata ?? {};
+
+  const password = generateTempPassword();
+  const { error: updErr } = await service.auth.admin.updateUserById(staffId, {
+    password,
+    user_metadata: { ...existingMetadata, must_change_password: true },
+  });
+  if (updErr) return { error: updErr.message };
+
+  // Force re-login everywhere so the old password / sessions can't be used.
+  await service.auth.admin.signOut(staffId, "global");
+
+  const userLocale = resolveLocale(target.locale);
+  const loginUrl = `${adminUrl()}/${userLocale}/login`;
+  try {
+    if (email) {
+      const { sendStaffCredentials } = await import("@dbc/email");
+      await sendStaffCredentials({
+        to: email,
+        recipientName:
+          target.display_name ?? target.first_name ?? email.split("@")[0],
+        email,
+        temporaryPassword: password,
+        loginUrl,
+        locale: userLocale,
+        reason: "reset",
+      });
+    }
+  } catch (err) {
+    console.error("[resetStaffPassword] email failed:", err);
+  }
+
+  await service.from("audit_log").insert({
+    user_id: actor.userId,
+    action: "reset_staff_password",
+    entity_type: "profiles",
+    entity_id: staffId,
+  });
+
+  revalidatePath(`/${locale}/staff`);
+  revalidatePath(`/${locale}/staff/${staffId}`);
+  return { success: true, password };
+}
+
+export async function forceSignOutStaff(staffId: string, locale: string) {
+  const actor = await requireRole("admin");
+  if (staffId === actor.userId) {
+    return { error: "Use account settings to sign yourself out." };
+  }
+  const service = getServiceClient();
+  const target = await loadTargetProfile(staffId);
+  if (!target) return { error: "User not found" };
+  if (target.role === "super_admin" && actor.role !== "super_admin") {
+    return { error: "Only super admin can sign out a super admin." };
+  }
+
+  const { error } = await service.auth.admin.signOut(staffId, "global");
+  if (error) return { error: error.message };
+
+  await service.from("audit_log").insert({
+    user_id: actor.userId,
+    action: "force_signout_staff",
+    entity_type: "profiles",
+    entity_id: staffId,
+  });
+
+  revalidatePath(`/${locale}/staff`);
+  revalidatePath(`/${locale}/staff/${staffId}`);
+  return { success: true };
+}
+
+export async function deleteStaffHard(staffId: string, locale: string) {
+  const actor = await requireRole("admin");
+  if (staffId === actor.userId) return { error: "You cannot delete yourself." };
+
+  const service = getServiceClient();
+  const target = await loadTargetProfile(staffId);
+  if (!target) return { error: "User not found" };
+  if (target.role === "super_admin" && actor.role !== "super_admin") {
+    return { error: "Only super admin can delete a super admin." };
+  }
+
+  const { data: authData } = await service.auth.admin.getUserById(staffId);
+  const email = authData.user?.email ?? "";
+
+  // Write the audit row BEFORE delete so the entry exists. After delete the
+  // user_id reference dangles but the row stays readable.
+  await service.from("audit_log").insert({
+    user_id: actor.userId,
+    action: "delete_staff_hard",
+    entity_type: "profiles",
+    entity_id: staffId,
+    details: { email, role: target.role },
+  });
+
+  // FKs on orders.buyer_id / tickets.buyer_id / event_* / contact_category_links
+  // are all ON DELETE SET NULL after migration 20260512000001, so the cascade
+  // is safe. team_members.profile_id was already SET NULL.
+  const { error: delErr } = await service.auth.admin.deleteUser(staffId);
+  if (delErr) return { error: delErr.message };
 
   revalidatePath(`/${locale}/staff`);
   return { success: true };

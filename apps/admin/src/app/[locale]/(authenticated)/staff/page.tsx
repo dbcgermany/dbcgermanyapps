@@ -34,6 +34,7 @@ export default async function StaffPage({
           role: s.role,
           assignedEventIds: s.assignedEventIds,
           lastSignInAt: s.lastSignInAt,
+          bannedUntil: s.bannedUntil,
         }))}
         events={events.map((e) => ({
           id: e.id,

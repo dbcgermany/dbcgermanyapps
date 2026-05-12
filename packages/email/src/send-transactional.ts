@@ -13,6 +13,9 @@ import { ContactFormConfirmEmail } from "./templates/contact-form-confirm";
 import { PreEventReminderEmail } from "./templates/pre-event-reminder";
 import { PasswordResetEmail } from "./templates/password-reset";
 import { StaffInviteEmail } from "./templates/staff-invite";
+import { StaffCredentialsEmail } from "./templates/staff-credentials";
+import { StaffEmailChangedEmail } from "./templates/staff-email-changed";
+import { StaffPausedEmail } from "./templates/staff-paused";
 
 type Locale = "en" | "de" | "fr";
 
@@ -517,6 +520,147 @@ export async function sendStaffInvite(input: SendStaffInviteInput) {
     from: transactionalFrom(),
     to: input.to,
     subject: STAFF_INVITE_SUBJECT[input.locale],
+    html,
+  });
+  if (res.error) throw new Error(`Resend: ${res.error.message}`);
+  return { id: res.data?.id ?? "" };
+}
+
+// ---------------------------------------------------------------------------
+// Staff credentials (used by create-without-invite + reset-password flows)
+// ---------------------------------------------------------------------------
+
+export interface SendStaffCredentialsInput {
+  to: string;
+  recipientName: string;
+  email: string;
+  temporaryPassword: string;
+  loginUrl: string;
+  locale: Locale;
+  reason: "created" | "reset";
+}
+
+const STAFF_CREDENTIALS_SUBJECT = {
+  created: {
+    en: "Your DBC Germany admin access",
+    de: "Dein DBC Germany Admin-Zugang",
+    fr: "Votre accès admin DBC Germany",
+  },
+  reset: {
+    en: "Your DBC Germany password was reset",
+    de: "Dein DBC Germany Passwort wurde zurückgesetzt",
+    fr: "Votre mot de passe DBC Germany a été réinitialisé",
+  },
+};
+
+export async function sendStaffCredentials(input: SendStaffCredentialsInput) {
+  const html = await render(
+    React.createElement(StaffCredentialsEmail, {
+      recipientName: input.recipientName,
+      email: input.email,
+      temporaryPassword: input.temporaryPassword,
+      loginUrl: input.loginUrl,
+      locale: input.locale,
+      reason: input.reason,
+    })
+  );
+  const resend = createEmailClient();
+  const res = await resend.emails.send({
+    from: transactionalFrom(),
+    to: input.to,
+    subject: STAFF_CREDENTIALS_SUBJECT[input.reason][input.locale],
+    html,
+  });
+  if (res.error) throw new Error(`Resend: ${res.error.message}`);
+  return { id: res.data?.id ?? "" };
+}
+
+// ---------------------------------------------------------------------------
+// Staff email-change notice (sent to BOTH old and new addresses)
+// ---------------------------------------------------------------------------
+
+export interface SendStaffEmailChangedInput {
+  to: string;
+  recipientName: string;
+  oldEmail: string;
+  newEmail: string;
+  loginUrl: string;
+  locale: Locale;
+  side: "new" | "old";
+}
+
+const STAFF_EMAIL_CHANGED_SUBJECT = {
+  new: {
+    en: "Your DBC Germany login email",
+    de: "Deine DBC Germany Login-E-Mail",
+    fr: "Votre adresse de connexion DBC Germany",
+  },
+  old: {
+    en: "Your DBC Germany login email was changed",
+    de: "Deine DBC Germany Login-E-Mail wurde geändert",
+    fr: "Votre adresse de connexion DBC Germany a changé",
+  },
+};
+
+export async function sendStaffEmailChanged(input: SendStaffEmailChangedInput) {
+  const html = await render(
+    React.createElement(StaffEmailChangedEmail, {
+      recipientName: input.recipientName,
+      oldEmail: input.oldEmail,
+      newEmail: input.newEmail,
+      loginUrl: input.loginUrl,
+      locale: input.locale,
+      side: input.side,
+    })
+  );
+  const resend = createEmailClient();
+  const res = await resend.emails.send({
+    from: transactionalFrom(),
+    to: input.to,
+    subject: STAFF_EMAIL_CHANGED_SUBJECT[input.side][input.locale],
+    html,
+  });
+  if (res.error) throw new Error(`Resend: ${res.error.message}`);
+  return { id: res.data?.id ?? "" };
+}
+
+// ---------------------------------------------------------------------------
+// Staff paused / unpaused notice
+// ---------------------------------------------------------------------------
+
+export interface SendStaffPausedInput {
+  to: string;
+  recipientName: string;
+  locale: Locale;
+  state: "paused" | "unpaused";
+}
+
+const STAFF_PAUSED_SUBJECT = {
+  paused: {
+    en: "Your DBC Germany access has been paused",
+    de: "Dein DBC Germany Zugang wurde pausiert",
+    fr: "Votre accès DBC Germany a été suspendu",
+  },
+  unpaused: {
+    en: "Your DBC Germany access has been restored",
+    de: "Dein DBC Germany Zugang wurde wiederhergestellt",
+    fr: "Votre accès DBC Germany a été rétabli",
+  },
+};
+
+export async function sendStaffPaused(input: SendStaffPausedInput) {
+  const html = await render(
+    React.createElement(StaffPausedEmail, {
+      recipientName: input.recipientName,
+      locale: input.locale,
+      state: input.state,
+    })
+  );
+  const resend = createEmailClient();
+  const res = await resend.emails.send({
+    from: transactionalFrom(),
+    to: input.to,
+    subject: STAFF_PAUSED_SUBJECT[input.state][input.locale],
     html,
   });
   if (res.error) throw new Error(`Resend: ${res.error.message}`);

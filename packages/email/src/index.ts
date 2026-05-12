@@ -37,6 +37,9 @@ export {
   sendPreEventReminder,
   sendPasswordReset,
   sendStaffInvite,
+  sendStaffCredentials,
+  sendStaffEmailChanged,
+  sendStaffPaused,
 } from "./send-transactional";
 export type {
   SendTransferConfirmationInput,
@@ -51,6 +54,9 @@ export type {
   SendPreEventReminderInput,
   SendPasswordResetInput,
   SendStaffInviteInput,
+  SendStaffCredentialsInput,
+  SendStaffEmailChangedInput,
+  SendStaffPausedInput,
 } from "./send-transactional";
 export {
   sendNewsletterEmail,
@@ -82,6 +88,12 @@ export { PasswordResetEmail } from "./templates/password-reset";
 export type { PasswordResetEmailProps } from "./templates/password-reset";
 export { StaffInviteEmail } from "./templates/staff-invite";
 export type { StaffInviteEmailProps } from "./templates/staff-invite";
+export { StaffCredentialsEmail } from "./templates/staff-credentials";
+export type { StaffCredentialsEmailProps } from "./templates/staff-credentials";
+export { StaffEmailChangedEmail } from "./templates/staff-email-changed";
+export type { StaffEmailChangedEmailProps } from "./templates/staff-email-changed";
+export { StaffPausedEmail } from "./templates/staff-paused";
+export type { StaffPausedEmailProps } from "./templates/staff-paused";
 export { AskSpeakersEmail } from "./templates/ask-speakers";
 export type {
   AskSpeakersEmailProps,

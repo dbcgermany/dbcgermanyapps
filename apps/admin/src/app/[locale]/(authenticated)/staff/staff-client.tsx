@@ -15,6 +15,9 @@ import {
   resendStaffInvite,
   revokeStaffInvite,
   assignRoleAndResendInvite,
+  createStaffWithoutInvite,
+  pauseStaff,
+  unpauseStaff,
 } from "@/actions/staff";
 import { EmptyState } from "@/components/empty-state";
 
@@ -25,6 +28,7 @@ interface StaffMember {
   role: UserRole;
   assignedEventIds: string[];
   lastSignInAt: string | null;
+  bannedUntil: string | null;
 }
 
 interface EventOption {
@@ -66,6 +70,12 @@ export function StaffClient({
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [inviteSuccess, setInviteSuccess] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [createdCredentials, setCreatedCredentials] = useState<{
+    email: string;
+    password: string;
+  } | null>(null);
   const [isPending, startTransition] = useTransition();
 
   function handleInvite(formData: FormData) {
@@ -78,6 +88,20 @@ export function StaffClient({
       else {
         setInviteSuccess(true);
         setInviteOpen(false);
+      }
+    });
+  }
+
+  function handleCreate(formData: FormData) {
+    setCreateError(null);
+    startTransition(async () => {
+      const email = ((formData.get("email") as string) ?? "").trim().toLowerCase();
+      const res = await createStaffWithoutInvite(formData);
+      if (res.error) {
+        setCreateError(res.error);
+      } else if (res.success && res.password) {
+        setCreatedCredentials({ email, password: res.password });
+        setCreateOpen(false);
       }
     });
   }
@@ -111,6 +135,16 @@ export function StaffClient({
       const res = await resendStaffInvite(staffId, locale);
       if (res.error) toast.error(res.error);
       else toast.success(t("resendInvite"));
+    });
+  }
+
+  function handlePauseToggle(staffId: string, currentlyPaused: boolean) {
+    startTransition(async () => {
+      const res = currentlyPaused
+        ? await unpauseStaff(staffId, locale)
+        : await pauseStaff(staffId, locale);
+      if (res.error) toast.error(res.error);
+      else toast.success(currentlyPaused ? "Account unpaused" : "Account paused");
     });
   }
 
@@ -155,9 +189,25 @@ export function StaffClient({
         <p className="text-sm text-muted-foreground">
           {staff.length} {staff.length === 1 ? t("member") : t("members")}
         </p>
-        <Button onClick={() => setInviteOpen((o) => !o)}>
-          {t("invite")}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setCreateOpen((o) => !o);
+              setInviteOpen(false);
+            }}
+          >
+            Create user
+          </Button>
+          <Button
+            onClick={() => {
+              setInviteOpen((o) => !o);
+              setCreateOpen(false);
+            }}
+          >
+            {t("invite")}
+          </Button>
+        </div>
       </div>
 
       {inviteSuccess && (
@@ -166,7 +216,58 @@ export function StaffClient({
         </div>
       )}
 
-      {/* Invite form */}
+      {createdCredentials && (
+        <Card padding="md" className="mt-4 rounded-lg border border-success-border bg-success-soft/40">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-semibold text-success">
+                Account created — credentials below were emailed to the user
+              </p>
+              <button
+                type="button"
+                onClick={() => setCreatedCredentials(null)}
+                className="text-xs text-muted-foreground hover:text-foreground"
+              >
+                Dismiss
+              </button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              The user will be asked to set a new password on first login.
+              Copy these now — they will not be shown again.
+            </p>
+            <div className="grid gap-2 rounded-md bg-background p-3 font-mono text-xs">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-muted-foreground">Email</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(createdCredentials.email);
+                    toast.success("Email copied");
+                  }}
+                  className="text-foreground hover:text-primary"
+                >
+                  {createdCredentials.email}
+                </button>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-muted-foreground">Temp password</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(createdCredentials.password);
+                    toast.success("Password copied");
+                  }}
+                  className="text-foreground hover:text-primary"
+                >
+                  {createdCredentials.password}
+                </button>
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* Invite form (link-based) */}
       {inviteOpen && (
         <Card padding="md" className="mt-4 rounded-lg">
           <form action={handleInvite} className="space-y-4">
@@ -229,6 +330,103 @@ export function StaffClient({
               {t("cancel")}
             </button>
           </div>
+          </form>
+        </Card>
+      )}
+
+      {/* Create-user (no invite link) — admin sets up the account directly
+          with a generated password. The credentials are emailed to the user
+          and displayed once above for the admin to share out-of-band. */}
+      {createOpen && (
+        <Card padding="md" className="mt-4 rounded-lg">
+          <form action={handleCreate} className="space-y-4">
+            <div>
+              <h3 className="text-sm font-semibold">Create user without invite link</h3>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Generates a temporary password, emails the user, and forces a
+                password change on their first sign-in.
+              </p>
+            </div>
+            {createError && (
+              <div className="rounded-md bg-danger-soft p-3 text-sm text-danger">
+                {createError}
+              </div>
+            )}
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  required
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">
+                  Role
+                </label>
+                <select
+                  name="role"
+                  defaultValue="team_member"
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                >
+                  {ROLE_OPTIONS.map((r) => (
+                    <option key={r} value={r}>
+                      {roleLabels[r]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">
+                  First name
+                </label>
+                <input
+                  type="text"
+                  name="first_name"
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">
+                  Last name
+                </label>
+                <input
+                  type="text"
+                  name="last_name"
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-muted-foreground mb-1">
+                  Locale
+                </label>
+                <select
+                  name="locale"
+                  defaultValue="de"
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                >
+                  <option value="en">English</option>
+                  <option value="de">Deutsch</option>
+                  <option value="fr">Français</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button type="submit" disabled={isPending}>
+                {isPending ? "Creating…" : "Create user"}
+              </Button>
+              <button
+                type="button"
+                onClick={() => setCreateOpen(false)}
+                className="rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
+              >
+                Cancel
+              </button>
+            </div>
           </form>
         </Card>
       )}
@@ -336,6 +534,7 @@ export function StaffClient({
             <tbody>
               {staff.map((s) => {
                 const isExpanded = expandedStaffId === s.id;
+                const isPaused = !!s.bannedUntil;
 
                 return (
                   <Fragment key={s.id}>
@@ -356,20 +555,27 @@ export function StaffClient({
                         )}
                       </td>
                       <td className="px-4 py-3">
-                        <select
-                          value={s.role}
-                          onChange={(e) =>
-                            handleRoleChange(s.id, e.target.value as UserRole)
-                          }
-                          disabled={isPending}
-                          className="rounded-md border border-input bg-background px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-ring"
-                        >
-                          {ROLE_OPTIONS.map((r) => (
-                            <option key={r} value={r}>
-                              {roleLabels[r]}
-                            </option>
-                          ))}
-                        </select>
+                        <div className="flex items-center gap-2">
+                          <select
+                            value={s.role}
+                            onChange={(e) =>
+                              handleRoleChange(s.id, e.target.value as UserRole)
+                            }
+                            disabled={isPending}
+                            className="rounded-md border border-input bg-background px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-ring"
+                          >
+                            {ROLE_OPTIONS.map((r) => (
+                              <option key={r} value={r}>
+                                {roleLabels[r]}
+                              </option>
+                            ))}
+                          </select>
+                          {isPaused && (
+                            <span className="rounded-full bg-warning-soft px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-warning">
+                              Paused
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">
                         {s.assignedEventIds.length}
@@ -383,6 +589,12 @@ export function StaffClient({
                         >
                           {t("assignEvents")}
                         </button>
+                        <Link
+                          href={`/${locale}/staff/${s.id}`}
+                          className="text-xs text-primary hover:text-primary/80"
+                        >
+                          Manage
+                        </Link>
                         {!s.lastSignInAt ? (
                           <>
                             <button
@@ -412,24 +624,46 @@ export function StaffClient({
                             />
                           </>
                         ) : (
-                          <ConfirmDialog
-                            trigger={
-                              <button
-                                type="button"
-                                disabled={isPending}
-                                className="text-xs text-danger hover:opacity-80"
-                              >
-                                {t("remove")}
-                              </button>
-                            }
-                            title={t("remove")}
-                            description={t("removeConfirm")}
-                            variant="danger"
-                            confirmLabel={t("remove")}
-                            onConfirm={() =>
-                              startTransition(() => runRemove(s.id))
-                            }
-                          />
+                          <>
+                            <ConfirmDialog
+                              trigger={
+                                <button
+                                  type="button"
+                                  disabled={isPending}
+                                  className="text-xs text-warning hover:opacity-80"
+                                >
+                                  {isPaused ? "Unpause" : "Pause"}
+                                </button>
+                              }
+                              title={isPaused ? "Unpause account" : "Pause account"}
+                              description={
+                                isPaused
+                                  ? "Restore the user's access. They will receive an email letting them know."
+                                  : "Block sign-in and revoke any active sessions. The user will be emailed."
+                              }
+                              variant="danger"
+                              confirmLabel={isPaused ? "Unpause" : "Pause"}
+                              onConfirm={() => handlePauseToggle(s.id, isPaused)}
+                            />
+                            <ConfirmDialog
+                              trigger={
+                                <button
+                                  type="button"
+                                  disabled={isPending}
+                                  className="text-xs text-danger hover:opacity-80"
+                                >
+                                  {t("remove")}
+                                </button>
+                              }
+                              title={t("remove")}
+                              description={t("removeConfirm")}
+                              variant="danger"
+                              confirmLabel={t("remove")}
+                              onConfirm={() =>
+                                startTransition(() => runRemove(s.id))
+                              }
+                            />
+                          </>
                         )}
                       </td>
                     </tr>

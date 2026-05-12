@@ -1,15 +1,21 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Badge } from "@dbc/ui";
+import { Badge, Button, ConfirmDialog } from "@dbc/ui";
 import type { AdminModule, UserRole } from "@dbc/types";
 import { canDo } from "@dbc/types";
 import {
   updateStaffRole,
   assignStaffToEvent,
   unassignStaffFromEvent,
+  updateStaffEmail,
+  resetStaffPassword,
+  forceSignOutStaff,
+  pauseStaff,
+  unpauseStaff,
+  deleteStaffHard,
 } from "@/actions/staff";
 
 interface Profile {
@@ -19,6 +25,7 @@ interface Profile {
   display_name: string | null;
   locale: string | null;
   created_at: string;
+  bannedUntil: string | null;
 }
 
 interface EventAssignment {
@@ -68,6 +75,12 @@ export function StaffDetailClient({
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [emailEditOpen, setEmailEditOpen] = useState(false);
+  const [emailDraft, setEmailDraft] = useState(profile.email);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [resetReveal, setResetReveal] = useState<string | null>(null);
+
+  const isPaused = !!profile.bannedUntil;
 
   const assignedIds = new Set(assignments.map((a) => a.id));
 
@@ -156,6 +169,70 @@ export function StaffDetailClient({
     });
   }
 
+  function handleEmailSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setEmailError(null);
+    const clean = emailDraft.trim().toLowerCase();
+    if (clean === profile.email.toLowerCase()) {
+      setEmailError("That is already the current email.");
+      return;
+    }
+    startTransition(async () => {
+      const res = await updateStaffEmail(profile.id, clean, locale);
+      if (res.error) {
+        setEmailError(res.error);
+        return;
+      }
+      if (res.warning) toast.warning(res.warning);
+      else toast.success("Email changed");
+      setEmailEditOpen(false);
+      router.refresh();
+    });
+  }
+
+  function handleReset() {
+    startTransition(async () => {
+      const res = await resetStaffPassword(profile.id, locale);
+      if (res.error) toast.error(res.error);
+      else if (res.password) {
+        setResetReveal(res.password);
+        toast.success("Password reset & emailed to user");
+      }
+    });
+  }
+
+  function handleForceSignOut() {
+    startTransition(async () => {
+      const res = await forceSignOutStaff(profile.id, locale);
+      if (res.error) toast.error(res.error);
+      else toast.success("Active sessions revoked");
+    });
+  }
+
+  function handlePauseToggle() {
+    startTransition(async () => {
+      const res = isPaused
+        ? await unpauseStaff(profile.id, locale)
+        : await pauseStaff(profile.id, locale);
+      if (res.error) toast.error(res.error);
+      else {
+        toast.success(isPaused ? "Account unpaused" : "Account paused");
+        router.refresh();
+      }
+    });
+  }
+
+  function handleHardDelete() {
+    startTransition(async () => {
+      const res = await deleteStaffHard(profile.id, locale);
+      if (res.error) toast.error(res.error);
+      else {
+        toast.success("Account deleted");
+        router.push(`/${locale}/staff`);
+      }
+    });
+  }
+
   return (
     <div className="mt-8 space-y-8">
       {/* Profile card */}
@@ -163,6 +240,11 @@ export function StaffDetailClient({
         <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           {t.profile}
         </h2>
+        {isPaused && (
+          <div className="mt-3 rounded-md border border-warning-border bg-warning-soft px-3 py-2 text-xs text-warning">
+            This account is paused. The user cannot sign in until you unpause.
+          </div>
+        )}
         <dl className="mt-3 space-y-3 text-sm">
           <div className="flex justify-between">
             <dt className="text-muted-foreground">{t.email}</dt>
@@ -235,6 +317,195 @@ export function StaffDetailClient({
               </label>
             );
           })}
+        </div>
+      </section>
+
+      {/* Login & email */}
+      <section className="rounded-lg border border-border p-5">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Login & email
+          </h2>
+          {!emailEditOpen && (
+            <button
+              type="button"
+              onClick={() => {
+                setEmailDraft(profile.email);
+                setEmailError(null);
+                setEmailEditOpen(true);
+              }}
+              className="text-xs font-medium text-primary hover:text-primary/80"
+            >
+              Change email
+            </button>
+          )}
+        </div>
+        {!emailEditOpen ? (
+          <p className="mt-3 font-mono text-sm">{profile.email}</p>
+        ) : (
+          <form onSubmit={handleEmailSubmit} className="mt-3 space-y-3">
+            {emailError && (
+              <div className="rounded-md bg-danger-soft p-3 text-sm text-danger">
+                {emailError}
+              </div>
+            )}
+            <p className="text-xs text-muted-foreground">
+              The password stays the same. Both the old and new addresses will
+              receive a notice email.
+            </p>
+            <input
+              type="email"
+              required
+              value={emailDraft}
+              onChange={(e) => setEmailDraft(e.target.value)}
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+            <div className="flex gap-2">
+              <Button type="submit" disabled={isPending}>
+                {isPending ? "Saving…" : "Save new email"}
+              </Button>
+              <button
+                type="button"
+                onClick={() => setEmailEditOpen(false)}
+                className="rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        )}
+      </section>
+
+      {/* Danger zone */}
+      <section className="rounded-lg border border-danger-border bg-danger-soft/30 p-5">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-danger">
+          Danger zone
+        </h2>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Destructive account actions. Each one writes an audit log entry.
+        </p>
+
+        {resetReveal && (
+          <div className="mt-4 rounded-md border border-success-border bg-success-soft/40 p-4">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-semibold text-success">
+                New temporary password
+              </p>
+              <button
+                type="button"
+                onClick={() => setResetReveal(null)}
+                className="text-xs text-muted-foreground hover:text-foreground"
+              >
+                Dismiss
+              </button>
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Emailed to {profile.email}. The user must change it on first
+              sign-in. Will not be shown again.
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                navigator.clipboard.writeText(resetReveal);
+                toast.success("Password copied");
+              }}
+              className="mt-2 block w-full rounded-md bg-background px-3 py-2 text-left font-mono text-xs hover:text-primary"
+            >
+              {resetReveal}
+            </button>
+          </div>
+        )}
+
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <ConfirmDialog
+            trigger={
+              <button
+                type="button"
+                disabled={isPending}
+                className="rounded-md border border-border bg-background px-3 py-2 text-left text-sm hover:bg-muted"
+              >
+                <span className="block font-medium">Reset password</span>
+                <span className="block text-xs text-muted-foreground">
+                  Generate a new temp password & email it
+                </span>
+              </button>
+            }
+            title="Reset password"
+            description={`A new temporary password will be generated, emailed to ${profile.email}, and shown to you once. The user is forced to change it on their next sign-in.`}
+            variant="danger"
+            confirmLabel="Reset password"
+            onConfirm={handleReset}
+          />
+
+          <ConfirmDialog
+            trigger={
+              <button
+                type="button"
+                disabled={isPending}
+                className="rounded-md border border-border bg-background px-3 py-2 text-left text-sm hover:bg-muted"
+              >
+                <span className="block font-medium">Force sign-out</span>
+                <span className="block text-xs text-muted-foreground">
+                  Revoke all active sessions
+                </span>
+              </button>
+            }
+            title="Force sign-out"
+            description="The user will be signed out everywhere within seconds. They can sign in again with their current password."
+            variant="danger"
+            confirmLabel="Sign out everywhere"
+            onConfirm={handleForceSignOut}
+          />
+
+          <ConfirmDialog
+            trigger={
+              <button
+                type="button"
+                disabled={isPending}
+                className="rounded-md border border-border bg-background px-3 py-2 text-left text-sm hover:bg-muted"
+              >
+                <span className="block font-medium">
+                  {isPaused ? "Unpause account" : "Pause account"}
+                </span>
+                <span className="block text-xs text-muted-foreground">
+                  {isPaused
+                    ? "Restore access; the user is emailed"
+                    : "Block sign-in & revoke sessions; user is emailed"}
+                </span>
+              </button>
+            }
+            title={isPaused ? "Unpause account" : "Pause account"}
+            description={
+              isPaused
+                ? `${profile.email} will be able to sign in again.`
+                : `${profile.email} will be blocked from signing in and any active sessions will be revoked.`
+            }
+            variant="danger"
+            confirmLabel={isPaused ? "Unpause" : "Pause"}
+            onConfirm={handlePauseToggle}
+          />
+
+          <ConfirmDialog
+            trigger={
+              <button
+                type="button"
+                disabled={isPending}
+                className="rounded-md border border-danger bg-background px-3 py-2 text-left text-sm hover:bg-danger-soft/50"
+              >
+                <span className="block font-medium text-danger">
+                  Delete account permanently
+                </span>
+                <span className="block text-xs text-muted-foreground">
+                  Removes the auth user; team-roster bio is kept
+                </span>
+              </button>
+            }
+            title="Delete account permanently"
+            description={`This permanently removes ${profile.email}'s account. Tickets/orders are preserved without the buyer link; any public team-roster bio survives unchanged. This cannot be undone.`}
+            variant="danger"
+            confirmLabel="Delete account"
+            onConfirm={handleHardDelete}
+          />
         </div>
       </section>
 
