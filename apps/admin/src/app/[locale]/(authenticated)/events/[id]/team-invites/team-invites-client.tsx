@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { Fragment, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button, Card, ConfirmDialog } from "@dbc/ui";
@@ -94,11 +94,8 @@ export function TeamInvitesClient({
           {summaries.map((s) => {
             const isExpanded = expandedProfileId === s.profileId;
             return (
-              <>
-                <tr
-                  key={s.profileId}
-                  className="border-b border-border last:border-0"
-                >
+              <Fragment key={s.profileId}>
+                <tr className="border-b border-border last:border-0">
                   <td className="px-4 py-3">
                     <p className="font-medium">{s.displayName}</p>
                     <p className="text-xs text-muted-foreground">{s.email}</p>
@@ -218,7 +215,7 @@ export function TeamInvitesClient({
                     </td>
                   </tr>
                 )}
-              </>
+              </Fragment>
             );
           })}
         </tbody>

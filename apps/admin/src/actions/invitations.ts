@@ -78,7 +78,9 @@ export async function createInvitation(input: InvitationInput) {
   // Fetch tier + event
   const { data: tier } = await supabase
     .from("ticket_tiers")
-    .select("id, event_id, price_cents, max_quantity, quantity_sold, name_en, name_de, name_fr")
+    .select(
+      "id, event_id, price_cents, max_quantity, quantity_sold, name_en, name_de, name_fr, catering_included"
+    )
     .eq("id", input.tierId)
     .single();
   if (!tier || tier.event_id !== input.eventId) return { error: "Invalid tier." };
@@ -86,7 +88,7 @@ export async function createInvitation(input: InvitationInput) {
   const { data: event } = await supabase
     .from("events")
     .select(
-      "id, title_en, title_de, title_fr, event_type, starts_at, ends_at, venue_name, venue_address, city, timezone"
+      "id, title_en, title_de, title_fr, event_type, starts_at, ends_at, venue_name, venue_address, city, timezone, catering_enabled"
     )
     .eq("id", input.eventId)
     .single();
@@ -227,6 +229,27 @@ export async function createInvitation(input: InvitationInput) {
     return { success: true, orderId: order.id };
   }
 
+  // If this ticket gets catering, append a quick CTA to the email body so the
+  // recipient knows where to pre-select their meal. Only used for the formal
+  // invitation flow (customBody is supported there); informal ticket-delivery
+  // emails fall back to the standard layout — admin can share the URL manually.
+  const cateringUrl =
+    tier.catering_included && event.catering_enabled
+      ? `${process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://tickets.dbc-germany.com"}/${loc}/tickets/${ticket.ticket_token}/catering`
+      : null;
+  const cateringHint =
+    cateringUrl
+      ? loc === "de"
+        ? `\n\nCatering ist in deinem Ticket enthalten. Wähle dein Menü hier vor: ${cateringUrl}`
+        : loc === "fr"
+          ? `\n\nLa restauration est incluse avec votre billet. Pré-sélectionnez votre menu : ${cateringUrl}`
+          : `\n\nCatering is included with your ticket. Pre-select your meal here: ${cateringUrl}`
+      : "";
+  const customBodyWithCatering =
+    deliveryMode === "ticket_with_letter"
+      ? ((customBody ?? "") + cateringHint).trim() || undefined
+      : undefined;
+
   try {
     const result = await sendTicketEmail({
       attendeeName: fullName,
@@ -254,10 +277,7 @@ export async function createInvitation(input: InvitationInput) {
       gender: (gender as "female" | "male" | "diverse" | null) ?? undefined,
       title: title ?? undefined,
       lastName: lastName || undefined,
-      customBody:
-        deliveryMode === "ticket_with_letter"
-          ? customBody ?? undefined
-          : undefined,
+      customBody: customBodyWithCatering,
     });
 
     await supabase

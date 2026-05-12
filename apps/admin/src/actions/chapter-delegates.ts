@@ -4,8 +4,53 @@ import { createServerClient, requireRole } from "@dbc/supabase/server";
 import { createClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 import { createInvitation } from "@/actions/invitations";
+import { createEmailClient, fromAddressFor } from "@dbc/email";
 
 type Status = "active" | "pending_approval" | "rejected" | "revoked";
+
+async function sendChapterDelegateOutcomeEmail(
+  to: string,
+  recipientName: string,
+  eventTitle: string,
+  outcome: "rejected" | "revoked",
+  note: string | null,
+  ccLeadEmail: string | null
+) {
+  if (!process.env.RESEND_API_KEY) return;
+  try {
+    const resend = createEmailClient();
+    const subject =
+      outcome === "rejected"
+        ? `Deine DBC-Anmeldung für ${eventTitle}`
+        : `Status: Deine DBC-Anmeldung für ${eventTitle}`;
+    const body =
+      outcome === "rejected"
+        ? `Hallo ${recipientName},\n\n` +
+          `wir konnten deine Anmeldung als Chapter-Delegierte:r für ${eventTitle} aktuell nicht bestätigen.\n` +
+          (note ? `\nHinweis: ${note}\n` : "") +
+          `\nFalls das nicht erwartet war, sprich bitte mit deinem Chapter Lead oder antworte direkt auf diese E-Mail.\n\nViele Grüße\nDas DBC Germany Team\n` +
+          `\n---\n\n` +
+          `Hi ${recipientName},\n\n` +
+          `we couldn't confirm your chapter-delegate registration for ${eventTitle}.\n` +
+          (note ? `\nNote: ${note}\n` : "") +
+          `\nIf this wasn't expected, please reach out to your chapter lead or reply to this email.\n\nThanks,\nThe DBC Germany Team\n`
+        : `Hallo ${recipientName},\n\n` +
+          `dein Team-Ticket für ${eventTitle} wurde widerrufen. Falls das ein Versehen war, melde dich bitte direkt bei uns.\n\nViele Grüße\nDas DBC Germany Team\n` +
+          `\n---\n\n` +
+          `Hi ${recipientName},\n\n` +
+          `your team ticket for ${eventTitle} has been revoked. If this wasn't expected, please get in touch.\n\nThanks,\nThe DBC Germany Team\n`;
+    const cc = ccLeadEmail ? [ccLeadEmail] : undefined;
+    await resend.emails.send({
+      from: fromAddressFor("transactional"),
+      to,
+      cc,
+      subject,
+      text: body,
+    });
+  } catch (err) {
+    console.error(`[chapterDelegate.${outcome}] email failed:`, err);
+  }
+}
 
 function getServiceClient() {
   return createClient(
@@ -58,6 +103,9 @@ export async function listChapterDelegates(
   const service = getServiceClient();
   const status = filters.status ?? "pending_approval";
 
+  // PGRST201 disambiguation: contacts has TWO FKs from
+  // contact_event_involvements (contact_id + companion_contact_id), so we
+  // have to spell the relationship out explicitly when embedding.
   let query = service
     .from("contact_event_involvements")
     .select(
@@ -66,7 +114,7 @@ export async function listChapterDelegates(
        review_note, reviewed_at, reviewed_by,
        companion_contact_id, created_at,
        events:events(id, title_en, title_de, title_fr),
-       contacts:contacts(id, email, first_name, last_name)`
+       contacts:contacts!contact_event_involvements_contact_id_fkey(id, email, first_name, last_name)`
     )
     .eq("role", "chapter_delegate")
     .order("created_at", { ascending: false });
@@ -227,7 +275,7 @@ export async function approveChapterDelegate(
     .select(
       `id, contact_id, event_id, status, chapter_country, chapter_position,
        chapter_lead_email, companion_contact_id,
-       contacts:contacts(id, email, first_name, last_name)`
+       contacts:contacts!contact_event_involvements_contact_id_fkey(id, email, first_name, last_name)`
     )
     .eq("id", involvementId)
     .eq("role", "chapter_delegate")
@@ -256,7 +304,13 @@ export async function approveChapterDelegate(
   } | null;
   if (!contact) return { error: "Delegate contact missing." };
 
-  // Issue delegate ticket.
+  // Issue delegate ticket. We use the formal invitation flow ("with_letter")
+  // because:
+  //   1. createInvitation appends the catering URL to customBody only in that mode
+  //   2. external-chapter delegates are honored guests — a branded letter fits
+  const chapterLabel = inv.chapter_country
+    ? ` (Chapter: ${inv.chapter_country})`
+    : "";
   const delegateResult = await createInvitation({
     eventId: inv.event_id,
     tierId: event.chapter_delegate_tier_id,
@@ -266,8 +320,9 @@ export async function approveChapterDelegate(
     country: inv.chapter_country ?? undefined,
     locale,
     sendEmail: true,
-    deliveryMode: "ticket_only",
+    deliveryMode: "ticket_with_letter",
     acquisitionType: "invited",
+    customBody: `Du bist als Team-Mitglied${chapterLabel} registriert. Bitte bringe dein Ticket zum Einlass mit.`,
   });
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if ((delegateResult as any).error) {
@@ -338,6 +393,37 @@ export async function approveChapterDelegate(
     },
   });
 
+  // If the delegate gave us their chapter lead's email on the form, drop the
+  // lead a short courtesy note so they know we approved their team member.
+  if (inv.chapter_lead_email && process.env.RESEND_API_KEY) {
+    try {
+      const { data: eventRow } = await service
+        .from("events")
+        .select("title_en, title_de, title_fr")
+        .eq("id", inv.event_id)
+        .maybeSingle();
+      const eventTitle =
+        ((eventRow?.[`title_${locale}` as keyof typeof eventRow] as string) ||
+          eventRow?.title_en) ?? "the event";
+      const recipientName =
+        [contact.first_name, contact.last_name].filter(Boolean).join(" ") ||
+        contact.email;
+      const resend = createEmailClient();
+      await resend.emails.send({
+        from: fromAddressFor("transactional"),
+        to: inv.chapter_lead_email,
+        subject: `Confirmed: ${recipientName} for ${eventTitle}`,
+        text:
+          `Hi,\n\n` +
+          `${recipientName} (${contact.email}) was approved as a chapter delegate for ${eventTitle}.\n` +
+          (companionTicketIssued ? `Their +1 companion was also confirmed.\n` : "") +
+          `\nThanks,\nThe DBC Germany Team\n`,
+      });
+    } catch (err) {
+      console.error("[approveChapterDelegate] lead-cc email failed:", err);
+    }
+  }
+
   revalidatePath(`/${locale}/chapter-delegates`);
   return { success: true };
 }
@@ -351,7 +437,9 @@ export async function rejectChapterDelegate(
   const service = getServiceClient();
   const { data: inv } = await service
     .from("contact_event_involvements")
-    .select("id, contact_id, event_id, status, companion_contact_id")
+    .select(
+      "id, contact_id, event_id, status, companion_contact_id, chapter_lead_email"
+    )
     .eq("id", involvementId)
     .eq("role", "chapter_delegate")
     .maybeSingle();
@@ -389,6 +477,35 @@ export async function rejectChapterDelegate(
     entity_id: inv.id,
     details: { note },
   });
+
+  // Notify the delegate + their chapter lead (if provided on the form).
+  const { data: contact } = await service
+    .from("contacts")
+    .select("email, first_name, last_name")
+    .eq("id", inv.contact_id)
+    .maybeSingle();
+  const { data: event } = await service
+    .from("events")
+    .select("title_en, title_de, title_fr")
+    .eq("id", inv.event_id)
+    .maybeSingle();
+  if (contact?.email && event) {
+    const eventTitle =
+      ((event[`title_${locale}` as keyof typeof event] as string) ||
+        event.title_en) ?? "";
+    const recipientName =
+      [contact.first_name, contact.last_name].filter(Boolean).join(" ") ||
+      contact.email.split("@")[0];
+    await sendChapterDelegateOutcomeEmail(
+      contact.email,
+      recipientName,
+      eventTitle,
+      "rejected",
+      note?.trim() || null,
+      inv.chapter_lead_email
+    );
+  }
+
   revalidatePath(`/${locale}/chapter-delegates`);
   return { success: true };
 }
@@ -401,7 +518,9 @@ export async function revokeChapterDelegate(
   const service = getServiceClient();
   const { data: inv } = await service
     .from("contact_event_involvements")
-    .select("id, contact_id, event_id, status, companion_contact_id")
+    .select(
+      "id, contact_id, event_id, status, companion_contact_id, chapter_lead_email"
+    )
     .eq("id", involvementId)
     .eq("role", "chapter_delegate")
     .maybeSingle();
@@ -455,6 +574,43 @@ export async function revokeChapterDelegate(
     entity_type: "contact_event_involvements",
     entity_id: inv.id,
   });
+
+  // Notify delegate (and their lead if known) so they're not surprised
+  // at the door. Send to the companion too if there was one.
+  const { data: contactRows } = await service
+    .from("contacts")
+    .select("id, email, first_name, last_name")
+    .in(
+      "id",
+      [inv.contact_id, inv.companion_contact_id].filter(
+        (v): v is string => !!v
+      )
+    );
+  const { data: event } = await service
+    .from("events")
+    .select("title_en, title_de, title_fr")
+    .eq("id", inv.event_id)
+    .maybeSingle();
+  if (contactRows && event) {
+    const eventTitle =
+      ((event[`title_${locale}` as keyof typeof event] as string) ||
+        event.title_en) ?? "";
+    for (const c of contactRows) {
+      if (!c.email) continue;
+      const recipientName =
+        [c.first_name, c.last_name].filter(Boolean).join(" ") ||
+        c.email.split("@")[0];
+      await sendChapterDelegateOutcomeEmail(
+        c.email,
+        recipientName,
+        eventTitle,
+        "revoked",
+        null,
+        c.id === inv.contact_id ? inv.chapter_lead_email : null
+      );
+    }
+  }
+
   revalidatePath(`/${locale}/chapter-delegates`);
   return { success: true };
 }
