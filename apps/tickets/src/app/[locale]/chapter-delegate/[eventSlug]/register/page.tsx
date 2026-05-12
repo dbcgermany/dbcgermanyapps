@@ -6,21 +6,27 @@ const T = {
   en: {
     title: "Chapter delegate registration",
     intro:
-      "Register yourself as a DBC team member from outside Germany for the event below. Your tickets are issued only after the Germany team confirms your registration.",
+      "Register yourself as a DBC team member from outside Germany for the event below. Tickets are issued only after the DBC Germany team confirms your registration.",
+    accessWarning:
+      "Important: anyone who is NOT registered will be denied entry at the venue. Make sure every team member who plans to attend is registered through this form.",
     closed:
       "Chapter delegate registration is not open for this event right now.",
   },
   de: {
-    title: "Registrierung als Chapter-Delegierte:r",
+    title: "Anmeldung als Sektions-Delegierte:r",
     intro:
-      "Registriere dich als DBC-Team-Mitglied außerhalb Deutschlands für die Veranstaltung unten. Tickets werden erst nach Bestätigung durch das Germany-Team versendet.",
-    closed: "Die Chapter-Delegierten-Registrierung ist aktuell geschlossen.",
+      "Melde dich als DBC-Team-Mitglied außerhalb Deutschlands für die unten genannte Veranstaltung an. Tickets werden erst nach Freigabe durch das DBC Germany Team versendet.",
+    accessWarning:
+      "Wichtig: Wer NICHT registriert ist, wird am Einlass abgewiesen. Bitte stelle sicher, dass jedes Team-Mitglied, das teilnehmen möchte, über dieses Formular angemeldet ist.",
+    closed: "Die Anmeldung für Sektions-Delegierte ist aktuell geschlossen.",
   },
   fr: {
-    title: "Inscription en tant que délégué·e de chapitre",
+    title: "Inscription en tant que délégué·e d’antenne",
     intro:
-      "Inscrivez-vous en tant que membre de l'équipe DBC d'un autre pays. Les billets ne sont émis qu'après confirmation par l'équipe DBC Allemagne.",
-    closed: "L'inscription des délégués est actuellement fermée.",
+      "Inscrivez-vous en tant que membre de l’équipe DBC d’un autre pays pour l’événement ci-dessous. Les billets sont émis uniquement après confirmation de l’équipe DBC Allemagne.",
+    accessWarning:
+      "Important : toute personne NON inscrite se verra refuser l’accès au lieu. Assurez-vous que chaque membre de l’équipe qui souhaite participer est inscrit via ce formulaire.",
+    closed: "L’inscription des délégué·e·s d’antenne est actuellement fermée.",
   },
 } as const;
 
@@ -65,6 +71,13 @@ export default async function ChapterDelegateRegisterPage({
         {event.city ? ` · ${event.city}` : ""}
       </p>
       <p className="mt-4 text-sm leading-6 text-foreground">{t.intro}</p>
+
+      <div className="mt-4 rounded-md border-l-4 border-warning bg-warning-soft/40 p-4 text-sm text-foreground">
+        <p>
+          <strong>⚠ </strong>
+          {t.accessWarning}
+        </p>
+      </div>
 
       {!event.chapter_delegate_program_enabled ? (
         <div className="mt-6 rounded-md border border-warning-border bg-warning-soft/40 p-4 text-sm">

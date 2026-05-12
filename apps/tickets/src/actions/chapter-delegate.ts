@@ -87,7 +87,7 @@ export async function submitChapterDelegateRegistration(
     return { error: "Please confirm your team membership to continue." };
   }
   if (leadEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(leadEmail)) {
-    return { error: "Chapter lead email looks invalid." };
+    return { error: "Chapter Ambassador email looks invalid." };
   }
 
   let companionPayload: {
@@ -173,34 +173,44 @@ export async function submitChapterDelegateRegistration(
 
   // 5. Upsert contacts (delegate + optional companion) via the existing RPC.
   //    Both rows go in; tickets are only issued once an admin approves.
-  const { data: delegateContactId } = await supabase.rpc(
-    "upsert_contact_from_checkout",
-    {
+  //    Note: the RPC signature is (p_email, p_first_name, p_last_name,
+  //    p_country, p_birthday, p_gender, p_occupation, p_auto_category_slug,
+  //    p_extra_category_slugs) — there is no p_phone. Phone goes onto the
+  //    contact later via a separate update if needed.
+  const { data: delegateContactId, error: delegateContactErr } =
+    await supabase.rpc("upsert_contact_from_checkout", {
       p_email: email,
       p_first_name: firstName,
       p_last_name: lastName,
-      p_phone: null,
       p_country: chapter,
       p_extra_category_slugs: ["invited_guests"],
-    }
-  );
-  if (!delegateContactId) {
+    });
+  if (delegateContactErr || !delegateContactId) {
+    console.error(
+      "[chapterDelegate] upsert_contact_from_checkout (delegate) failed:",
+      delegateContactErr
+    );
     return { error: "Couldn't save your contact details." };
   }
 
   let companionContactId: string | null = null;
   if (companionPayload) {
-    const { data: companionId } = await supabase.rpc(
+    const { data: companionId, error: companionErr } = await supabase.rpc(
       "upsert_contact_from_checkout",
       {
         p_email: companionPayload.email,
         p_first_name: companionPayload.firstName,
         p_last_name: companionPayload.lastName,
-        p_phone: null,
         p_country: chapter,
         p_extra_category_slugs: ["invited_guests"],
       }
     );
+    if (companionErr) {
+      console.error(
+        "[chapterDelegate] upsert_contact_from_checkout (companion) failed:",
+        companionErr
+      );
+    }
     companionContactId = companionId ?? null;
   }
 
@@ -261,7 +271,7 @@ export async function submitChapterDelegateRegistration(
         companionPayload
           ? `${companionPayload.firstName} ${companionPayload.lastName} <${companionPayload.email}>`
           : "—"
-      }\nChapter lead: ${leadEmail ?? "—"}\n\nReview at /admin/${input.locale}/chapter-delegates`,
+      }\nChapter Ambassador: ${leadEmail ?? "—"}\n\nReview at /admin/${input.locale}/chapter-delegates`,
       data: {
         kind: "chapter_delegate_pending",
         involvement_id: delegateInvolvement.id,

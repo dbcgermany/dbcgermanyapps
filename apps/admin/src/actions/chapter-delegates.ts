@@ -28,12 +28,12 @@ async function sendChapterDelegateOutcomeEmail(
         ? `Hallo ${recipientName},\n\n` +
           `wir konnten deine Anmeldung als Chapter-Delegierte:r für ${eventTitle} aktuell nicht bestätigen.\n` +
           (note ? `\nHinweis: ${note}\n` : "") +
-          `\nFalls das nicht erwartet war, sprich bitte mit deinem Chapter Lead oder antworte direkt auf diese E-Mail.\n\nViele Grüße\nDas DBC Germany Team\n` +
+          `\nFalls das nicht erwartet war, sprich bitte mit deiner/deinem Sektions-Botschafter:in oder antworte direkt auf diese E-Mail.\n\nViele Grüße\nDas DBC Germany Team\n` +
           `\n---\n\n` +
           `Hi ${recipientName},\n\n` +
           `we couldn't confirm your chapter-delegate registration for ${eventTitle}.\n` +
           (note ? `\nNote: ${note}\n` : "") +
-          `\nIf this wasn't expected, please reach out to your chapter lead or reply to this email.\n\nThanks,\nThe DBC Germany Team\n`
+          `\nIf this wasn't expected, please reach out to your Chapter Ambassador or reply to this email.\n\nThanks,\nThe DBC Germany Team\n`
         : `Hallo ${recipientName},\n\n` +
           `dein Team-Ticket für ${eventTitle} wurde widerrufen. Falls das ein Versehen war, melde dich bitte direkt bei uns.\n\nViele Grüße\nDas DBC Germany Team\n` +
           `\n---\n\n` +
@@ -734,30 +734,45 @@ export async function createChapterDelegateManually(formData: FormData) {
     };
   }
 
-  // Upsert contacts (reuses the existing RPC the public form uses too — SSOT).
-  const { data: delegateContactId } = await service.rpc(
+  // Upsert contacts (reuses the existing RPC the public form uses — SSOT).
+  // Signature: (p_email, p_first_name, p_last_name, p_country, p_birthday,
+  // p_gender, p_occupation, p_auto_category_slug, p_extra_category_slugs).
+  // No p_phone param exists on this RPC.
+  const { data: delegateContactId, error: dcErr } = await service.rpc(
     "upsert_contact_from_checkout",
     {
       p_email: email,
       p_first_name: firstName,
       p_last_name: lastName,
-      p_phone: null,
       p_country: chapter,
       p_extra_category_slugs: ["invited_guests"],
     }
   );
-  if (!delegateContactId) return { error: "Couldn't upsert delegate contact." };
+  if (dcErr || !delegateContactId) {
+    return {
+      error:
+        dcErr?.message ?? "Couldn't upsert delegate contact.",
+    };
+  }
 
   let companionContactId: string | null = null;
   if (companion) {
-    const { data: cId } = await service.rpc("upsert_contact_from_checkout", {
-      p_email: companion.email,
-      p_first_name: companion.firstName,
-      p_last_name: companion.lastName,
-      p_phone: null,
-      p_country: chapter,
-      p_extra_category_slugs: ["invited_guests"],
-    });
+    const { data: cId, error: cErr } = await service.rpc(
+      "upsert_contact_from_checkout",
+      {
+        p_email: companion.email,
+        p_first_name: companion.firstName,
+        p_last_name: companion.lastName,
+        p_country: chapter,
+        p_extra_category_slugs: ["invited_guests"],
+      }
+    );
+    if (cErr) {
+      console.error(
+        "[createChapterDelegateManually] companion upsert failed:",
+        cErr
+      );
+    }
     companionContactId = cId ?? null;
   }
 
