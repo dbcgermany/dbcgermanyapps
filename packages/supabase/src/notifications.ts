@@ -34,10 +34,11 @@ export async function notifyAdmins(
   supabase: SupabaseClient,
   input: CreateNotificationInput
 ): Promise<void> {
-  // 1. Every manager+ recipient with their email (for the email channel).
+  // 1. Every manager+ recipient with their email (for the email channel)
+  // and their stored locale preference.
   const { data: profiles, error } = await supabase
     .from("profiles")
-    .select("id, email, email_notifications")
+    .select("id, email, email_notifications, locale")
     .in("role", ["manager", "admin", "super_admin"]);
   if (error || !profiles || profiles.length === 0) return;
 
@@ -72,33 +73,47 @@ export async function notifyAdmins(
   // profiles.email_notifications kill-switch (set to true by default).
   // Loaded via dynamic import so @dbc/supabase doesn't need a static
   // dependency on @dbc/email.
-  const emailRecipients = profiles
-    .filter((p) => {
-      const wantsEmail = prefByUser.get(p.id)?.email ?? def.email;
-      const masterOn = p.email_notifications !== false;
-      return wantsEmail && masterOn && !!p.email;
-    })
-    .map((p) => p.email as string);
+  const recipients = profiles.filter((p) => {
+    const wantsEmail = prefByUser.get(p.id)?.email ?? def.email;
+    const masterOn = p.email_notifications !== false;
+    return wantsEmail && masterOn && !!p.email;
+  });
 
-  if (emailRecipients.length === 0) return;
+  if (recipients.length === 0) return;
+
+  // Group recipients by their resolved locale so each admin gets the alert in
+  // their own language. Profile.locale wins (Phase C resolver); rows without
+  // a stored preference default to 'en'.
+  const { resolveRecipientLocale } = await import("@dbc/email");
+  const byLocale = new Map<"en" | "de" | "fr", string[]>();
+  for (const p of recipients) {
+    const lc = resolveRecipientLocale({ profileLocale: p.locale });
+    if (!byLocale.has(lc)) byLocale.set(lc, []);
+    byLocale.get(lc)!.push(p.email as string);
+  }
 
   try {
     const { sendAdminAlert } = await import("@dbc/email");
-    await sendAdminAlert({
-      to: emailRecipients,
-      subject: `[DBC Admin] ${input.title}`,
-      headline: input.title,
-      body: input.body ?? "",
-      details:
-        input.data && Object.keys(input.data).length > 0
-          ? Object.fromEntries(
-              Object.entries(input.data).map(([k, v]) => [k, String(v)])
-            )
-          : undefined,
-      dashboardUrl: (input.data?.admin_href as string | undefined) ?? undefined,
-      severity: "info",
-      locale: "en",
-    });
+    const details =
+      input.data && Object.keys(input.data).length > 0
+        ? Object.fromEntries(
+            Object.entries(input.data).map(([k, v]) => [k, String(v)])
+          )
+        : undefined;
+    const dashboardUrl =
+      (input.data?.admin_href as string | undefined) ?? undefined;
+    for (const [locale, emails] of byLocale.entries()) {
+      await sendAdminAlert({
+        to: emails,
+        subject: `[DBC Admin] ${input.title}`,
+        headline: input.title,
+        body: input.body ?? "",
+        details,
+        dashboardUrl,
+        severity: "info",
+        locale,
+      });
+    }
   } catch (err) {
     // Don't let email failure break the caller — the in-app notification
     // already succeeded. Resend may reject while the domain is still

@@ -8,6 +8,8 @@ import {
   createEmailClient,
   fromAddressFor,
   sendChapterDelegateOutcome,
+  resolveRecipientLocale,
+  type Locale,
 } from "@dbc/email";
 
 type Status = "active" | "pending_approval" | "rejected" | "revoked";
@@ -471,7 +473,7 @@ export async function rejectChapterDelegate(
   // Notify the delegate + their chapter lead (if provided on the form).
   const { data: contact } = await service
     .from("contacts")
-    .select("email, first_name, last_name")
+    .select("email, first_name, last_name, locale, country")
     .eq("id", inv.contact_id)
     .maybeSingle();
   const { data: event } = await service
@@ -480,8 +482,15 @@ export async function rejectChapterDelegate(
     .eq("id", inv.event_id)
     .maybeSingle();
   if (contact?.email && event) {
+    // Phase E: resolve recipient locale via the SSOT chain instead of
+    // sending in whatever language the admin happened to be viewing in.
+    const recipientLocale = resolveRecipientLocale({
+      contactLocale: contact.locale,
+      country: contact.country,
+      fallback: locale === "de" || locale === "fr" ? locale : "en",
+    });
     const eventTitle =
-      ((event[`title_${locale}` as keyof typeof event] as string) ||
+      ((event[`title_${recipientLocale}` as keyof typeof event] as string) ||
         event.title_en) ?? "";
     const recipientName =
       [contact.first_name, contact.last_name].filter(Boolean).join(" ") ||
@@ -493,7 +502,7 @@ export async function rejectChapterDelegate(
       outcome: "rejected",
       note: note?.trim() || null,
       ccLeadEmail: inv.chapter_lead_email,
-      locale: locale === "de" || locale === "fr" ? locale : "en",
+      locale: recipientLocale,
     });
   }
 
@@ -570,7 +579,7 @@ export async function revokeChapterDelegate(
   // at the door. Send to the companion too if there was one.
   const { data: contactRows } = await service
     .from("contacts")
-    .select("id, email, first_name, last_name")
+    .select("id, email, first_name, last_name, locale, country")
     .in(
       "id",
       [inv.contact_id, inv.companion_contact_id].filter(
@@ -583,11 +592,17 @@ export async function revokeChapterDelegate(
     .eq("id", inv.event_id)
     .maybeSingle();
   if (contactRows && event) {
-    const eventTitle =
-      ((event[`title_${locale}` as keyof typeof event] as string) ||
-        event.title_en) ?? "";
     for (const c of contactRows) {
       if (!c.email) continue;
+      // Phase E: resolve recipient locale via the SSOT chain.
+      const recipientLocale = resolveRecipientLocale({
+        contactLocale: c.locale,
+        country: c.country,
+        fallback: locale === "de" || locale === "fr" ? locale : "en",
+      });
+      const eventTitle =
+        ((event[`title_${recipientLocale}` as keyof typeof event] as string) ||
+          event.title_en) ?? "";
       const recipientName =
         [c.first_name, c.last_name].filter(Boolean).join(" ") ||
         c.email.split("@")[0];
@@ -598,7 +613,7 @@ export async function revokeChapterDelegate(
         outcome: "revoked",
         note: null,
         ccLeadEmail: c.id === inv.contact_id ? inv.chapter_lead_email : null,
-        locale: locale === "de" || locale === "fr" ? locale : "en",
+        locale: recipientLocale,
       });
     }
   }
@@ -914,15 +929,6 @@ export async function sendChapterDelegateInvitesBatch(input: {
   }
   const ticketsBase =
     process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://tickets.dbc-germany.com";
-  const registrationUrl = `${ticketsBase}/${input.locale}/chapter-delegate/${event.slug}/register`;
-  const eventTitle =
-    ((event[`title_${input.locale}` as keyof typeof event] as string) ||
-      event.title_en) ??
-    event.slug;
-  const eventDateLabel = new Date(event.starts_at).toLocaleDateString(
-    input.locale,
-    { year: "numeric", month: "long", day: "numeric" }
-  );
 
   // De-dupe + sanitize recipients.
   const seen = new Set<string>();
@@ -946,6 +952,40 @@ export async function sendChapterDelegateInvitesBatch(input: {
     return { error: "No valid recipients after parsing." };
   }
 
+  // Phase E: resolve per-recipient locale. One DB call fetches every match;
+  // resolveRecipientLocale picks the locale per row using the SSOT chain
+  // (contacts.locale → country → input.locale fallback). Recipients with no
+  // contact row fall through to input.locale as the admin-selected default.
+  const { data: contactRows } = await service
+    .from("contacts")
+    .select("email, locale, country")
+    .in(
+      "email",
+      cleaned.map((r) => r.email)
+    );
+  const contactByEmail = new Map<
+    string,
+    { locale: string | null; country: string | null }
+  >();
+  for (const row of contactRows ?? []) {
+    contactByEmail.set(row.email.toLowerCase(), {
+      locale: row.locale,
+      country: row.country,
+    });
+  }
+  const byLocale = new Map<Locale, { email: string; name: string }[]>();
+  for (const r of cleaned) {
+    const c = contactByEmail.get(r.email);
+    const lc = resolveRecipientLocale({
+      contactLocale: c?.locale,
+      country: c?.country,
+      formLocale: input.locale,
+      fallback: input.locale,
+    });
+    if (!byLocale.has(lc)) byLocale.set(lc, []);
+    byLocale.get(lc)!.push(r);
+  }
+
   let sent = 0;
   let failed = 0;
   let errors: { email: string; error: string }[] = [];
@@ -953,18 +993,31 @@ export async function sendChapterDelegateInvitesBatch(input: {
     const { sendChapterDelegateInvitesBatch: sendBatch } = await import(
       "@dbc/email"
     );
-    const res = await sendBatch({
-      recipients: cleaned,
-      eventTitle,
-      eventDateLabel,
-      eventCity: event.city ?? "",
-      registrationUrl,
-      locale: input.locale,
-      kind: input.kind,
-    });
-    sent = res.sent;
-    failed = res.failed;
-    errors = res.errors;
+    // One batch per locale group so subject + body match the recipient's lang.
+    for (const [lc, group] of byLocale.entries()) {
+      const registrationUrl = `${ticketsBase}/${lc}/chapter-delegate/${event.slug}/register`;
+      const eventTitle =
+        ((event[`title_${lc}` as keyof typeof event] as string) ||
+          event.title_en) ??
+        event.slug;
+      const eventDateLabel = new Date(event.starts_at).toLocaleDateString(lc, {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+      const res = await sendBatch({
+        recipients: group,
+        eventTitle,
+        eventDateLabel,
+        eventCity: event.city ?? "",
+        registrationUrl,
+        locale: lc,
+        kind: input.kind,
+      });
+      sent += res.sent;
+      failed += res.failed;
+      errors = errors.concat(res.errors);
+    }
   } catch (err) {
     console.error("[sendChapterDelegateInvitesBatch] failed:", err);
     return {

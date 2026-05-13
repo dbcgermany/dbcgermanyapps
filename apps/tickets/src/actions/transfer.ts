@@ -2,7 +2,11 @@
 
 import { createServerClient, notifyAdmins } from "@dbc/supabase/server";
 import { createClient } from "@supabase/supabase-js";
-import { sendTicketEmail, sendTransferConfirmation } from "@dbc/email";
+import {
+  sendTicketEmail,
+  sendTransferConfirmation,
+  resolveRecipientLocale,
+} from "@dbc/email";
 import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { randomUUID } from "crypto";
@@ -61,7 +65,7 @@ export async function transferTicket(input: TransferInput) {
   // Verify ownership via the order
   const { data: order } = await supabase
     .from("orders")
-    .select("id, buyer_id")
+    .select("id, buyer_id, locale")
     .eq("id", ticket.order_id)
     .single();
 
@@ -130,8 +134,23 @@ export async function transferTicket(input: TransferInput) {
     },
   });
 
-  // Send new ticket PDF via email (async — don't block the UI response)
-  const locale = input.locale as "en" | "de" | "fr";
+  // Send new ticket PDF via email (async — don't block the UI response).
+  // Locale resolution (Phase E): the email should go to the new attendee in
+  // *their* language, not the locale of the transferring buyer's URL. Check
+  // for a stored preference on the new email first, then fall back to the
+  // order's locale, then to the form locale.
+  const newEmailLc = input.newAttendeeEmail.trim().toLowerCase();
+  const { data: newAttendeeContact } = await supabase
+    .from("contacts")
+    .select("locale, country")
+    .eq("email", newEmailLc)
+    .maybeSingle();
+  const locale = resolveRecipientLocale({
+    contactLocale: newAttendeeContact?.locale,
+    orderLocale: order?.locale,
+    formLocale: input.locale,
+    country: newAttendeeContact?.country,
+  });
   const localizedTitle =
     (event[`title_${locale}` as keyof typeof event] as string) ||
     event.title_en;
