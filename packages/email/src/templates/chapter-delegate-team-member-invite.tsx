@@ -19,13 +19,13 @@ const T = {
     preview: "You’re invited to Richesses d’Afrique — please register",
     greeting: "Hi {name},",
     intro:
-      "You’re invited to {event} on {date}{cityTail}. As a DBC team member of your chapter, your entry ticket is on us — and you can also bring one +1 free of charge.",
+      "You’re invited to {event} on {date}{cityTail}. As a DBC team member of your branch, your entry ticket is on us — and you can also bring one +1 free of charge.",
     formIntro:
       "To make this work cleanly at the door, please complete the short registration form:",
     cta: "Register now",
     bullets: [
       "Anyone not on the registration list will be turned away at the entrance. Please make sure every team member who plans to attend is registered through this form (you can forward this email).",
-      "The form asks for your Chapter Ambassador — the DBC ambassador responsible for your region. Add their name + email if you can; we’ll CC them on your confirmation so they know you’re coming.",
+      "The form asks for your Branch Ambassador — the DBC ambassador responsible for your region. Add their name + email if you can; we’ll CC them on your confirmation so they know you’re coming.",
       "You can add a +1 companion in the form. Their ticket is free as well; their seat is reserved once we confirm your registration.",
       "Tickets are issued only after the DBC Germany team approves your submission. You’ll get a confirmation email with your QR ticket attached.",
     ],
@@ -38,13 +38,13 @@ const T = {
     preview: "Du bist zu Richesses d’Afrique eingeladen — bitte registrieren",
     greeting: "Hallo {name},",
     intro:
-      "Du bist herzlich zu {event} am {date}{cityTail} eingeladen. Als DBC-Team-Mitglied deiner Sektion übernimmt das Germany-Team dein Eintrittsticket — und du darfst eine Begleitperson kostenlos mitbringen.",
+      "Du bist herzlich zu {event} am {date}{cityTail} eingeladen. Als DBC-Team-Mitglied deiner Niederlassung übernimmt das Germany-Team dein Eintrittsticket — und du darfst eine Begleitperson kostenlos mitbringen.",
     formIntro:
       "Damit am Einlass alles reibungslos läuft, fülle bitte das kurze Registrierungsformular aus:",
     cta: "Jetzt registrieren",
     bullets: [
       "Wer nicht registriert ist, wird am Einlass abgewiesen. Bitte stelle sicher, dass alle Team-Mitglieder, die kommen möchten, sich über dieses Formular anmelden (du kannst diese E-Mail weiterleiten).",
-      "Das Formular fragt nach deiner/deinem Sektions-Botschafter:in — der/die zuständige DBC-Botschafter:in deiner Region. Trag Name und E-Mail ein, wenn möglich; wir setzen sie auf CC, damit sie weiß, dass du kommst.",
+      "Das Formular fragt nach deiner/deinem Niederlassungs-Botschafter:in — der/die zuständige DBC-Botschafter:in deiner Region. Trag Name und E-Mail ein, wenn möglich; wir setzen sie auf CC, damit sie weiß, dass du kommst.",
       "Du kannst eine Begleitperson angeben. Ihr Ticket ist ebenfalls kostenlos; der Platz ist erst reserviert, sobald wir deine Anmeldung freigegeben haben.",
       "Tickets werden erst nach Freigabe durch das DBC Germany Team ausgestellt. Du erhältst eine Bestätigungs-E-Mail mit deinem QR-Ticket als Anhang.",
     ],
@@ -58,13 +58,13 @@ const T = {
       "Tu es invité·e à Richesses d’Afrique — merci de t’inscrire",
     greeting: "Bonjour {name},",
     intro:
-      "Tu es invité·e à {event}, le {date}{cityTail}. En tant que membre de l’équipe DBC de ton antenne, ton billet d’entrée est offert — et tu peux venir avec un·e accompagnateur·rice, également gratuitement.",
+      "Tu es invité·e à {event}, le {date}{cityTail}. En tant que membre de l’équipe DBC de ta succursale, ton billet d’entrée est offert — et tu peux venir avec un·e accompagnateur·rice, également gratuitement.",
     formIntro:
       "Pour que tout soit clair au contrôle d’entrée, merci de remplir le court formulaire d’inscription :",
     cta: "S’inscrire maintenant",
     bullets: [
       "Toute personne non inscrite se verra refuser l’accès au lieu. Assure-toi que chaque membre de l’équipe qui souhaite venir est inscrit·e via ce formulaire (tu peux transférer cet e-mail).",
-      "Le formulaire demande ton/ta Ambassadeur·rice d’antenne — l’ambassadeur·rice DBC responsable de ta région. Renseigne son nom et son e-mail si possible ; nous le/la mettrons en copie de ta confirmation.",
+      "Le formulaire demande ton/ta Ambassadeur·rice de succursale — l’ambassadeur·rice DBC responsable de ta région. Renseigne son nom et son e-mail si possible ; nous le/la mettrons en copie de ta confirmation.",
       "Tu peux indiquer un·e accompagnateur·rice. Son billet est aussi gratuit ; sa place est réservée dès que ton inscription est validée.",
       "Les billets sont émis uniquement après validation par l’équipe DBC Germany. Tu recevras un e-mail de confirmation avec ton billet QR en pièce jointe.",
     ],

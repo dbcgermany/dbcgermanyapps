@@ -438,7 +438,7 @@ export function EditEventForm({
           </div>
           <div>
             <label className="block text-xs text-muted-foreground mb-1">
-              Chapter delegate tier (other-chapter team members)
+              Branch delegate tier (other-branch team members)
             </label>
             <select
               name="chapter_delegate_tier_id"
@@ -513,7 +513,7 @@ export function EditEventForm({
               defaultChecked={event.chapter_delegate_program_enabled !== false}
               className="accent-primary"
             />
-            Chapter delegate program enabled
+            Branch delegate program enabled
           </label>
           <label className="flex items-center gap-2 text-sm">
             <input type="hidden" name="catering_enabled" value="false" />

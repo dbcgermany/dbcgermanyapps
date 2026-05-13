@@ -249,7 +249,7 @@
         "done": "✓ You’re on the waitlist"
       },
       "list": {
-        "tag": "Business incubator and accelerator · DACH chapter",
+        "tag": "Business incubator and accelerator · DACH branch",
         "title": "Live events.",
         "subtitle": "Masterclasses, conferences and meet-ups for founders, investors and operators building the EU ↔ Africa corridor.",
         "noEvents": "No upcoming events at the moment. Check back soon.",
@@ -424,7 +424,7 @@
       "devInfo": "Dev Info",
       "emailPreviews": "Email previews",
       "doorSale": "Manual Sales",
-      "chapterDelegates": "Chapter Delegates",
+      "chapterDelegates": "Branch Delegates",
       "events": "Events",
       "founders": "Founders",
       "funnels": "Funnels",
@@ -603,7 +603,7 @@
         "scheduleSpeakersDesc": "Manage the event agenda and speakers",
         "teamFriendInvites": "Team-friend invites",
         "teamFriendInvitesDesc": "Quotas & coupons per team member",
-        "chapterDelegates": "Chapter delegates",
+        "chapterDelegates": "Branch delegates",
         "chapterDelegatesDesc": "Public link, share & approval queue for this event",
         "cateringMenu": "Catering menu",
         "cateringMenuDesc": "Menu items, dietary flags, allergens, CSV export",
@@ -1736,8 +1736,8 @@
       }
     },
     "chapterDelegates": {
-      "title": "Chapter delegates",
-      "description": "Self-serve registrations from other DBC chapters. Approve to issue free team + companion tickets.",
+      "title": "Branch delegates",
+      "description": "Self-serve registrations from other DBC branches. Approve to issue free team + companion tickets.",
       "tabs": {
         "pending_approval": "Pending",
         "active": "Active",
@@ -1747,22 +1747,22 @@
       "filters": {
         "event": "Event",
         "allEvents": "All events",
-        "chapter": "Chapter",
-        "allChapters": "All chapters",
+        "chapter": "Branch",
+        "allChapters": "All branches",
         "search": "Search name / email / position",
         "searchPlaceholder": "search…"
       },
       "linkBanner": {
         "title": "Public registration link · {eventTitle}",
-        "hint": "Share with chapter leads — anyone with the link can register their team; submissions land in this approval queue.",
+        "hint": "Share with branch leads — anyone with the link can register their team; submissions land in this approval queue.",
         "copyHint": "Click to copy",
         "copy": "Copy",
         "copied": "Link copied — paste it anywhere",
         "whatsapp": "Send via WhatsApp",
         "email": "Email",
         "openTab": "Open in new tab",
-        "whatsappBody": "Hi! Please use this link to register as a DBC chapter delegate for {eventTitle}:\n{url}",
-        "emailSubject": "DBC chapter delegate registration — {eventTitle}",
+        "whatsappBody": "Hi! Please use this link to register as a DBC branch delegate for {eventTitle}:\n{url}",
+        "emailSubject": "DBC branch delegate registration — {eventTitle}",
         "emailBody": "Please use this link to register your team for {eventTitle}:\n\n{url}\n\nLet us know if you have any questions."
       },
       "manualAdd": {
@@ -1772,12 +1772,12 @@
         "firstName": "First name",
         "lastName": "Last name",
         "email": "Email",
-        "chapterLabel": "Chapter",
-        "pickChapter": "— Select chapter —",
+        "chapterLabel": "Branch",
+        "pickChapter": "— Select branch —",
         "position": "Position / role",
         "positionPh": "Community lead, treasurer, …",
-        "leadName": "Chapter Ambassador name (optional)",
-        "leadEmail": "Chapter Ambassador email (optional, CC'd)",
+        "leadName": "Branch Ambassador name (optional)",
+        "leadEmail": "Branch Ambassador email (optional, CC'd)",
         "bringsCompanion": "Bringing a +1 companion",
         "companionFirst": "Companion first name",
         "companionLast": "Companion last name",
@@ -1801,7 +1801,7 @@
       },
       "table": {
         "delegate": "Delegate",
-        "chapter": "Chapter",
+        "chapter": "Branch",
         "position": "Position",
         "companion": "Companion",
         "event": "Event",
@@ -1824,7 +1824,7 @@
         "open": "Send invite emails",
         "close": "Close",
         "audienceLabel": "Audience",
-        "audienceAmbassador": "Chapter Ambassadors",
+        "audienceAmbassador": "Branch Ambassadors",
         "audienceTeamMember": "Team members",
         "audienceHelp_ambassador": "Recipients receive the forward-this-to-your-team version with a venue-access warning.",
         "audienceHelp_team_member": "Recipients receive the direct invite version, asking them to register themselves (and a +1) for the event.",
@@ -1841,7 +1841,7 @@
         "noValidRecipients": "Add at least one valid email."
       },
       "noEventFilter": "Tip: filter by event below to get the public registration link for that event and to add delegates manually.",
-      "recognisedChapters": "Recognised chapters: {list}"
+      "recognisedChapters": "Recognised branches: {list}"
     },
     "jobOffers": {
       "list": {
@@ -1968,9 +1968,9 @@
       "sisterAcademie": "Académie Investir en Afrique"
     },
     "hero": {
-      "tag": "Business incubator and accelerator · DACH chapter",
+      "tag": "Business incubator and accelerator · DACH branch",
       "title": "Building a new generation of African entrepreneurs.",
-      "subtitle": "DBC Germany is the DACH chapter of Diambilay Business Center — a business incubator and accelerator for the African diaspora.",
+      "subtitle": "DBC Germany is the DACH branch of Diambilay Business Center — a business incubator and accelerator for the African diaspora.",
       "ctaPrimary": "Explore Richesses d'Afrique Germany",
       "ctaSecondary": "Become a member"
     },
@@ -2050,7 +2050,7 @@
         ]
       },
       "germanyBand": {
-        "eyebrow": "DACH chapter",
+        "eyebrow": "DACH branch",
         "title": "How to get in.",
         "subtitle": "Four ways to plug into DBC's catalogue — built and run from Düsseldorf.",
         "items": {
@@ -2099,7 +2099,7 @@
     "about": {
       "eyebrow": "About DBC",
       "title": "A business incubator and accelerator for African entrepreneurs.",
-      "body": "DBC is the business incubator and accelerator founded by Dr. Jean-Clément Diambilay to take African entrepreneurs from idea to investable business — incubation, capital, mentorship and courses. DBC Germany is its DACH chapter, supporting founders working between Europe and Africa.",
+      "body": "DBC is the business incubator and accelerator founded by Dr. Jean-Clément Diambilay to take African entrepreneurs from idea to investable business — incubation, capital, mentorship and courses. DBC Germany is its DACH branch, supporting founders working between Europe and Africa.",
       "conviction": "Our ambition at the Diambilay Business Center is to build an ecosystem that fosters innovation, skills development and the creation of sustainable value.",
       "convictionAttribution": "Dr. Jean-Clément Diambilay · Forum Richesses d'Afrique, Paris 2025",
       "founder": {
@@ -2152,7 +2152,7 @@
       "pressLabel": "Press"
     },
     "footer": {
-      "tagline": "Business incubator and accelerator. DACH chapter.",
+      "tagline": "Business incubator and accelerator. DACH branch.",
       "sections": {
         "services": "Services",
         "company": "Company",
@@ -2445,7 +2445,7 @@
           },
           {
             "q": "Is this only for founders in Germany?",
-            "a": "No. DBC Germany — the DACH chapter — welcomes applicants from the wider African diaspora across Europe and beyond."
+            "a": "No. DBC Germany — the DACH branch — welcomes applicants from the wider African diaspora across Europe and beyond."
           },
           {
             "q": "Is there a cost to apply?",

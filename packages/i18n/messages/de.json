@@ -424,7 +424,7 @@
       "devInfo": "Dev-Info",
       "emailPreviews": "E-Mail-Vorschau",
       "doorSale": "Direktverkauf",
-      "chapterDelegates": "Sektions-Delegierte",
+      "chapterDelegates": "Niederlassungs-Delegierte",
       "events": "Veranstaltungen",
       "founders": "Gründer",
       "funnels": "Funnels",
@@ -603,7 +603,7 @@
         "scheduleSpeakersDesc": "Agenda und Speaker verwalten",
         "teamFriendInvites": "Team-Friends-Einladungen",
         "teamFriendInvitesDesc": "Kontingente & Gutscheine pro Teammitglied",
-        "chapterDelegates": "Sektions-Delegierte",
+        "chapterDelegates": "Niederlassungs-Delegierte",
         "chapterDelegatesDesc": "Öffentlicher Link, Versand & Freigabe-Warteschlange für diese Veranstaltung",
         "cateringMenu": "Catering-Menü",
         "cateringMenuDesc": "Menüpositionen, Diätflags, Allergene, CSV-Export",
@@ -1736,8 +1736,8 @@
       }
     },
     "chapterDelegates": {
-      "title": "Sektions-Delegierte",
-      "description": "Eigenständige Anmeldungen aus anderen DBC-Sektionen. Nach Freigabe werden Team- und Begleitperson-Tickets kostenfrei ausgestellt.",
+      "title": "Niederlassungs-Delegierte",
+      "description": "Eigenständige Anmeldungen aus anderen DBC-Niederlassungen. Nach Freigabe werden Team- und Begleitperson-Tickets kostenfrei ausgestellt.",
       "tabs": {
         "pending_approval": "Offen",
         "active": "Aktiv",
@@ -1747,22 +1747,22 @@
       "filters": {
         "event": "Veranstaltung",
         "allEvents": "Alle Veranstaltungen",
-        "chapter": "Sektion",
-        "allChapters": "Alle Sektionen",
+        "chapter": "Niederlassung",
+        "allChapters": "Alle Niederlassungen",
         "search": "Name / E-Mail / Position suchen",
         "searchPlaceholder": "suchen…"
       },
       "linkBanner": {
         "title": "Öffentlicher Anmeldelink · {eventTitle}",
-        "hint": "Teile den Link mit Sektionsleitungen — wer ihn hat, kann sein Team registrieren; alle Anmeldungen landen in dieser Warteschlange.",
+        "hint": "Teile den Link mit Niederlassungsleitungen — wer ihn hat, kann sein Team registrieren; alle Anmeldungen landen in dieser Warteschlange.",
         "copyHint": "Klicken zum Kopieren",
         "copy": "Kopieren",
         "copied": "Link kopiert — irgendwo einfügen",
         "whatsapp": "Per WhatsApp senden",
         "email": "E-Mail",
         "openTab": "In neuem Tab öffnen",
-        "whatsappBody": "Hi! Bitte nutze diesen Link, um dich als DBC-Sektions-Delegierte:r für {eventTitle} zu registrieren:\n{url}",
-        "emailSubject": "DBC Sektions-Delegierten-Anmeldung — {eventTitle}",
+        "whatsappBody": "Hi! Bitte nutze diesen Link, um dich als DBC-Niederlassungs-Delegierte:r für {eventTitle} zu registrieren:\n{url}",
+        "emailSubject": "DBC Niederlassungs-Delegierten-Anmeldung — {eventTitle}",
         "emailBody": "Bitte nutze diesen Link, um dein Team für {eventTitle} zu registrieren:\n\n{url}\n\nMelde dich bei Fragen."
       },
       "manualAdd": {
@@ -1772,12 +1772,12 @@
         "firstName": "Vorname",
         "lastName": "Nachname",
         "email": "E-Mail",
-        "chapterLabel": "Sektion",
-        "pickChapter": "— Sektion wählen —",
+        "chapterLabel": "Niederlassung",
+        "pickChapter": "— Niederlassung wählen —",
         "position": "Position / Rolle",
         "positionPh": "Community Lead, Treasurer, …",
-        "leadName": "Name der/des Sektions-Botschafter:in (optional)",
-        "leadEmail": "E-Mail der/des Sektions-Botschafter:in (optional, CC)",
+        "leadName": "Name der/des Niederlassungs-Botschafter:in (optional)",
+        "leadEmail": "E-Mail der/des Niederlassungs-Botschafter:in (optional, CC)",
         "bringsCompanion": "Bringt eine Begleitperson mit",
         "companionFirst": "Vorname Begleitung",
         "companionLast": "Nachname Begleitung",
@@ -1794,14 +1794,14 @@
         "rejectNote": "Ablehnungsgrund (optional)",
         "clear": "Auswahl aufheben",
         "rejectConfirmTitle": "Ausgewählte Delegierte ablehnen",
-        "rejectConfirmDescription": "{count} offene Anmeldung(en) ablehnen. Jede:r Delegierte (und Sektionsleitung, falls angegeben) erhält eine höfliche Ablehnungs-E-Mail.",
+        "rejectConfirmDescription": "{count} offene Anmeldung(en) ablehnen. Jede:r Delegierte (und Niederlassungsleitung, falls angegeben) erhält eine höfliche Ablehnungs-E-Mail.",
         "approvedToast": "{count} freigegeben",
         "rejectedToast": "{count} abgelehnt",
         "withFailures": " ({failed} fehlgeschlagen)"
       },
       "table": {
         "delegate": "Delegierte:r",
-        "chapter": "Sektion",
+        "chapter": "Niederlassung",
         "position": "Position",
         "companion": "Begleitung",
         "event": "Veranstaltung",
@@ -1824,7 +1824,7 @@
         "open": "Einladungs-E-Mails senden",
         "close": "Schließen",
         "audienceLabel": "Zielgruppe",
-        "audienceAmbassador": "Sektions-Botschafter:innen",
+        "audienceAmbassador": "Niederlassungs-Botschafter:innen",
         "audienceTeamMember": "Team-Mitglieder",
         "audienceHelp_ambassador": "Empfänger:innen erhalten die Weiterleiten-an-Team-Variante mit Hinweis auf die Einlasspflicht.",
         "audienceHelp_team_member": "Empfänger:innen erhalten die direkte Einladung mit Bitte, sich (und ggf. eine Begleitperson) selbst zu registrieren.",
@@ -1841,7 +1841,7 @@
         "noValidRecipients": "Bitte mindestens eine gültige E-Mail eingeben."
       },
       "noEventFilter": "Tipp: Filtere unten nach Veranstaltung, um den öffentlichen Anmeldelink zu erhalten und Delegierte manuell anzulegen.",
-      "recognisedChapters": "Anerkannte Sektionen: {list}"
+      "recognisedChapters": "Anerkannte Niederlassungen: {list}"
     },
     "jobOffers": {
       "list": {

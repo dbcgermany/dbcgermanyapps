@@ -424,7 +424,7 @@
       "devInfo": "Infos dev",
       "emailPreviews": "Aperçus e-mail",
       "doorSale": "Ventes manuelles",
-      "chapterDelegates": "Délégués d’antenne",
+      "chapterDelegates": "Délégués de succursale",
       "events": "Événements",
       "founders": "Fondateurs",
       "funnels": "Funnels",
@@ -603,7 +603,7 @@
         "scheduleSpeakersDesc": "Gérer l’agenda et les intervenants",
         "teamFriendInvites": "Invitations Team-Friend",
         "teamFriendInvitesDesc": "Quotas & coupons par membre d’équipe",
-        "chapterDelegates": "Délégués d’antenne",
+        "chapterDelegates": "Délégués de succursale",
         "chapterDelegatesDesc": "Lien public, partage & file de validation pour cet événement",
         "cateringMenu": "Menu restauration",
         "cateringMenuDesc": "Articles du menu, allergènes, drapeaux diététiques, export CSV",
@@ -1736,8 +1736,8 @@
       }
     },
     "chapterDelegates": {
-      "title": "Délégués d’antenne",
-      "description": "Inscriptions auto-gérées venant d’autres antennes DBC. La validation déclenche l’émission gratuite des billets équipe + accompagnateur.",
+      "title": "Délégués de succursale",
+      "description": "Inscriptions auto-gérées venant d’autres succursales DBC. La validation déclenche l’émission gratuite des billets équipe + accompagnateur.",
       "tabs": {
         "pending_approval": "En attente",
         "active": "Actifs",
@@ -1747,22 +1747,22 @@
       "filters": {
         "event": "Événement",
         "allEvents": "Tous les événements",
-        "chapter": "Antenne",
-        "allChapters": "Toutes les antennes",
+        "chapter": "Succursale",
+        "allChapters": "Toutes les succursales",
         "search": "Rechercher nom / e-mail / poste",
         "searchPlaceholder": "rechercher…"
       },
       "linkBanner": {
         "title": "Lien d’inscription public · {eventTitle}",
-        "hint": "Partagez avec les responsables d’antenne — toute personne ayant le lien peut inscrire son équipe ; les inscriptions arrivent dans cette file.",
+        "hint": "Partagez avec les responsables de succursale — toute personne ayant le lien peut inscrire son équipe ; les inscriptions arrivent dans cette file.",
         "copyHint": "Cliquez pour copier",
         "copy": "Copier",
         "copied": "Lien copié — collez-le où vous voulez",
         "whatsapp": "Envoyer par WhatsApp",
         "email": "E-mail",
         "openTab": "Ouvrir dans un nouvel onglet",
-        "whatsappBody": "Salut ! Utilise ce lien pour t’inscrire comme délégué·e d’antenne DBC pour {eventTitle} :\n{url}",
-        "emailSubject": "Inscription délégué·e d’antenne DBC — {eventTitle}",
+        "whatsappBody": "Salut ! Utilise ce lien pour t’inscrire comme délégué·e de succursale DBC pour {eventTitle} :\n{url}",
+        "emailSubject": "Inscription délégué·e de succursale DBC — {eventTitle}",
         "emailBody": "Utilisez ce lien pour inscrire votre équipe à {eventTitle} :\n\n{url}\n\nContactez-nous en cas de question."
       },
       "manualAdd": {
@@ -1772,11 +1772,11 @@
         "firstName": "Prénom",
         "lastName": "Nom",
         "email": "E-mail",
-        "chapterLabel": "Antenne",
-        "pickChapter": "— Choisir une antenne —",
+        "chapterLabel": "Succursale",
+        "pickChapter": "— Choisir une succursale —",
         "position": "Poste / rôle",
         "positionPh": "Responsable communauté, trésorier·ère, …",
-        "leadName": "Nom de l’ambassadeur·rice d’antenne (optionnel)",
+        "leadName": "Nom de l’ambassadeur·rice de succursale (optionnel)",
         "leadEmail": "E-mail de l’ambassadeur·rice (optionnel, en copie)",
         "bringsCompanion": "Amène un·e accompagnateur·ice",
         "companionFirst": "Prénom accompagnateur·ice",
@@ -1801,7 +1801,7 @@
       },
       "table": {
         "delegate": "Délégué·e",
-        "chapter": "Antenne",
+        "chapter": "Succursale",
         "position": "Poste",
         "companion": "Accompagnateur·ice",
         "event": "Événement",
@@ -1824,7 +1824,7 @@
         "open": "Envoyer des e-mails d’invitation",
         "close": "Fermer",
         "audienceLabel": "Audience",
-        "audienceAmbassador": "Ambassadeur·rice·s d’antenne",
+        "audienceAmbassador": "Ambassadeur·rice·s de succursale",
         "audienceTeamMember": "Membres de l’équipe",
         "audienceHelp_ambassador": "Les destinataires reçoivent la version « à transférer à l’équipe » avec l’avertissement sur l’accès au lieu.",
         "audienceHelp_team_member": "Les destinataires reçoivent l’invitation directe les invitant à s’inscrire eux/elles-mêmes (et un·e +1).",
@@ -1841,7 +1841,7 @@
         "noValidRecipients": "Ajoutez au moins une adresse valide."
       },
       "noEventFilter": "Astuce : filtrez par événement ci-dessous pour obtenir le lien d’inscription public et ajouter des délégué·e·s manuellement.",
-      "recognisedChapters": "Antennes reconnues : {list}"
+      "recognisedChapters": "Succursales reconnues : {list}"
     },
     "jobOffers": {
       "list": {

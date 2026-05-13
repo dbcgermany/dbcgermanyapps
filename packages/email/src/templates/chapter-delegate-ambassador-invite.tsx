@@ -16,13 +16,13 @@ export interface ChapterDelegateAmbassadorInviteEmailProps {
 
 const T = {
   en: {
-    preview: "Please forward to your DBC chapter team — registration link inside",
+    preview: "Please forward to your DBC branch team — registration link inside",
     greeting: "Hi {name},",
     intro:
-      "Quick note ahead of {event} ({date}{cityTail}). Could you share the registration link below with your DBC chapter team and any +1s they’re bringing? Their entry tickets are on us, but only registered people get past the door.",
+      "Quick note ahead of {event} ({date}{cityTail}). Could you share the registration link below with your DBC branch team? Each team member registers themselves through that link — and they can add a +1 companion inside the same form. Their entry tickets are on us, but only registered people get past the door.",
     cta: "Open registration link",
     forwardHint:
-      "When they register they can name you as their Chapter Ambassador, and we’ll automatically CC you on each confirmation — so you stay in the loop on who’s coming.",
+      "When they register they can name you as their Branch Ambassador, and we’ll automatically CC you on each confirmation — so you stay in the loop on who’s coming.",
     accessRule:
       "⚠ Anyone not registered will be turned away at the venue. Please forward this link to every team member who plans to attend.",
     closing: "Many thanks,",
@@ -30,13 +30,13 @@ const T = {
   },
   de: {
     preview:
-      "Bitte weiterleiten an dein DBC-Sektions-Team — Anmeldelink im Inneren",
+      "Bitte weiterleiten an dein DBC-Niederlassungs-Team — Anmeldelink im Inneren",
     greeting: "Hallo {name},",
     intro:
-      "Kurz vor {event} ({date}{cityTail}): kannst du den unten stehenden Anmeldelink an dein DBC-Sektions-Team und ggf. ihre Begleitpersonen weiterleiten? Die Eintrittstickets übernehmen wir, am Einlass kommen aber nur registrierte Personen rein.",
+      "Kurz vor {event} ({date}{cityTail}): kannst du den unten stehenden Anmeldelink an dein DBC-Niederlassungs-Team weiterleiten? Jede:r Team-Mitglied meldet sich selbst über den Link an — eine Begleitperson kann direkt im selben Formular ergänzt werden. Die Eintrittstickets übernehmen wir, am Einlass kommen aber nur registrierte Personen rein.",
     cta: "Zum Anmeldeformular",
     forwardHint:
-      "Bei der Anmeldung können sie dich als Sektions-Botschafter:in eintragen. Wir setzen dich dann automatisch auf jede Bestätigungs-E-Mail in CC — so weißt du, wer kommt.",
+      "Bei der Anmeldung können sie dich als Niederlassungs-Botschafter:in eintragen. Wir setzen dich dann automatisch auf jede Bestätigungs-E-Mail in CC — so weißt du, wer kommt.",
     accessRule:
       "⚠ Wer nicht registriert ist, wird am Einlass abgewiesen. Bitte leite den Link an alle Team-Mitglieder weiter, die teilnehmen möchten.",
     closing: "Vielen Dank,",
@@ -44,13 +44,13 @@ const T = {
   },
   fr: {
     preview:
-      "Merci de transférer à ton équipe d’antenne DBC — lien d’inscription à l’intérieur",
+      "Merci de transférer à ton équipe de succursale DBC — lien d’inscription à l’intérieur",
     greeting: "Bonjour {name},",
     intro:
-      "Petit message avant {event} ({date}{cityTail}) : pourrais-tu transférer le lien d’inscription ci-dessous à ton équipe d’antenne DBC et aux éventuel·le·s accompagnateur·rice·s ? Les billets d’entrée sont offerts, mais seules les personnes inscrites passent l’entrée.",
+      "Petit message avant {event} ({date}{cityTail}) : pourrais-tu transférer le lien d’inscription ci-dessous à ton équipe de succursale DBC ? Chaque membre s’inscrit personnellement via ce lien — il/elle pourra ajouter un·e accompagnateur·rice directement dans le même formulaire. Les billets d’entrée sont offerts, mais seules les personnes inscrites passent l’entrée.",
     cta: "Ouvrir le formulaire d’inscription",
     forwardHint:
-      "Au moment de s’inscrire, ils/elles peuvent te désigner comme leur Ambassadeur·rice d’antenne. Nous te mettrons automatiquement en copie de chaque confirmation, pour que tu saches qui vient.",
+      "Au moment de s’inscrire, ils/elles peuvent te désigner comme leur Ambassadeur·rice de succursale. Nous te mettrons automatiquement en copie de chaque confirmation, pour que tu saches qui vient.",
     accessRule:
       "⚠ Toute personne non inscrite se verra refuser l’accès au lieu. Merci de transférer le lien à chaque membre de l’équipe qui prévoit de venir.",
     closing: "Merci beaucoup,",
