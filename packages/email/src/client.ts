@@ -71,3 +71,34 @@ export function fromAddressFor(
       return process.env.RESEND_FROM_ADDRESS ?? DEFAULT_FROM;
   }
 }
+
+/**
+ * Reply-to inbox matrix. Mirrors `fromAddressFor()`'s scope split so callers
+ * can pass the same `role` they use for `from:`. Templates routinely say
+ * things like "if you didn't expect this, reply to this email" — but the
+ * from-address is `noreply@` / `tickets@`, so without an explicit replyTo
+ * the message bounces. This helper threads a real human-monitored inbox
+ * through every transactional + ticket send.
+ *
+ * Routing (admin-configurable per Vercel env):
+ *   tickets        → sales@dbc-germany.com  — ticket transfer, refund, order
+ *                                              receipt, payment reminder,
+ *                                              ticket delivery, ask-speakers
+ *   transactional  → info@dbc-germany.com   — everything else (admin alerts,
+ *                                              waitlist, chapter-delegate
+ *                                              invites + outcomes, staff
+ *                                              account events, newsletter
+ *                                              confirm, team-friend redeemed)
+ *
+ * Hardcoded defaults keep replies landing on the right inbox even if the
+ * Vercel env vars aren't set; the env vars only need to change when you
+ * want to point a category somewhere else without a deploy.
+ */
+export function replyToAddressFor(
+  role: "transactional" | "tickets"
+): string {
+  if (role === "tickets") {
+    return process.env.RESEND_REPLY_TO_TICKETS ?? "sales@dbc-germany.com";
+  }
+  return process.env.RESEND_REPLY_TO ?? "info@dbc-germany.com";
+}

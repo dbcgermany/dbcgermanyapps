@@ -1,6 +1,6 @@
 import { render } from "@react-email/components";
 import React from "react";
-import { createEmailClient, fromAddressFor } from "./client";
+import { createEmailClient, fromAddressFor, replyToAddressFor } from "./client";
 import {
   AskSpeakersEmail,
   type AskSpeakersEmailSpeaker,
@@ -44,6 +44,7 @@ export async function sendAskSpeakersEmail(
   const resend = createEmailClient();
   const res = await resend.emails.send({
     from: fromAddressFor("tickets"),
+    replyTo: replyToAddressFor("tickets"),
     to: input.to,
     subject,
     html,

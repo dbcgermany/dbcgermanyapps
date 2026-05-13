@@ -911,6 +911,7 @@
       "send": "Send all templates",
       "sending": "Sending…",
       "summary": "{sent} of {total} sent — {failed} failed.",
+      "eventInUse": "Previewing against event: {title} ({slug})",
       "tableTemplate": "Template",
       "tableStatus": "Status",
       "tableError": "Error",

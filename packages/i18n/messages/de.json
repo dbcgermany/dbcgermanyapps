@@ -911,6 +911,7 @@
       "send": "Alle Vorlagen senden",
       "sending": "Wird gesendet…",
       "summary": "{sent} von {total} versendet — {failed} fehlgeschlagen.",
+      "eventInUse": "Vorschau für Veranstaltung: {title} ({slug})",
       "tableTemplate": "Vorlage",
       "tableStatus": "Status",
       "tableError": "Fehler",

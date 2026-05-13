@@ -911,6 +911,7 @@
       "send": "Envoyer tous les modèles",
       "sending": "Envoi en cours…",
       "summary": "{sent} sur {total} envoyés — {failed} échecs.",
+      "eventInUse": "Aperçu pour l'événement : {title} ({slug})",
       "tableTemplate": "Modèle",
       "tableStatus": "Statut",
       "tableError": "Erreur",

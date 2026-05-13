@@ -29,6 +29,8 @@ export function EmailPreviewsClient({
     total: number;
     sent: number;
     failed: number;
+    eventTitle: string;
+    eventSlug: string;
   } | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -50,6 +52,8 @@ export function EmailPreviewsClient({
         total: res.data.results.length,
         sent: res.data.totalSent,
         failed: res.data.totalFailed,
+        eventTitle: res.data.eventTitle,
+        eventSlug: res.data.eventSlug,
       });
       if (res.data.totalFailed === 0) {
         toast.success(t("successToast"));
@@ -102,6 +106,12 @@ export function EmailPreviewsClient({
               sent: summary.sent,
               total: summary.total,
               failed: summary.failed,
+            })}
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {t("eventInUse", {
+              title: summary.eventTitle,
+              slug: summary.eventSlug,
             })}
           </p>
         </Card>

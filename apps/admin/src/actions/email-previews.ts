@@ -28,16 +28,11 @@ import {
   sendAdminAlert,
 } from "@dbc/email";
 import {
-  PREVIEW_EVENT,
   PREVIEW_CONTACT,
-  PREVIEW_TIER,
   PREVIEW_TICKET,
-  PREVIEW_ORDER,
-  PREVIEW_URLS,
   PREVIEW_BRAND,
-  PREVIEW_LINE_ITEMS,
-  PREVIEW_UPCOMING_EVENT,
   PREVIEW_ASK_SPEAKERS,
+  buildPreviewEventFixture,
   previewNewsletterBody,
   previewNewsletterSubject,
   previewStaffMessage,
@@ -56,16 +51,26 @@ export interface PreviewResult {
 export interface SendAllPreviewsResult {
   targetEmail: string;
   locale: PreviewLocale;
+  eventSlug: string;
+  eventTitle: string;
   results: PreviewResult[];
   totalSent: number;
   totalFailed: number;
 }
 
+const TICKETS_BASE_URL =
+  process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://tickets.dbc-germany.com";
+const ADMIN_BASE_URL =
+  process.env.NEXT_PUBLIC_ADMIN_URL ?? "https://admin.dbc-germany.com";
+const SITE_BASE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://dbc-germany.com";
+
 /**
- * Sends every distinct email template to `targetEmail` in the chosen locale,
- * using fixture data only — no production rows are read or written. Gated to
- * super_admin because a misclick on the email field would spam 24 fixture
- * mails. Per-template try/catch so one bad template doesn't kill the run.
+ * Sends every distinct email template to `targetEmail` in the chosen locale.
+ * The event fields (slug, title, dates, venue, tier, URLs) come from the
+ * next upcoming published event in the database — so previews auto-update
+ * for every future event without code changes. No production rows are
+ * written; only reads. Gated to super_admin.
  */
 export async function sendAllTemplatePreviews(input: {
   targetEmail: string;
@@ -82,6 +87,69 @@ export async function sendAllTemplatePreviews(input: {
   }
 
   const locale = input.locale;
+  const supabase = await createServerClient();
+
+  // Pick the next upcoming published event (or the most recently ended one
+  // if none upcoming). Pull the cheapest public+counts-as-sold tier on that
+  // event for tier-named templates.
+  const nowIso = new Date().toISOString();
+  const { data: upcomingEvent } = await supabase
+    .from("events")
+    .select(
+      "id, slug, title_en, title_de, title_fr, event_type, starts_at, ends_at, city, venue_name, venue_address, timezone"
+    )
+    .eq("is_published", true)
+    .gte("ends_at", nowIso)
+    .order("starts_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  let eventRow = upcomingEvent;
+  if (!eventRow) {
+    const { data: lastEvent } = await supabase
+      .from("events")
+      .select(
+        "id, slug, title_en, title_de, title_fr, event_type, starts_at, ends_at, city, venue_name, venue_address, timezone"
+      )
+      .eq("is_published", true)
+      .order("starts_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    eventRow = lastEvent;
+  }
+  if (!eventRow) {
+    return {
+      error:
+        "No published event in the database — create at least one event so previews can point at it.",
+    };
+  }
+
+  const { data: tierRow } = await supabase
+    .from("ticket_tiers")
+    .select("name_en, name_de, name_fr, price_cents")
+    .eq("event_id", eventRow.id)
+    .eq("is_public", true)
+    .eq("counts_as_sold", true)
+    .order("price_cents", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  // Fall back to a synthetic Standard tier if the event has no public tiers
+  // yet (early-config phase). The preview still renders; the fictional price
+  // just won't match a real tier on the event.
+  const tier = tierRow ?? {
+    name_en: "Standard",
+    name_de: "Standard",
+    name_fr: "Standard",
+    price_cents: 9900,
+  };
+
+  const fx = buildPreviewEventFixture(eventRow, tier, locale, {
+    ticketsBase: TICKETS_BASE_URL,
+    adminBase: ADMIN_BASE_URL,
+    siteBase: SITE_BASE_URL,
+  });
+
   const results: PreviewResult[] = [];
 
   // Resend's free-tier rate limit is 5 req/s. With 30 templates fired back
@@ -107,23 +175,23 @@ export async function sendAllTemplatePreviews(input: {
     }
   }
 
-  // 1. ticket-delivery (standard, no invitation flag)
+  // 1. ticket-delivery
   await run("ticket-delivery", () =>
     sendTicketEmail({
       attendeeName: PREVIEW_CONTACT.fullName,
       attendeeEmail: email,
-      eventTitle: PREVIEW_EVENT.title,
-      eventType: PREVIEW_EVENT.type,
-      startsAt: PREVIEW_EVENT.startsAt,
-      endsAt: PREVIEW_EVENT.endsAt,
-      venueName: PREVIEW_EVENT.venueName,
-      venueAddress: PREVIEW_EVENT.venueAddress,
-      city: PREVIEW_EVENT.city,
-      timezone: PREVIEW_EVENT.timezone,
-      tierName: PREVIEW_TIER.name,
+      eventTitle: fx.event.title,
+      eventType: fx.event.type,
+      startsAt: fx.event.startsAt,
+      endsAt: fx.event.endsAt,
+      venueName: fx.event.venueName,
+      venueAddress: fx.event.venueAddress,
+      city: fx.event.city,
+      timezone: fx.event.timezone,
+      tierName: fx.tier.name,
       ticketToken: PREVIEW_TICKET.token,
       locale,
-      orderUrl: PREVIEW_URLS.orderUrl,
+      orderUrl: fx.urls.orderUrl,
       brandName: PREVIEW_BRAND.brandName,
       legalName: PREVIEW_BRAND.legalName,
       legalForm: PREVIEW_BRAND.legalForm,
@@ -133,23 +201,23 @@ export async function sendAllTemplatePreviews(input: {
     })
   );
 
-  // 2. invitation-email (formal invitation via sendTicketEmail w/ isInvitation)
+  // 2. invitation-email (formal)
   await run("invitation-email", () =>
     sendTicketEmail({
       attendeeName: PREVIEW_CONTACT.fullName,
       attendeeEmail: email,
-      eventTitle: PREVIEW_EVENT.title,
-      eventType: PREVIEW_EVENT.type,
-      startsAt: PREVIEW_EVENT.startsAt,
-      endsAt: PREVIEW_EVENT.endsAt,
-      venueName: PREVIEW_EVENT.venueName,
-      venueAddress: PREVIEW_EVENT.venueAddress,
-      city: PREVIEW_EVENT.city,
-      timezone: PREVIEW_EVENT.timezone,
-      tierName: PREVIEW_TIER.name,
+      eventTitle: fx.event.title,
+      eventType: fx.event.type,
+      startsAt: fx.event.startsAt,
+      endsAt: fx.event.endsAt,
+      venueName: fx.event.venueName,
+      venueAddress: fx.event.venueAddress,
+      city: fx.event.city,
+      timezone: fx.event.timezone,
+      tierName: fx.tier.name,
       ticketToken: PREVIEW_TICKET.token,
       locale,
-      orderUrl: PREVIEW_URLS.orderUrl,
+      orderUrl: fx.urls.orderUrl,
       brandName: PREVIEW_BRAND.brandName,
       legalName: PREVIEW_BRAND.legalName,
       legalForm: PREVIEW_BRAND.legalForm,
@@ -172,14 +240,14 @@ export async function sendAllTemplatePreviews(input: {
     sendOrderReceipt({
       to: email,
       recipientName: PREVIEW_CONTACT.fullName,
-      orderShortId: PREVIEW_ORDER.shortId,
-      eventTitle: PREVIEW_EVENT.title,
-      subtotalFormatted: PREVIEW_ORDER.subtotalFormatted,
-      discountFormatted: PREVIEW_ORDER.discountFormatted,
-      totalFormatted: PREVIEW_ORDER.totalFormatted,
-      paymentMethod: PREVIEW_ORDER.paymentMethod,
-      orderUrl: PREVIEW_URLS.orderUrl,
-      lineItems: PREVIEW_LINE_ITEMS,
+      orderShortId: fx.order.shortId,
+      eventTitle: fx.event.title,
+      subtotalFormatted: fx.order.subtotalFormatted,
+      discountFormatted: fx.order.discountFormatted,
+      totalFormatted: fx.order.totalFormatted,
+      paymentMethod: fx.order.paymentMethod,
+      orderUrl: fx.urls.orderUrl,
+      lineItems: fx.lineItems,
       locale,
     })
   );
@@ -190,13 +258,19 @@ export async function sendAllTemplatePreviews(input: {
       to: email,
       recipientName: PREVIEW_CONTACT.fullName,
       previousHolderName: "[PREVIEW] Vanessa Bambi",
-      eventTitle: PREVIEW_EVENT.title,
-      eventDate: PREVIEW_EVENT.dateLabel,
-      eventTime: "17:00 – 23:00",
-      venueName: PREVIEW_EVENT.venueName,
-      tierName: PREVIEW_TIER.name,
+      eventTitle: fx.event.title,
+      eventDate: fx.event.dateLabel,
+      eventTime: `${fx.event.startsAt.toLocaleTimeString(locale, {
+        hour: "2-digit",
+        minute: "2-digit",
+      })} – ${fx.event.endsAt.toLocaleTimeString(locale, {
+        hour: "2-digit",
+        minute: "2-digit",
+      })}`,
+      venueName: fx.event.venueName,
+      tierName: fx.tier.name,
       ticketShortId: PREVIEW_TICKET.shortId,
-      orderUrl: PREVIEW_URLS.orderUrl,
+      orderUrl: fx.urls.orderUrl,
       locale,
     })
   );
@@ -206,9 +280,9 @@ export async function sendAllTemplatePreviews(input: {
     sendRefundConfirmation({
       to: email,
       recipientName: PREVIEW_CONTACT.fullName,
-      eventTitle: PREVIEW_EVENT.title,
-      orderShortId: PREVIEW_ORDER.shortId,
-      refundAmountFormatted: PREVIEW_ORDER.totalFormatted,
+      eventTitle: fx.event.title,
+      orderShortId: fx.order.shortId,
+      refundAmountFormatted: fx.order.totalFormatted,
       locale,
     })
   );
@@ -217,10 +291,10 @@ export async function sendAllTemplatePreviews(input: {
   await run("waitlist-notification", () =>
     sendWaitlistNotification({
       to: email,
-      eventTitle: PREVIEW_EVENT.title,
-      tierName: PREVIEW_TIER.name,
+      eventTitle: fx.event.title,
+      tierName: fx.tier.name,
       expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-      checkoutUrl: PREVIEW_URLS.checkoutUrl,
+      checkoutUrl: fx.urls.checkoutUrl,
       locale,
     })
   );
@@ -230,10 +304,10 @@ export async function sendAllTemplatePreviews(input: {
     sendPaymentReminder({
       to: email,
       recipientName: PREVIEW_CONTACT.fullName,
-      eventTitle: PREVIEW_EVENT.title,
-      orderShortId: PREVIEW_ORDER.shortId,
-      totalFormatted: PREVIEW_ORDER.totalFormatted,
-      orderUrl: PREVIEW_URLS.orderUrl,
+      eventTitle: fx.event.title,
+      orderShortId: fx.order.shortId,
+      totalFormatted: fx.order.totalFormatted,
+      orderUrl: fx.urls.orderUrl,
       locale,
     })
   );
@@ -243,7 +317,7 @@ export async function sendAllTemplatePreviews(input: {
     sendPasswordReset({
       to: email,
       recipientName: PREVIEW_CONTACT.fullName,
-      actionLink: PREVIEW_URLS.passwordResetUrl,
+      actionLink: fx.urls.passwordResetUrl,
       locale,
     })
   );
@@ -254,7 +328,7 @@ export async function sendAllTemplatePreviews(input: {
       to: email,
       recipientName: PREVIEW_CONTACT.fullName,
       role: "admin",
-      actionLink: PREVIEW_URLS.staffInviteUrl,
+      actionLink: fx.urls.staffInviteUrl,
       locale,
     })
   );
@@ -266,7 +340,7 @@ export async function sendAllTemplatePreviews(input: {
       recipientName: PREVIEW_CONTACT.fullName,
       email,
       temporaryPassword: "PreviewTemp2026!",
-      loginUrl: PREVIEW_URLS.loginUrl,
+      loginUrl: fx.urls.loginUrl,
       locale,
       reason: "created",
     })
@@ -279,39 +353,39 @@ export async function sendAllTemplatePreviews(input: {
       recipientName: PREVIEW_CONTACT.fullName,
       email,
       temporaryPassword: "ResetTemp2026!",
-      loginUrl: PREVIEW_URLS.loginUrl,
+      loginUrl: fx.urls.loginUrl,
       locale,
       reason: "reset",
     })
   );
 
-  // 12. staff-email-changed (new address — confirmation to new)
+  // 12. staff-email-changed (new address)
   await run("staff-email-changed-new", () =>
     sendStaffEmailChanged({
       to: email,
       recipientName: PREVIEW_CONTACT.fullName,
       oldEmail: "old.preview@dbc-germany.test",
       newEmail: email,
-      loginUrl: PREVIEW_URLS.loginUrl,
+      loginUrl: fx.urls.loginUrl,
       locale,
       side: "new",
     })
   );
 
-  // 13. staff-email-changed (old address — warning to old)
+  // 13. staff-email-changed (old address)
   await run("staff-email-changed-old", () =>
     sendStaffEmailChanged({
       to: email,
       recipientName: PREVIEW_CONTACT.fullName,
       oldEmail: email,
       newEmail: "new.preview@dbc-germany.test",
-      loginUrl: PREVIEW_URLS.loginUrl,
+      loginUrl: fx.urls.loginUrl,
       locale,
       side: "old",
     })
   );
 
-  // 14. staff-paused (paused)
+  // 14. staff-paused
   await run("staff-paused", () =>
     sendStaffPaused({
       to: email,
@@ -338,9 +412,9 @@ export async function sendAllTemplatePreviews(input: {
       subject: previewNewsletterSubject(locale),
       preheader: "[PREVIEW]",
       body: previewNewsletterBody(locale),
-      unsubscribeUrl: PREVIEW_URLS.unsubscribeUrl,
+      unsubscribeUrl: fx.urls.unsubscribeUrl,
       locale,
-      upcomingEvent: PREVIEW_UPCOMING_EVENT,
+      upcomingEvent: fx.upcomingEvent,
     })
   );
 
@@ -348,7 +422,7 @@ export async function sendAllTemplatePreviews(input: {
   await run("newsletter-confirm", () =>
     sendNewsletterConfirm({
       to: email,
-      confirmUrl: PREVIEW_URLS.confirmUrl,
+      confirmUrl: fx.urls.confirmUrl,
       locale,
     })
   );
@@ -371,10 +445,10 @@ export async function sendAllTemplatePreviews(input: {
     sendChapterDelegateInvite({
       to: email,
       recipientName: PREVIEW_CONTACT.fullName,
-      eventTitle: PREVIEW_EVENT.title,
-      eventDateLabel: PREVIEW_EVENT.dateLabel,
-      eventCity: PREVIEW_EVENT.city,
-      registrationUrl: PREVIEW_URLS.registrationUrl,
+      eventTitle: fx.event.title,
+      eventDateLabel: fx.event.dateLabel,
+      eventCity: fx.event.city,
+      registrationUrl: fx.urls.registrationUrl,
       locale,
       kind: "ambassador",
     })
@@ -385,33 +459,33 @@ export async function sendAllTemplatePreviews(input: {
     sendChapterDelegateInvite({
       to: email,
       recipientName: PREVIEW_CONTACT.fullName,
-      eventTitle: PREVIEW_EVENT.title,
-      eventDateLabel: PREVIEW_EVENT.dateLabel,
-      eventCity: PREVIEW_EVENT.city,
-      registrationUrl: PREVIEW_URLS.registrationUrl,
+      eventTitle: fx.event.title,
+      eventDateLabel: fx.event.dateLabel,
+      eventCity: fx.event.city,
+      registrationUrl: fx.urls.registrationUrl,
       locale,
       kind: "team_member",
     })
   );
 
-  // 20.a chapter-delegate-outcome (rejected with note)
+  // 20.a chapter-delegate-outcome (rejected)
   await run("chapter-delegate-rejected", () =>
     sendChapterDelegateOutcome({
       to: email,
       recipientName: PREVIEW_CONTACT.fullName,
-      eventTitle: PREVIEW_EVENT.title,
+      eventTitle: fx.event.title,
       outcome: "rejected",
       note: "[PREVIEW] We couldn't verify your chapter — please contact your Ambassador.",
       locale,
     })
   );
 
-  // 20.b chapter-delegate-outcome (revoked, no note)
+  // 20.b chapter-delegate-outcome (revoked)
   await run("chapter-delegate-revoked", () =>
     sendChapterDelegateOutcome({
       to: email,
       recipientName: PREVIEW_CONTACT.fullName,
-      eventTitle: PREVIEW_EVENT.title,
+      eventTitle: fx.event.title,
       outcome: "revoked",
       locale,
     })
@@ -422,7 +496,7 @@ export async function sendAllTemplatePreviews(input: {
     sendTeamFriendCodeRedeemed({
       to: email,
       recipientName: PREVIEW_CONTACT.fullName,
-      eventTitle: PREVIEW_EVENT.title,
+      eventTitle: fx.event.title,
       redeemerName: "[PREVIEW] Friend Müller",
       redeemerEmail: "friend.preview@dbc-germany.test",
       codeTail: "X8K2J9",
@@ -435,11 +509,11 @@ export async function sendAllTemplatePreviews(input: {
     sendAskSpeakersEmail({
       to: email,
       recipientName: PREVIEW_CONTACT.fullName,
-      eventTitle: PREVIEW_EVENT.title,
+      eventTitle: fx.event.title,
       ticketToken: PREVIEW_TICKET.token,
       speakers: PREVIEW_ASK_SPEAKERS,
       locale,
-      ticketsBaseUrl: PREVIEW_URLS.ticketsBase,
+      ticketsBaseUrl: fx.urls.ticketsBase,
     })
   );
 
@@ -476,13 +550,19 @@ export async function sendAllTemplatePreviews(input: {
     sendPreEventReminder({
       to: email,
       attendeeName: PREVIEW_CONTACT.fullName,
-      eventTitle: PREVIEW_EVENT.title,
-      eventDate: PREVIEW_EVENT.dateLabel,
-      eventTime: "17:00 – 23:00",
-      venueName: PREVIEW_EVENT.venueName,
-      venueAddress: PREVIEW_EVENT.venueAddress,
+      eventTitle: fx.event.title,
+      eventDate: fx.event.dateLabel,
+      eventTime: `${fx.event.startsAt.toLocaleTimeString(locale, {
+        hour: "2-digit",
+        minute: "2-digit",
+      })} – ${fx.event.endsAt.toLocaleTimeString(locale, {
+        hour: "2-digit",
+        minute: "2-digit",
+      })}`,
+      venueName: fx.event.venueName,
+      venueAddress: fx.event.venueAddress,
       ticketShortId: PREVIEW_TICKET.shortId,
-      orderUrl: PREVIEW_URLS.orderUrl,
+      orderUrl: fx.urls.orderUrl,
       locale,
     })
   );
@@ -494,7 +574,7 @@ export async function sendAllTemplatePreviews(input: {
       to: email,
       subject: ac.subject,
       body: ac.body,
-      eventTitle: PREVIEW_EVENT.title,
+      eventTitle: fx.event.title,
       locale,
     });
   });
@@ -508,11 +588,11 @@ export async function sendAllTemplatePreviews(input: {
       headline: a.headline,
       body: a.body,
       details: {
-        Order: PREVIEW_ORDER.shortId,
-        Amount: PREVIEW_ORDER.totalFormatted,
-        Event: PREVIEW_EVENT.title,
+        Order: fx.order.shortId,
+        Amount: fx.order.totalFormatted,
+        Event: fx.event.title,
       },
-      dashboardUrl: PREVIEW_URLS.dashboardUrl,
+      dashboardUrl: fx.urls.dashboardUrl,
       severity: "info",
       locale,
     });
@@ -521,8 +601,6 @@ export async function sendAllTemplatePreviews(input: {
   const totalSent = results.filter((r) => r.sent).length;
   const totalFailed = results.length - totalSent;
 
-  // Audit log
-  const supabase = await createServerClient();
   await supabase.from("audit_log").insert({
     user_id: user.userId,
     action: "send_all_email_previews",
@@ -531,6 +609,8 @@ export async function sendAllTemplatePreviews(input: {
     details: {
       target_email: email,
       locale,
+      event_slug: eventRow.slug,
+      event_title: eventRow.title_en,
       total: results.length,
       sent: totalSent,
       failed: totalFailed,
@@ -545,6 +625,8 @@ export async function sendAllTemplatePreviews(input: {
     data: {
       targetEmail: email,
       locale,
+      eventSlug: eventRow.slug,
+      eventTitle: eventRow.title_en ?? eventRow.slug,
       results,
       totalSent,
       totalFailed,

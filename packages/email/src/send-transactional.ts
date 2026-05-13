@@ -28,21 +28,29 @@ import { TeamFriendCodeRedeemedEmail } from "./templates/team-friend-code-redeem
 
 type Locale = "en" | "de" | "fr";
 
-import { fromAddressFor } from "./client";
+import { fromAddressFor, replyToAddressFor } from "./client";
 
 /**
  * Email-role routing for transactional templates:
  *   - ticket-related (transfer confirmations, order receipts) → `tickets@`
  *   - everything else (waitlist, aftercare, admin alerts)     → `noreply@`
  *
- * The apex-level @dbc-germany.com inboxes (info@, sales@, marketing@, …)
- * stay on Google Workspace — this code never sends from them.
+ * Reply-to mirrors the same scope split via replyToAddressFor — tickets
+ * replies land on `sales@`, everything else on `info@`. The apex Google
+ * Workspace inboxes (info@, sales@, marketing@, …) are reply-to targets
+ * only; this code never sends FROM them.
  */
 function transactionalFrom() {
   return fromAddressFor("transactional"); // noreply@
 }
 function ticketsFrom() {
   return fromAddressFor("tickets");
+}
+function transactionalReplyTo() {
+  return replyToAddressFor("transactional"); // info@
+}
+function ticketsReplyTo() {
+  return replyToAddressFor("tickets"); // sales@
 }
 
 export interface SendTransferConfirmationInput {
@@ -90,6 +98,7 @@ export async function sendTransferConfirmation(
   const resend = createEmailClient();
   const res = await resend.emails.send({
     from: ticketsFrom(),
+    replyTo: ticketsReplyTo(),
     to: input.to,
     subject,
     html,
@@ -133,6 +142,7 @@ export async function sendWaitlistNotification(
   const resend = createEmailClient();
   const res = await resend.emails.send({
     from: transactionalFrom(),
+    replyTo: transactionalReplyTo(),
     to: input.to,
     subject,
     html,
@@ -183,6 +193,7 @@ export async function sendOrderReceipt(input: SendOrderReceiptInput) {
   const resend = createEmailClient();
   const res = await resend.emails.send({
     from: ticketsFrom(),
+    replyTo: ticketsReplyTo(),
     to: input.to,
     subject,
     html,
@@ -213,6 +224,7 @@ export async function sendAftercareSequence(input: SendAftercareSequenceInput) {
   const resend = createEmailClient();
   const res = await resend.emails.send({
     from: transactionalFrom(),
+    replyTo: transactionalReplyTo(),
     to: input.to,
     subject: input.subject,
     html,
@@ -247,6 +259,7 @@ export async function sendAdminAlert(input: SendAdminAlertInput) {
   const resend = createEmailClient();
   const res = await resend.emails.send({
     from: transactionalFrom(),
+    replyTo: transactionalReplyTo(),
     to: input.to,
     subject: input.subject,
     html,
@@ -285,6 +298,7 @@ export async function sendJobApplicationConfirm(
   const resend = createEmailClient();
   const res = await resend.emails.send({
     from: transactionalFrom(),
+    replyTo: transactionalReplyTo(),
     to: input.to,
     subject: JOB_APP_SUBJECT[input.locale],
     html,
@@ -321,6 +335,7 @@ export async function sendIncubationApplicationConfirm(
   const resend = createEmailClient();
   const res = await resend.emails.send({
     from: transactionalFrom(),
+    replyTo: transactionalReplyTo(),
     to: input.to,
     subject: INCUBATION_APP_SUBJECT[input.locale],
     html,
@@ -363,6 +378,7 @@ export async function sendRefundConfirmation(
   const resend = createEmailClient();
   const res = await resend.emails.send({
     from: ticketsFrom(),
+    replyTo: ticketsReplyTo(),
     to: input.to,
     subject: REFUND_SUBJECT[input.locale],
     html,
@@ -399,6 +415,7 @@ export async function sendContactFormConfirm(
   const resend = createEmailClient();
   const res = await resend.emails.send({
     from: transactionalFrom(),
+    replyTo: transactionalReplyTo(),
     to: input.to,
     subject: CONTACT_SUBJECT[input.locale],
     html,
@@ -453,6 +470,7 @@ export async function sendPreEventReminder(
   const resend = createEmailClient();
   const res = await resend.emails.send({
     from: transactionalFrom(),
+    replyTo: transactionalReplyTo(),
     to: input.to,
     subject,
     html,
@@ -489,6 +507,7 @@ export async function sendPasswordReset(input: SendPasswordResetInput) {
   const resend = createEmailClient();
   const res = await resend.emails.send({
     from: transactionalFrom(),
+    replyTo: transactionalReplyTo(),
     to: input.to,
     subject: PASSWORD_RESET_SUBJECT[input.locale],
     html,
@@ -527,6 +546,7 @@ export async function sendStaffInvite(input: SendStaffInviteInput) {
   const resend = createEmailClient();
   const res = await resend.emails.send({
     from: transactionalFrom(),
+    replyTo: transactionalReplyTo(),
     to: input.to,
     subject: STAFF_INVITE_SUBJECT[input.locale],
     html,
@@ -576,6 +596,7 @@ export async function sendStaffCredentials(input: SendStaffCredentialsInput) {
   const resend = createEmailClient();
   const res = await resend.emails.send({
     from: transactionalFrom(),
+    replyTo: transactionalReplyTo(),
     to: input.to,
     subject: STAFF_CREDENTIALS_SUBJECT[input.reason][input.locale],
     html,
@@ -625,6 +646,7 @@ export async function sendStaffEmailChanged(input: SendStaffEmailChangedInput) {
   const resend = createEmailClient();
   const res = await resend.emails.send({
     from: transactionalFrom(),
+    replyTo: transactionalReplyTo(),
     to: input.to,
     subject: STAFF_EMAIL_CHANGED_SUBJECT[input.side][input.locale],
     html,
@@ -668,6 +690,7 @@ export async function sendStaffPaused(input: SendStaffPausedInput) {
   const resend = createEmailClient();
   const res = await resend.emails.send({
     from: transactionalFrom(),
+    replyTo: transactionalReplyTo(),
     to: input.to,
     subject: STAFF_PAUSED_SUBJECT[input.state][input.locale],
     html,
@@ -711,6 +734,7 @@ export async function sendChapterDelegateOutcome(
   const cc = input.ccLeadEmail ? [input.ccLeadEmail] : undefined;
   const res = await resend.emails.send({
     from: transactionalFrom(),
+    replyTo: transactionalReplyTo(),
     to: input.to,
     cc,
     subject,
@@ -760,6 +784,7 @@ export async function sendTeamFriendCodeRedeemed(
   const resend = createEmailClient();
   const res = await resend.emails.send({
     from: transactionalFrom(),
+    replyTo: transactionalReplyTo(),
     to: input.to,
     subject,
     html,
@@ -802,6 +827,7 @@ export async function sendPaymentReminder(input: SendPaymentReminderInput) {
   const resend = createEmailClient();
   const res = await resend.emails.send({
     from: ticketsFrom(),
+    replyTo: ticketsReplyTo(),
     to: input.to,
     subject: PAYMENT_REMINDER_SUBJECT[input.locale],
     html,
@@ -874,6 +900,7 @@ export async function sendChapterDelegateInvite(
     .replace("{event}", input.eventTitle);
   const res = await resend.emails.send({
     from: transactionalFrom(),
+    replyTo: transactionalReplyTo(),
     to: input.to,
     subject,
     html,
@@ -935,6 +962,7 @@ export async function sendChapterDelegateInvitesBatch(input: {
     );
     const payload = slice.map((r, idx) => ({
       from: transactionalFrom(),
+      replyTo: transactionalReplyTo(),
       to: [r.email],
       subject,
       html: rendered[idx],

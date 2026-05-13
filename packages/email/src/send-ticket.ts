@@ -1,6 +1,6 @@
 import { render } from "@react-email/components";
 import React from "react";
-import { createEmailClient, fromAddressFor } from "./client";
+import { createEmailClient, fromAddressFor, replyToAddressFor } from "./client";
 import { generateTicketPdf } from "./pdf/generate-ticket";
 import { generateInvitationLetterPdf } from "./pdf/generate-invitation-letter";
 import { TicketDeliveryEmail } from "./templates/ticket-delivery";
@@ -222,6 +222,7 @@ export async function sendTicketEmail(
 
   const result = await resend.emails.send({
     from: fromAddress,
+    replyTo: replyToAddressFor("tickets"),
     to: input.attendeeEmail,
     subject,
     html: emailHtml,

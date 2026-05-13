@@ -1,5 +1,10 @@
 export { render } from "@react-email/components";
-export { createEmailClient, fromAddressFor, DEFAULT_FROM } from "./client";
+export {
+  createEmailClient,
+  fromAddressFor,
+  replyToAddressFor,
+  DEFAULT_FROM,
+} from "./client";
 export {
   getResendDomainStatus,
   clearDomainCheckCache,
@@ -147,19 +152,21 @@ export {
 } from "./locale-resolver";
 export type { Locale, ResolveRecipientLocaleInput } from "./locale-resolver";
 export {
-  PREVIEW_EVENT,
   PREVIEW_CONTACT,
-  PREVIEW_TIER,
   PREVIEW_TICKET,
   PREVIEW_ORDER,
-  PREVIEW_URLS,
   PREVIEW_BRAND,
-  PREVIEW_LINE_ITEMS,
-  PREVIEW_UPCOMING_EVENT,
   PREVIEW_ASK_SPEAKERS,
+  buildPreviewEventFixture,
   previewNewsletterBody,
   previewNewsletterSubject,
   previewStaffMessage,
   previewAftercare,
   previewAdminAlert,
+} from "./preview-fixtures";
+export type {
+  PreviewLocale,
+  PreviewEventRow,
+  PreviewTierRow,
+  PreviewEventFixture,
 } from "./preview-fixtures";
