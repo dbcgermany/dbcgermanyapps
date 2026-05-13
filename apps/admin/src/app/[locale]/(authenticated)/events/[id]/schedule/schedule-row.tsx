@@ -1,6 +1,9 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { Button, ConfirmDialog } from "@dbc/ui";
 import {
   updateScheduleItem,
@@ -61,6 +64,8 @@ export function ScheduleRow({
 }) {
   const [mode, setMode] = useState<"view" | "edit">("view");
   const t = SR_T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof SR_T];
+  const router = useRouter();
+  const tCommon = useTranslations("admin.common");
 
   const [state, formAction, isPending] = useActionState(
     async (
@@ -234,7 +239,13 @@ export function ScheduleRow({
           cancelLabel={t.cancel}
           variant="danger"
           onConfirm={async () => {
-            await deleteScheduleItem(item.id, eventId, locale);
+            const res = await deleteScheduleItem(item.id, eventId, locale);
+            if (res?.error) {
+              toast.error(tCommon("actionFailedToast", { error: res.error }));
+              return;
+            }
+            toast.success(tCommon("deletedToast"));
+            router.refresh();
           }}
         />
       </div>

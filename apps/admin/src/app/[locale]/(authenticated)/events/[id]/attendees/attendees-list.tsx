@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, useMemo, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { Badge } from "@dbc/ui";
 import { updateAttendeeNotes } from "@/actions/attendees";
 
@@ -31,6 +34,8 @@ export function AttendeesList({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [notesDraft, setNotesDraft] = useState("");
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+  const tCommon = useTranslations("admin.common");
 
   const filtered = useMemo(() => {
     return attendees.filter((a) => {
@@ -55,7 +60,13 @@ export function AttendeesList({
 
   function saveNotes(id: string) {
     startTransition(async () => {
-      await updateAttendeeNotes(id, notesDraft, eventId, locale);
+      const res = await updateAttendeeNotes(id, notesDraft, eventId, locale);
+      if (res?.error) {
+        toast.error(tCommon("actionFailedToast", { error: res.error }));
+        return;
+      }
+      toast.success(tCommon("savedToast"));
+      router.refresh();
       setEditingId(null);
     });
   }

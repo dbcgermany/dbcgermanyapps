@@ -2,6 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { Badge, Button, ConfirmDialog } from "@dbc/ui";
 import {
   SPONSOR_STATUS_VALUES,
@@ -180,6 +182,7 @@ export function SponsorsClient({
   sponsors: Sponsor[];
 }) {
   const router = useRouter();
+  const tCommon = useTranslations("admin.common");
   const [isPending, startTransition] = useTransition();
   const [showAddForm, setShowAddForm] = useState(false);
   const [editing, setEditing] = useState<Sponsor | null>(null);
@@ -210,7 +213,12 @@ export function SponsorsClient({
 
   function handleDelete(id: string) {
     startTransition(async () => {
-      await deleteSponsor(id, eventId, locale);
+      const res = await deleteSponsor(id, eventId, locale);
+      if (res?.error) {
+        toast.error(tCommon("actionFailedToast", { error: res.error }));
+        return;
+      }
+      toast.success(tCommon("deletedToast"));
       router.refresh();
     });
   }

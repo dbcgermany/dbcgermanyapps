@@ -889,7 +889,15 @@
       "actions": "Actions",
       "status": "Statut",
       "created": "Créé le",
-      "updated": "Mis à jour"
+      "updated": "Mis à jour",
+      "savedToast": "Enregistré",
+      "deletedToast": "Supprimé",
+      "publishedToast": "Publié",
+      "unpublishedToast": "Dépublié",
+      "archivedToast": "Archivé",
+      "duplicatedToast": "Dupliqué",
+      "sentToast": "Envoyé",
+      "actionFailedToast": "Action échouée : {error}"
     },
     "eventsList": {
       "title": "Événements",
@@ -1104,7 +1112,26 @@
     },
     "account": {
       "pageTitle": "Mon compte",
-      "description": "Votre profil personnel, vos préférences et votre sécurité. Les paramètres à l’échelle de la société se trouvent dans Informations société."
+      "description": "Votre profil personnel, vos préférences et votre sécurité. Les paramètres à l’échelle de la société se trouvent dans Informations société.",
+      "security": {
+        "sessionRevokedToast": "Session révoquée.",
+        "twoFactorEnabledToast": "Authentification à deux facteurs activée.",
+        "twoFactorDisabledToast": "Authentification à deux facteurs désactivée.",
+        "couldNotStartChallengeToast": "Impossible de démarrer le challenge.",
+        "couldNotStartEnrolmentToast": "Impossible de démarrer l’enrôlement 2FA.",
+        "challengeFailedToast": "Échec du challenge.",
+        "passwordResetLinkSentToast": "Lien de réinitialisation envoyé à votre e-mail.",
+        "passwordResetLinkSentDescription": "Vérifiez votre boîte de réception.",
+        "signedOutEverywhereToast": "Déconnecté·e de tous les appareils.",
+        "copiedToClipboardToast": "Copié dans le presse-papiers."
+      }
+    },
+    "mfa": {
+      "challenge": {
+        "noFactorToast": "Aucun facteur TOTP trouvé. Déconnectez-vous et contactez le support.",
+        "couldNotStartChallengeToast": "Impossible de démarrer le challenge.",
+        "verifiedToast": "Vérifié."
+      }
     },
     "reports": {
       "pageTitle": "Rapports",

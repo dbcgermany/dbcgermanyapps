@@ -2,6 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { Badge, Button, ConfirmDialog } from "@dbc/ui";
 import {
   createChecklistItem,
@@ -160,6 +162,7 @@ export function ChecklistClient({
   eventStartsAt,
 }: Props) {
   const router = useRouter();
+  const tCommon = useTranslations("admin.common");
   const [isPending, startTransition] = useTransition();
   const [activeCategory, setActiveCategory] = useState("all");
   const [showAddForm, setShowAddForm] = useState(false);
@@ -194,14 +197,23 @@ export function ChecklistClient({
   function handleToggle(item: ChecklistItem) {
     const next = STATUS_CYCLE[item.status] ?? "pending";
     startTransition(async () => {
-      await toggleChecklistStatus(item.id, next, eventId, locale);
+      const res = await toggleChecklistStatus(item.id, next, eventId, locale);
+      if (res?.error) {
+        toast.error(tCommon("actionFailedToast", { error: res.error }));
+        return;
+      }
       router.refresh();
     });
   }
 
   function handleDelete(id: string) {
     startTransition(async () => {
-      await deleteChecklistItem(id, eventId, locale);
+      const res = await deleteChecklistItem(id, eventId, locale);
+      if (res?.error) {
+        toast.error(tCommon("actionFailedToast", { error: res.error }));
+        return;
+      }
+      toast.success(tCommon("deletedToast"));
       router.refresh();
     });
   }

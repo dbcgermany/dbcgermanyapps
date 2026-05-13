@@ -162,10 +162,12 @@ export function StaffDetailClient({
 
   function handleToggleEvent(eventId: string, assigned: boolean) {
     startTransition(async () => {
-      if (assigned) {
-        await unassignStaffFromEvent(profile.id, eventId, locale);
-      } else {
-        await assignStaffToEvent(profile.id, eventId, locale);
+      const res = assigned
+        ? await unassignStaffFromEvent(profile.id, eventId, locale)
+        : await assignStaffToEvent(profile.id, eventId, locale);
+      if (res?.error) {
+        toast.error(res.error);
+        return;
       }
       router.refresh();
     });

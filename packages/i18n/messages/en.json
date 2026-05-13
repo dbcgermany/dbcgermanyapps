@@ -889,7 +889,15 @@
       "actions": "Actions",
       "status": "Status",
       "created": "Created",
-      "updated": "Updated"
+      "updated": "Updated",
+      "savedToast": "Saved",
+      "deletedToast": "Deleted",
+      "publishedToast": "Published",
+      "unpublishedToast": "Unpublished",
+      "archivedToast": "Archived",
+      "duplicatedToast": "Duplicated",
+      "sentToast": "Sent",
+      "actionFailedToast": "Action failed: {error}"
     },
     "eventsList": {
       "title": "Events",
@@ -1104,7 +1112,26 @@
     },
     "account": {
       "pageTitle": "My account",
-      "description": "Your personal profile, preferences, and security. Company-wide settings live under Company Info."
+      "description": "Your personal profile, preferences, and security. Company-wide settings live under Company Info.",
+      "security": {
+        "sessionRevokedToast": "Session revoked.",
+        "twoFactorEnabledToast": "Two-factor authentication enabled.",
+        "twoFactorDisabledToast": "Two-factor authentication disabled.",
+        "couldNotStartChallengeToast": "Could not start challenge.",
+        "couldNotStartEnrolmentToast": "Could not start 2FA enrolment.",
+        "challengeFailedToast": "Challenge failed.",
+        "passwordResetLinkSentToast": "Password-reset link sent to your email.",
+        "passwordResetLinkSentDescription": "Check your inbox.",
+        "signedOutEverywhereToast": "Signed out on all devices.",
+        "copiedToClipboardToast": "Copied to clipboard."
+      }
+    },
+    "mfa": {
+      "challenge": {
+        "noFactorToast": "No TOTP factor found. Sign out and contact support.",
+        "couldNotStartChallengeToast": "Could not start challenge.",
+        "verifiedToast": "Verified."
+      }
     },
     "reports": {
       "pageTitle": "Reports",

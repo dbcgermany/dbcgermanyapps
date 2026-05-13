@@ -396,6 +396,7 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
   const [isPending, startTransition] = useTransition();
   const [phone, setPhone] = useState(contact.phone ?? "");
   const genderLabels = useGenderLabels();
+  const tCommon = useTranslations("admin.common");
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -403,7 +404,7 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
     startTransition(async () => {
       const result = await updateContactProfile(contact.id, fd);
       if ("error" in result) toast.error(result.error);
-      else toast.success("Saved.");
+      else toast.success(tCommon("savedToast"));
     });
   }
 

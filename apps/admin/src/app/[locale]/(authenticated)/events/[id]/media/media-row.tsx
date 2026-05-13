@@ -1,6 +1,9 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { Camera, Film, Link2, type LucideIcon } from "lucide-react";
 import { updateEventMedia, deleteEventMedia } from "@/actions/media";
 import { Button, ConfirmDialog } from "@dbc/ui";
@@ -48,6 +51,8 @@ export function MediaRow({
 }) {
   const [mode, setMode] = useState<"view" | "edit">("view");
   const t = MR_T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof MR_T];
+  const router = useRouter();
+  const tCommon = useTranslations("admin.common");
 
   const [state, formAction, isPending] = useActionState(
     async (
@@ -147,7 +152,13 @@ export function MediaRow({
           cancelLabel={t.cancel}
           variant="danger"
           onConfirm={async () => {
-            await deleteEventMedia(item.id, eventId, locale);
+            const res = await deleteEventMedia(item.id, eventId, locale);
+            if (res?.error) {
+              toast.error(tCommon("actionFailedToast", { error: res.error }));
+              return;
+            }
+            toast.success(tCommon("deletedToast"));
+            router.refresh();
           }}
         />
       </div>

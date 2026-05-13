@@ -2,6 +2,8 @@
 
 import { useActionState, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { Badge, Button, ConfirmDialog } from "@dbc/ui";
 import {
   updateRunsheetItem,
@@ -61,6 +63,7 @@ export function RunsheetRow({
   staff: { id: string; name: string }[];
 }) {
   const router = useRouter();
+  const tCommon = useTranslations("admin.common");
   const [mode, setMode] = useState<"view" | "edit">("view");
   const [isPending, startTransition] = useTransition();
   const t = RR_T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof RR_T];
@@ -89,14 +92,24 @@ export function RunsheetRow({
     fd.set("locale", locale);
     fd.set("status", next);
     startTransition(async () => {
-      await updateRunsheetItem(item.id, fd);
+      const res = await updateRunsheetItem(item.id, fd);
+      if (res?.error) {
+        toast.error(tCommon("actionFailedToast", { error: res.error }));
+        return;
+      }
+      toast.success(tCommon("savedToast"));
       router.refresh();
     });
   }
 
   function handleDelete() {
     startTransition(async () => {
-      await deleteRunsheetItem(item.id, eventId, locale);
+      const res = await deleteRunsheetItem(item.id, eventId, locale);
+      if (res?.error) {
+        toast.error(tCommon("actionFailedToast", { error: res.error }));
+        return;
+      }
+      toast.success(tCommon("deletedToast"));
       router.refresh();
     });
   }

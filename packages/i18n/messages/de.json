@@ -889,7 +889,15 @@
       "actions": "Aktionen",
       "status": "Status",
       "created": "Erstellt",
-      "updated": "Aktualisiert"
+      "updated": "Aktualisiert",
+      "savedToast": "Gespeichert",
+      "deletedToast": "Gelöscht",
+      "publishedToast": "Veröffentlicht",
+      "unpublishedToast": "Zurückgezogen",
+      "archivedToast": "Archiviert",
+      "duplicatedToast": "Dupliziert",
+      "sentToast": "Versendet",
+      "actionFailedToast": "Aktion fehlgeschlagen: {error}"
     },
     "eventsList": {
       "title": "Veranstaltungen",
@@ -1104,7 +1112,26 @@
     },
     "account": {
       "pageTitle": "Mein Konto",
-      "description": "Ihr persönliches Profil, Einstellungen und Sicherheit. Unternehmensweite Einstellungen finden Sie unter Unternehmensdaten."
+      "description": "Ihr persönliches Profil, Einstellungen und Sicherheit. Unternehmensweite Einstellungen finden Sie unter Unternehmensdaten.",
+      "security": {
+        "sessionRevokedToast": "Sitzung beendet.",
+        "twoFactorEnabledToast": "Zwei-Faktor-Authentifizierung aktiviert.",
+        "twoFactorDisabledToast": "Zwei-Faktor-Authentifizierung deaktiviert.",
+        "couldNotStartChallengeToast": "Challenge konnte nicht gestartet werden.",
+        "couldNotStartEnrolmentToast": "2FA-Einrichtung konnte nicht gestartet werden.",
+        "challengeFailedToast": "Challenge fehlgeschlagen.",
+        "passwordResetLinkSentToast": "Passwort-Reset-Link wurde an deine E-Mail gesendet.",
+        "passwordResetLinkSentDescription": "Prüfe dein Postfach.",
+        "signedOutEverywhereToast": "Von allen Geräten abgemeldet.",
+        "copiedToClipboardToast": "In die Zwischenablage kopiert."
+      }
+    },
+    "mfa": {
+      "challenge": {
+        "noFactorToast": "Kein TOTP-Faktor gefunden. Melde dich ab und kontaktiere den Support.",
+        "couldNotStartChallengeToast": "Challenge konnte nicht gestartet werden.",
+        "verifiedToast": "Verifiziert."
+      }
     },
     "reports": {
       "pageTitle": "Berichte",

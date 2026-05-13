@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { Button } from "@dbc/ui";
 import { createBrowserClient } from "@dbc/supabase";
 import { redeemBackupCode } from "@/actions/mfa";
@@ -17,6 +18,7 @@ export function MfaChallengeForm({
   redirectTo?: string;
 }) {
   const router = useRouter();
+  const t = useTranslations("admin.mfa.challenge");
   const supabase = createBrowserClient();
   const [mode, setMode] = useState<Mode>("totp");
   const [code, setCode] = useState("");
@@ -34,13 +36,13 @@ export function MfaChallengeForm({
   async function submit() {
     if (mode === "totp") {
       if (!factorId) {
-        toast.error("No TOTP factor found. Sign out and contact support.");
+        toast.error(t("noFactorToast"));
         return;
       }
       startTransition(async () => {
         const { data: chall } = await supabase.auth.mfa.challenge({ factorId });
         if (!chall) {
-          toast.error("Could not start challenge.");
+          toast.error(t("couldNotStartChallengeToast"));
           return;
         }
         const { error } = await supabase.auth.mfa.verify({
@@ -52,7 +54,7 @@ export function MfaChallengeForm({
           toast.error(error.message);
           return;
         }
-        toast.success("Verified.");
+        toast.success(t("verifiedToast"));
         router.replace(redirectTo || `/${locale}/dashboard`);
       });
     } else {

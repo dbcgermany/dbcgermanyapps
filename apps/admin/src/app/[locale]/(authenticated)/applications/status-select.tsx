@@ -1,6 +1,9 @@
 "use client";
 
 import { useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import {
   INCUBATION_APPLICATION_STATUS_VALUES,
   type IncubationApplicationStatus,
@@ -32,12 +35,22 @@ export function StatusSelect({
   current: IncubationApplicationStatus;
 }) {
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+  const tCommon = useTranslations("admin.common");
   const labels = LABELS[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof LABELS];
 
   function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const next = e.target.value as IncubationApplicationStatus;
     startTransition(async () => {
-      await updateApplicationStatus(id, next, locale);
+      const res = await updateApplicationStatus(id, next, locale);
+      if (res?.error) {
+        toast.error(tCommon("actionFailedToast", { error: res.error }));
+        // Pull server truth back into the select.
+        router.refresh();
+        return;
+      }
+      toast.success(tCommon("savedToast"));
+      router.refresh();
     });
   }
 

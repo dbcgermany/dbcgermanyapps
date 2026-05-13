@@ -1,6 +1,9 @@
 "use client";
 
 import { useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import {
   JOB_APPLICATION_STATUS_VALUES,
   type JobApplicationStatus,
@@ -23,12 +26,21 @@ export function JobApplicationStatusSelect({
   current: string;
 }) {
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+  const tCommon = useTranslations("admin.common");
   const labels = LABELS[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof LABELS];
 
   function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const next = e.target.value as JobApplicationStatus;
     startTransition(async () => {
-      await updateJobApplicationStatus(id, next, undefined, locale);
+      const res = await updateJobApplicationStatus(id, next, undefined, locale);
+      if (res?.error) {
+        toast.error(tCommon("actionFailedToast", { error: res.error }));
+        router.refresh();
+        return;
+      }
+      toast.success(tCommon("savedToast"));
+      router.refresh();
     });
   }
 

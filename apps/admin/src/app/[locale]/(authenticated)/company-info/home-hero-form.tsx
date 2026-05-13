@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { Button, Input, Label } from "@dbc/ui";
 import { createBrowserClient } from "@dbc/supabase";
 import {
@@ -23,6 +24,7 @@ import {
 
 export function HomeHeroForm({ info }: { info: CompanyInfo }) {
   const [pending, startTransition] = useTransition();
+  const tCommon = useTranslations("admin.common");
   const [videoUrl, setVideoUrl] = useState<string>(
     info.home_hero_video_url ?? ""
   );
@@ -46,7 +48,7 @@ export function HomeHeroForm({ info }: { info: CompanyInfo }) {
       if ("error" in result && result.error) {
         toast.error(result.error);
       } else {
-        toast.success("Saved.");
+        toast.success(tCommon("savedToast"));
       }
     });
   }

@@ -1,6 +1,9 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { Badge, Button, ConfirmDialog } from "@dbc/ui";
 import {
   updateEmailSequence,
@@ -63,6 +66,8 @@ export function EmailRow({
 }) {
   const [mode, setMode] = useState<"view" | "edit">("view");
   const t = ER_T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof ER_T];
+  const router = useRouter();
+  const tCommon = useTranslations("admin.common");
 
   const [state, formAction, isPending] = useActionState(
     async (
@@ -224,7 +229,15 @@ export function EmailRow({
               cancelLabel={t.cancel}
               variant="neutral"
               onConfirm={async () => {
-                await dispatchEmailSequence(seq.id, eventId, locale);
+                const res = await dispatchEmailSequence(seq.id, eventId, locale);
+                if (res?.error) {
+                  toast.error(
+                    tCommon("actionFailedToast", { error: res.error })
+                  );
+                  return;
+                }
+                toast.success(tCommon("sentToast"));
+                router.refresh();
               }}
             />
           )}
@@ -242,7 +255,15 @@ export function EmailRow({
             cancelLabel={t.cancel}
             variant="danger"
             onConfirm={async () => {
-              await deleteEmailSequence(seq.id, eventId, locale);
+              const res = await deleteEmailSequence(seq.id, eventId, locale);
+              if (res?.error) {
+                toast.error(
+                  tCommon("actionFailedToast", { error: res.error })
+                );
+                return;
+              }
+              toast.success(tCommon("deletedToast"));
+              router.refresh();
             }}
           />
         </div>

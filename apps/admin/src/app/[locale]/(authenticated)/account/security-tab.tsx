@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { Badge, Button } from "@dbc/ui";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { createBrowserClient } from "@dbc/supabase";
 import { humaniseSessionLabel } from "@/lib/vercel-regions";
 import {
@@ -38,6 +39,7 @@ type EnrollmentState =
   | { kind: "showing_codes"; codes: string[] };
 
 export function SecurityTab() {
+  const t = useTranslations("admin.account.security");
   const supabase = createBrowserClient();
   const [resetPending, startResetTransition] = useTransition();
   const [soePending, startSoeTransition] = useTransition();
@@ -79,7 +81,7 @@ export function SecurityTab() {
     if ("error" in result && result.error) {
       toast.error(result.error);
     } else {
-      toast.success("Session revoked.");
+      toast.success(t("sessionRevokedToast"));
       setSessions((prev) => prev.filter((s) => s.id !== sessionId));
     }
   }
@@ -96,7 +98,7 @@ export function SecurityTab() {
         friendlyName: "DBC Germany Admin",
       });
       if (error || !data) {
-        toast.error(error?.message ?? "Could not start 2FA enrolment.");
+        toast.error(error?.message ?? t("couldNotStartEnrolmentToast"));
         return;
       }
       setEnrollment({
@@ -115,7 +117,7 @@ export function SecurityTab() {
       const { data: chall, error: challError } =
         await supabase.auth.mfa.challenge({ factorId: enrollment.factorId });
       if (challError || !chall) {
-        toast.error(challError?.message ?? "Challenge failed.");
+        toast.error(challError?.message ?? t("challengeFailedToast"));
         return;
       }
       const { error: verifyErr } = await supabase.auth.mfa.verify({
@@ -136,7 +138,7 @@ export function SecurityTab() {
         setEnrollment({ kind: "showing_codes", codes: seedResult.codes });
         setVerifyCode("");
         await loadFactors();
-        toast.success("Two-factor authentication enabled.");
+        toast.success(t("twoFactorEnabledToast"));
       }
     });
   }
@@ -152,7 +154,7 @@ export function SecurityTab() {
         factorId: verifiedFactor.id,
       });
       if (!chall) {
-        toast.error("Could not start challenge.");
+        toast.error(t("couldNotStartChallengeToast"));
         return;
       }
       const { error: verifyErr } = await supabase.auth.mfa.verify({
@@ -172,7 +174,7 @@ export function SecurityTab() {
         return;
       }
       await clearBackupCodes();
-      toast.success("Two-factor authentication disabled.");
+      toast.success(t("twoFactorDisabledToast"));
       await loadFactors();
     });
   }
@@ -188,7 +190,7 @@ export function SecurityTab() {
         factorId: verifiedFactor.id,
       });
       if (!chall) {
-        toast.error("Could not start challenge.");
+        toast.error(t("couldNotStartChallengeToast"));
         return;
       }
       const { error: verifyErr } = await supabase.auth.mfa.verify({
@@ -217,8 +219,8 @@ export function SecurityTab() {
       const result = await requestPasswordReset();
       if ("error" in result && result.error) toast.error(result.error);
       else
-        toast.success("Password-reset link sent to your email.", {
-          description: "Check your inbox.",
+        toast.success(t("passwordResetLinkSentToast"), {
+          description: t("passwordResetLinkSentDescription"),
         });
     });
   }
@@ -227,7 +229,7 @@ export function SecurityTab() {
     startSoeTransition(async () => {
       const result = await signOutEverywhere();
       if ("error" in result && result.error) toast.error(result.error);
-      else toast.success("Signed out on all devices.");
+      else toast.success(t("signedOutEverywhereToast"));
     });
   }
 
@@ -431,7 +433,7 @@ export function SecurityTab() {
                 type="button"
                 onClick={() => {
                   navigator.clipboard.writeText(enrollment.codes.join("\n"));
-                  toast.success("Copied to clipboard.");
+                  toast.success(t("copiedToClipboardToast"));
                 }}
                 className="rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium hover:bg-muted"
               >
