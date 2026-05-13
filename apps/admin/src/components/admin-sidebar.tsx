@@ -80,7 +80,7 @@ const NAV_ITEMS: NavItem[] = [
   { labelKey: "ads", href: "/ads", icon: Megaphone, mod: "ads" },
   { labelKey: "auditLog", href: "/audit-log", icon: ScrollText, mod: "auditLog" },
   { labelKey: "devInfo", href: "/dev-info", icon: Info, mod: "devInfo" },
-  { labelKey: "emailPreviews", href: "/account/email-previews", icon: Mail, mod: "emailPreviews" },
+  { labelKey: "emailPreviews", href: "/email-previews", icon: Mail, mod: "emailPreviews" },
 ];
 
 const STORAGE_KEY = "admin-sidebar-collapsed";
