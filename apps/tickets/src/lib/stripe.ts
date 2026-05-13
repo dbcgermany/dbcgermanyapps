@@ -23,18 +23,24 @@ export function getStripe(): Stripe {
     throw new Error("STRIPE_SECRET_KEY is not set.");
   }
 
+  // Stripe issues two key kinds:
+  //   sk_test_/sk_live_  — full secret keys
+  //   rk_test_/rk_live_  — restricted keys (scoped subset of the above)
+  // Both are valid for the Stripe SDK; this codebase uses restricted keys
+  // in production. The guard accepts both prefix families and just checks
+  // the test/live half matches the deploy environment.
   const isProd = process.env.VERCEL_ENV === "production";
-  const isTestKey = key.startsWith("sk_test_");
-  const isLiveKey = key.startsWith("sk_live_");
+  const isTestKey = key.startsWith("sk_test_") || key.startsWith("rk_test_");
+  const isLiveKey = key.startsWith("sk_live_") || key.startsWith("rk_live_");
 
   if (!isTestKey && !isLiveKey) {
     throw new Error(
-      "STRIPE_SECRET_KEY must start with 'sk_test_' or 'sk_live_'."
+      "STRIPE_SECRET_KEY must start with 'sk_test_', 'sk_live_', 'rk_test_', or 'rk_live_'."
     );
   }
   if (!isProd && isLiveKey) {
     throw new Error(
-      "Refusing to boot: live Stripe key (sk_live_*) detected in a non-production environment (VERCEL_ENV=" +
+      "Refusing to boot: live Stripe key detected in a non-production environment (VERCEL_ENV=" +
         (process.env.VERCEL_ENV ?? "undefined") +
         "). Use a test key for previews + dev."
     );
@@ -43,7 +49,7 @@ export function getStripe(): Stripe {
     // Don't throw — preserves an escape hatch for emergency triage on prod
     // with a test key — but make it loudly visible.
     console.error(
-      "[stripe] WARNING: VERCEL_ENV=production but STRIPE_SECRET_KEY is a test key (sk_test_*). No real money will move."
+      "[stripe] WARNING: VERCEL_ENV=production but STRIPE_SECRET_KEY is a test key. No real money will move."
     );
   }
 
