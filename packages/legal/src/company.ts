@@ -1,4 +1,4 @@
-import { createServerClient } from "@dbc/supabase/server";
+import { createBrowserClient } from "@dbc/supabase";
 import { cache } from "react";
 import { unstable_cache } from "next/cache";
 
@@ -131,11 +131,17 @@ export interface PublicCompanyInfo {
 // store, but warm in-memory copies on running Vercel instances may keep
 // serving the OLD shape (no new columns) until they cold-start. Changing the
 // key forces a clean cache miss across all instances.
-const COMPANY_INFO_CACHE_VERSION = "v3-impressum-address";
+const COMPANY_INFO_CACHE_VERSION = "v4-anon-client";
 const fetchCompanyInfoCached = unstable_cache(
   async (): Promise<PublicCompanyInfo | null> => {
+    // IMPORTANT: unstable_cache callbacks run OUTSIDE the request scope, so
+    // `next/headers`' `cookies()` throws. We deliberately use the cookieless
+    // browser/anon client here — company_info has an RLS read_all policy so
+    // anon is sufficient, and it sidesteps the cookies-not-available error
+    // that was silently making this whole function return null in production
+    // (which left the public Impressum showing an empty address block).
     try {
-      const supabase = await createServerClient();
+      const supabase = createBrowserClient();
       const { data } = await supabase
         .from("company_info")
         .select("*")
