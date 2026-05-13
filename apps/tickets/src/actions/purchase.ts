@@ -5,25 +5,14 @@ import { CONTACT_CATEGORY, DEFAULTS } from "@dbc/types";
 import { createClient } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import { after } from "next/server";
-import Stripe from "stripe";
+import type Stripe from "stripe";
 import { sendTicketsForOrder } from "@/lib/send-tickets-for-order";
 import { captureServerError } from "@/lib/observe";
 import {
   filterToActive,
   getActivePaymentMethodTypes,
 } from "@/lib/stripe-capabilities";
-
-// Lazy-initialised so the module can be imported during `next build`
-// (page-data collection) without STRIPE_SECRET_KEY being set.
-let _stripe: Stripe | null = null;
-function getStripe(): Stripe {
-  if (!_stripe) {
-    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-      apiVersion: "2026-03-25.dahlia",
-    });
-  }
-  return _stripe;
-}
+import { getStripe } from "@/lib/stripe";
 
 // events.enabled_payment_methods now stores canonical Stripe `payment_method_types`
 // values directly (validated against STRIPE_PAYMENT_METHOD_TYPE_VALUES on the
@@ -141,6 +130,10 @@ interface CheckoutInput {
    *  buyer explicitly waives the 14-day revocation right for digital
    *  event tickets. Stored on orders.revocation_waived. */
   revocationWaived?: boolean;
+  /** P1.4 — Buyer's explicit opt-in for marketing emails. Default false.
+   *  Stamps contacts.marketing_consent + the audit trail (source / IP
+   *  / timestamp). Used to gate future newsletter sends to this contact. */
+  marketingConsent?: boolean;
 }
 
 function composeName(first: string, last: string): string {
@@ -233,7 +226,7 @@ export async function createCheckoutSession(input: CheckoutInput) {
   const { data: event, error: eventError } = await supabase
     .from("events")
     .select(
-      "id, slug, title_en, title_de, title_fr, max_tickets_per_order, enabled_payment_methods, is_published"
+      "id, slug, title_en, title_de, title_fr, max_tickets_per_order, max_total_tickets, enabled_payment_methods, is_published"
     )
     .eq("slug", input.eventSlug)
     .eq("is_published", true)
@@ -251,6 +244,26 @@ export async function createCheckoutSession(input: CheckoutInput) {
     return {
       error: `Maximum ${event.max_tickets_per_order} tickets per order.`,
     };
+  }
+
+  // P1.3 — Event-wide hard cap. Per-tier max_quantity is the primary gate
+  // (atomically enforced by reserve_tickets), but admin can also set a
+  // global ceiling via events.max_total_tickets. Reject the order early
+  // if it would push the total past that ceiling. Race-window is small
+  // (between this check and the reservation RPC) — acceptable for v1; a
+  // strict guard would push the check into reserve_tickets.
+  if (event.max_total_tickets != null && event.max_total_tickets > 0) {
+    const { count: currentSold } = await supabase
+      .from("tickets")
+      .select("id", { count: "exact", head: true })
+      .eq("event_id", event.id)
+      .is("revoked_at", null);
+    const projected = (currentSold ?? 0) + input.attendees.length;
+    if (projected > event.max_total_tickets) {
+      return {
+        error: `Only ${Math.max(0, event.max_total_tickets - (currentSold ?? 0))} ticket(s) left for this event.`,
+      };
+    }
   }
 
   // 2a. SSOT rule 65: per-email rate limit per event. Count paid/comped
@@ -295,7 +308,7 @@ export async function createCheckoutSession(input: CheckoutInput) {
   const { data: tiers, error: tiersError } = await supabase
     .from("ticket_tiers")
     .select(
-      "id, name_en, price_cents, max_quantity, quantity_sold, is_public, sales_start_at, sales_end_at, stripe_product_id, stripe_price_id"
+      "id, name_en, price_cents, currency, max_quantity, quantity_sold, is_public, sales_start_at, sales_end_at, stripe_product_id, stripe_price_id"
     )
     .in("id", tierIds)
     .eq("event_id", event.id)
@@ -304,6 +317,19 @@ export async function createCheckoutSession(input: CheckoutInput) {
   if (tiersError || !tiers || tiers.length !== tierIds.length) {
     return { error: "Invalid ticket tier selected." };
   }
+
+  // P2.5 — currency pass-through. Stripe sessions are single-currency, so
+  // every tier in this order must share the same currency. EUR is the
+  // long-standing default; this check just unblocks future non-EUR events.
+  const tierCurrencies = new Set(
+    tiers.map((t) => (t.currency ?? "EUR").toLowerCase())
+  );
+  if (tierCurrencies.size > 1) {
+    return {
+      error: "Cannot mix tiers with different currencies in one order.",
+    };
+  }
+  const orderCurrency = [...tierCurrencies][0] ?? "eur";
 
   for (const tier of tiers) {
     if (tier.sales_start_at && tier.sales_start_at > nowIso) {
@@ -474,6 +500,23 @@ export async function createCheckoutSession(input: CheckoutInput) {
     }
   );
 
+  // P1.4 — stamp marketing consent on the buyer's contact row when they
+  // explicitly opted in at checkout. We only ever turn it ON via this path
+  // (never silently OFF — the unsubscribe path is the only way to flip it
+  // back). Conservative: never overwrite an already-confirmed consent.
+  if (input.marketingConsent && buyerContactId) {
+    const nowIso = new Date().toISOString();
+    await supabase
+      .from("contacts")
+      .update({
+        marketing_consent: true,
+        marketing_consent_confirmed_at: nowIso,
+        marketing_consent_source: "checkout",
+      })
+      .eq("id", buyerContactId as string)
+      .or("marketing_consent.eq.false,marketing_consent.is.null");
+  }
+
   // Address fields aren't on the RPC signature — write them directly with
   // a fill-in-blanks UPDATE so we never overwrite better data the contact
   // already has from a previous order or admin edit.
@@ -501,6 +544,7 @@ export async function createCheckoutSession(input: CheckoutInput) {
       recipient_last_name: buyerLast,
       recipient_name: buyerFullName,
       locale: input.locale,
+      currency: orderCurrency.toUpperCase(),
       source: input.source ?? null,
       revocation_waived: true,
       revocation_waived_at: new Date().toISOString(),
@@ -571,7 +615,26 @@ export async function createCheckoutSession(input: CheckoutInput) {
     });
   }
 
-  await supabase.from("tickets").insert(ticketRows);
+  // P0.1 — Ticket insert must not silently fail. If it does, the buyer is
+  // about to be sent to Stripe for a paid order that has no tickets attached.
+  // Roll back the reservation + drop the order so they never reach checkout.
+  const { error: ticketsInsertError } = await supabase
+    .from("tickets")
+    .insert(ticketRows);
+  if (ticketsInsertError) {
+    console.error("[purchase] tickets insert failed:", ticketsInsertError);
+    for (const prev of reserved) {
+      await supabase.rpc("release_tickets", {
+        p_tier_id: prev.tierId,
+        p_quantity: prev.qty,
+      });
+    }
+    await supabase.from("orders").delete().eq("id", order.id);
+    return {
+      error:
+        "Could not finalise your tickets. Your reservation was released — please try again.",
+    };
+  }
 
   // 10a. Record event involvement rows (one per distinct contact) so this
   // contact shows up when filtering Contacts by the event. Deduped by the
@@ -640,7 +703,7 @@ export async function createCheckoutSession(input: CheckoutInput) {
       // pre-migration code so events created before backfill keep working.
       lineItems.push({
         price_data: {
-          currency: "eur" as const,
+          currency: orderCurrency,
           product_data: { name: tier.name_en },
           unit_amount: tier.price_cents,
         },
@@ -659,7 +722,7 @@ export async function createCheckoutSession(input: CheckoutInput) {
     } else {
       const stripeCoupon = await getStripe().coupons.create({
         amount_off: discountCents,
-        currency: "eur",
+        currency: orderCurrency,
         duration: "once",
         name: input.couponCode?.toUpperCase() ?? "Discount",
       });
@@ -788,4 +851,99 @@ export async function createCheckoutSession(input: CheckoutInput) {
 
   // 13. Redirect to Stripe Checkout
   redirect(session.url!);
+}
+
+// ---------------------------------------------------------------------------
+// P2.2 — Coupon live-preview
+//
+// Lightweight read-only validator the checkout form calls (debounced) as the
+// user types a coupon code. Returns the same error strings used by the real
+// checkout action so the messaging stays consistent. Does not reserve seats
+// or create an order.
+// ---------------------------------------------------------------------------
+
+export interface CouponPreviewInput {
+  eventSlug: string;
+  code: string;
+  /** Tier IDs currently in the cart, for the applicable-tier check. */
+  tierIds: string[];
+}
+
+export type CouponPreviewResult =
+  | {
+      valid: true;
+      label: string;
+      discountType: "percentage" | "fixed_amount";
+      discountValue: number;
+    }
+  | { valid: false; error: string };
+
+export async function previewCoupon(
+  input: CouponPreviewInput
+): Promise<CouponPreviewResult> {
+  const code = input.code.trim().toUpperCase();
+  if (!code) return { valid: false, error: "Enter a code." };
+  const supabase = await createServerClient();
+
+  const { data: event } = await supabase
+    .from("events")
+    .select("id")
+    .eq("slug", input.eventSlug)
+    .eq("is_published", true)
+    .maybeSingle();
+  if (!event) return { valid: false, error: "Event not found." };
+
+  const { data: coupon } = await supabase
+    .from("coupons")
+    .select(
+      "id, discount_type, discount_value, max_uses, times_used, event_id, applicable_tier_ids, is_active, valid_from, valid_until"
+    )
+    .eq("code", code)
+    .eq("is_active", true)
+    .maybeSingle();
+  if (!coupon) return { valid: false, error: "Invalid or expired coupon code." };
+  if (coupon.event_id && coupon.event_id !== event.id) {
+    return { valid: false, error: "This coupon is not valid for this event." };
+  }
+
+  const now = new Date();
+  if (coupon.valid_from && new Date(coupon.valid_from) > now) {
+    return { valid: false, error: "This coupon is not yet active." };
+  }
+  if (coupon.valid_until && new Date(coupon.valid_until) < now) {
+    return { valid: false, error: "This coupon has expired." };
+  }
+  if (coupon.max_uses && coupon.times_used >= coupon.max_uses) {
+    return {
+      valid: false,
+      error: "This coupon has reached its maximum uses.",
+    };
+  }
+
+  if (
+    Array.isArray(coupon.applicable_tier_ids) &&
+    coupon.applicable_tier_ids.length > 0 &&
+    input.tierIds.length > 0
+  ) {
+    const allowed = new Set(coupon.applicable_tier_ids as string[]);
+    const overlap = input.tierIds.some((id) => allowed.has(id));
+    if (!overlap) {
+      return {
+        valid: false,
+        error: "This coupon doesn't apply to any of the tiers in your cart.",
+      };
+    }
+  }
+
+  const label =
+    coupon.discount_type === "percentage"
+      ? `${coupon.discount_value}% off`
+      : `€${(coupon.discount_value / 100).toFixed(0)} off`;
+
+  return {
+    valid: true,
+    label,
+    discountType: coupon.discount_type,
+    discountValue: coupon.discount_value,
+  };
 }

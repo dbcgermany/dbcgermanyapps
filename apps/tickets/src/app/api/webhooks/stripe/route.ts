@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { after } from "next/server";
-import Stripe from "stripe";
+import type Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 import { notifyAdmins } from "@dbc/supabase/server";
 import {
@@ -11,18 +11,7 @@ import {
 import { sendTicketsForOrder } from "@/lib/send-tickets-for-order";
 import { sendAskSpeakersPromptForOrder } from "@/lib/send-ask-speakers-prompt";
 import { captureServerError } from "@/lib/observe";
-
-// Lazy-initialised so the module can be imported during `next build`
-// (page-data collection) without STRIPE_SECRET_KEY being set.
-let _stripe: Stripe | null = null;
-function getStripe(): Stripe {
-  if (!_stripe) {
-    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-      apiVersion: "2026-03-25.dahlia",
-    });
-  }
-  return _stripe;
-}
+import { getStripe } from "@/lib/stripe";
 
 function getSupabase() {
   return createClient(
@@ -128,7 +117,9 @@ export async function POST(request: Request) {
       typeof session.payment_intent === "string" ? session.payment_intent : null;
     const { data: orderForCheck } = await supabase
       .from("orders")
-      .select("id, stripe_checkout_session_id, stripe_payment_intent_id, status")
+      .select(
+        "id, stripe_checkout_session_id, stripe_payment_intent_id, status, total_cents, currency"
+      )
       .eq("id", orderId)
       .maybeSingle();
     if (
@@ -142,17 +133,52 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "session mismatch" }, { status: 400 });
     }
 
+    // P1.1 — money-math integrity. The DB-stored total is the source of
+    // truth; if Stripe's amount_total differs (admin edited a tier price
+    // in the Stripe Dashboard mid-session, or the session was tampered
+    // with), refuse to flip to paid and alert. Stripe quotes amounts in
+    // the smallest currency unit (cents for EUR) so the comparison is
+    // direct. Skip if session.amount_total is null (free 0-amount sessions
+    // — those don't go through Stripe in our flow but defend anyway).
+    if (
+      typeof session.amount_total === "number" &&
+      session.amount_total !== orderForCheck.total_cents
+    ) {
+      const msg = `[webhook] amount mismatch — session=${session.id} order=${orderId} stripe=${session.amount_total} db=${orderForCheck.total_cents}`;
+      console.error(msg);
+      captureServerError(new Error(msg), {
+        scope: "stripe_webhook:amount_mismatch",
+        data: {
+          order_id: orderId,
+          session_id: session.id,
+          stripe_amount: session.amount_total,
+          db_amount: orderForCheck.total_cents,
+        },
+      });
+      return NextResponse.json(
+        { error: "amount mismatch" },
+        { status: 400 }
+      );
+    }
+
     // Redeem coupon BEFORE the response so a crash between status flip and
     // redemption can't leave a paid order with an un-incremented times_used.
     // The RPC is atomic + idempotent against max_uses; safe to call early.
+    // P1.2 — elevate failure to error severity (was a console.warn that
+    // silently masked the discount-account-imbalance scenario).
     if (couponId && orderForCheck.status === "pending") {
       try {
         await supabase.rpc("redeem_coupon", { p_coupon_id: couponId });
       } catch (err) {
-        console.warn(
+        const errMsg = (err as Error)?.message ?? String(err);
+        console.error(
           `[webhook] redeem_coupon failed for order ${orderId}:`,
-          (err as Error)?.message
+          errMsg
         );
+        captureServerError(err, {
+          scope: "stripe_webhook:redeem_coupon",
+          data: { order_id: orderId, coupon_id: couponId },
+        });
       }
     }
 

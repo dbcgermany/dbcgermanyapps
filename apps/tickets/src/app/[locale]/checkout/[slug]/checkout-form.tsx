@@ -13,7 +13,7 @@ import {
   type Gender,
   type Title,
 } from "@dbc/ui";
-import { createCheckoutSession } from "@/actions/purchase";
+import { createCheckoutSession, previewCoupon } from "@/actions/purchase";
 
 interface Tier {
   id: string;
@@ -107,7 +107,13 @@ export function CheckoutForm({
     emptyAttendee(initialTierId ?? tiers[0]?.id ?? ""),
   ]);
   const [couponCode, setCouponCode] = useState(initialCouponCode ?? "");
+  // P2.2 — live coupon preview (debounced 400ms)
+  const [couponPreview, setCouponPreview] = useState<
+    { state: "idle" | "checking" } | { state: "valid"; label: string } | { state: "invalid"; error: string }
+  >({ state: "idle" });
   const [revocationWaived, setRevocationWaived] = useState(false);
+  // P1.4 — opt-in only, GDPR/PECR-compliant. Default unchecked.
+  const [marketingConsent, setMarketingConsent] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const turnstileRef = useRef<HTMLDivElement>(null);
   const turnstileWidgetIdRef = useRef<string | null>(null);
@@ -137,6 +143,32 @@ export function CheckoutForm({
   };
   // Reference GENDER_VALUES to keep the enum SSOT bundled and tree-shake-proof.
   void GENDER_VALUES;
+
+  // P2.2 — debounced coupon preview. Fires after 400ms of idle typing so
+  // users see "invalid" / discount label before submitting the whole form.
+  useEffect(() => {
+    const code = couponCode.trim().toUpperCase();
+    if (!code) {
+      setCouponPreview({ state: "idle" });
+      return;
+    }
+    setCouponPreview({ state: "checking" });
+    const tierIds = Array.from(new Set(attendees.map((a) => a.tierId).filter(Boolean)));
+    const timer = setTimeout(async () => {
+      const res = await previewCoupon({
+        eventSlug,
+        code,
+        tierIds,
+      });
+      if (res.valid) {
+        setCouponPreview({ state: "valid", label: res.label });
+      } else {
+        setCouponPreview({ state: "invalid", error: res.error });
+      }
+    }, 400);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [couponCode, eventSlug]);
 
   useEffect(() => {
     if (!turnstileSiteKey) return;
@@ -225,6 +257,7 @@ export function CheckoutForm({
         source: source ?? undefined,
         funnelSlug: funnelSlug ?? undefined,
         revocationWaived,
+        marketingConsent,
       });
 
       if (window.turnstile && turnstileWidgetIdRef.current) {
@@ -362,6 +395,26 @@ export function CheckoutForm({
                 }
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               />
+              {/* P2.4 — duplicate-email warning. Non-blocking; some attendees
+                  share a household address. Just a heads-up so the buyer
+                  doesn't accidentally route every QR to the same inbox. */}
+              {(() => {
+                const lc = attendee.email.trim().toLowerCase();
+                if (!lc) return null;
+                const dupes = attendees.filter(
+                  (a, i) => i !== index && a.email.trim().toLowerCase() === lc
+                ).length;
+                if (dupes === 0) return null;
+                return (
+                  <p className="mt-1 text-[11px] text-warning">
+                    {locale === "de"
+                      ? "Hinweis: Diese E-Mail wird von mehreren Teilnehmenden geteilt. Alle Tickets werden an dieselbe Adresse gesendet."
+                      : locale === "fr"
+                        ? "Note : cette adresse est partagée par plusieurs participants. Tous les billets seront envoyés à la même adresse."
+                        : "Note: this email is shared across multiple attendees. All tickets will be sent to the same inbox."}
+                  </p>
+                );
+              })()}
             </div>
 
             <div className="mt-4">
@@ -536,6 +589,20 @@ export function CheckoutForm({
           }
           className="w-full max-w-xs rounded-md border border-input bg-background px-3 py-2 text-sm font-mono uppercase focus:outline-none focus:ring-2 focus:ring-ring"
         />
+        {/* P2.2 — coupon live preview */}
+        {couponPreview.state === "checking" && (
+          <p className="mt-1 text-xs text-muted-foreground">
+            {locale === "de" ? "Wird geprüft…" : locale === "fr" ? "Vérification…" : "Checking…"}
+          </p>
+        )}
+        {couponPreview.state === "valid" && (
+          <p className="mt-1 text-xs text-success">
+            ✓ {couponPreview.label}
+          </p>
+        )}
+        {couponPreview.state === "invalid" && (
+          <p className="mt-1 text-xs text-danger">{couponPreview.error}</p>
+        )}
       </div>
 
       {/* Order Summary */}
@@ -595,6 +662,66 @@ export function CheckoutForm({
           <div ref={turnstileRef} className="flex justify-center" />
         </>
       )}
+
+      {/* P1.4 — Marketing consent. Opt-in only, default unchecked. Lawful
+          basis: explicit consent (GDPR Art. 6(1)(a) / PECR for electronic
+          marketing). The checkbox stamp flows into contacts.marketing_consent
+          on the upsert. */}
+      <label className="flex items-start gap-2 rounded-md border border-border bg-muted/20 p-3 text-xs text-foreground">
+        <input
+          type="checkbox"
+          checked={marketingConsent}
+          onChange={(e) => setMarketingConsent(e.target.checked)}
+          className="mt-0.5"
+        />
+        <span>
+          {locale === "de"
+            ? "Ja, ich möchte gelegentlich Updates zu kommenden Veranstaltungen und Möglichkeiten von DBC Germany erhalten. Ich kann mich jederzeit über den Link in jeder E-Mail abmelden."
+            : locale === "fr"
+              ? "Oui, je souhaite recevoir occasionnellement des nouvelles sur les prochains événements et opportunités de DBC Germany. Je peux me désabonner à tout moment via le lien dans chaque e-mail."
+              : "Yes, I'd like occasional updates on upcoming DBC Germany events and opportunities. I can unsubscribe at any time via the link in every email."}
+        </span>
+      </label>
+
+      {/* P2.3 — Privacy + Terms links. TMG §5 / GDPR Article 13 require
+          the policy to be linked at the point of personal-data submission. */}
+      <p className="text-xs text-muted-foreground">
+        {locale === "de"
+          ? "Mit dem Absenden akzeptieren Sie unsere "
+          : locale === "fr"
+            ? "En soumettant, vous acceptez nos "
+            : "By submitting, you accept our "}
+        <a
+          href={`/${locale}/legal/terms`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-primary"
+        >
+          {locale === "de"
+            ? "Allgemeinen Geschäftsbedingungen"
+            : locale === "fr"
+              ? "conditions générales"
+              : "Terms"}
+        </a>
+        {locale === "de"
+          ? " und unsere "
+          : locale === "fr"
+            ? " et notre "
+            : " and our "}
+        <a
+          href={`/${locale}/legal/privacy`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-primary"
+        >
+          {locale === "de"
+            ? "Datenschutzerklärung"
+            : locale === "fr"
+              ? "politique de confidentialité"
+              : "Privacy Policy"}
+        </a>
+        .
+      </p>
 
       {/* German Widerrufsrecht (BGB §312g, §355) waiver. Required for digital
           event tickets so the buyer can't claim a 14-day refund post-event. */}

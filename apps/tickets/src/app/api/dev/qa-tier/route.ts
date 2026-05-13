@@ -1,16 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import Stripe from "stripe";
-
-let _stripe: Stripe | null = null;
-function getStripe(): Stripe {
-  if (!_stripe) {
-    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-      apiVersion: "2026-03-25.dahlia",
-    });
-  }
-  return _stripe;
-}
+import { getStripe } from "@/lib/stripe";
 
 function authorised(req: Request): boolean {
   // Dual gate: ALLOW_QA_TIER=1 AND Bearer matches QA_TIER_ADMIN_TOKEN.
