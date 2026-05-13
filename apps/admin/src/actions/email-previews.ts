@@ -17,6 +17,7 @@ import {
   sendNewsletterConfirm,
   sendStaffMessage,
   sendChapterDelegateInvite,
+  sendChapterDelegateOutcome,
   sendAskSpeakersEmail,
   sendContactFormConfirm,
   sendJobApplicationConfirm,
@@ -379,6 +380,29 @@ export async function sendAllTemplatePreviews(input: {
       registrationUrl: PREVIEW_URLS.registrationUrl,
       locale,
       kind: "team_member",
+    })
+  );
+
+  // 20.a chapter-delegate-outcome (rejected with note)
+  await run("chapter-delegate-rejected", () =>
+    sendChapterDelegateOutcome({
+      to: email,
+      recipientName: PREVIEW_CONTACT.fullName,
+      eventTitle: PREVIEW_EVENT.title,
+      outcome: "rejected",
+      note: "[PREVIEW] We couldn't verify your chapter — please contact your Ambassador.",
+      locale,
+    })
+  );
+
+  // 20.b chapter-delegate-outcome (revoked, no note)
+  await run("chapter-delegate-revoked", () =>
+    sendChapterDelegateOutcome({
+      to: email,
+      recipientName: PREVIEW_CONTACT.fullName,
+      eventTitle: PREVIEW_EVENT.title,
+      outcome: "revoked",
+      locale,
     })
   );
 

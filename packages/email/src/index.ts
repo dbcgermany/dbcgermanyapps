@@ -42,6 +42,7 @@ export {
   sendStaffPaused,
   sendChapterDelegateInvite,
   sendChapterDelegateInvitesBatch,
+  sendChapterDelegateOutcome,
   sendPaymentReminder,
 } from "./send-transactional";
 export type {
@@ -61,6 +62,7 @@ export type {
   SendStaffEmailChangedInput,
   SendStaffPausedInput,
   SendPaymentReminderInput,
+  SendChapterDelegateOutcomeInput,
 } from "./send-transactional";
 export {
   sendNewsletterEmail,
@@ -102,6 +104,14 @@ export { ChapterDelegateAmbassadorInviteEmail } from "./templates/chapter-delega
 export type { ChapterDelegateAmbassadorInviteEmailProps } from "./templates/chapter-delegate-ambassador-invite";
 export { ChapterDelegateTeamMemberInviteEmail } from "./templates/chapter-delegate-team-member-invite";
 export type { ChapterDelegateTeamMemberInviteEmailProps } from "./templates/chapter-delegate-team-member-invite";
+export {
+  ChapterDelegateOutcomeEmail,
+  chapterDelegateOutcomeSubject,
+} from "./templates/chapter-delegate-outcome";
+export type {
+  ChapterDelegateOutcomeEmailProps,
+  ChapterDelegateOutcome,
+} from "./templates/chapter-delegate-outcome";
 export { AskSpeakersEmail } from "./templates/ask-speakers";
 export type {
   AskSpeakersEmailProps,

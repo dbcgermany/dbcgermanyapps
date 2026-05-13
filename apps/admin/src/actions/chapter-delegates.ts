@@ -4,51 +4,41 @@ import { createServerClient, requireRole } from "@dbc/supabase/server";
 import { createClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 import { createInvitation } from "@/actions/invitations";
-import { createEmailClient, fromAddressFor } from "@dbc/email";
+import {
+  createEmailClient,
+  fromAddressFor,
+  sendChapterDelegateOutcome,
+} from "@dbc/email";
 
 type Status = "active" | "pending_approval" | "rejected" | "revoked";
 
-async function sendChapterDelegateOutcomeEmail(
-  to: string,
-  recipientName: string,
-  eventTitle: string,
-  outcome: "rejected" | "revoked",
-  note: string | null,
-  ccLeadEmail: string | null
-) {
+/**
+ * Wrapper around the SSOT `sendChapterDelegateOutcome` sender that swallows
+ * Resend errors so a single failed email doesn't poison the surrounding
+ * approval/rejection transaction. The failure still hits server logs.
+ */
+async function dispatchChapterDelegateOutcome(args: {
+  to: string;
+  recipientName: string;
+  eventTitle: string;
+  outcome: "rejected" | "revoked";
+  note: string | null;
+  ccLeadEmail: string | null;
+  locale: "en" | "de" | "fr";
+}) {
   if (!process.env.RESEND_API_KEY) return;
   try {
-    const resend = createEmailClient();
-    const subject =
-      outcome === "rejected"
-        ? `Deine DBC-Anmeldung für ${eventTitle}`
-        : `Status: Deine DBC-Anmeldung für ${eventTitle}`;
-    const body =
-      outcome === "rejected"
-        ? `Hallo ${recipientName},\n\n` +
-          `wir konnten deine Anmeldung als Chapter-Delegierte:r für ${eventTitle} aktuell nicht bestätigen.\n` +
-          (note ? `\nHinweis: ${note}\n` : "") +
-          `\nFalls das nicht erwartet war, sprich bitte mit deiner/deinem Sektions-Botschafter:in oder antworte direkt auf diese E-Mail.\n\nViele Grüße\nDas DBC Germany Team\n` +
-          `\n---\n\n` +
-          `Hi ${recipientName},\n\n` +
-          `we couldn't confirm your chapter-delegate registration for ${eventTitle}.\n` +
-          (note ? `\nNote: ${note}\n` : "") +
-          `\nIf this wasn't expected, please reach out to your Chapter Ambassador or reply to this email.\n\nThanks,\nThe DBC Germany Team\n`
-        : `Hallo ${recipientName},\n\n` +
-          `dein Team-Ticket für ${eventTitle} wurde widerrufen. Falls das ein Versehen war, melde dich bitte direkt bei uns.\n\nViele Grüße\nDas DBC Germany Team\n` +
-          `\n---\n\n` +
-          `Hi ${recipientName},\n\n` +
-          `your team ticket for ${eventTitle} has been revoked. If this wasn't expected, please get in touch.\n\nThanks,\nThe DBC Germany Team\n`;
-    const cc = ccLeadEmail ? [ccLeadEmail] : undefined;
-    await resend.emails.send({
-      from: fromAddressFor("transactional"),
-      to,
-      cc,
-      subject,
-      text: body,
+    await sendChapterDelegateOutcome({
+      to: args.to,
+      ccLeadEmail: args.ccLeadEmail,
+      recipientName: args.recipientName,
+      eventTitle: args.eventTitle,
+      outcome: args.outcome,
+      note: args.note,
+      locale: args.locale,
     });
   } catch (err) {
-    console.error(`[chapterDelegate.${outcome}] email failed:`, err);
+    console.error(`[chapterDelegate.${args.outcome}] email failed:`, err);
   }
 }
 
@@ -496,14 +486,15 @@ export async function rejectChapterDelegate(
     const recipientName =
       [contact.first_name, contact.last_name].filter(Boolean).join(" ") ||
       contact.email.split("@")[0];
-    await sendChapterDelegateOutcomeEmail(
-      contact.email,
+    await dispatchChapterDelegateOutcome({
+      to: contact.email,
       recipientName,
       eventTitle,
-      "rejected",
-      note?.trim() || null,
-      inv.chapter_lead_email
-    );
+      outcome: "rejected",
+      note: note?.trim() || null,
+      ccLeadEmail: inv.chapter_lead_email,
+      locale: locale === "de" || locale === "fr" ? locale : "en",
+    });
   }
 
   revalidatePath(`/${locale}/chapter-delegates`);
@@ -600,14 +591,15 @@ export async function revokeChapterDelegate(
       const recipientName =
         [c.first_name, c.last_name].filter(Boolean).join(" ") ||
         c.email.split("@")[0];
-      await sendChapterDelegateOutcomeEmail(
-        c.email,
+      await dispatchChapterDelegateOutcome({
+        to: c.email,
         recipientName,
         eventTitle,
-        "revoked",
-        null,
-        c.id === inv.contact_id ? inv.chapter_lead_email : null
-      );
+        outcome: "revoked",
+        note: null,
+        ccLeadEmail: c.id === inv.contact_id ? inv.chapter_lead_email : null,
+        locale: locale === "de" || locale === "fr" ? locale : "en",
+      });
     }
   }
 

@@ -18,6 +18,11 @@ import { StaffEmailChangedEmail } from "./templates/staff-email-changed";
 import { StaffPausedEmail } from "./templates/staff-paused";
 import { ChapterDelegateAmbassadorInviteEmail } from "./templates/chapter-delegate-ambassador-invite";
 import { ChapterDelegateTeamMemberInviteEmail } from "./templates/chapter-delegate-team-member-invite";
+import {
+  ChapterDelegateOutcomeEmail,
+  chapterDelegateOutcomeSubject,
+  type ChapterDelegateOutcome,
+} from "./templates/chapter-delegate-outcome";
 import { PaymentReminderEmail } from "./templates/payment-reminder";
 
 type Locale = "en" | "de" | "fr";
@@ -664,6 +669,50 @@ export async function sendStaffPaused(input: SendStaffPausedInput) {
     from: transactionalFrom(),
     to: input.to,
     subject: STAFF_PAUSED_SUBJECT[input.state][input.locale],
+    html,
+  });
+  if (res.error) throw new Error(`Resend: ${res.error.message}`);
+  return { id: res.data?.id ?? "" };
+}
+
+// ---------------------------------------------------------------------------
+// Chapter-delegate outcome — rejection or revocation notice
+// ---------------------------------------------------------------------------
+
+export interface SendChapterDelegateOutcomeInput {
+  to: string;
+  ccLeadEmail?: string | null;
+  recipientName: string;
+  eventTitle: string;
+  outcome: ChapterDelegateOutcome;
+  note?: string | null;
+  locale: Locale;
+}
+
+export async function sendChapterDelegateOutcome(
+  input: SendChapterDelegateOutcomeInput
+) {
+  const html = await render(
+    React.createElement(ChapterDelegateOutcomeEmail, {
+      recipientName: input.recipientName,
+      eventTitle: input.eventTitle,
+      outcome: input.outcome,
+      note: input.note ?? null,
+      locale: input.locale,
+    })
+  );
+  const subject = chapterDelegateOutcomeSubject(
+    input.outcome,
+    input.locale,
+    input.eventTitle
+  );
+  const resend = createEmailClient();
+  const cc = input.ccLeadEmail ? [input.ccLeadEmail] : undefined;
+  const res = await resend.emails.send({
+    from: transactionalFrom(),
+    to: input.to,
+    cc,
+    subject,
     html,
   });
   if (res.error) throw new Error(`Resend: ${res.error.message}`);
