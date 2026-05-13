@@ -4,7 +4,7 @@
 
 import type { LegalContext } from "./types";
 import { t } from "./types";
-import { formatRegisteredAddress, formatFrenchAddress, formatParentAddress } from "./company";
+import { formatRegisteredAddress } from "./company";
 import { LEGAL_LAST_UPDATED } from "./version";
 import type { LegalCopy } from "./types";
 
@@ -204,42 +204,6 @@ export function Impressum({ company, locale }: LegalContext) {
 
       <h3>{t(copy.responsiblePerson, locale)}</h3>
       <p>{c?.responsible_person ?? "—"}</p>
-
-      <hr />
-
-      {c?.fr_legal_name && (
-        <>
-          <h2>{t(copy.frenchEntity, locale)}</h2>
-          <p>
-            {c.fr_legal_name}
-            {c.fr_legal_form ? ` (${c.fr_legal_form})` : ""}
-            {c.fr_siren ? ` · SIREN ${c.fr_siren}` : ""}
-            {c.fr_director ? (
-              <>
-                <br />
-                {locale === "de"
-                  ? "Geschäftsführer"
-                  : locale === "fr"
-                    ? "Directeur Général"
-                    : "Director"}: {c.fr_director}
-              </>
-            ) : null}
-          </p>
-          <address className="not-italic whitespace-pre-line">
-            {formatFrenchAddress(c)}
-          </address>
-        </>
-      )}
-
-      {c?.parent_company_name && (
-        <>
-          <h2>{t(copy.parentOrg, locale)}</h2>
-          <p>{c.parent_company_name}</p>
-          <address className="not-italic whitespace-pre-line">
-            {formatParentAddress(c)}
-          </address>
-        </>
-      )}
 
       <hr />
 
