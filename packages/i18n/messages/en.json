@@ -1051,7 +1051,83 @@
       "sectionAddress": "Address",
       "sectionInvolvement": "Event involvement",
       "sectionInternal": "Internal",
+      "fields": {
+        "title": "Title",
+        "firstName": "First name",
+        "lastName": "Last name",
+        "birthday": "Birthday",
+        "gender": "Gender",
+        "email": "Email",
+        "emailHint": "Lowercased on save. Editing this rewires which orders, tickets and newsletter consents the row owns.",
+        "phone": "Phone",
+        "occupation": "Occupation",
+        "addressLine1": "Address line 1",
+        "addressLine2": "Address line 2",
+        "postalCode": "Postal code",
+        "city": "City",
+        "stateRegion": "State / region",
+        "adminNotes": "Admin notes",
+        "adminNotesPlaceholder": "Context for the team — relationship history, do-not-contact flags, follow-up reminders…"
+      },
+      "profile": {
+        "sections": {
+          "sharedNotes": "Shared notes",
+          "privateNotes": "My private notes"
+        },
+        "shared": {
+          "caption": "Visible to every team member with an account."
+        },
+        "private": {
+          "caption": "Only you see this — kept private to your account.",
+          "placeholder": "Where you stand with this contact — outreach so far, next step, gut feel…"
+        }
+      },
+      "business": {
+        "sectionLabel": "Business profile",
+        "description": "Sales-relevant facts about this contact. Visible to every team member.",
+        "fields": {
+          "tier": "Tier",
+          "tierPlaceholder": "e.g. Tier 1, Tier 2…",
+          "sector": "Sector",
+          "sectorPlaceholder": "e.g. Telecom & Tech, Energy",
+          "bestContactMethod": "Best contact method",
+          "pitchTier": "Pitch tier",
+          "pitchTierPlaceholder": "High / Medium / Low",
+          "confidence": "Confidence",
+          "confidenceHint": "Your confidence that this contact converts (0–100)."
+        },
+        "bestContactMethods": {
+          "email": "Email",
+          "phone": "Phone",
+          "linkedin": "LinkedIn",
+          "in_person": "In person"
+        }
+      },
+      "pipeline": {
+        "label": "Pipeline",
+        "placeholder": "Set pipeline",
+        "statuses": {
+          "new": "New",
+          "engaged": "Engaged",
+          "considering": "Considering",
+          "declined": "Declined"
+        }
+      },
+      "filters": {
+        "eventLabel": "Event",
+        "categoryLabel": "Category",
+        "categoryHint": "What they are — durable identity across all events.",
+        "eventRoleLabel": "Event role",
+        "eventRoleHint": "What they're doing at THIS event.",
+        "eventRoleAll": "Any role",
+        "pipelineLabel": "Pipeline",
+        "pipelineAll": "Any pipeline",
+        "pipelineNone": "Not set"
+      },
       "list": {
+        "columns": {
+          "pipeline": "Pipeline"
+        },
         "tabs": {
           "contacts": "Contacts",
           "attendees": "Attendees"

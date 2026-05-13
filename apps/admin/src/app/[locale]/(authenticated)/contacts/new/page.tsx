@@ -1,5 +1,8 @@
 import { getTranslations } from "next-intl/server";
-import { listEventsForContactFilter } from "@/actions/contacts";
+import {
+  listContactCategoriesForFilter,
+  listEventsForContactFilter,
+} from "@/actions/contacts";
 import { PageHeader } from "@/components/page-header";
 import { NewContactForm } from "./new-contact-form";
 
@@ -11,7 +14,10 @@ export default async function NewContactPage({
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "admin.contacts" });
   const tBack = await getTranslations({ locale, namespace: "admin.back" });
-  const events = await listEventsForContactFilter();
+  const [events, categories] = await Promise.all([
+    listEventsForContactFilter(),
+    listContactCategoriesForFilter(),
+  ]);
 
   return (
     <div>
@@ -21,7 +27,11 @@ export default async function NewContactPage({
         back={{ href: `/${locale}/contacts`, label: tBack("contacts") }}
       />
       <div className="mt-8 max-w-3xl">
-        <NewContactForm locale={locale} events={events} />
+        <NewContactForm
+          locale={locale}
+          events={events}
+          categories={categories}
+        />
       </div>
     </div>
   );

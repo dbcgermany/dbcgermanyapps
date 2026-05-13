@@ -14,6 +14,12 @@ import {
   type InvolvementRole,
   type InvolvementRow,
 } from "@/lib/involvements";
+import {
+  PIPELINE_STATUS_VALUES,
+  type PipelineStatus,
+  BEST_CONTACT_METHODS,
+  type BestContactMethod,
+} from "@dbc/types";
 
 export interface Contact {
   id: string;
@@ -38,8 +44,18 @@ export interface Contact {
   postal_code: string | null;
   city: string | null;
   state_region: string | null;
+  tier: string | null;
+  sector: string | null;
+  best_contact_method: BestContactMethod | null;
+  pitch_tier: string | null;
+  confidence: number | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface ContactUserState {
+  private_notes: string | null;
+  pipeline_status: PipelineStatus | null;
 }
 
 export interface ContactCategory {
@@ -57,6 +73,7 @@ export interface ContactListRow extends Contact {
   categories: Array<Pick<ContactCategory, "slug" | "name_en" | "color">>;
   orders_count: number;
   tickets_count: number;
+  pipeline_status: PipelineStatus | null;
 }
 
 export async function listContacts(filters: {
@@ -65,15 +82,16 @@ export async function listContacts(filters: {
   marketingOnly?: boolean;
   eventId?: string;
   role?: InvolvementRole;
+  pipelineStatus?: PipelineStatus | "none";
   limit?: number;
 } = {}): Promise<ContactListRow[]> {
-  await requireRole("manager");
+  const user = await requireRole("manager");
   const supabase = await createServerClient();
 
-  // Resolve event×role → contact IDs. The role filter previously required
-  // an eventId in the same call (silently no-op'd otherwise); now role
-  // alone is honoured, and queries every event's involvements table for
-  // that role. eventId alone still works as before.
+  // Event role filter — purely event-bound now. Categories handle
+  // identity (press, partners, sponsors). Backfill migration
+  // 20260513000005 normalises legacy sponsor/partner/press involvement
+  // rows into category links so identity queries hit the category path.
   let involvementContactIds: string[] | null = null;
   if (filters.eventId || filters.role) {
     let invQuery = supabase
@@ -85,74 +103,67 @@ export async function listContacts(filters: {
     involvementContactIds = Array.from(
       new Set((involvements ?? []).map((i) => i.contact_id as string))
     );
-    if (involvementContactIds.length === 0 && filters.eventId) return [];
+    if (involvementContactIds.length === 0) return [];
   }
 
-  // Category resolution. Many of our category slugs (press, partners,
-  // founders, investors) overlap with involvement roles of the same name.
-  // To match the user's mental model — "show me everyone who is press,
-  // regardless of how they got tagged" — when the slug matches a role,
-  // we ALSO union in every contact who has that role at any event.
-  //
-  // Plural / singular mismatch: category slugs are plural ("partners"),
-  // role values are singular ("partner"). Map sidebar slugs → role(s).
-  const CATEGORY_TO_ROLES: Record<string, InvolvementRole[]> = {
-    partners: ["partner", "sponsor"],
-    press: ["press"],
-    investors: [], // no matching role today
-    founders: [], // no matching role today
-    sponsors: ["sponsor"],
-    speakers: ["speaker"],
-    staff: ["staff"],
-    vip: ["vip"],
-    volunteers: ["volunteer"],
-    moderators: ["moderator"],
-    contractors: ["contractor"],
-  };
+  // Category filter — pure category_links lookup, no role union.
   let categoryContactIds: string[] | null = null;
   if (filters.categorySlug) {
-    const slug = filters.categorySlug;
     const { data: category } = await supabase
       .from("contact_categories")
       .select("id")
-      .eq("slug", slug)
+      .eq("slug", filters.categorySlug)
       .maybeSingle();
-    const ids = new Set<string>();
-    if (category) {
-      const { data: links } = await supabase
-        .from("contact_category_links")
-        .select("contact_id")
-        .eq("category_id", category.id);
-      for (const l of links ?? []) ids.add(l.contact_id as string);
-    }
-    const rolesToUnion: InvolvementRole[] = (CATEGORY_TO_ROLES[slug] ?? []).concat(
-      // Also accept the slug itself if it happens to be a valid role.
-      (INVOLVEMENT_ROLES as readonly string[]).includes(slug)
-        ? [slug as InvolvementRole]
-        : []
+    if (!category) return [];
+    const { data: links } = await supabase
+      .from("contact_category_links")
+      .select("contact_id")
+      .eq("category_id", category.id);
+    categoryContactIds = Array.from(
+      new Set((links ?? []).map((l) => l.contact_id as string))
     );
-    if (rolesToUnion.length > 0) {
-      const { data: roleLinks } = await supabase
-        .from("contact_event_involvements")
-        .select("contact_id")
-        .in("role", Array.from(new Set(rolesToUnion)));
-      for (const r of roleLinks ?? []) ids.add(r.contact_id as string);
-    }
-    categoryContactIds = Array.from(ids);
     if (categoryContactIds.length === 0) return [];
   }
 
-  // Intersect involvement filter (event/role from the form) with category
-  // bucket (sidebar). If both are set, only contacts in both wins.
+  // Pipeline filter — scoped to the current user via contact_user_state.
+  // "none" means: no row exists yet for this (contact, user) pair.
+  let pipelineContactIds: string[] | null = null;
+  let excludeWithStateIds: string[] | null = null;
+  if (filters.pipelineStatus) {
+    if (filters.pipelineStatus === "none") {
+      const { data: stateRows } = await supabase
+        .from("contact_user_state")
+        .select("contact_id")
+        .eq("user_id", user.userId);
+      excludeWithStateIds = Array.from(
+        new Set((stateRows ?? []).map((r) => r.contact_id as string))
+      );
+    } else {
+      const { data: stateRows } = await supabase
+        .from("contact_user_state")
+        .select("contact_id")
+        .eq("user_id", user.userId)
+        .eq("pipeline_status", filters.pipelineStatus);
+      pipelineContactIds = Array.from(
+        new Set((stateRows ?? []).map((r) => r.contact_id as string))
+      );
+      if (pipelineContactIds.length === 0) return [];
+    }
+  }
+
+  // Intersect all id filters present.
+  const idSets: string[][] = [];
+  if (involvementContactIds) idSets.push(involvementContactIds);
+  if (categoryContactIds) idSets.push(categoryContactIds);
+  if (pipelineContactIds) idSets.push(pipelineContactIds);
   let idFilter: string[] | null = null;
-  if (involvementContactIds && categoryContactIds) {
-    const cset = new Set(categoryContactIds);
-    idFilter = involvementContactIds.filter((id) => cset.has(id));
-    if (idFilter.length === 0) return [];
-  } else if (involvementContactIds) {
-    idFilter = involvementContactIds;
-  } else if (categoryContactIds) {
-    idFilter = categoryContactIds;
+  if (idSets.length > 0) {
+    idFilter = idSets.reduce<string[] | null>((acc, set) => {
+      if (acc === null) return set;
+      const s = new Set(set);
+      return acc.filter((id) => s.has(id));
+    }, null);
+    if (!idFilter || idFilter.length === 0) return [];
   }
 
   let query = supabase
@@ -161,17 +172,24 @@ export async function listContacts(filters: {
       `id, email, first_name, last_name, country, birthday, gender, occupation,
        phone, marketing_consent, marketing_consent_confirmed_at,
        marketing_consent_source, unsubscribed_at, admin_notes, created_at, updated_at,
+       tier, sector, best_contact_method, pitch_tier, confidence,
        links:contact_category_links(
          category:contact_categories(slug, name_en, color)
        ),
        orders(count),
-       tickets(count)`
+       tickets(count),
+       user_state:contact_user_state(pipeline_status)`
     )
     .order("created_at", { ascending: false })
     .limit(filters.limit ?? 100);
 
-  if (idFilter) {
-    query = query.in("id", idFilter);
+  if (idFilter) query = query.in("id", idFilter);
+  if (excludeWithStateIds && excludeWithStateIds.length > 0) {
+    query = query.not(
+      "id",
+      "in",
+      `(${excludeWithStateIds.map((id) => `"${id}"`).join(",")})`
+    );
   }
   if (filters.search && filters.search.trim().length > 0) {
     const q = filters.search.trim();
@@ -194,6 +212,8 @@ export async function listContacts(filters: {
       .filter(Boolean),
     orders_count: c.orders?.[0]?.count ?? 0,
     tickets_count: c.tickets?.[0]?.count ?? 0,
+    pipeline_status:
+      (c.user_state?.[0]?.pipeline_status as PipelineStatus | null) ?? null,
   }));
   return rows;
 }
@@ -375,6 +395,25 @@ export async function createContact(formData: FormData): Promise<
   }
   const contactId = upsertedId as string;
 
+  // Business profile fields (Tier, Sector, Best contact method, Pitch
+  // tier, Confidence) — optional new-contact extras.
+  const tier = ((formData.get("tier") as string) || "").trim() || null;
+  const sector = ((formData.get("sector") as string) || "").trim() || null;
+  const pitchTier =
+    ((formData.get("pitch_tier") as string) || "").trim() || null;
+  const bcmRaw = ((formData.get("best_contact_method") as string) || "").trim();
+  const bestContactMethod = (BEST_CONTACT_METHODS as readonly string[]).includes(
+    bcmRaw
+  )
+    ? (bcmRaw as BestContactMethod)
+    : null;
+  const confRaw = ((formData.get("confidence") as string) || "").trim();
+  let confidence: number | null = null;
+  if (confRaw !== "") {
+    const n = Number.parseInt(confRaw, 10);
+    if (Number.isFinite(n) && n >= 0 && n <= 100) confidence = n;
+  }
+
   // Persist every field the RPC doesn't accept. All columns are nullable,
   // so we only set keys that have a value and leave the rest untouched.
   const patch: Record<string, unknown> = {};
@@ -389,6 +428,11 @@ export async function createContact(formData: FormData): Promise<
   if (postalCode) patch.postal_code = postalCode;
   if (city) patch.city = city;
   if (stateRegion) patch.state_region = stateRegion;
+  if (tier) patch.tier = tier;
+  if (sector) patch.sector = sector;
+  if (pitchTier) patch.pitch_tier = pitchTier;
+  if (bestContactMethod) patch.best_contact_method = bestContactMethod;
+  if (confidence !== null) patch.confidence = confidence;
   if (Object.keys(patch).length > 0) {
     await supabase.from("contacts").update(patch).eq("id", contactId);
   }
@@ -420,7 +464,7 @@ export async function createContact(formData: FormData): Promise<
 }
 
 export async function getContact(id: string) {
-  await requireRole("manager");
+  const user = await requireRole("manager");
   const supabase = await createServerClient();
   const { data: contact } = await supabase
     .from("contacts")
@@ -438,6 +482,7 @@ export async function getContact(id: string) {
     { data: applications },
     involvements,
     eventsList,
+    { data: userState },
   ] = await Promise.all([
     supabase
       .from("contact_category_links")
@@ -481,6 +526,12 @@ export async function getContact(id: string) {
       .order("created_at", { ascending: false }),
     listContactInvolvements(id),
     listEventsForContactFilter(),
+    supabase
+      .from("contact_user_state")
+      .select("private_notes, pipeline_status")
+      .eq("contact_id", id)
+      .eq("user_id", user.userId)
+      .maybeSingle(),
   ]);
 
   return {
@@ -494,6 +545,7 @@ export async function getContact(id: string) {
     applications: applications ?? [],
     involvements,
     eventsList,
+    userState: (userState as ContactUserState | null) ?? null,
   };
 }
 
@@ -585,6 +637,106 @@ export async function toggleContactCategory(
   }
 
   revalidatePath(`/[locale]/contacts/${contactId}`, "layout");
+  return { success: true };
+}
+
+/**
+ * Per-user private notes + pipeline status on a contact.
+ * RLS pins both reads and writes to the current user — other team
+ * members cannot see another operator's notes or pipeline calls.
+ */
+export async function upsertContactUserState(params: {
+  contactId: string;
+  privateNotes?: string | null;
+  pipelineStatus?: PipelineStatus | null;
+}): Promise<{ success: true } | { error: string }> {
+  const user = await requireRole("manager");
+  const supabase = await createServerClient();
+
+  const patch: Record<string, unknown> = {
+    contact_id: params.contactId,
+    user_id: user.userId,
+  };
+  if (params.privateNotes !== undefined) {
+    const trimmed =
+      typeof params.privateNotes === "string" ? params.privateNotes.trim() : "";
+    patch.private_notes = trimmed === "" ? null : trimmed;
+  }
+  if (params.pipelineStatus !== undefined) {
+    if (
+      params.pipelineStatus !== null &&
+      !(PIPELINE_STATUS_VALUES as readonly string[]).includes(
+        params.pipelineStatus
+      )
+    ) {
+      return { error: "Invalid pipeline status." };
+    }
+    patch.pipeline_status = params.pipelineStatus;
+  }
+
+  const { error } = await supabase
+    .from("contact_user_state")
+    .upsert(patch, { onConflict: "contact_id,user_id" });
+  if (error) return { error: error.message };
+
+  revalidatePath(`/[locale]/contacts/${params.contactId}`, "layout");
+  revalidatePath(`/[locale]/contacts`, "layout");
+  return { success: true };
+}
+
+/**
+ * Business-profile fields on a contact (Tier, Sector, Best contact method,
+ * Pitch tier, Confidence). Global to the contact, NOT per-user.
+ */
+export async function updateContactBusinessProfile(
+  id: string,
+  formData: FormData
+): Promise<{ success: true } | { error: string }> {
+  const user = await requireRole("manager");
+  const supabase = await createServerClient();
+
+  const patch: Record<string, string | number | null> = {};
+
+  for (const field of ["tier", "sector", "pitch_tier"] as const) {
+    const raw = formData.get(field);
+    const val = typeof raw === "string" ? raw.trim() : "";
+    patch[field] = val === "" ? null : val;
+  }
+
+  const bcmRaw = formData.get("best_contact_method");
+  const bcmTrim = typeof bcmRaw === "string" ? bcmRaw.trim() : "";
+  if (bcmTrim === "") {
+    patch.best_contact_method = null;
+  } else if (
+    (BEST_CONTACT_METHODS as readonly string[]).includes(bcmTrim)
+  ) {
+    patch.best_contact_method = bcmTrim as BestContactMethod;
+  }
+
+  const confRaw = formData.get("confidence");
+  const confTrim = typeof confRaw === "string" ? confRaw.trim() : "";
+  if (confTrim === "") {
+    patch.confidence = null;
+  } else {
+    const n = Number.parseInt(confTrim, 10);
+    if (!Number.isFinite(n) || n < 0 || n > 100) {
+      return { error: "Confidence must be a whole number between 0 and 100." };
+    }
+    patch.confidence = n;
+  }
+
+  const { error } = await supabase.from("contacts").update(patch).eq("id", id);
+  if (error) return { error: error.message };
+
+  await supabase.from("audit_log").insert({
+    user_id: user.userId,
+    action: "update_contact_business",
+    entity_type: "contacts",
+    entity_id: id,
+    details: { fields: Object.keys(patch) },
+  });
+
+  revalidatePath(`/[locale]/contacts/${id}`, "layout");
   return { success: true };
 }
 

@@ -7,17 +7,21 @@ import {
   addInvolvement,
   removeInvolvement,
   updateContactProfile,
+  updateContactBusinessProfile,
   toggleContactCategory,
   type Contact,
   type ContactCategory,
+  type ContactUserState,
 } from "@/actions/contacts";
 import {
   INVOLVEMENT_ROLES,
   type InvolvementRole,
   type InvolvementRow,
 } from "@/lib/involvements";
+import { BEST_CONTACT_METHODS } from "@dbc/types";
 import { resendTicketPdf, manualCheckIn } from "@/actions/tickets";
 import { useTranslations } from "next-intl";
+import { PrivateNotesCard } from "@/components/private-notes-card";
 
 // Gender enum labels are sourced from the shared i18n `person.*` namespace
 // (already populated for the checkout form). Keeping a local mapping object
@@ -96,6 +100,7 @@ export function ContactProfileTabs({
   applications = [],
   involvements = [],
   eventsList = [],
+  userState = null,
   locale,
 }: {
   contact: Contact;
@@ -107,6 +112,7 @@ export function ContactProfileTabs({
   applications?: ApplicationRow[];
   involvements?: InvolvementRow[];
   eventsList?: Array<{ id: string; title_en: string; starts_at: string }>;
+  userState?: ContactUserState | null;
   locale: string;
 }) {
   const [tab, setTab] = useState<Tab>("profile");
@@ -144,7 +150,15 @@ export function ContactProfileTabs({
       </div>
 
       <div className="mt-6">
-        {tab === "profile" && <ProfileForm contact={contact} locale={locale} />}
+        {tab === "profile" && (
+          <div className="space-y-6">
+            <ProfileForm contact={contact} locale={locale} />
+            <PrivateNotesCard
+              contactId={contact.id}
+              initialNotes={userState?.private_notes ?? null}
+            />
+          </div>
+        )}
         {tab === "categories" && (
           <CategoriesPicker
             contactId={contact.id}
@@ -394,9 +408,14 @@ function ApplicationsList({
 
 function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) {
   const [isPending, startTransition] = useTransition();
+  const [isBusinessPending, startBusinessTransition] = useTransition();
   const [phone, setPhone] = useState(contact.phone ?? "");
   const genderLabels = useGenderLabels();
   const tCommon = useTranslations("admin.common");
+  const tFields = useTranslations("admin.contacts");
+  const tProfile = useTranslations("admin.contacts.profile");
+  const tBusiness = useTranslations("admin.contacts.business");
+  const tBcm = useTranslations("admin.contacts.business.bestContactMethods");
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -408,19 +427,30 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
     });
   }
 
+  function onSubmitBusiness(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    startBusinessTransition(async () => {
+      const result = await updateContactBusinessProfile(contact.id, fd);
+      if ("error" in result) toast.error(result.error);
+      else toast.success(tCommon("savedToast"));
+    });
+  }
+
   const input =
     "w-full rounded-md border border-border bg-background px-3 py-2 text-sm";
 
   return (
+    <div className="space-y-6">
     <form onSubmit={onSubmit} className="max-w-2xl space-y-6">
       {/* Identity */}
       <fieldset className="space-y-4 rounded-lg border border-border p-4">
         <legend className="px-2 text-xs font-semibold uppercase text-muted-foreground">
-          Identity
+          {tFields("sectionIdentity")}
         </legend>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <label className="block">
-            <span className="mb-1 block text-sm font-medium">Title</span>
+            <span className="mb-1 block text-sm font-medium">{tFields("fields.title")}</span>
             <select
               name="title"
               defaultValue={contact.title ?? ""}
@@ -435,7 +465,7 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
             </select>
           </label>
           <label className="block">
-            <span className="mb-1 block text-sm font-medium">First name</span>
+            <span className="mb-1 block text-sm font-medium">{tFields("fields.firstName")}</span>
             <input
               name="first_name"
               defaultValue={contact.first_name ?? ""}
@@ -443,7 +473,7 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
             />
           </label>
           <label className="block">
-            <span className="mb-1 block text-sm font-medium">Last name</span>
+            <span className="mb-1 block text-sm font-medium">{tFields("fields.lastName")}</span>
             <input
               name="last_name"
               defaultValue={contact.last_name ?? ""}
@@ -453,7 +483,7 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
         </div>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <label className="block">
-            <span className="mb-1 block text-sm font-medium">Birthday</span>
+            <span className="mb-1 block text-sm font-medium">{tFields("fields.birthday")}</span>
             <input
               name="birthday"
               type="date"
@@ -462,7 +492,7 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
             />
           </label>
           <label className="block">
-            <span className="mb-1 block text-sm font-medium">Gender</span>
+            <span className="mb-1 block text-sm font-medium">{tFields("fields.gender")}</span>
             <select
               name="gender"
               defaultValue={contact.gender ?? ""}
@@ -482,10 +512,10 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
       {/* Contact channels */}
       <fieldset className="space-y-4 rounded-lg border border-border p-4">
         <legend className="px-2 text-xs font-semibold uppercase text-muted-foreground">
-          Contact
+          {tFields("sectionContact")}
         </legend>
         <label className="block">
-          <span className="mb-1 block text-sm font-medium">Email</span>
+          <span className="mb-1 block text-sm font-medium">{tFields("fields.email")}</span>
           <input
             name="email"
             type="email"
@@ -494,11 +524,11 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
             required
           />
           <span className="mt-1 block text-[11px] text-muted-foreground">
-            Lowercased on save. Editing this rewires which orders, tickets and newsletter consents the row owns.
+            {tFields("fields.emailHint")}
           </span>
         </label>
         <div className="block">
-          <span className="mb-1 block text-sm font-medium">Phone</span>
+          <span className="mb-1 block text-sm font-medium">{tFields("fields.phone")}</span>
           <PhoneInput
             name="phone"
             value={phone}
@@ -508,7 +538,7 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
           />
         </div>
         <label className="block">
-          <span className="mb-1 block text-sm font-medium">LinkedIn URL</span>
+          <span className="mb-1 block text-sm font-medium">{tFields("linkedinUrl")}</span>
           <input
             name="linkedin_url"
             type="url"
@@ -522,11 +552,11 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
       {/* Professional */}
       <fieldset className="space-y-4 rounded-lg border border-border p-4">
         <legend className="px-2 text-xs font-semibold uppercase text-muted-foreground">
-          Professional
+          {tFields("sectionProfessional")}
         </legend>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <label className="block">
-            <span className="mb-1 block text-sm font-medium">Organization</span>
+            <span className="mb-1 block text-sm font-medium">{tFields("organization")}</span>
             <input
               name="organization"
               defaultValue={contact.organization ?? ""}
@@ -534,7 +564,7 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
             />
           </label>
           <label className="block">
-            <span className="mb-1 block text-sm font-medium">Occupation</span>
+            <span className="mb-1 block text-sm font-medium">{tFields("fields.occupation")}</span>
             <input
               name="occupation"
               defaultValue={contact.occupation ?? ""}
@@ -547,10 +577,10 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
       {/* Address */}
       <fieldset className="space-y-4 rounded-lg border border-border p-4">
         <legend className="px-2 text-xs font-semibold uppercase text-muted-foreground">
-          Address
+          {tFields("sectionAddress")}
         </legend>
         <label className="block">
-          <span className="mb-1 block text-sm font-medium">Address line 1</span>
+          <span className="mb-1 block text-sm font-medium">{tFields("fields.addressLine1")}</span>
           <input
             name="address_line_1"
             defaultValue={contact.address_line_1 ?? ""}
@@ -558,7 +588,7 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
           />
         </label>
         <label className="block">
-          <span className="mb-1 block text-sm font-medium">Address line 2</span>
+          <span className="mb-1 block text-sm font-medium">{tFields("fields.addressLine2")}</span>
           <input
             name="address_line_2"
             defaultValue={contact.address_line_2 ?? ""}
@@ -567,7 +597,7 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
         </label>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <label className="block">
-            <span className="mb-1 block text-sm font-medium">Postal code</span>
+            <span className="mb-1 block text-sm font-medium">{tFields("fields.postalCode")}</span>
             <input
               name="postal_code"
               defaultValue={contact.postal_code ?? ""}
@@ -575,7 +605,7 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
             />
           </label>
           <label className="block">
-            <span className="mb-1 block text-sm font-medium">City</span>
+            <span className="mb-1 block text-sm font-medium">{tFields("fields.city")}</span>
             <input
               name="city"
               defaultValue={contact.city ?? ""}
@@ -583,7 +613,7 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
             />
           </label>
           <label className="block">
-            <span className="mb-1 block text-sm font-medium">State / region</span>
+            <span className="mb-1 block text-sm font-medium">{tFields("fields.stateRegion")}</span>
             <input
               name="state_region"
               defaultValue={contact.state_region ?? ""}
@@ -592,7 +622,7 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
           </label>
         </div>
         <div className="block">
-          <span className="mb-1 block text-sm font-medium">Country</span>
+          <span className="mb-1 block text-sm font-medium">{tFields("country")}</span>
           <CountrySelect
             name="country"
             defaultValue={contact.country ?? ""}
@@ -604,19 +634,20 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
         </div>
       </fieldset>
 
-      {/* Internal */}
+      {/* Internal (shared with all team members) */}
       <fieldset className="space-y-4 rounded-lg border border-border p-4">
         <legend className="px-2 text-xs font-semibold uppercase text-muted-foreground">
-          Internal notes (admin only)
+          {tProfile("sections.sharedNotes")}
         </legend>
+        <p className="text-xs text-muted-foreground">{tProfile("shared.caption")}</p>
         <label className="block">
-          <span className="mb-1 block text-sm font-medium">Admin notes</span>
+          <span className="mb-1 block text-sm font-medium">{tFields("fields.adminNotes")}</span>
           <textarea
             name="admin_notes"
             defaultValue={contact.admin_notes ?? ""}
             rows={4}
             className={input}
-            placeholder="Context for the team — relationship history, do-not-contact flags, follow-up reminders…"
+            placeholder={tFields("fields.adminNotesPlaceholder")}
           />
         </label>
       </fieldset>
@@ -624,10 +655,91 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
       <div className="flex justify-end">
         <Button type="submit"
           disabled={isPending}>
-          {isPending ? "Saving…" : "Save"}
+          {isPending ? tCommon("saving") : tCommon("save")}
         </Button>
       </div>
     </form>
+
+    {/* Business profile — global fields, separate save action */}
+    <form onSubmit={onSubmitBusiness} className="max-w-2xl space-y-4">
+      <fieldset className="space-y-4 rounded-lg border border-border p-4">
+        <legend className="px-2 text-xs font-semibold uppercase text-muted-foreground">
+          {tBusiness("sectionLabel")}
+        </legend>
+        <p className="text-xs text-muted-foreground">{tBusiness("description")}</p>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <label className="block">
+            <span className="mb-1 block text-sm font-medium">{tBusiness("fields.tier")}</span>
+            <input
+              name="tier"
+              defaultValue={contact.tier ?? ""}
+              className={input}
+              placeholder={tBusiness("fields.tierPlaceholder")}
+            />
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-sm font-medium">{tBusiness("fields.sector")}</span>
+            <input
+              name="sector"
+              defaultValue={contact.sector ?? ""}
+              className={input}
+              placeholder={tBusiness("fields.sectorPlaceholder")}
+            />
+          </label>
+        </div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <label className="block">
+            <span className="mb-1 block text-sm font-medium">{tBusiness("fields.bestContactMethod")}</span>
+            <select
+              name="best_contact_method"
+              defaultValue={contact.best_contact_method ?? ""}
+              className={input}
+            >
+              <option value="">—</option>
+              {BEST_CONTACT_METHODS.map((m) => (
+                <option key={m} value={m}>
+                  {tBcm(m)}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-sm font-medium">{tBusiness("fields.pitchTier")}</span>
+            <input
+              name="pitch_tier"
+              defaultValue={contact.pitch_tier ?? ""}
+              className={input}
+              placeholder={tBusiness("fields.pitchTierPlaceholder")}
+            />
+          </label>
+        </div>
+        <label className="block">
+          <span className="mb-1 block text-sm font-medium">
+            {tBusiness("fields.confidence")}
+          </span>
+          <input
+            name="confidence"
+            type="number"
+            min={0}
+            max={100}
+            step={1}
+            defaultValue={contact.confidence ?? ""}
+            className={input}
+            placeholder="0–100"
+          />
+          <span className="mt-1 block text-[11px] text-muted-foreground">
+            {tBusiness("fields.confidenceHint")}
+          </span>
+        </label>
+      </fieldset>
+
+      <div className="flex justify-end">
+        <Button type="submit" disabled={isBusinessPending}>
+          {isBusinessPending ? tCommon("saving") : tCommon("save")}
+        </Button>
+      </div>
+    </form>
+    </div>
   );
 }
 

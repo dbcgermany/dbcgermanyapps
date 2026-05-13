@@ -861,9 +861,9 @@ const CHAPTER_DELEGATE_INVITE_SUBJECT: Record<
   Record<Locale, string>
 > = {
   ambassador: {
-    en: "Please forward — chapter delegate registration for {event}",
-    de: "Bitte weiterleiten — Sektions-Delegierten-Anmeldung für {event}",
-    fr: "À transférer — inscription délégué·e d’antenne pour {event}",
+    en: "Please forward — branch delegate registration for {event}",
+    de: "Bitte weiterleiten — Niederlassungs-Delegierten-Anmeldung für {event}",
+    fr: "À transférer — inscription délégué·e de succursale pour {event}",
   },
   team_member: {
     en: "Your invitation: {event} — please register",

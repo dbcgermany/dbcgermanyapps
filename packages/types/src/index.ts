@@ -564,6 +564,58 @@ export const INVOLVEMENT_ROLES = [
 ] as const;
 export type InvolvementRole = (typeof INVOLVEMENT_ROLES)[number];
 
+// Subset of INVOLVEMENT_ROLES surfaced in the contact-list "Event role"
+// filter. Identity-flavoured roles (sponsor/partner/press) are filtered
+// via the Category dropdown instead — they're durable identities, not
+// event-bound actions. Backfill migration 20260513000005 ensures legacy
+// rows are also reachable via Category.
+export const EVENT_ROLE_FILTER_VALUES = [
+  "attendee",
+  "invited_guest",
+  "speaker",
+  "moderator",
+  "volunteer",
+  "staff",
+  "contractor",
+  "vip",
+] as const;
+export type EventRoleFilterValue = (typeof EVENT_ROLE_FILTER_VALUES)[number];
+
+// Category slugs hidden from the contact-list Category filter because
+// they overlap with event-bound state (people with a paid order or an
+// invite are better discovered via the Event filter / Attendees tab).
+export const CONTACT_FILTER_HIDDEN_CATEGORY_SLUGS = [
+  "event_attendees",
+  "invited_guests",
+] as const;
+
+/* -------------------------------------------------------------------------- */
+/*                          Per-user pipeline status                          */
+/* -------------------------------------------------------------------------- */
+// Mirrors the public.pipeline_status Postgres enum
+// (supabase/migrations/20260513000004_contact_user_state.sql).
+// Stored as English-only tokens; user-facing labels live in i18n under
+// admin.contacts.pipeline.statuses.
+
+export const PIPELINE_STATUS_VALUES = [
+  "new",
+  "engaged",
+  "considering",
+  "declined",
+] as const;
+export type PipelineStatus = (typeof PIPELINE_STATUS_VALUES)[number];
+
+// Best-contact-method tokens for the business fields on contacts.
+// Stored as English-only tokens; labels resolved via i18n
+// admin.contacts.business.bestContactMethods.
+export const BEST_CONTACT_METHODS = [
+  "email",
+  "phone",
+  "linkedin",
+  "in_person",
+] as const;
+export type BestContactMethod = (typeof BEST_CONTACT_METHODS)[number];
+
 /* -------------------------------------------------------------------------- */
 /*                           Contact categories                               */
 /* -------------------------------------------------------------------------- */

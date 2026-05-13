@@ -249,7 +249,7 @@
         "done": "✓ Vous êtes sur la liste d’attente"
       },
       "list": {
-        "tag": "Incubateur et accélérateur d'entreprises · Chapitre DACH",
+        "tag": "Incubateur et accélérateur d'entreprises · Succursale DACH",
         "title": "Événements live.",
         "subtitle": "Masterclasses, conférences et meet-ups pour les fondateurs, investisseurs et opérateurs qui bâtissent le corridor UE ↔ Afrique.",
         "noEvents": "Aucun événement à venir pour le moment. Revenez bientôt.",
@@ -1051,7 +1051,83 @@
       "sectionAddress": "Adresse",
       "sectionInvolvement": "Participation à un événement",
       "sectionInternal": "Interne",
+      "fields": {
+        "title": "Titre",
+        "firstName": "Prénom",
+        "lastName": "Nom",
+        "birthday": "Date de naissance",
+        "gender": "Genre",
+        "email": "E-mail",
+        "emailHint": "Mis en minuscules à l'enregistrement. Modifier cette adresse redirige les commandes, billets et consentements newsletter liés.",
+        "phone": "Téléphone",
+        "occupation": "Profession",
+        "addressLine1": "Adresse ligne 1",
+        "addressLine2": "Adresse ligne 2",
+        "postalCode": "Code postal",
+        "city": "Ville",
+        "stateRegion": "État / région",
+        "adminNotes": "Notes admin",
+        "adminNotesPlaceholder": "Contexte pour l'équipe — historique de la relation, indicateurs « ne pas contacter », rappels de suivi…"
+      },
+      "profile": {
+        "sections": {
+          "sharedNotes": "Notes partagées",
+          "privateNotes": "Mes notes privées"
+        },
+        "shared": {
+          "caption": "Visibles par tous les membres de l'équipe disposant d'un compte."
+        },
+        "private": {
+          "caption": "Visibles uniquement par toi — privées à ton compte.",
+          "placeholder": "Où tu en es avec ce contact — échanges menés, prochaine étape, intuition…"
+        }
+      },
+      "business": {
+        "sectionLabel": "Profil business",
+        "description": "Informations utiles à la vente sur ce contact. Visibles par toute l'équipe.",
+        "fields": {
+          "tier": "Niveau",
+          "tierPlaceholder": "p. ex. Tier 1, Tier 2…",
+          "sector": "Secteur",
+          "sectorPlaceholder": "p. ex. Télécom & Tech, Énergie",
+          "bestContactMethod": "Canal de contact préféré",
+          "pitchTier": "Niveau de pitch",
+          "pitchTierPlaceholder": "Élevé / Moyen / Faible",
+          "confidence": "Confiance",
+          "confidenceHint": "Ta confiance que ce contact convertit (0–100)."
+        },
+        "bestContactMethods": {
+          "email": "E-mail",
+          "phone": "Téléphone",
+          "linkedin": "LinkedIn",
+          "in_person": "En personne"
+        }
+      },
+      "pipeline": {
+        "label": "Pipeline",
+        "placeholder": "Définir le pipeline",
+        "statuses": {
+          "new": "Nouveau",
+          "engaged": "En discussion",
+          "considering": "À l'étude",
+          "declined": "Décliné"
+        }
+      },
+      "filters": {
+        "eventLabel": "Événement",
+        "categoryLabel": "Catégorie",
+        "categoryHint": "Qui ils sont — identité durable, tous événements confondus.",
+        "eventRoleLabel": "Rôle pour l'événement",
+        "eventRoleHint": "Ce qu'ils font à CET événement.",
+        "eventRoleAll": "N'importe quel rôle",
+        "pipelineLabel": "Pipeline",
+        "pipelineAll": "N'importe quel pipeline",
+        "pipelineNone": "Non défini"
+      },
       "list": {
+        "columns": {
+          "pipeline": "Pipeline"
+        },
         "tabs": {
           "contacts": "Contacts",
           "attendees": "Participants"
@@ -1963,14 +2039,14 @@
     },
     "affiliation": {
       "badge": "Membre du Diambilay Business Center · Lubumbashi",
-      "footer": "DBC Germany est le chapitre DACH du Diambilay Business Center, fondé à Lubumbashi par le Dr Jean-Clément Diambilay.",
+      "footer": "DBC Germany est la succursale DACH du Diambilay Business Center, fondé à Lubumbashi par le Dr Jean-Clément Diambilay.",
       "sisterRichesses": "Richesses d'Afrique",
       "sisterAcademie": "Académie Investir en Afrique"
     },
     "hero": {
-      "tag": "Incubateur et accélérateur d'entreprises · Chapitre DACH",
+      "tag": "Incubateur et accélérateur d'entreprises · Succursale DACH",
       "title": "Nous bâtissons une nouvelle génération d'entrepreneurs africains.",
-      "subtitle": "DBC Germany est le chapitre DACH du Diambilay Business Center — un incubateur et accélérateur d'entreprises pour la diaspora africaine.",
+      "subtitle": "DBC Germany est la succursale DACH du Diambilay Business Center — un incubateur et accélérateur d'entreprises pour la diaspora africaine.",
       "ctaPrimary": "Découvrir Richesses d'Afrique Germany",
       "ctaSecondary": "Devenir membre"
     },
@@ -2050,7 +2126,7 @@
         ]
       },
       "germanyBand": {
-        "eyebrow": "Chapitre DACH",
+        "eyebrow": "Succursale DACH",
         "title": "Comment entrer.",
         "subtitle": "Quatre portes d'entrée dans le catalogue DBC — conçues et opérées depuis Düsseldorf.",
         "items": {
@@ -2099,7 +2175,7 @@
     "about": {
       "eyebrow": "À propos de DBC",
       "title": "Un incubateur et accélérateur d'entreprises pour entrepreneurs africains.",
-      "body": "DBC est l'incubateur et accélérateur d'entreprises fondé par le Dr Jean-Clément Diambilay pour accompagner les entrepreneurs africains, de l'idée à l'entreprise prête à investir — incubation, capital, mentorat et formations. DBC Germany en est le chapitre DACH et accompagne les fondateurs qui travaillent entre l'Europe et l'Afrique.",
+      "body": "DBC est l'incubateur et accélérateur d'entreprises fondé par le Dr Jean-Clément Diambilay pour accompagner les entrepreneurs africains, de l'idée à l'entreprise prête à investir — incubation, capital, mentorat et formations. DBC Germany en est la succursale DACH et accompagne les fondateurs qui travaillent entre l'Europe et l'Afrique.",
       "conviction": "Notre ambition au Diambilay Business Center est de bâtir un écosystème propice à l'innovation, au développement des compétences et à la création de valeur durable.",
       "convictionAttribution": "Dr Jean-Clément Diambilay · Forum Richesses d'Afrique, Paris 2025",
       "founder": {
@@ -2152,7 +2228,7 @@
       "pressLabel": "Presse"
     },
     "footer": {
-      "tagline": "Incubateur et accélérateur d'entreprises. Chapitre DACH.",
+      "tagline": "Incubateur et accélérateur d'entreprises. Succursale DACH.",
       "sections": {
         "services": "Services",
         "company": "Société",
@@ -2445,7 +2521,7 @@
           },
           {
             "q": "Est-ce réservé aux fondateurs basés en Allemagne ?",
-            "a": "Non. DBC Germany — le chapitre DACH — accueille des candidatures de la diaspora africaine en Europe et au-delà."
+            "a": "Non. DBC Germany — la succursale DACH — accueille des candidatures de la diaspora africaine en Europe et au-delà."
           },
           {
             "q": "La candidature est-elle payante ?",

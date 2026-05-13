@@ -5,6 +5,7 @@ import { listContactMessages } from "@/actions/contact-messages";
 import { ContactProfileTabs } from "./profile-tabs";
 import { ComposeDialog } from "./compose-dialog";
 import { DeleteContactButton } from "./delete-contact-button";
+import { PipelineSelect } from "@/components/pipeline-select";
 
 export default async function ContactDetailPage({
   params,
@@ -47,12 +48,16 @@ export default async function ContactDetailPage({
           <p className="mt-1 text-sm text-muted-foreground">
             {data.contact.email}
           </p>
-          <div className="mt-2 flex flex-wrap gap-1">
+          <div className="mt-2 flex flex-wrap items-center gap-2">
             {[...acquisitionBadges].map((b) => (
               <Badge key={b} variant="accent">
                 {b}
               </Badge>
             ))}
+            <PipelineSelect
+              contactId={data.contact.id}
+              initialStatus={data.userState?.pipeline_status ?? null}
+            />
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -83,6 +88,7 @@ export default async function ContactDetailPage({
         applications={data.applications as any[]}
         involvements={data.involvements}
         eventsList={data.eventsList}
+        userState={data.userState}
         locale={locale}
       />
 

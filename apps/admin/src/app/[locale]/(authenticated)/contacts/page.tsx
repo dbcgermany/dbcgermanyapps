@@ -8,11 +8,16 @@ import {
 } from "@/actions/contacts";
 import { getAllAttendees } from "@/actions/attendees";
 import {
-  INVOLVEMENT_ROLES,
-  type InvolvementRole,
-} from "@/lib/involvements";
+  EVENT_ROLE_FILTER_VALUES,
+  PIPELINE_STATUS_VALUES,
+  type EventRoleFilterValue,
+  type PipelineStatus,
+} from "@dbc/types";
+import type { InvolvementRole } from "@/lib/involvements";
 import { PageHeader } from "@/components/page-header";
+import { PipelineBadge } from "@/components/pipeline-badge";
 import { AttendeesTab } from "./attendees-tab";
+import { ContactsFilterBar } from "./contacts-filter-bar";
 
 type Tab = "contacts" | "attendees";
 
@@ -27,6 +32,7 @@ export default async function ContactsListPage({
     category?: string;
     event?: string;
     role?: string;
+    pipeline?: string;
     marketing?: string;
   }>;
 }) {
@@ -35,7 +41,6 @@ export default async function ContactsListPage({
   const tab: Tab = sp.tab === "attendees" ? "attendees" : "contacts";
 
   const t = await getTranslations({ locale, namespace: "admin.contacts" });
-  const tCommon = await getTranslations({ locale, namespace: "admin.common" });
   const tTabs = await getTranslations({ locale, namespace: "admin.contacts.list.tabs" });
 
   // Event + category lists are needed by the filter form; fetch once.
@@ -87,7 +92,6 @@ export default async function ContactsListPage({
           events={events}
           categories={categories}
           t={t}
-          tCommon={tCommon}
         />
       ) : (
         <AttendeesTabContent
@@ -108,7 +112,6 @@ async function ContactsTabContent({
   events,
   categories,
   t,
-  tCommon,
 }: {
   locale: string;
   sp: {
@@ -116,6 +119,7 @@ async function ContactsTabContent({
     category?: string;
     event?: string;
     role?: string;
+    pipeline?: string;
     marketing?: string;
   };
   events: Array<{ id: string; title_en: string }>;
@@ -126,102 +130,36 @@ async function ContactsTabContent({
     name_fr: string | null;
   }>;
   t: Awaited<ReturnType<typeof getTranslations>>;
-  tCommon: Awaited<ReturnType<typeof getTranslations>>;
 }) {
-  const tRole = await getTranslations({
-    locale,
-    namespace: "admin.contacts.roles",
-  });
+  const role: InvolvementRole | undefined =
+    sp.role &&
+    (EVENT_ROLE_FILTER_VALUES as readonly string[]).includes(sp.role)
+      ? (sp.role as EventRoleFilterValue)
+      : undefined;
+  const pipelineStatus: PipelineStatus | "none" | undefined =
+    sp.pipeline === "none"
+      ? "none"
+      : sp.pipeline &&
+        (PIPELINE_STATUS_VALUES as readonly string[]).includes(sp.pipeline)
+      ? (sp.pipeline as PipelineStatus)
+      : undefined;
+
   const contacts = await listContacts({
     search: sp.q,
     categorySlug: sp.category,
     eventId: sp.event || undefined,
-    role:
-      sp.role && (INVOLVEMENT_ROLES as readonly string[]).includes(sp.role)
-        ? (sp.role as InvolvementRole)
-        : undefined,
+    role,
+    pipelineStatus,
     marketingOnly: sp.marketing === "1",
   });
 
-  const filterInput =
-    "rounded-md border border-border bg-background px-3 py-2 text-sm";
-
   return (
     <>
-      <form className="mt-6 flex flex-wrap gap-2" method="get">
-        <input
-          type="search"
-          name="q"
-          defaultValue={sp.q ?? ""}
-          placeholder={t("search")}
-          className={`${filterInput} w-64`}
-        />
-        <select
-          name="event"
-          defaultValue={sp.event ?? ""}
-          className={filterInput}
-        >
-          <option value="">{t("allEvents")}</option>
-          {events.map((e) => (
-            <option key={e.id} value={e.id}>
-              {e.title_en}
-            </option>
-          ))}
-        </select>
-        <select
-          name="category"
-          defaultValue={sp.category ?? ""}
-          className={filterInput}
-        >
-          <option value="">{t("allCategories")}</option>
-          {categories.map((c) => {
-            const label =
-              (locale === "de" && c.name_de) ||
-              (locale === "fr" && c.name_fr) ||
-              c.name_en;
-            return (
-              <option key={c.slug} value={c.slug}>
-                {label}
-              </option>
-            );
-          })}
-        </select>
-        <select
-          name="role"
-          defaultValue={sp.role ?? ""}
-          className={filterInput}
-        >
-          <option value="">{t("allRoles")}</option>
-          {(INVOLVEMENT_ROLES as readonly InvolvementRole[]).map((r) => (
-            <option key={r} value={r}>
-              {tRole(r)}
-            </option>
-          ))}
-        </select>
-        <label className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm">
-          <input
-            type="checkbox"
-            name="marketing"
-            value="1"
-            defaultChecked={sp.marketing === "1"}
-          />
-          {t("marketingOnly")}
-        </label>
-        <button
-          type="submit"
-          className="rounded-md border border-border px-4 py-2 text-sm hover:bg-muted"
-        >
-          {tCommon("filter")}
-        </button>
-        {(sp.q || sp.marketing || sp.event || sp.role || sp.category) && (
-          <Link
-            href="?"
-            className="rounded-md px-4 py-2 text-sm text-muted-foreground hover:bg-muted"
-          >
-            {tCommon("cancel")}
-          </Link>
-        )}
-      </form>
+      <ContactsFilterBar
+        locale={locale}
+        events={events}
+        categories={categories}
+      />
 
       <div className="mt-6 overflow-x-auto rounded-lg border border-border">
         <table className="min-w-full text-sm">
@@ -231,6 +169,7 @@ async function ContactsTabContent({
               <th className="px-4 py-3 text-left">{t("email")}</th>
               <th className="px-4 py-3 text-left">{t("country")}</th>
               <th className="px-4 py-3 text-left">{t("categories")}</th>
+              <th className="px-4 py-3 text-left">{t("list.columns.pipeline")}</th>
               <th className="px-4 py-3 text-left">{t("marketing")}</th>
               <th className="px-4 py-3 text-right">{t("orders")}</th>
               <th className="px-4 py-3 text-right">{t("tickets")}</th>
@@ -240,7 +179,7 @@ async function ContactsTabContent({
             {contacts.length === 0 ? (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={8}
                   className="px-4 py-10 text-center text-muted-foreground"
                 >
                   {t("empty")}
@@ -299,6 +238,11 @@ async function ContactsTabContent({
                             </span>
                           ))}
                         </div>
+                      </Link>
+                    </td>
+                    <td className="p-0">
+                      <Link href={profileHref} className={cell}>
+                        <PipelineBadge status={c.pipeline_status} />
                       </Link>
                     </td>
                     <td className="p-0">

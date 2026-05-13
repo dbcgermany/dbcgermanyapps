@@ -19,27 +19,47 @@ import {
   type Gender,
   type Title,
 } from "@dbc/ui";
-import { createContact } from "@/actions/contacts";
 import {
-  INVOLVEMENT_ROLES,
-  type InvolvementRole,
-} from "@/lib/involvements";
+  createContact,
+  upsertContactUserState,
+} from "@/actions/contacts";
+import {
+  EVENT_ROLE_FILTER_VALUES,
+  CONTACT_FILTER_HIDDEN_CATEGORY_SLUGS,
+  PIPELINE_STATUS_VALUES,
+  BEST_CONTACT_METHODS,
+  type EventRoleFilterValue,
+  type PipelineStatus,
+} from "@dbc/types";
 
 type EventRow = { id: string; title_en: string; starts_at: string };
+
+type CategoryRow = {
+  slug: string;
+  name_en: string;
+  name_de: string | null;
+  name_fr: string | null;
+};
 
 type FormState = { error?: string; id?: string } | null;
 
 export function NewContactForm({
   locale,
   events,
+  categories = [],
 }: {
   locale: string;
   events: EventRow[];
+  categories?: CategoryRow[];
 }) {
   const router = useRouter();
   const t = useTranslations("admin.contacts");
   const tPerson = useTranslations("person");
   const tRole = useTranslations("admin.contacts.roles");
+  const tFilters = useTranslations("admin.contacts.filters");
+  const tBusiness = useTranslations("admin.contacts.business");
+  const tBcm = useTranslations("admin.contacts.business.bestContactMethods");
+  const tPipeline = useTranslations("admin.contacts.pipeline");
 
   // Controlled state for every SSOT atom that needs it (either for
   // validation or for cross-field coupling). Simpler fields stay
@@ -51,15 +71,31 @@ export function NewContactForm({
   const [birthday, setBirthday] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState<Address>(EMPTY_ADDRESS);
+  const [initialPipeline, setInitialPipeline] = useState<PipelineStatus | "">("");
 
   const [state, formAction, isPending] = useActionState<FormState, FormData>(
     async (_prev, formData) => {
       const result = await createContact(formData);
       if ("error" in result) return { error: result.error };
+      // If the operator picked an initial pipeline status, attach it to
+      // their own state row immediately after the contact is created.
+      if (initialPipeline) {
+        await upsertContactUserState({
+          contactId: result.id,
+          pipelineStatus: initialPipeline,
+        });
+      }
       router.push(`/${locale}/contacts/${result.id}`);
       return { id: result.id };
     },
     null
+  );
+
+  const visibleCategories = categories.filter(
+    (c) =>
+      !(CONTACT_FILTER_HIDDEN_CATEGORY_SLUGS as readonly string[]).includes(
+        c.slug
+      )
   );
 
   const titleLabels = Object.fromEntries(
@@ -197,17 +233,45 @@ export function NewContactForm({
       <input type="hidden" name="last_name" value={lastName} />
       <input type="hidden" name="birthday" value={birthday} />
 
-      {/* Event involvement */}
+      {/* Category — durable identity (Press, Partners, Founder, …) */}
+      {visibleCategories.length > 0 && (
+        <section className="space-y-4">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            {tFilters("categoryLabel")}
+          </h2>
+          <p className="text-sm text-muted-foreground">{tFilters("categoryHint")}</p>
+          <select
+            name="category_slug"
+            defaultValue=""
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          >
+            <option value="">{t("allCategories")}</option>
+            {visibleCategories.map((c) => {
+              const label =
+                (locale === "de" && c.name_de) ||
+                (locale === "fr" && c.name_fr) ||
+                c.name_en;
+              return (
+                <option key={c.slug} value={c.slug}>
+                  {label}
+                </option>
+              );
+            })}
+          </select>
+        </section>
+      )}
+
+      {/* Event involvement — what they do at THIS event (Speaker, …) */}
       <section className="space-y-4">
         <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           {t("sectionInvolvement")}
         </h2>
-        <p className="text-sm text-muted-foreground">{t("linkToEvent")}</p>
+        <p className="text-sm text-muted-foreground">{tFilters("eventRoleHint")}</p>
         <div className="grid gap-3 sm:grid-cols-2">
           <select
             name="event_id"
             defaultValue=""
-            className="w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
           >
             <option value="">{t("selectEvent")}</option>
             {events.map((e) => (
@@ -218,16 +282,96 @@ export function NewContactForm({
           </select>
           <select
             name="role"
-            defaultValue="sponsor"
-            className="w-full rounded-md border border-input bg-background px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            defaultValue=""
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
           >
-            {(INVOLVEMENT_ROLES as readonly InvolvementRole[]).map((r) => (
-              <option key={r} value={r}>
-                {tRole(r)}
-              </option>
-            ))}
+            <option value="">{tFilters("eventRoleAll")}</option>
+            {(EVENT_ROLE_FILTER_VALUES as readonly EventRoleFilterValue[]).map(
+              (r) => (
+                <option key={r} value={r}>
+                  {tRole(r)}
+                </option>
+              )
+            )}
           </select>
         </div>
+      </section>
+
+      {/* Business details — global to the contact, optional */}
+      <section className="space-y-4">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          {tBusiness("sectionLabel")}
+        </h2>
+        <p className="text-sm text-muted-foreground">{tBusiness("description")}</p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <FormField label={tBusiness("fields.tier")}>
+            <Input
+              type="text"
+              name="tier"
+              placeholder={tBusiness("fields.tierPlaceholder")}
+            />
+          </FormField>
+          <FormField label={tBusiness("fields.sector")}>
+            <Input
+              type="text"
+              name="sector"
+              placeholder={tBusiness("fields.sectorPlaceholder")}
+            />
+          </FormField>
+          <FormField label={tBusiness("fields.bestContactMethod")}>
+            <select
+              name="best_contact_method"
+              defaultValue=""
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="">—</option>
+              {BEST_CONTACT_METHODS.map((m) => (
+                <option key={m} value={m}>
+                  {tBcm(m)}
+                </option>
+              ))}
+            </select>
+          </FormField>
+          <FormField label={tBusiness("fields.pitchTier")}>
+            <Input
+              type="text"
+              name="pitch_tier"
+              placeholder={tBusiness("fields.pitchTierPlaceholder")}
+            />
+          </FormField>
+          <FormField label={tBusiness("fields.confidence")} hint={tBusiness("fields.confidenceHint")}>
+            <Input
+              type="number"
+              name="confidence"
+              min={0}
+              max={100}
+              step={1}
+              placeholder="0–100"
+            />
+          </FormField>
+        </div>
+      </section>
+
+      {/* Pipeline (private to this user) */}
+      <section className="space-y-4">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          {tPipeline("label")}
+        </h2>
+        <p className="text-sm text-muted-foreground">{t("profile.private.caption")}</p>
+        <select
+          value={initialPipeline}
+          onChange={(e) =>
+            setInitialPipeline((e.target.value || "") as PipelineStatus | "")
+          }
+          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring sm:max-w-xs"
+        >
+          <option value="">{tPipeline("placeholder")}</option>
+          {(PIPELINE_STATUS_VALUES as readonly PipelineStatus[]).map((s) => (
+            <option key={s} value={s}>
+              {tPipeline(`statuses.${s}`)}
+            </option>
+          ))}
+        </select>
       </section>
 
       {/* Internal */}
