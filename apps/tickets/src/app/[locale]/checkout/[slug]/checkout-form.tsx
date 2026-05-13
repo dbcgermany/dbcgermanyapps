@@ -684,7 +684,9 @@ export function CheckoutForm({
       </label>
 
       {/* P2.3 — Privacy + Terms links. TMG §5 / GDPR Article 13 require
-          the policy to be linked at the point of personal-data submission. */}
+          the policy to be linked at the point of personal-data submission.
+          Pages live on the marketing site (dbc-germany.com), not the
+          ticketing app, so the URLs are absolute. */}
       <p className="text-xs text-muted-foreground">
         {locale === "de"
           ? "Mit dem Absenden akzeptieren Sie unsere "
@@ -692,7 +694,7 @@ export function CheckoutForm({
             ? "En soumettant, vous acceptez nos "
             : "By submitting, you accept our "}
         <a
-          href={`/${locale}/legal/terms`}
+          href={`https://dbc-germany.com/${locale}/terms`}
           target="_blank"
           rel="noopener noreferrer"
           className="underline hover:text-primary"
@@ -709,7 +711,7 @@ export function CheckoutForm({
             ? " et notre "
             : " and our "}
         <a
-          href={`/${locale}/legal/privacy`}
+          href={`https://dbc-germany.com/${locale}/privacy`}
           target="_blank"
           rel="noopener noreferrer"
           className="underline hover:text-primary"
