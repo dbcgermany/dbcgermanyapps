@@ -78,11 +78,16 @@ export async function sendTicketsForOrder(
 
   const tierMap = new Map((tiers ?? []).map((t) => [t.id, t]));
 
-  // Fetch branding once per batch
+  // Fetch branding once per batch. Includes the legal/company address +
+  // bank details so the invitation letter PDF shows the right "sender"
+  // block (DBC Germany UG, Düsseldorf — NOT the event venue) and so the
+  // ticket PDF footer can render the company line correctly.
   const { data: companyInfo } = await supabase
     .from("company_info")
     .select(
-      "brand_name, legal_name, legal_form, support_email, primary_color, logo_light_url"
+      `brand_name, legal_name, legal_form, support_email, primary_color, logo_light_url,
+       registered_address, registered_postal_code, registered_city, registered_country, phone,
+       iban, bic, account_holder, bank_name`
     )
     .eq("id", 1)
     .maybeSingle();
@@ -145,9 +150,22 @@ export async function sendTicketsForOrder(
         orderUrl,
         brandName: companyInfo?.brand_name ?? undefined,
         legalName,
+        legalForm: companyInfo?.legal_form ?? undefined,
         supportEmail: companyInfo?.support_email ?? undefined,
         primaryColor: companyInfo?.primary_color ?? undefined,
         logoUrl: companyInfo?.logo_light_url ?? undefined,
+        // Sender block — DBC Germany UG registered address (Düsseldorf), NOT
+        // the event venue. Used on the invitation letter PDF.
+        senderLine1: companyInfo?.registered_address ?? undefined,
+        senderPostalCode: companyInfo?.registered_postal_code ?? undefined,
+        senderCity: companyInfo?.registered_city ?? undefined,
+        senderCountry: companyInfo?.registered_country ?? undefined,
+        senderPhone: companyInfo?.phone ?? undefined,
+        // Bank details (footer block on the invitation letter PDF).
+        accountHolder: companyInfo?.account_holder ?? undefined,
+        iban: companyInfo?.iban ?? undefined,
+        bic: companyInfo?.bic ?? undefined,
+        bankName: companyInfo?.bank_name ?? undefined,
         isInvitation:
           order.acquisition_type === "invited" ||
           order.acquisition_type === "assigned",

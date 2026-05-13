@@ -44,6 +44,11 @@ export interface SendTicketEmailInput {
   senderCity?: string;
   senderCountry?: string;
   senderPhone?: string;
+  // Bank details — optional, shown in invitation letter footer
+  accountHolder?: string;
+  iban?: string;
+  bic?: string;
+  bankName?: string;
   isInvitation?: boolean;
   // Formal invitation fields (only used when isInvitation === true)
   gender?: "female" | "male" | "diverse" | null;
@@ -178,6 +183,10 @@ export async function sendTicketEmail(
         senderCountry: input.senderCountry,
         senderPhone: input.senderPhone,
         supportEmail: input.supportEmail,
+        accountHolder: input.accountHolder,
+        iban: input.iban,
+        bic: input.bic,
+        bankName: input.bankName,
         primaryColor: input.primaryColor,
         logoUrl: input.logoUrl,
         recipientName: input.attendeeName,

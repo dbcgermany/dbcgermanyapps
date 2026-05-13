@@ -131,7 +131,7 @@ export interface PublicCompanyInfo {
 // store, but warm in-memory copies on running Vercel instances may keep
 // serving the OLD shape (no new columns) until they cold-start. Changing the
 // key forces a clean cache miss across all instances.
-const COMPANY_INFO_CACHE_VERSION = "v2-home-hero";
+const COMPANY_INFO_CACHE_VERSION = "v3-impressum-address";
 const fetchCompanyInfoCached = unstable_cache(
   async (): Promise<PublicCompanyInfo | null> => {
     try {

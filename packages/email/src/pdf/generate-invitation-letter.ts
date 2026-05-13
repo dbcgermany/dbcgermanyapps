@@ -16,6 +16,11 @@ export interface GenerateInvitationLetterInput {
   senderCountry?: string;
   senderPhone?: string;
   supportEmail?: string;
+  // Bank details — footer block (optional)
+  accountHolder?: string;
+  iban?: string;
+  bic?: string;
+  bankName?: string;
   // Recipient
   recipientName: string;
   recipientEmail?: string;
@@ -70,6 +75,10 @@ export async function generateInvitationLetterPdf(
       senderCountry: input.senderCountry,
       senderPhone: input.senderPhone,
       supportEmail: input.supportEmail || "info@dbc-germany.com",
+      accountHolder: input.accountHolder,
+      iban: input.iban,
+      bic: input.bic,
+      bankName: input.bankName,
       recipientName: input.recipientName,
       recipientEmail: input.recipientEmail,
       salutation: input.salutation,

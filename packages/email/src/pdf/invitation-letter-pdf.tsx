@@ -258,6 +258,13 @@ export interface InvitationLetterPdfProps {
   senderCountry?: string;
   senderPhone?: string;
   supportEmail: string;
+  // Optional bank details — shown in the footer "Bankverbindung" block so
+  // recipients (and finance teams downstream) can wire payments to the
+  // right account from the same legal letter.
+  accountHolder?: string;
+  iban?: string;
+  bic?: string;
+  bankName?: string;
   // Recipient
   recipientName: string;
   recipientEmail?: string;
@@ -405,6 +412,15 @@ export function InvitationLetterPdf(props: InvitationLetterPdfProps) {
               {props.supportEmail}
               {props.senderPhone ? ` · ${props.senderPhone}` : ""}
             </Text>
+            {(props.iban || props.bic) && (
+              <Text style={styles.footerText}>
+                {props.accountHolder ? `${props.accountHolder} · ` : ""}
+                {props.bankName ? `${props.bankName} · ` : ""}
+                {props.iban ? `IBAN: ${props.iban}` : ""}
+                {props.iban && props.bic ? " · " : ""}
+                {props.bic ? `BIC: ${props.bic}` : ""}
+              </Text>
+            )}
           </View>
           <View style={styles.footerRight}>
             <Text style={styles.footerText}>
