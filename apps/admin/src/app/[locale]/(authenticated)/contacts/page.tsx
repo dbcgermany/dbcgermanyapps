@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import {
   listContacts,
   listEventsForContactFilter,
+  listContactCategoriesForFilter,
 } from "@/actions/contacts";
 import { getAllAttendees } from "@/actions/attendees";
 import {
@@ -37,8 +38,11 @@ export default async function ContactsListPage({
   const tCommon = await getTranslations({ locale, namespace: "admin.common" });
   const tTabs = await getTranslations({ locale, namespace: "admin.contacts.list.tabs" });
 
-  // Event list is needed by both tabs, so fetch once.
-  const events = await listEventsForContactFilter();
+  // Event + category lists are needed by the filter form; fetch once.
+  const [events, categories] = await Promise.all([
+    listEventsForContactFilter(),
+    listContactCategoriesForFilter(),
+  ]);
 
   const tabClass = (active: boolean) =>
     `border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
@@ -81,6 +85,7 @@ export default async function ContactsListPage({
           locale={locale}
           sp={sp}
           events={events}
+          categories={categories}
           t={t}
           tCommon={tCommon}
         />
@@ -101,6 +106,7 @@ async function ContactsTabContent({
   locale,
   sp,
   events,
+  categories,
   t,
   tCommon,
 }: {
@@ -113,6 +119,12 @@ async function ContactsTabContent({
     marketing?: string;
   };
   events: Array<{ id: string; title_en: string }>;
+  categories: Array<{
+    slug: string;
+    name_en: string;
+    name_de: string | null;
+    name_fr: string | null;
+  }>;
   t: Awaited<ReturnType<typeof getTranslations>>;
   tCommon: Awaited<ReturnType<typeof getTranslations>>;
 }) {
@@ -157,6 +169,24 @@ async function ContactsTabContent({
           ))}
         </select>
         <select
+          name="category"
+          defaultValue={sp.category ?? ""}
+          className={filterInput}
+        >
+          <option value="">{t("allCategories")}</option>
+          {categories.map((c) => {
+            const label =
+              (locale === "de" && c.name_de) ||
+              (locale === "fr" && c.name_fr) ||
+              c.name_en;
+            return (
+              <option key={c.slug} value={c.slug}>
+                {label}
+              </option>
+            );
+          })}
+        </select>
+        <select
           name="role"
           defaultValue={sp.role ?? ""}
           className={filterInput}
@@ -183,7 +213,7 @@ async function ContactsTabContent({
         >
           {tCommon("filter")}
         </button>
-        {(sp.q || sp.marketing || sp.event || sp.role) && (
+        {(sp.q || sp.marketing || sp.event || sp.role || sp.category) && (
           <Link
             href="?"
             className="rounded-md px-4 py-2 text-sm text-muted-foreground hover:bg-muted"

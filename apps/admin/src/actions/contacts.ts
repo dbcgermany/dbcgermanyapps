@@ -70,19 +70,89 @@ export async function listContacts(filters: {
   await requireRole("manager");
   const supabase = await createServerClient();
 
-  // If filtering by event (and optionally role), resolve matching contact IDs first.
+  // Resolve event×role → contact IDs. The role filter previously required
+  // an eventId in the same call (silently no-op'd otherwise); now role
+  // alone is honoured, and queries every event's involvements table for
+  // that role. eventId alone still works as before.
   let involvementContactIds: string[] | null = null;
-  if (filters.eventId) {
+  if (filters.eventId || filters.role) {
     let invQuery = supabase
       .from("contact_event_involvements")
-      .select("contact_id")
-      .eq("event_id", filters.eventId);
+      .select("contact_id");
+    if (filters.eventId) invQuery = invQuery.eq("event_id", filters.eventId);
     if (filters.role) invQuery = invQuery.eq("role", filters.role);
     const { data: involvements } = await invQuery;
     involvementContactIds = Array.from(
       new Set((involvements ?? []).map((i) => i.contact_id as string))
     );
-    if (involvementContactIds.length === 0) return [];
+    if (involvementContactIds.length === 0 && filters.eventId) return [];
+  }
+
+  // Category resolution. Many of our category slugs (press, partners,
+  // founders, investors) overlap with involvement roles of the same name.
+  // To match the user's mental model — "show me everyone who is press,
+  // regardless of how they got tagged" — when the slug matches a role,
+  // we ALSO union in every contact who has that role at any event.
+  //
+  // Plural / singular mismatch: category slugs are plural ("partners"),
+  // role values are singular ("partner"). Map sidebar slugs → role(s).
+  const CATEGORY_TO_ROLES: Record<string, InvolvementRole[]> = {
+    partners: ["partner", "sponsor"],
+    press: ["press"],
+    investors: [], // no matching role today
+    founders: [], // no matching role today
+    sponsors: ["sponsor"],
+    speakers: ["speaker"],
+    staff: ["staff"],
+    vip: ["vip"],
+    volunteers: ["volunteer"],
+    moderators: ["moderator"],
+    contractors: ["contractor"],
+  };
+  let categoryContactIds: string[] | null = null;
+  if (filters.categorySlug) {
+    const slug = filters.categorySlug;
+    const { data: category } = await supabase
+      .from("contact_categories")
+      .select("id")
+      .eq("slug", slug)
+      .maybeSingle();
+    const ids = new Set<string>();
+    if (category) {
+      const { data: links } = await supabase
+        .from("contact_category_links")
+        .select("contact_id")
+        .eq("category_id", category.id);
+      for (const l of links ?? []) ids.add(l.contact_id as string);
+    }
+    const rolesToUnion: InvolvementRole[] = (CATEGORY_TO_ROLES[slug] ?? []).concat(
+      // Also accept the slug itself if it happens to be a valid role.
+      (INVOLVEMENT_ROLES as readonly string[]).includes(slug)
+        ? [slug as InvolvementRole]
+        : []
+    );
+    if (rolesToUnion.length > 0) {
+      const { data: roleLinks } = await supabase
+        .from("contact_event_involvements")
+        .select("contact_id")
+        .in("role", Array.from(new Set(rolesToUnion)));
+      for (const r of roleLinks ?? []) ids.add(r.contact_id as string);
+    }
+    categoryContactIds = Array.from(ids);
+    if (categoryContactIds.length === 0) return [];
+  }
+
+  // Intersect involvement filter (event/role from the form) with category
+  // bucket (sidebar). If both are set, only contacts in both wins.
+  let idFilter: string[] | null = null;
+  if (involvementContactIds && categoryContactIds) {
+    const cset = new Set(categoryContactIds);
+    idFilter = involvementContactIds.filter((id) => cset.has(id));
+    if (idFilter.length === 0) return [];
+  } else if (involvementContactIds) {
+    idFilter = involvementContactIds;
+  } else if (categoryContactIds) {
+    idFilter = categoryContactIds;
   }
 
   let query = supabase
@@ -100,8 +170,8 @@ export async function listContacts(filters: {
     .order("created_at", { ascending: false })
     .limit(filters.limit ?? 100);
 
-  if (involvementContactIds) {
-    query = query.in("id", involvementContactIds);
+  if (idFilter) {
+    query = query.in("id", idFilter);
   }
   if (filters.search && filters.search.trim().length > 0) {
     const q = filters.search.trim();
@@ -125,14 +195,6 @@ export async function listContacts(filters: {
     orders_count: c.orders?.[0]?.count ?? 0,
     tickets_count: c.tickets?.[0]?.count ?? 0,
   }));
-
-  if (filters.categorySlug) {
-    return rows.filter((r) =>
-      r.categories.some(
-        (cat: { slug: string }) => cat.slug === filters.categorySlug
-      )
-    );
-  }
   return rows;
 }
 
@@ -151,6 +213,26 @@ export async function listEventsForContactFilter(): Promise<
     .order("starts_at", { ascending: false })
     .limit(200);
   return (data as Array<{ id: string; title_en: string; starts_at: string }>) ?? [];
+}
+
+/** Populates the category-filter dropdown on /contacts. */
+export async function listContactCategoriesForFilter(): Promise<
+  Array<{ slug: string; name_en: string; name_de: string | null; name_fr: string | null }>
+> {
+  await requireRole("manager");
+  const supabase = await createServerClient();
+  const { data } = await supabase
+    .from("contact_categories")
+    .select("slug, name_en, name_de, name_fr")
+    .order("name_en", { ascending: true });
+  return (
+    data as Array<{
+      slug: string;
+      name_en: string;
+      name_de: string | null;
+      name_fr: string | null;
+    }>
+  ) ?? [];
 }
 
 /**

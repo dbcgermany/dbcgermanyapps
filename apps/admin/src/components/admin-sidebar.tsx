@@ -66,10 +66,6 @@ const NAV_ITEMS: NavItem[] = [
   { labelKey: "jobOffers", href: "/job-offers", icon: Briefcase, mod: "jobOffers" },
 
   { labelKey: "allContacts", href: "/contacts", icon: Contact, mod: "contacts", dividerAbove: true },
-  { labelKey: "partners", href: "/contacts?category=partners", icon: Contact, mod: "contacts", indent: true },
-  { labelKey: "founders", href: "/contacts?category=founders", icon: Contact, mod: "contacts", indent: true },
-  { labelKey: "investors", href: "/contacts?category=investors", icon: Contact, mod: "contacts", indent: true },
-  { labelKey: "press", href: "/contacts?category=press", icon: Contact, mod: "contacts", indent: true },
   { labelKey: "team", href: "/team", icon: UserSquare, mod: "team" },
   { labelKey: "staff", href: "/staff", icon: Users, mod: "staff" },
 
