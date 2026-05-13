@@ -18,6 +18,7 @@ import {
   sendStaffMessage,
   sendChapterDelegateInvite,
   sendChapterDelegateOutcome,
+  sendTeamFriendCodeRedeemed,
   sendAskSpeakersEmail,
   sendContactFormConfirm,
   sendJobApplicationConfirm,
@@ -402,6 +403,19 @@ export async function sendAllTemplatePreviews(input: {
       recipientName: PREVIEW_CONTACT.fullName,
       eventTitle: PREVIEW_EVENT.title,
       outcome: "revoked",
+      locale,
+    })
+  );
+
+  // 20.c team-friend-code-redeemed
+  await run("team-friend-code-redeemed", () =>
+    sendTeamFriendCodeRedeemed({
+      to: email,
+      recipientName: PREVIEW_CONTACT.fullName,
+      eventTitle: PREVIEW_EVENT.title,
+      redeemerName: "[PREVIEW] Friend Müller",
+      redeemerEmail: "friend.preview@dbc-germany.test",
+      codeTail: "X8K2J9",
       locale,
     })
   );

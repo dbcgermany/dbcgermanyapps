@@ -3,7 +3,11 @@ import { after } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 import { notifyAdmins } from "@dbc/supabase/server";
-import { sendOrderReceipt } from "@dbc/email";
+import {
+  sendOrderReceipt,
+  sendTeamFriendCodeRedeemed,
+  resolveRecipientLocale,
+} from "@dbc/email";
 import { sendTicketsForOrder } from "@/lib/send-tickets-for-order";
 import { sendAskSpeakersPromptForOrder } from "@/lib/send-ask-speakers-prompt";
 import { captureServerError } from "@/lib/observe";
@@ -380,6 +384,56 @@ export async function POST(request: Request) {
           body: `${ticketCount ?? 0} ticket${(ticketCount ?? 0) === 1 ? "" : "s"} for ${eventRow.title_en} \u2014 \u20AC${(order.total_cents / 100).toFixed(2)}`,
           data: { order_id: orderId, event_id: eventId },
         });
+      }
+
+      // Phase F.5 \u2014 when the redeemed coupon is a team-friend invite, notify
+      // the team member who issued it so they know which friend redeemed
+      // which code, in real time. Locale resolves from the issuer's
+      // profiles.locale; falls back to 'en'.
+      if (couponId && order && eventRow) {
+        try {
+          const { data: couponRow } = await supabase
+            .from("coupons")
+            .select("code, purpose, issued_to_profile_id")
+            .eq("id", couponId)
+            .maybeSingle();
+          if (
+            couponRow?.purpose === "team_friend_invite" &&
+            couponRow.issued_to_profile_id
+          ) {
+            const { data: issuerProfile } = await supabase
+              .from("profiles")
+              .select("id, display_name, first_name, email, locale")
+              .eq("id", couponRow.issued_to_profile_id)
+              .maybeSingle();
+            if (issuerProfile?.email) {
+              const issuerLocale = resolveRecipientLocale({
+                profileLocale: issuerProfile.locale,
+              });
+              const issuerName =
+                issuerProfile.display_name ||
+                issuerProfile.first_name ||
+                issuerProfile.email.split("@")[0];
+              const localizedEventTitle =
+                (eventRow[`title_${issuerLocale}` as keyof typeof eventRow] as string) ||
+                eventRow.title_en;
+              await sendTeamFriendCodeRedeemed({
+                to: issuerProfile.email,
+                recipientName: issuerName,
+                eventTitle: localizedEventTitle,
+                redeemerName: order.recipient_name ?? order.recipient_email,
+                redeemerEmail: order.recipient_email,
+                codeTail: (couponRow.code || "").slice(-6).toUpperCase(),
+                locale: issuerLocale,
+              });
+            }
+          }
+        } catch (err) {
+          captureServerError(err, {
+            scope: "stripe_webhook:team_friend_redeemed",
+            data: { order_id: orderId, coupon_id: couponId },
+          });
+        }
       }
 
       // "Ask a speaker" prompt \u2014 late-purchase branch.

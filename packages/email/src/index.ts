@@ -44,6 +44,7 @@ export {
   sendChapterDelegateInvitesBatch,
   sendChapterDelegateOutcome,
   sendPaymentReminder,
+  sendTeamFriendCodeRedeemed,
 } from "./send-transactional";
 export type {
   SendTransferConfirmationInput,
@@ -63,6 +64,7 @@ export type {
   SendStaffPausedInput,
   SendPaymentReminderInput,
   SendChapterDelegateOutcomeInput,
+  SendTeamFriendCodeRedeemedInput,
 } from "./send-transactional";
 export {
   sendNewsletterEmail,
@@ -112,6 +114,8 @@ export type {
   ChapterDelegateOutcomeEmailProps,
   ChapterDelegateOutcome,
 } from "./templates/chapter-delegate-outcome";
+export { TeamFriendCodeRedeemedEmail } from "./templates/team-friend-code-redeemed";
+export type { TeamFriendCodeRedeemedEmailProps } from "./templates/team-friend-code-redeemed";
 export { AskSpeakersEmail } from "./templates/ask-speakers";
 export type {
   AskSpeakersEmailProps,

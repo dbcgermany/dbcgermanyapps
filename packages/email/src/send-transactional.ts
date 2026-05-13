@@ -24,6 +24,7 @@ import {
   type ChapterDelegateOutcome,
 } from "./templates/chapter-delegate-outcome";
 import { PaymentReminderEmail } from "./templates/payment-reminder";
+import { TeamFriendCodeRedeemedEmail } from "./templates/team-friend-code-redeemed";
 
 type Locale = "en" | "de" | "fr";
 
@@ -712,6 +713,54 @@ export async function sendChapterDelegateOutcome(
     from: transactionalFrom(),
     to: input.to,
     cc,
+    subject,
+    html,
+  });
+  if (res.error) throw new Error(`Resend: ${res.error.message}`);
+  return { id: res.data?.id ?? "" };
+}
+
+// ---------------------------------------------------------------------------
+// Team-friend code redeemed — notify the issuing team member
+// ---------------------------------------------------------------------------
+
+export interface SendTeamFriendCodeRedeemedInput {
+  to: string;
+  recipientName: string;
+  eventTitle: string;
+  redeemerName: string;
+  redeemerEmail: string;
+  codeTail: string;
+  locale: Locale;
+}
+
+const TEAM_FRIEND_REDEEMED_SUBJECT = {
+  en: "Your DBC invite code was used for {event}",
+  de: "Dein DBC-Einladungscode wurde für {event} verwendet",
+  fr: "Votre code d'invitation DBC a été utilisé pour {event}",
+};
+
+export async function sendTeamFriendCodeRedeemed(
+  input: SendTeamFriendCodeRedeemedInput
+) {
+  const html = await render(
+    React.createElement(TeamFriendCodeRedeemedEmail, {
+      recipientName: input.recipientName,
+      eventTitle: input.eventTitle,
+      redeemerName: input.redeemerName,
+      redeemerEmail: input.redeemerEmail,
+      codeTail: input.codeTail,
+      locale: input.locale,
+    })
+  );
+  const subject = TEAM_FRIEND_REDEEMED_SUBJECT[input.locale].replace(
+    "{event}",
+    input.eventTitle
+  );
+  const resend = createEmailClient();
+  const res = await resend.emails.send({
+    from: transactionalFrom(),
+    to: input.to,
     subject,
     html,
   });
