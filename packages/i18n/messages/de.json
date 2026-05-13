@@ -897,7 +897,9 @@
       "archivedToast": "Archiviert",
       "duplicatedToast": "Dupliziert",
       "sentToast": "Versendet",
-      "actionFailedToast": "Aktion fehlgeschlagen: {error}"
+      "actionFailedToast": "Aktion fehlgeschlagen: {error}",
+      "resyncStripe": "Mit Stripe neu synchronisieren",
+      "resyncedStripeToast": "Mit Stripe synchronisiert"
     },
     "eventsList": {
       "title": "Veranstaltungen",

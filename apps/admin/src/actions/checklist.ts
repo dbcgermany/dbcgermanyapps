@@ -22,17 +22,6 @@ export interface ChecklistItem {
   assignee?: { display_name: string | null } | null;
 }
 
-export interface ChecklistTemplate {
-  id: string;
-  title: string;
-  category: string;
-  description: string | null;
-  default_offset_days: number;
-  estimated_cost_cents: number | null;
-  sort_order: number;
-  is_active: boolean;
-}
-
 export async function getEventChecklist(eventId: string) {
   await requireRole("team_member");
   const supabase = await createServerClient();
@@ -148,56 +137,6 @@ export async function createChecklistItem(
   return { success: true };
 }
 
-export async function updateChecklistItem(id: string, formData: FormData) {
-  const user = await requireRole("manager");
-  const supabase = await createServerClient();
-  const locale = (formData.get("locale") as string) || "en";
-  const eventId = formData.get("event_id") as string;
-
-  const patch: Record<string, unknown> = {};
-  const fields = [
-    "title",
-    "category",
-    "description",
-    "due_date",
-    "notes",
-    "assigned_to",
-  ];
-  for (const f of fields) {
-    const raw = formData.get(f);
-    if (raw !== null) {
-      const val = typeof raw === "string" ? raw.trim() : "";
-      patch[f] = val === "" ? null : val;
-    }
-  }
-  if (formData.get("estimated_cost_eur") !== null) {
-    const v = (formData.get("estimated_cost_eur") as string) || "";
-    patch.estimated_cost_cents = v ? Math.round(parseFloat(v) * 100) : null;
-  }
-  if (formData.get("actual_cost_eur") !== null) {
-    const v = (formData.get("actual_cost_eur") as string) || "";
-    patch.actual_cost_cents = v ? Math.round(parseFloat(v) * 100) : null;
-  }
-
-  const { error } = await supabase
-    .from("event_checklist_items")
-    .update(patch)
-    .eq("id", id);
-
-  if (error) return { error: error.message };
-
-  await supabase.from("audit_log").insert({
-    user_id: user.userId,
-    action: "update_checklist_item",
-    entity_type: "event_checklist_items",
-    entity_id: id,
-    details: { fields: Object.keys(patch) },
-  });
-
-  revalidatePath(`/${locale}/events/${eventId}/checklist`);
-  return { success: true };
-}
-
 export async function toggleChecklistStatus(
   id: string,
   newStatus: "pending" | "in_progress" | "done" | "skipped",
@@ -252,19 +191,6 @@ export async function deleteChecklistItem(
 
   revalidatePath(`/${locale}/events/${eventId}/checklist`);
   return { success: true };
-}
-
-export async function getChecklistTemplates(): Promise<ChecklistTemplate[]> {
-  await requireRole("admin");
-  const supabase = await createServerClient();
-
-  const { data, error } = await supabase
-    .from("event_checklist_templates")
-    .select("*")
-    .order("sort_order", { ascending: true });
-
-  if (error) throw new Error(error.message);
-  return (data ?? []) as ChecklistTemplate[];
 }
 
 export async function populateChecklistFromTemplate(

@@ -8,6 +8,7 @@ import {
   updateCoupon,
   deleteCoupon,
   toggleCouponActive,
+  resyncCouponToStripe,
 } from "@/actions/coupons";
 import { ActionForm } from "@/components/action-form";
 
@@ -246,6 +247,19 @@ export function CouponRow({
             className="text-xs text-muted-foreground hover:text-foreground"
           >
             {coupon.is_active ? cr.deactivate : cr.activate}
+          </button>
+        </ActionForm>
+        <ActionForm
+          action={async () => resyncCouponToStripe(coupon.id)}
+          successToast={tCommon("resyncedStripeToast")}
+          errorToastTemplate={tCommon("actionFailedToast", { error: "{error}" })}
+        >
+          <button
+            type="submit"
+            className="text-xs text-muted-foreground hover:text-foreground"
+            title={tCommon("resyncStripe")}
+          >
+            {tCommon("resyncStripe")}
           </button>
         </ActionForm>
         <ConfirmDialog

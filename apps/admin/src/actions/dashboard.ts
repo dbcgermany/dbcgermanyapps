@@ -74,11 +74,6 @@ function isoDay(d: string | Date): string {
   return date.toISOString().slice(0, 10);
 }
 
-function pctChange(current: number, prior: number): number {
-  if (prior === 0) return current === 0 ? 0 : 100;
-  return ((current - prior) / prior) * 100;
-}
-
 type ChannelOrderRow = {
   status: string | null;
   total_cents: number | null;
@@ -425,22 +420,3 @@ export async function getDashboardKpis(
   };
 }
 
-/** Helper exported for UI: format cents as "€1,234.56" */
-export async function formatCents(cents: number, locale: string): Promise<string> {
-  return new Intl.NumberFormat(locale || "en", {
-    style: "currency",
-    currency: "EUR",
-    maximumFractionDigits: 0,
-  }).format(cents / 100);
-}
-
-/** Helper exported for UI: percent-change vs prior period */
-export async function deltaVsPrior(
-  current: number,
-  prior: number
-): Promise<{ pct: number; direction: "up" | "down" | "flat" }> {
-  const pct = pctChange(current, prior);
-  const direction =
-    Math.abs(pct) < 0.5 ? "flat" : pct > 0 ? "up" : "down";
-  return { pct, direction };
-}

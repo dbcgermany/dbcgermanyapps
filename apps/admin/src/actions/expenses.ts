@@ -68,46 +68,6 @@ export async function createExpense(eventId: string, formData: FormData) {
   return { success: true };
 }
 
-export async function updateExpense(id: string, formData: FormData) {
-  const user = await requireRole("manager");
-  const supabase = await createServerClient();
-
-  const eventId = formData.get("event_id") as string;
-  const locale = formData.get("locale") as string;
-  const description = (formData.get("description") as string).trim();
-
-  const expenseData = {
-    category: formData.get("category") as string,
-    description,
-    amount_cents: Math.round(
-      parseFloat(formData.get("amount") as string) * 100
-    ),
-    currency: (formData.get("currency") as string) || "EUR",
-    vendor_name: (formData.get("vendor_name") as string) || null,
-    vendor_contact: (formData.get("vendor_contact") as string) || null,
-    paid_at: (formData.get("paid_at") as string) || null,
-    receipt_url: (formData.get("receipt_url") as string) || null,
-  };
-
-  const { error } = await supabase
-    .from("event_expenses")
-    .update(expenseData)
-    .eq("id", id);
-
-  if (error) return { error: error.message };
-
-  await supabase.from("audit_log").insert({
-    user_id: user.userId,
-    action: "update_expense",
-    entity_type: "event_expenses",
-    entity_id: id,
-    details: { description, event_id: eventId },
-  });
-
-  revalidatePath(`/${locale}/events/${eventId}/budget`);
-  return { success: true };
-}
-
 export async function deleteExpense(
   id: string,
   eventId: string,

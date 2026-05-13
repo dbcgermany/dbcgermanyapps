@@ -206,31 +206,3 @@ export async function deleteDashboardAd(id: string) {
   revalidatePath("/[locale]/ads", "page");
   return { success: true as const };
 }
-
-export async function reorderDashboardAds(orderedIds: string[]) {
-  const user = await requireRole("admin");
-  const supabase = await createServerClient();
-
-  const updates = await Promise.all(
-    orderedIds.map((id, index) =>
-      supabase
-        .from("dashboard_ads")
-        .update({ sort_order: (index + 1) * 10 })
-        .eq("id", id)
-    )
-  );
-  const failed = updates.find((r) => r.error);
-  if (failed?.error) return { error: failed.error.message };
-
-  await supabase.from("audit_log").insert({
-    user_id: user.userId,
-    action: "reorder_dashboard_ads",
-    entity_type: "dashboard_ads",
-    entity_id: null,
-    details: { order: orderedIds },
-  });
-
-  revalidatePath("/[locale]/dashboard", "page");
-  revalidatePath("/[locale]/ads", "page");
-  return { success: true as const };
-}

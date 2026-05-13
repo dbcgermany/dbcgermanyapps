@@ -4,7 +4,7 @@ import { useActionState, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { updateTier, toggleTierPublic, deleteTier } from "@/actions/tiers";
+import { updateTier, toggleTierPublic, deleteTier, resyncTierToStripe } from "@/actions/tiers";
 import { Button, ConfirmDialog } from "@dbc/ui";
 import { ActionForm } from "@/components/action-form";
 
@@ -389,6 +389,19 @@ export function TierRow({
             className="text-xs text-muted-foreground hover:text-foreground"
           >
             {tier.is_public ? t.hide : t.publish}
+          </button>
+        </ActionForm>
+        <ActionForm
+          action={async () => resyncTierToStripe(tier.id)}
+          successToast={tCommon("resyncedStripeToast")}
+          errorToastTemplate={tCommon("actionFailedToast", { error: "{error}" })}
+        >
+          <button
+            type="submit"
+            className="text-xs text-muted-foreground hover:text-foreground"
+            title={tCommon("resyncStripe")}
+          >
+            {tCommon("resyncStripe")}
           </button>
         </ActionForm>
         <ConfirmDialog
