@@ -1,20 +1,13 @@
 "use server";
 
 import { createServerClient, notifyAdmins } from "@dbc/supabase/server";
-import { sendNewsletterConfirm } from "@dbc/email";
+import { sendNewsletterConfirm, resolveLocale } from "@dbc/email";
 import { headers } from "next/headers";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://dbc-germany.com";
 const MARKETING_CONSENT_TOKEN_TTL_HOURS = 48;
 const NEWSLETTER_RATE_WINDOW_SECONDS = 60;
 const NEWSLETTER_RATE_MAX_PER_WINDOW = 3;
-
-type Locale = "en" | "de" | "fr";
-
-function normalizeLocale(input: string | null | undefined): Locale {
-  if (input === "de" || input === "fr") return input;
-  return "en";
-}
 
 export async function subscribeToNewsletter(input: {
   email: string;
@@ -35,7 +28,7 @@ export async function subscribeToNewsletter(input: {
     };
   }
 
-  const locale = normalizeLocale(input.locale);
+  const locale = resolveLocale(input.locale);
   const supabase = await createServerClient();
 
   const hdrs = await headers();

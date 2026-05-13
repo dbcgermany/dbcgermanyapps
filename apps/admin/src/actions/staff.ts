@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { STAFF_ROLES } from "@dbc/types";
 import type { UserRole } from "@dbc/types";
 import { buildAuthConfirmUrl } from "@/lib/auth-confirm-url";
+import { resolveLocale } from "@dbc/email";
 import { randomBytes } from "crypto";
 
 function generateTempPassword() {
@@ -16,10 +17,6 @@ function generateTempPassword() {
 
 function adminUrl() {
   return process.env.NEXT_PUBLIC_ADMIN_URL ?? "https://admin.dbc-germany.com";
-}
-
-function resolveLocale(value: string | null | undefined): "en" | "de" | "fr" {
-  return value === "de" || value === "fr" ? value : "en";
 }
 
 function getServiceClient() {

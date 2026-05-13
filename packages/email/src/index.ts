@@ -135,6 +135,14 @@ export type { RunsheetPdfItem, RunsheetPdfProps } from "./pdf/runsheet-pdf";
 export { generateRunsheetPdf } from "./pdf/generate-runsheet";
 export type { GenerateRunsheetInput } from "./pdf/generate-runsheet";
 export {
+  SUPPORTED_LOCALES,
+  isSupportedLocale,
+  resolveLocale,
+  localeFromCountry,
+  resolveRecipientLocale,
+} from "./locale-resolver";
+export type { Locale, ResolveRecipientLocaleInput } from "./locale-resolver";
+export {
   PREVIEW_EVENT,
   PREVIEW_CONTACT,
   PREVIEW_TIER,
