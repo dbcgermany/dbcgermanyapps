@@ -470,6 +470,7 @@ export async function createCheckoutSession(input: CheckoutInput) {
           ? buyer.occupation.trim()
           : null,
       p_auto_category_slug: CONTACT_CATEGORY.event_attendees,
+      p_locale: input.locale,
     }
   );
 
@@ -546,6 +547,7 @@ export async function createCheckoutSession(input: CheckoutInput) {
                 ? attendee.occupation.trim()
                 : null,
             p_auto_category_slug: CONTACT_CATEGORY.event_attendees,
+            p_locale: input.locale,
           })
         ).data as string | null);
 

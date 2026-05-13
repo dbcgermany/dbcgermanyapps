@@ -83,6 +83,7 @@ export async function subscribeToNewsletter(input: {
       p_country: null,
       p_auto_category_slug: null,
       p_extra_category_slugs: (input.interestSlugs ?? []).filter(Boolean),
+      p_locale: locale,
     }
   );
   if (upsertError || !contactId) {

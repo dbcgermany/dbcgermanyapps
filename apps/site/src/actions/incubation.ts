@@ -158,6 +158,7 @@ export async function submitIncubationApplication(
       p_occupation: null,
       p_auto_category_slug: CONTACT_CATEGORY.founders,
       p_extra_category_slugs: [] as string[],
+      p_locale: locale,
     });
     contactId = (data as string | null) ?? null;
     if (contactId) {

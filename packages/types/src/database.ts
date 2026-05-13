@@ -645,6 +645,7 @@ export type Database = {
           id: string
           last_name: string | null
           linkedin_url: string | null
+          locale: string | null
           marketing_consent: boolean
           marketing_consent_confirmed_at: string | null
           marketing_consent_ip: unknown
@@ -681,6 +682,7 @@ export type Database = {
           id?: string
           last_name?: string | null
           linkedin_url?: string | null
+          locale?: string | null
           marketing_consent?: boolean
           marketing_consent_confirmed_at?: string | null
           marketing_consent_ip?: unknown
@@ -717,6 +719,7 @@ export type Database = {
           id?: string
           last_name?: string | null
           linkedin_url?: string | null
+          locale?: string | null
           marketing_consent?: boolean
           marketing_consent_confirmed_at?: string | null
           marketing_consent_ip?: unknown
@@ -3528,6 +3531,7 @@ export type Database = {
           p_first_name?: string
           p_gender?: string
           p_last_name?: string
+          p_locale?: string
           p_occupation?: string
         }
         Returns: string

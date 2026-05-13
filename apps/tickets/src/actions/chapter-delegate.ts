@@ -4,8 +4,9 @@ import { headers } from "next/headers";
 import { createServerClient, notifyAdmins } from "@dbc/supabase/server";
 import { DBC_CHAPTER_COUNTRY_CODES } from "@dbc/ui";
 
-// Honeypot field — bots fill anything labelled "website". Real users never see it.
-const HONEYPOT_FIELD = "website";
+// Honeypot field — bots fill anything labelled "website". Real users never
+// see it. The form on the public site emits an <input name="website"> that
+// the action reads as input.honeypot below.
 
 const RATE_WINDOW_SECONDS = 60;
 const RATE_MAX_PER_EMAIL = 3;
@@ -184,6 +185,7 @@ export async function submitChapterDelegateRegistration(
       p_last_name: lastName,
       p_country: chapter,
       p_extra_category_slugs: ["invited_guests"],
+      p_locale: input.locale,
     });
   if (delegateContactErr || !delegateContactId) {
     console.error(
@@ -203,6 +205,7 @@ export async function submitChapterDelegateRegistration(
         p_last_name: companionPayload.lastName,
         p_country: chapter,
         p_extra_category_slugs: ["invited_guests"],
+        p_locale: input.locale,
       }
     );
     if (companionErr) {
