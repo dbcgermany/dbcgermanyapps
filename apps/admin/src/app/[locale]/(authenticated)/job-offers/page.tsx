@@ -5,6 +5,7 @@ import { getJobOffers, toggleJobOfferPublished } from "@/actions/job-offers";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
 import { DataTable } from "@/components/data-table";
+import { ActionForm } from "@/components/action-form";
 
 export default async function JobOffersPage({
   params,
@@ -12,7 +13,10 @@ export default async function JobOffersPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "admin.jobOffers.list" });
+  const [t, tCommon] = await Promise.all([
+    getTranslations({ locale, namespace: "admin.jobOffers.list" }),
+    getTranslations({ locale, namespace: "admin.common" }),
+  ]);
   const jobs = await getJobOffers();
 
   return (
@@ -69,11 +73,17 @@ export default async function JobOffersPage({
                   >
                     {t("edit")}
                   </Link>
-                  <form
+                  <ActionForm
                     action={async () => {
                       "use server";
-                      await toggleJobOfferPublished(job.id, locale);
+                      return toggleJobOfferPublished(job.id, locale);
                     }}
+                    successToast={
+                      job.is_published
+                        ? tCommon("unpublishedToast")
+                        : tCommon("publishedToast")
+                    }
+                    errorToastTemplate={tCommon("actionFailedToast", { error: "{error}" })}
                   >
                     <button
                       type="submit"
@@ -81,7 +91,7 @@ export default async function JobOffersPage({
                     >
                       {job.is_published ? t("unpublish") : t("publish")}
                     </button>
-                  </form>
+                  </ActionForm>
                 </div>
               </DataTable.Cell>
             </DataTable.Row>

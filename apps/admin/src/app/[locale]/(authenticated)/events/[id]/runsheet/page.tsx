@@ -2,6 +2,7 @@ import { Button, Card } from "@dbc/ui";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { PageHeader } from "@/components/page-header";
+import { ActionForm } from "@/components/action-form";
 import { getEvent } from "@/actions/events";
 import { getRunsheetItems, populateRunsheetFromTemplate } from "@/actions/runsheet";
 import { getAssignableStaff } from "@/actions/staff";
@@ -14,8 +15,11 @@ export default async function RunsheetPage({
   params: Promise<{ locale: string; id: string }>;
 }) {
   const { locale, id: eventId } = await params;
-  const t = await getTranslations({ locale, namespace: "admin.events.runsheet" });
-  const tBack = await getTranslations({ locale, namespace: "admin.back" });
+  const [t, tBack, tCommon] = await Promise.all([
+    getTranslations({ locale, namespace: "admin.events.runsheet" }),
+    getTranslations({ locale, namespace: "admin.back" }),
+    getTranslations({ locale, namespace: "admin.common" }),
+  ]);
 
   const eventOrNull = await getEvent(eventId).catch(() => null);
   if (!eventOrNull) notFound();
@@ -34,7 +38,7 @@ export default async function RunsheetPage({
 
   async function handlePopulate() {
     "use server";
-    await populateRunsheetFromTemplate(eventId, eventStartsAt, locale);
+    return populateRunsheetFromTemplate(eventId, eventStartsAt, locale);
   }
 
   return (
@@ -59,11 +63,15 @@ export default async function RunsheetPage({
       {items.length === 0 ? (
         <div className="mt-6 space-y-3 rounded-lg border border-dashed border-border p-6 text-center">
           <p className="text-sm text-muted-foreground">{t("noItems")}</p>
-          <form action={handlePopulate}>
+          <ActionForm
+            action={handlePopulate}
+            successToast={tCommon("savedToast")}
+            errorToastTemplate={tCommon("actionFailedToast", { error: "{error}" })}
+          >
             <Button type="submit">
               {t("populate")}
             </Button>
-          </form>
+          </ActionForm>
         </div>
       ) : (
         <div className="mt-6">

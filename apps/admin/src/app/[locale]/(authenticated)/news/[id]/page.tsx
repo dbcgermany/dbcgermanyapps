@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { getNewsPost, toggleNewsPublish, deleteNewsPost } from "@/actions/news";
 import { PageHeader } from "@/components/page-header";
+import { ActionForm } from "@/components/action-form";
 import { EditNewsForm } from "./edit-form";
 
 const T = {
@@ -16,7 +17,10 @@ export default async function EditNewsPage({
 }) {
   const { locale, id } = await params;
   const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
-  const tBack = await getTranslations({ locale, namespace: "admin.back" });
+  const [tBack, tCommon] = await Promise.all([
+    getTranslations({ locale, namespace: "admin.back" }),
+    getTranslations({ locale, namespace: "admin.common" }),
+  ]);
   const post = await getNewsPost(id);
 
   return (
@@ -26,11 +30,17 @@ export default async function EditNewsPage({
         back={{ href: `/${locale}/news`, label: tBack("news") }}
         cta={
           <div className="flex items-center gap-3">
-            <form
+            <ActionForm
               action={async () => {
                 "use server";
-                await toggleNewsPublish(id, locale);
+                return toggleNewsPublish(id, locale);
               }}
+              successToast={
+                post.is_published
+                  ? tCommon("unpublishedToast")
+                  : tCommon("publishedToast")
+              }
+              errorToastTemplate={tCommon("actionFailedToast", { error: "{error}" })}
             >
               <button
                 type="submit"
@@ -38,12 +48,14 @@ export default async function EditNewsPage({
               >
                 {post.is_published ? t.unpublish : t.publish}
               </button>
-            </form>
-            <form
+            </ActionForm>
+            <ActionForm
               action={async () => {
                 "use server";
-                await deleteNewsPost(id, locale);
+                return deleteNewsPost(id, locale);
               }}
+              successToast={tCommon("deletedToast")}
+              errorToastTemplate={tCommon("actionFailedToast", { error: "{error}" })}
             >
               <button
                 type="submit"
@@ -51,7 +63,7 @@ export default async function EditNewsPage({
               >
                 {t.delete}
               </button>
-            </form>
+            </ActionForm>
           </div>
         }
       />

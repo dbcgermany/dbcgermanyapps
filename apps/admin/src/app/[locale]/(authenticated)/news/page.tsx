@@ -4,6 +4,7 @@ import { Badge, Card, LinkButton } from "@dbc/ui";
 import { getNewsPosts, toggleNewsPublish } from "@/actions/news";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
+import { ActionForm } from "@/components/action-form";
 
 export default async function NewsIndexPage({
   params,
@@ -11,7 +12,10 @@ export default async function NewsIndexPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "admin.news.list" });
+  const [t, tCommon] = await Promise.all([
+    getTranslations({ locale, namespace: "admin.news.list" }),
+    getTranslations({ locale, namespace: "admin.common" }),
+  ]);
   const posts = await getNewsPosts();
 
   return (
@@ -58,11 +62,17 @@ export default async function NewsIndexPage({
                 >
                   {t("edit")}
                 </Link>
-                <form
+                <ActionForm
                   action={async () => {
                     "use server";
-                    await toggleNewsPublish(p.id, locale);
+                    return toggleNewsPublish(p.id, locale);
                   }}
+                  successToast={
+                    p.is_published
+                      ? tCommon("unpublishedToast")
+                      : tCommon("publishedToast")
+                  }
+                  errorToastTemplate={tCommon("actionFailedToast", { error: "{error}" })}
                 >
                   <button
                     type="submit"
@@ -70,7 +80,7 @@ export default async function NewsIndexPage({
                   >
                     {p.is_published ? t("unpublish") : t("publish")}
                   </button>
-                </form>
+                </ActionForm>
               </div>
             </Card>
           ))}

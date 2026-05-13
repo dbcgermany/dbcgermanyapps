@@ -3,8 +3,10 @@
 import { useActionState, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { updateTier, toggleTierPublic, deleteTier } from "@/actions/tiers";
 import { Button, ConfirmDialog } from "@dbc/ui";
+import { ActionForm } from "@/components/action-form";
 
 const TR_T = {
   en: {
@@ -92,6 +94,7 @@ export function TierRow({
   const router = useRouter();
   const [mode, setMode] = useState<"view" | "edit">("view");
   const t = TR_T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof TR_T];
+  const tCommon = useTranslations("admin.common");
 
   const [state, formAction, isPending] = useActionState(
     async (
@@ -376,10 +379,10 @@ export function TierRow({
         >
           {t.edit}
         </button>
-        <form
-          action={async () => {
-            await toggleTierPublic(tier.id, eventId, locale);
-          }}
+        <ActionForm
+          action={async () => toggleTierPublic(tier.id, eventId, locale)}
+          successToast={tier.is_public ? tCommon("unpublishedToast") : tCommon("publishedToast")}
+          errorToastTemplate={tCommon("actionFailedToast", { error: "{error}" })}
         >
           <button
             type="submit"
@@ -387,7 +390,7 @@ export function TierRow({
           >
             {tier.is_public ? t.hide : t.publish}
           </button>
-        </form>
+        </ActionForm>
         <ConfirmDialog
           trigger={
             <button

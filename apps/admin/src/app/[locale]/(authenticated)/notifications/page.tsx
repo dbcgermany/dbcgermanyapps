@@ -25,6 +25,7 @@ import {
 } from "@/actions/notifications";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
+import { ActionForm } from "@/components/action-form";
 import { notificationHref } from "@/lib/notification-links";
 import type { NotificationType } from "@dbc/types";
 
@@ -53,8 +54,11 @@ export default async function NotificationsPage({
 }) {
   const { locale } = await params;
   const notifications = await getAllNotifications();
-  const tBack = await getTranslations({ locale, namespace: "admin.back" });
-  const t = await getTranslations({ locale, namespace: "admin.notifications.list" });
+  const [tBack, t, tCommon] = await Promise.all([
+    getTranslations({ locale, namespace: "admin.back" }),
+    getTranslations({ locale, namespace: "admin.notifications.list" }),
+    getTranslations({ locale, namespace: "admin.common" }),
+  ]);
 
   const unreadCount = notifications.filter((n) => !n.read_at).length;
 
@@ -65,11 +69,12 @@ export default async function NotificationsPage({
         description={unreadCount > 0 ? `${unreadCount} ${t("unread")}` : undefined}
         back={{ href: `/${locale}/dashboard`, label: tBack("dashboard") }}
         cta={unreadCount > 0 ? (
-          <form
+          <ActionForm
             action={async () => {
               "use server";
-              await markAllReadAction(locale);
+              return markAllReadAction(locale);
             }}
+            errorToastTemplate={tCommon("actionFailedToast", { error: "{error}" })}
           >
             <button
               type="submit"
@@ -77,7 +82,7 @@ export default async function NotificationsPage({
             >
               {t("markAll")}
             </button>
-          </form>
+          </ActionForm>
         ) : undefined}
       />
 

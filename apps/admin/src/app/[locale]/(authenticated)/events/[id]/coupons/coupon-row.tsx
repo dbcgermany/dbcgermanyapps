@@ -2,12 +2,14 @@
 
 import { useActionState, useState } from "react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
 import { Badge, Button, ConfirmDialog } from "@dbc/ui";
 import {
   updateCoupon,
   deleteCoupon,
   toggleCouponActive,
 } from "@/actions/coupons";
+import { ActionForm } from "@/components/action-form";
 
 const CR_T = {
   en: {
@@ -72,6 +74,7 @@ export function CouponRow({
 }) {
   const [mode, setMode] = useState<"view" | "edit">("view");
   const cr = CR_T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof CR_T];
+  const tCommon = useTranslations("admin.common");
 
   const [state, formAction, isPending] = useActionState(
     async (
@@ -233,10 +236,10 @@ export function CouponRow({
         >
           {cr.edit}
         </button>
-        <form
-          action={async () => {
-            await toggleCouponActive(coupon.id, eventId, locale);
-          }}
+        <ActionForm
+          action={async () => toggleCouponActive(coupon.id, eventId, locale)}
+          successToast={coupon.is_active ? tCommon("unpublishedToast") : tCommon("publishedToast")}
+          errorToastTemplate={tCommon("actionFailedToast", { error: "{error}" })}
         >
           <button
             type="submit"
@@ -244,7 +247,7 @@ export function CouponRow({
           >
             {coupon.is_active ? cr.deactivate : cr.activate}
           </button>
-        </form>
+        </ActionForm>
         <ConfirmDialog
           trigger={
             <button

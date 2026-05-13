@@ -6,6 +6,7 @@ import {
 } from "@/actions/job-offers";
 import { createServerClient } from "@dbc/supabase/server";
 import { PageHeader } from "@/components/page-header";
+import { ActionForm } from "@/components/action-form";
 import { EditJobOfferForm } from "./edit-form";
 
 const T = {
@@ -21,7 +22,10 @@ export default async function EditJobOfferPage({
 }) {
   const { locale, id } = await params;
   const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
-  const tBack = await getTranslations({ locale, namespace: "admin.back" });
+  const [tBack, tCommon] = await Promise.all([
+    getTranslations({ locale, namespace: "admin.back" }),
+    getTranslations({ locale, namespace: "admin.common" }),
+  ]);
   const job = await getJobOffer(id);
 
   // Count applications to decide whether to show delete
@@ -39,11 +43,17 @@ export default async function EditJobOfferPage({
         back={{ href: `/${locale}/job-offers`, label: tBack("jobOffers") }}
         cta={
           <div className="flex items-center gap-3">
-            <form
+            <ActionForm
               action={async () => {
                 "use server";
-                await toggleJobOfferPublished(id, locale);
+                return toggleJobOfferPublished(id, locale);
               }}
+              successToast={
+                job.is_published
+                  ? tCommon("unpublishedToast")
+                  : tCommon("publishedToast")
+              }
+              errorToastTemplate={tCommon("actionFailedToast", { error: "{error}" })}
             >
               <button
                 type="submit"
@@ -51,13 +61,15 @@ export default async function EditJobOfferPage({
               >
                 {job.is_published ? t.unpublish : t.publish}
               </button>
-            </form>
+            </ActionForm>
             {!hasApplications && (
-              <form
+              <ActionForm
                 action={async () => {
                   "use server";
-                  await deleteJobOffer(id, locale);
+                  return deleteJobOffer(id, locale);
                 }}
+                successToast={tCommon("deletedToast")}
+                errorToastTemplate={tCommon("actionFailedToast", { error: "{error}" })}
               >
                 <button
                   type="submit"
@@ -65,7 +77,7 @@ export default async function EditJobOfferPage({
                 >
                   {t.delete}
                 </button>
-              </form>
+              </ActionForm>
             )}
           </div>
         }

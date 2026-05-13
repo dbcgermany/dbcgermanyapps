@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { getEvents, togglePublish } from "@/actions/events";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
+import { ActionForm } from "@/components/action-form";
 
 export default async function EventsPage({
   params,
@@ -11,7 +12,10 @@ export default async function EventsPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "admin.eventsList" });
+  const [t, tCommon] = await Promise.all([
+    getTranslations({ locale, namespace: "admin.eventsList" }),
+    getTranslations({ locale, namespace: "admin.common" }),
+  ]);
   const events = await getEvents();
 
   return (
@@ -132,11 +136,17 @@ export default async function EventsPage({
                     </Badge>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <form
+                    <ActionForm
                       action={async () => {
                         "use server";
-                        await togglePublish(event.id, locale);
+                        return togglePublish(event.id, locale);
                       }}
+                      successToast={
+                        event.is_published
+                          ? tCommon("unpublishedToast")
+                          : tCommon("publishedToast")
+                      }
+                      errorToastTemplate={tCommon("actionFailedToast", { error: "{error}" })}
                     >
                       <button
                         type="submit"
@@ -144,7 +154,7 @@ export default async function EventsPage({
                       >
                         {event.is_published ? t("unpublish") : t("publish")}
                       </button>
-                    </form>
+                    </ActionForm>
                   </td>
                 </tr>
               ))}

@@ -8,6 +8,7 @@ import {
   unpublishFunnel,
 } from "@/actions/funnels";
 import { PageHeader } from "@/components/page-header";
+import { ActionForm } from "@/components/action-form";
 import { captureServerError } from "@/lib/observe";
 import { FunnelForm } from "../funnel-form";
 import { KpiCards } from "./kpi-cards";
@@ -79,6 +80,11 @@ async function renderEditFunnelPage({
     "funnels.getTranslations.back",
     { locale },
   );
+  const tCommon = await loadOrCapture(
+    () => getTranslations({ locale, namespace: "admin.common" }),
+    "funnels.getTranslations.common",
+    { locale },
+  );
   const funnel = await loadOrCapture(() => getFunnel(id), "funnels.getFunnel", {
     funnel_id: id,
     locale,
@@ -101,15 +107,19 @@ async function renderEditFunnelPage({
         back={{ href: `/${locale}/funnels`, label: tBack("funnels") }}
         cta={
           <div className="flex flex-wrap items-center gap-3">
-            <form
+            <ActionForm
               action={async () => {
                 "use server";
-                if (funnel.status === "published") {
-                  await unpublishFunnel(id, locale);
-                } else {
-                  await publishFunnel(id, locale);
-                }
+                return funnel.status === "published"
+                  ? unpublishFunnel(id, locale)
+                  : publishFunnel(id, locale);
               }}
+              successToast={
+                funnel.status === "published"
+                  ? tCommon("unpublishedToast")
+                  : tCommon("publishedToast")
+              }
+              errorToastTemplate={tCommon("actionFailedToast", { error: "{error}" })}
             >
               <button
                 type="submit"
@@ -117,12 +127,14 @@ async function renderEditFunnelPage({
               >
                 {funnel.status === "published" ? t.unpublish : t.publish}
               </button>
-            </form>
-            <form
+            </ActionForm>
+            <ActionForm
               action={async () => {
                 "use server";
-                await archiveFunnel(id, locale);
+                return archiveFunnel(id, locale);
               }}
+              successToast={tCommon("archivedToast")}
+              errorToastTemplate={tCommon("actionFailedToast", { error: "{error}" })}
             >
               <button
                 type="submit"
@@ -130,7 +142,7 @@ async function renderEditFunnelPage({
               >
                 {t.archive}
               </button>
-            </form>
+            </ActionForm>
           </div>
         }
       />

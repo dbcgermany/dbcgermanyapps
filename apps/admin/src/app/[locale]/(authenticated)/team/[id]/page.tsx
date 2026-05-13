@@ -7,6 +7,7 @@ import {
   getStaffAccountsForLinking,
 } from "@/actions/team";
 import { PageHeader } from "@/components/page-header";
+import { ActionForm } from "@/components/action-form";
 import { TeamMemberForm } from "../member-form";
 
 export default async function EditTeamMemberPage({
@@ -15,8 +16,11 @@ export default async function EditTeamMemberPage({
   params: Promise<{ locale: string; id: string }>;
 }) {
   const { locale, id } = await params;
-  const t = await getTranslations({ locale, namespace: "admin.team.detail" });
-  const tBack = await getTranslations({ locale, namespace: "admin.back" });
+  const [t, tBack, tCommon] = await Promise.all([
+    getTranslations({ locale, namespace: "admin.team.detail" }),
+    getTranslations({ locale, namespace: "admin.back" }),
+    getTranslations({ locale, namespace: "admin.common" }),
+  ]);
   const [member, staffAccounts] = await Promise.all([
     getTeamMember(id),
     getStaffAccountsForLinking(id),
@@ -41,11 +45,13 @@ export default async function EditTeamMemberPage({
             <Badge variant={member.visibility === "public" ? "success" : member.visibility === "internal" ? "warning" : "default"}>
               {t(`visibility.${member.visibility}`)}
             </Badge>
-            <form
+            <ActionForm
               action={async () => {
                 "use server";
-                await deleteTeamMember(id, locale);
+                return deleteTeamMember(id, locale);
               }}
+              successToast={tCommon("deletedToast")}
+              errorToastTemplate={tCommon("actionFailedToast", { error: "{error}" })}
             >
               <button
                 type="submit"
@@ -53,7 +59,7 @@ export default async function EditTeamMemberPage({
               >
                 {t("delete")}
               </button>
-            </form>
+            </ActionForm>
           </div>
         }
       />

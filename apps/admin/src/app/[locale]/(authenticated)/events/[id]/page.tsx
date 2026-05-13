@@ -30,6 +30,7 @@ import { getLiveEventStats } from "@/actions/live-event";
 import { StatCard } from "@/components/stat-card";
 import { StatGrid } from "@/components/stat-grid";
 import { PageHeader } from "@/components/page-header";
+import { ActionForm } from "@/components/action-form";
 import { DeleteEventButton } from "./delete-button";
 import { EventQrCard } from "./event-qr-card";
 
@@ -39,8 +40,11 @@ export default async function EventDetailPage({
   params: Promise<{ locale: string; id: string }>;
 }) {
   const { locale, id } = await params;
-  const t = await getTranslations({ locale, namespace: "admin.events.detail" });
-  const tBack = await getTranslations({ locale, namespace: "admin.back" });
+  const [t, tBack, tCommon] = await Promise.all([
+    getTranslations({ locale, namespace: "admin.events.detail" }),
+    getTranslations({ locale, namespace: "admin.back" }),
+    getTranslations({ locale, namespace: "admin.common" }),
+  ]);
 
   let event;
   try {
@@ -110,21 +114,29 @@ export default async function EventDetailPage({
           back={{ href: `/${locale}/events`, label: tBack("events") }}
           cta={
             <div className="flex flex-wrap gap-2">
-              <form
+              <ActionForm
                 action={async () => {
                   "use server";
-                  await togglePublish(id, locale);
+                  return togglePublish(id, locale);
                 }}
+                successToast={
+                  event.is_published
+                    ? tCommon("unpublishedToast")
+                    : tCommon("publishedToast")
+                }
+                errorToastTemplate={tCommon("actionFailedToast", { error: "{error}" })}
               >
                 <Button type="submit" variant="secondary">
                   {event.is_published ? t("unpublish") : t("publish")}
                 </Button>
-              </form>
-              <form
+              </ActionForm>
+              <ActionForm
                 action={async () => {
                   "use server";
-                  await duplicateEvent(id, locale);
+                  return duplicateEvent(id, locale);
                 }}
+                successToast={tCommon("duplicatedToast")}
+                errorToastTemplate={tCommon("actionFailedToast", { error: "{error}" })}
               >
                 <Button
                   type="submit"
@@ -133,7 +145,7 @@ export default async function EventDetailPage({
                 >
                   {t("duplicate")}
                 </Button>
-              </form>
+              </ActionForm>
               <LinkButton href={`/${locale}/events/${id}/edit`}>
                 {t("edit")}
               </LinkButton>
