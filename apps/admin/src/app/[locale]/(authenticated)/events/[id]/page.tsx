@@ -29,6 +29,7 @@ import { getEventChecklist } from "@/actions/checklist";
 import { getLiveEventStats } from "@/actions/live-event";
 import { StatCard } from "@/components/stat-card";
 import { StatGrid } from "@/components/stat-grid";
+import { YourInvitesCard } from "./your-invites-card";
 import { PageHeader } from "@/components/page-header";
 import { ActionForm } from "@/components/action-form";
 import { DeleteEventButton } from "./delete-button";
@@ -160,6 +161,13 @@ export default async function EventDetailPage({
             {event.event_type}
           </span>
         </div>
+      </div>
+
+      {/* Team-member's own team-friend invite codes for this event.
+          Hidden when the user has no quota / no codes. Admins see THEIR
+          codes here; the all-staff matrix lives at /events/[id]/team-invites. */}
+      <div className="mt-8">
+        <YourInvitesCard eventId={id} />
       </div>
 
       {/* Event KPIs — 4 cards */}

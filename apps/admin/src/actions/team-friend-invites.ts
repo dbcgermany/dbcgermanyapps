@@ -7,17 +7,28 @@ import { randomBytes } from "crypto";
 import { bestEffortSync, syncCouponToStripe } from "@/lib/stripe-sync";
 
 // Each Germany team member can issue a small batch of discounted invite
-// coupons their friends use at the public checkout to bring a public tier
-// down to the team_invite_tier price (e.g. Premium €129 → Starter price €49).
+// coupons their friends use at the public checkout. Phase F (2026-05-13)
+// replaced the legacy tier-based config with a flexible discount model:
 //
-// All knobs live on the event row:
-//   events.team_invite_quota         — default slot count
-//   events.team_invite_tier_id       — reference tier whose price_cents
-//                                       is the target friend price
+//   events.team_invite_quota             — slot count per team member (default)
+//   events.team_invite_discount_type     — 'percent' | 'fixed'
+//   events.team_invite_discount_value    — 0-100 when percent, cents when fixed
+//   events.team_invite_applicable_tier_ids — uuid[] of tiers the code is valid
+//                                             on (empty = every public tier)
 //
-// The coupon's discount = (next_paid_public_tier.price_cents - target_price).
-// One coupon per slot; max_uses = 1; tied to the issuing team member via
-// coupons.issued_to_profile_id.
+// Per-team-member override lives on event_team_member_quota_overrides:
+//   .quota / .discount_type / .discount_value — all nullable; NULL = inherit
+//
+// Note: events.team_invite_discount_type uses concise 'percent'|'fixed' for
+// the admin UI; the coupons table uses the longer 'percentage'|'fixed_amount'
+// (its existing enum). The translation lives in DISCOUNT_TYPE_DB_MAP below.
+
+const DISCOUNT_TYPE_DB_MAP = {
+  percent: "percentage",
+  fixed: "fixed_amount",
+} as const;
+
+type EventDiscountType = "percent" | "fixed";
 
 function getServiceClient() {
   return createClient(
@@ -38,26 +49,82 @@ async function isAdminLike(role: string) {
   return role === "admin" || role === "super_admin";
 }
 
-export async function getMyEffectiveQuota(eventId: string, profileId: string) {
+// ---------------------------------------------------------------------------
+// Effective config (override → event-level → defaults)
+// ---------------------------------------------------------------------------
+
+export interface EffectiveTeamInviteConfig {
+  quota: number;
+  discountType: EventDiscountType;
+  discountValue: number;
+  applicableTierIds: string[];
+  isQuotaOverride: boolean;
+  isDiscountOverride: boolean;
+}
+
+export async function getMyEffectiveQuota(eventId: string, profileId?: string) {
+  const cfg = await getEffectiveTeamInviteConfig(eventId, profileId);
+  return cfg.quota;
+}
+
+export async function getEffectiveTeamInviteConfig(
+  eventId: string,
+  profileId?: string
+): Promise<EffectiveTeamInviteConfig> {
   const user = await requireRole("team_member");
-  if (profileId !== user.userId && !(await isAdminLike(user.role))) {
+  const targetProfileId = profileId ?? user.userId;
+  if (targetProfileId !== user.userId && !(await isAdminLike(user.role))) {
     throw new Error("Forbidden");
   }
   const supabase = await createServerClient();
-  const { data: override } = await supabase
-    .from("event_team_member_quota_overrides")
-    .select("quota")
-    .eq("event_id", eventId)
-    .eq("profile_id", profileId)
-    .maybeSingle();
-  if (override?.quota != null) return override.quota;
-  const { data: event } = await supabase
-    .from("events")
-    .select("team_invite_quota")
-    .eq("id", eventId)
-    .maybeSingle();
-  return event?.team_invite_quota ?? 3;
+  const [{ data: event }, { data: override }] = await Promise.all([
+    supabase
+      .from("events")
+      .select(
+        "team_invite_quota, team_invite_discount_type, team_invite_discount_value, team_invite_applicable_tier_ids"
+      )
+      .eq("id", eventId)
+      .maybeSingle(),
+    supabase
+      .from("event_team_member_quota_overrides")
+      .select("quota, discount_type, discount_value")
+      .eq("event_id", eventId)
+      .eq("profile_id", targetProfileId)
+      .maybeSingle(),
+  ]);
+  const eventRow = (event ?? {}) as {
+    team_invite_quota?: number | null;
+    team_invite_discount_type?: EventDiscountType | null;
+    team_invite_discount_value?: number | null;
+    team_invite_applicable_tier_ids?: string[] | null;
+  };
+  const overrideRow = (override ?? {}) as {
+    quota?: number | null;
+    discount_type?: EventDiscountType | null;
+    discount_value?: number | null;
+  };
+  const quota =
+    overrideRow.quota != null ? overrideRow.quota : eventRow.team_invite_quota ?? 3;
+  const discountType: EventDiscountType =
+    overrideRow.discount_type ?? eventRow.team_invite_discount_type ?? "percent";
+  const discountValue =
+    overrideRow.discount_value != null
+      ? overrideRow.discount_value
+      : eventRow.team_invite_discount_value ?? 0;
+  return {
+    quota,
+    discountType,
+    discountValue,
+    applicableTierIds: eventRow.team_invite_applicable_tier_ids ?? [],
+    isQuotaOverride: overrideRow.quota != null,
+    isDiscountOverride:
+      overrideRow.discount_type != null || overrideRow.discount_value != null,
+  };
 }
+
+// ---------------------------------------------------------------------------
+// Quota / discount overrides (admin)
+// ---------------------------------------------------------------------------
 
 export async function overrideTeamMemberQuota(
   eventId: string,
@@ -84,28 +151,204 @@ export async function overrideTeamMemberQuota(
   return { success: true };
 }
 
+export async function overrideTeamMemberDiscount(
+  eventId: string,
+  profileId: string,
+  discountType: EventDiscountType | null,
+  discountValue: number | null
+) {
+  const actor = await requireRole("admin");
+  if (discountType !== null && !["percent", "fixed"].includes(discountType)) {
+    return { error: "Invalid discount type." };
+  }
+  if (
+    discountValue !== null &&
+    (!Number.isFinite(discountValue) || discountValue < 0)
+  ) {
+    return { error: "Invalid discount value." };
+  }
+  if (discountType === "percent" && discountValue !== null && discountValue > 100) {
+    return { error: "Percent discount must be 0–100." };
+  }
+  const service = getServiceClient();
+
+  // Read existing override to preserve quota when partial-updating discount.
+  const { data: existing } = await service
+    .from("event_team_member_quota_overrides")
+    .select("quota")
+    .eq("event_id", eventId)
+    .eq("profile_id", profileId)
+    .maybeSingle();
+  const quota = existing?.quota ?? 0;
+
+  const { error } = await service
+    .from("event_team_member_quota_overrides")
+    .upsert(
+      {
+        event_id: eventId,
+        profile_id: profileId,
+        quota,
+        discount_type: discountType,
+        discount_value: discountValue,
+        created_by: actor.userId,
+      },
+      { onConflict: "event_id,profile_id" }
+    );
+  if (error) return { error: error.message };
+
+  // Re-sync this team-member's unused team-friend coupons to the new rate so
+  // already-issued codes match the new discount when redeemed.
+  const syncResult = await resyncTeamFriendCouponsForScope({
+    eventId,
+    profileId,
+    actorUserId: actor.userId,
+  });
+
+  await service.from("audit_log").insert({
+    user_id: actor.userId,
+    action: "override_team_invite_discount",
+    entity_type: "event_team_member_quota_overrides",
+    entity_id: eventId,
+    details: {
+      profile_id: profileId,
+      discount_type: discountType,
+      discount_value: discountValue,
+      ...syncResult,
+    },
+  });
+  revalidatePath(`/[locale]/events/${eventId}/team-invites`, "layout");
+  revalidatePath(`/[locale]/events/${eventId}`, "layout");
+  return { success: true as const, ...syncResult };
+}
+
+export async function updateEventTeamInviteDiscount(
+  eventId: string,
+  input: {
+    discountType: EventDiscountType;
+    discountValue: number;
+    applicableTierIds: string[];
+  }
+) {
+  const actor = await requireRole("admin");
+  if (!["percent", "fixed"].includes(input.discountType)) {
+    return { error: "Invalid discount type." };
+  }
+  if (!Number.isFinite(input.discountValue) || input.discountValue < 0) {
+    return { error: "Invalid discount value." };
+  }
+  if (input.discountType === "percent" && input.discountValue > 100) {
+    return { error: "Percent discount must be 0–100." };
+  }
+  const service = getServiceClient();
+  const { error } = await service
+    .from("events")
+    .update({
+      team_invite_discount_type: input.discountType,
+      team_invite_discount_value: input.discountValue,
+      team_invite_applicable_tier_ids: input.applicableTierIds,
+    })
+    .eq("id", eventId);
+  if (error) return { error: error.message };
+
+  // Re-sync every unused team-friend coupon for this event so existing codes
+  // match the new rate when redeemed. Used codes are skipped — Stripe doesn't
+  // allow editing a redeemed coupon, and the friend already paid at the
+  // original rate.
+  const syncResult = await resyncTeamFriendCouponsForScope({
+    eventId,
+    actorUserId: actor.userId,
+  });
+
+  await service.from("audit_log").insert({
+    user_id: actor.userId,
+    action: "update_event_team_invite_discount",
+    entity_type: "events",
+    entity_id: eventId,
+    details: {
+      discount_type: input.discountType,
+      discount_value: input.discountValue,
+      applicable_tier_ids: input.applicableTierIds,
+      ...syncResult,
+    },
+  });
+  revalidatePath(`/[locale]/events/${eventId}/team-invites`, "layout");
+  revalidatePath(`/[locale]/events/${eventId}`, "layout");
+  return { success: true as const, ...syncResult };
+}
+
+// ---------------------------------------------------------------------------
+// Listing (with redeemer info)
+// ---------------------------------------------------------------------------
+
+export interface TeamFriendCouponRow {
+  id: string;
+  code: string;
+  discount_type: "percentage" | "fixed_amount";
+  discount_value: number;
+  max_uses: number | null;
+  times_used: number;
+  is_active: boolean;
+  applicable_tier_ids: string[] | null;
+  created_at: string;
+  redeemed_by_name: string | null;
+  redeemed_by_email: string | null;
+}
+
 export async function listMyTeamFriendCoupons(
   eventId: string,
   profileId?: string
-) {
+): Promise<TeamFriendCouponRow[]> {
   const user = await requireRole("team_member");
   const targetProfileId = profileId ?? user.userId;
   if (targetProfileId !== user.userId && !(await isAdminLike(user.role))) {
     throw new Error("Forbidden");
   }
   const service = getServiceClient();
-  const { data, error } = await service
+  const { data: coupons, error } = await service
     .from("coupons")
     .select(
-      "id, code, discount_value, max_uses, times_used, is_active, applicable_tier_ids, created_at"
+      "id, code, discount_type, discount_value, max_uses, times_used, is_active, applicable_tier_ids, created_at"
     )
     .eq("event_id", eventId)
     .eq("issued_to_profile_id", targetProfileId)
     .eq("purpose", "team_friend_invite")
     .order("created_at", { ascending: true });
   if (error) throw new Error(error.message);
-  return data ?? [];
+  const couponList = coupons ?? [];
+  if (couponList.length === 0) return [];
+
+  // Join redeeming orders so the team member can see WHO used each used code.
+  const couponIds = couponList.map((c) => c.id);
+  const { data: orders } = await service
+    .from("orders")
+    .select("coupon_id, recipient_name, recipient_email")
+    .in("coupon_id", couponIds);
+  const orderByCoupon = new Map<
+    string,
+    { name: string | null; email: string | null }
+  >();
+  for (const o of orders ?? []) {
+    if (!o.coupon_id) continue;
+    if (!orderByCoupon.has(o.coupon_id)) {
+      orderByCoupon.set(o.coupon_id, {
+        name: o.recipient_name ?? null,
+        email: o.recipient_email ?? null,
+      });
+    }
+  }
+  return couponList.map((c) => {
+    const redeemer = orderByCoupon.get(c.id);
+    return {
+      ...c,
+      redeemed_by_name: redeemer?.name ?? null,
+      redeemed_by_email: redeemer?.email ?? null,
+    } as TeamFriendCouponRow;
+  });
 }
+
+// ---------------------------------------------------------------------------
+// Issuance (single-shot with Stripe sync)
+// ---------------------------------------------------------------------------
 
 export async function issueTeamFriendCoupons(
   eventId: string,
@@ -118,54 +361,40 @@ export async function issueTeamFriendCoupons(
   }
   const service = getServiceClient();
 
-  // 1. Load event configuration.
   const { data: event } = await service
     .from("events")
-    .select("id, slug, team_invite_quota, team_invite_tier_id")
+    .select("id, slug")
     .eq("id", eventId)
     .single();
   if (!event) return { error: "Event not found" };
-  if (!event.team_invite_tier_id) {
+
+  const cfg = await getEffectiveTeamInviteConfig(eventId, targetProfileId);
+  if (cfg.discountValue <= 0) {
     return {
       error:
-        "Team-friend invites are not configured for this event. Set a target tier in event settings.",
+        "Team-friend invites are not configured yet. Ask an admin to set the discount in event settings.",
     };
   }
 
-  // 2. Resolve target tier (the price the friend ends up paying).
-  const { data: targetTier } = await service
-    .from("ticket_tiers")
-    .select("id, price_cents")
-    .eq("id", event.team_invite_tier_id)
-    .single();
-  if (!targetTier) {
-    return { error: "Target team-friend tier is missing." };
+  // applicableTierIds empty = apply to every public retail tier in the event.
+  let applicableTierIds = cfg.applicableTierIds;
+  if (applicableTierIds.length === 0) {
+    const { data: publicTiers } = await service
+      .from("ticket_tiers")
+      .select("id")
+      .eq("event_id", eventId)
+      .eq("is_public", true)
+      .eq("counts_as_sold", true);
+    applicableTierIds = (publicTiers ?? []).map((t) => t.id);
+    if (applicableTierIds.length === 0) {
+      return {
+        error: "No public retail tiers exist on this event for the code to apply to.",
+      };
+    }
   }
 
-  // 3. Pick the source tier — the cheapest paid public tier strictly above
-  //    the target price. This is what the friend selects at checkout; the
-  //    coupon brings it down to the target.
-  const { data: candidates } = await service
-    .from("ticket_tiers")
-    .select("id, name_en, price_cents, is_public, counts_as_sold")
-    .eq("event_id", eventId)
-    .eq("is_public", true)
-    .eq("counts_as_sold", true)
-    .gt("price_cents", targetTier.price_cents)
-    .order("price_cents", { ascending: true });
-  const sourceTier = (candidates ?? [])[0];
-  if (!sourceTier) {
-    return {
-      error:
-        "No public retail tier is priced above the team-friend target. Add a higher tier first.",
-    };
-  }
-  const discountValue = sourceTier.price_cents - targetTier.price_cents;
-
-  // 4. Effective quota → how many more slots to issue.
-  const quota = await getMyEffectiveQuota(eventId, targetProfileId);
   const existing = await listMyTeamFriendCoupons(eventId, targetProfileId);
-  const remaining = Math.max(0, quota - existing.length);
+  const remaining = Math.max(0, cfg.quota - existing.length);
   if (remaining === 0) {
     return {
       success: true,
@@ -174,7 +403,7 @@ export async function issueTeamFriendCoupons(
     };
   }
 
-  // 5. Generate codes + insert, then Stripe-sync each.
+  const dbDiscountType = DISCOUNT_TYPE_DB_MAP[cfg.discountType];
   const eventSlugPart = (event.slug ?? "evt").toUpperCase().slice(0, 6);
   const codes: string[] = [];
   for (let i = 0; i < remaining; i++) {
@@ -195,11 +424,11 @@ export async function issueTeamFriendCoupons(
       .insert({
         event_id: eventId,
         code,
-        discount_type: "fixed_amount",
-        discount_value: discountValue,
+        discount_type: dbDiscountType,
+        discount_value: cfg.discountValue,
         max_uses: 1,
         times_used: 0,
-        applicable_tier_ids: [sourceTier.id],
+        applicable_tier_ids: applicableTierIds,
         is_active: true,
         issued_to_profile_id: targetProfileId,
         purpose: "team_friend_invite",
@@ -218,8 +447,8 @@ export async function issueTeamFriendCoupons(
         syncCouponToStripe({
           id: inserted.id,
           code,
-          discount_type: "fixed_amount",
-          discount_value: discountValue,
+          discount_type: dbDiscountType,
+          discount_value: cfg.discountValue,
           max_uses: 1,
           valid_until: null,
           is_active: true,
@@ -248,12 +477,13 @@ export async function issueTeamFriendCoupons(
     details: {
       target_profile_id: targetProfileId,
       created: codes.length,
-      discount_value: discountValue,
-      source_tier_id: sourceTier.id,
+      discount_type: cfg.discountType,
+      discount_value: cfg.discountValue,
+      applicable_tier_ids: applicableTierIds,
     },
   });
 
-  revalidatePath(`/[locale]/account/event-invites`, "layout");
+  revalidatePath(`/[locale]/events/${eventId}`, "layout");
   revalidatePath(`/[locale]/events/${eventId}/team-invites`, "layout");
   return { success: true, created: codes.length, codes };
 }
@@ -291,10 +521,95 @@ export async function revokeTeamFriendCoupon(couponId: string) {
     entity_id: couponId,
     details: { code: coupon.code, event_id: coupon.event_id },
   });
-  revalidatePath(`/[locale]/account/event-invites`, "layout");
+  revalidatePath(`/[locale]/events/${coupon.event_id}`, "layout");
   revalidatePath(`/[locale]/events/${coupon.event_id}/team-invites`, "layout");
   return { success: true };
 }
+
+// ---------------------------------------------------------------------------
+// Re-sync helper — used when event-level or per-member discount changes
+// ---------------------------------------------------------------------------
+
+async function resyncTeamFriendCouponsForScope(scope: {
+  eventId: string;
+  profileId?: string;
+  actorUserId: string;
+}): Promise<{ syncedCount: number; skippedUsedCount: number; errors: string[] }> {
+  const service = getServiceClient();
+  let q = service
+    .from("coupons")
+    .select(
+      "id, code, event_id, max_uses, valid_until, times_used, is_active, stripe_coupon_id, stripe_promotion_code_id, issued_to_profile_id"
+    )
+    .eq("event_id", scope.eventId)
+    .eq("purpose", "team_friend_invite");
+  if (scope.profileId) q = q.eq("issued_to_profile_id", scope.profileId);
+  const { data: coupons } = await q;
+  const rows = coupons ?? [];
+  let syncedCount = 0;
+  let skippedUsedCount = 0;
+  const errors: string[] = [];
+  for (const c of rows) {
+    if ((c.times_used ?? 0) > 0) {
+      // Stripe doesn't allow editing a redeemed coupon and the friend already
+      // paid at the original rate; leave as-is.
+      skippedUsedCount++;
+      continue;
+    }
+    const cfg = await getEffectiveTeamInviteConfig(
+      scope.eventId,
+      c.issued_to_profile_id as string
+    );
+    const dbDiscountType = DISCOUNT_TYPE_DB_MAP[cfg.discountType];
+
+    // Update DB first (cheap), then Stripe (slow).
+    const { error: updErr } = await service
+      .from("coupons")
+      .update({
+        discount_type: dbDiscountType,
+        discount_value: cfg.discountValue,
+      })
+      .eq("id", c.id);
+    if (updErr) {
+      errors.push(`${c.code}: ${updErr.message}`);
+      continue;
+    }
+
+    const synced = await bestEffortSync(
+      () =>
+        syncCouponToStripe({
+          id: c.id,
+          code: c.code,
+          discount_type: dbDiscountType,
+          discount_value: cfg.discountValue,
+          max_uses: c.max_uses,
+          valid_until: c.valid_until,
+          is_active: c.is_active,
+          stripe_coupon_id: c.stripe_coupon_id,
+          stripe_promotion_code_id: c.stripe_promotion_code_id,
+          event_id: c.event_id,
+        }),
+      `resyncTeamFriendCoupon:${c.id}`
+    );
+    if (synced) {
+      await service
+        .from("coupons")
+        .update({
+          stripe_coupon_id: synced.stripe_coupon_id,
+          stripe_promotion_code_id: synced.stripe_promotion_code_id,
+        })
+        .eq("id", c.id);
+      syncedCount++;
+    } else {
+      errors.push(`${c.code}: Stripe sync failed (see logs)`);
+    }
+  }
+  return { syncedCount, skippedUsedCount, errors };
+}
+
+// ---------------------------------------------------------------------------
+// Admin matrix view (everyone's codes per event)
+// ---------------------------------------------------------------------------
 
 export type TeamMemberInviteSummary = {
   profileId: string;
@@ -302,7 +617,10 @@ export type TeamMemberInviteSummary = {
   email: string;
   role: string;
   quota: number;
-  isOverride: boolean;
+  isQuotaOverride: boolean;
+  discountType: EventDiscountType;
+  discountValue: number;
+  isDiscountOverride: boolean;
   issued: number;
   used: number;
   remaining: number;
@@ -323,10 +641,20 @@ export async function listEventTeamInvites(
 
   const { data: event } = await service
     .from("events")
-    .select("team_invite_quota")
+    .select(
+      "team_invite_quota, team_invite_discount_type, team_invite_discount_value"
+    )
     .eq("id", eventId)
     .single();
-  const defaultQuota = event?.team_invite_quota ?? 3;
+  const eventRow = (event ?? {}) as {
+    team_invite_quota?: number | null;
+    team_invite_discount_type?: EventDiscountType | null;
+    team_invite_discount_value?: number | null;
+  };
+  const defaultQuota = eventRow.team_invite_quota ?? 3;
+  const defaultDiscountType: EventDiscountType =
+    eventRow.team_invite_discount_type ?? "percent";
+  const defaultDiscountValue = eventRow.team_invite_discount_value ?? 0;
 
   const { data: profiles } = await supabase
     .from("profiles")
@@ -336,10 +664,24 @@ export async function listEventTeamInvites(
 
   const { data: overrides } = await service
     .from("event_team_member_quota_overrides")
-    .select("profile_id, quota")
+    .select("profile_id, quota, discount_type, discount_value")
     .eq("event_id", eventId);
-  const overrideByProfile = new Map(
-    (overrides ?? []).map((o) => [o.profile_id, o.quota])
+  const overrideByProfile = new Map<
+    string,
+    {
+      quota: number;
+      discountType?: EventDiscountType | null;
+      discountValue?: number | null;
+    }
+  >(
+    (overrides ?? []).map((o) => [
+      o.profile_id,
+      {
+        quota: o.quota,
+        discountType: o.discount_type as EventDiscountType | null,
+        discountValue: o.discount_value as number | null,
+      },
+    ])
   );
 
   const { data: coupons } = await service
@@ -367,7 +709,11 @@ export async function listEventTeamInvites(
   for (const p of profiles ?? []) {
     const { data: authUser } = await service.auth.admin.getUserById(p.id);
     const override = overrideByProfile.get(p.id);
-    const quota = override ?? defaultQuota;
+    const quota = override?.quota ?? defaultQuota;
+    const discountType =
+      override?.discountType ?? defaultDiscountType;
+    const discountValue =
+      override?.discountValue ?? defaultDiscountValue;
     const list = couponsByProfile.get(p.id) ?? [];
     const issued = list.length;
     const used = list.reduce((s, c) => s + c.timesUsed, 0);
@@ -377,7 +723,12 @@ export async function listEventTeamInvites(
       email: authUser.user?.email ?? "",
       role: p.role,
       quota,
-      isOverride: override !== undefined,
+      isQuotaOverride: override !== undefined && override.quota !== defaultQuota,
+      discountType,
+      discountValue,
+      isDiscountOverride:
+        override !== undefined &&
+        (override.discountType != null || override.discountValue != null),
       issued,
       used,
       remaining: Math.max(0, quota - issued),
