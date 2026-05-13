@@ -1,13 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { isAuthorisedCronRequest } from "@dbc/supabase/server";
-import React from "react";
-import {
-  render,
-  createEmailClient,
-  fromAddressFor,
-  PaymentReminderEmail,
-} from "@dbc/email";
+import { sendPaymentReminder } from "@dbc/email";
 
 const TICKETS_URL =
   process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://tickets.dbc-germany.com";
@@ -40,15 +34,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ ok: true, sent: 0, total: 0 });
   }
 
-  const resend = createEmailClient();
-  const from = fromAddressFor("tickets");
   let sent = 0;
-
-  const SUBJECT = {
-    en: "Payment reminder — DBC Germany",
-    de: "Zahlungserinnerung — DBC Germany",
-    fr: "Rappel de paiement — DBC Germany",
-  };
 
   for (const order of orders) {
     try {
@@ -59,24 +45,16 @@ export async function GET(req: Request) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const eventTitle = (order.event as any)?.title_en ?? "Event";
 
-      const totalFormatted = `${order.currency === "EUR" ? "\u20AC" : order.currency}${(order.total_cents / 100).toFixed(2)}`;
+      const totalFormatted = `${order.currency === "EUR" ? "€" : order.currency}${(order.total_cents / 100).toFixed(2)}`;
 
-      const html = await render(
-        React.createElement(PaymentReminderEmail, {
-          recipientName: order.recipient_name || "Customer",
-          eventTitle,
-          orderShortId: order.id.slice(0, 8).toUpperCase(),
-          totalFormatted,
-          orderUrl: `${TICKETS_URL}/${locale}/confirmation/${order.id}`,
-          locale,
-        })
-      );
-
-      await resend.emails.send({
-        from,
+      await sendPaymentReminder({
         to: order.recipient_email,
-        subject: SUBJECT[locale],
-        html,
+        recipientName: order.recipient_name || "Customer",
+        eventTitle,
+        orderShortId: order.id.slice(0, 8).toUpperCase(),
+        totalFormatted,
+        orderUrl: `${TICKETS_URL}/${locale}/confirmation/${order.id}`,
+        locale,
       });
 
       await supabase

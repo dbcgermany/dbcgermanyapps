@@ -18,6 +18,7 @@ import { StaffEmailChangedEmail } from "./templates/staff-email-changed";
 import { StaffPausedEmail } from "./templates/staff-paused";
 import { ChapterDelegateAmbassadorInviteEmail } from "./templates/chapter-delegate-ambassador-invite";
 import { ChapterDelegateTeamMemberInviteEmail } from "./templates/chapter-delegate-team-member-invite";
+import { PaymentReminderEmail } from "./templates/payment-reminder";
 
 type Locale = "en" | "de" | "fr";
 
@@ -663,6 +664,48 @@ export async function sendStaffPaused(input: SendStaffPausedInput) {
     from: transactionalFrom(),
     to: input.to,
     subject: STAFF_PAUSED_SUBJECT[input.state][input.locale],
+    html,
+  });
+  if (res.error) throw new Error(`Resend: ${res.error.message}`);
+  return { id: res.data?.id ?? "" };
+}
+
+// ---------------------------------------------------------------------------
+// Payment Reminder — pending bank_transfer order, 3+ days old
+// ---------------------------------------------------------------------------
+
+export interface SendPaymentReminderInput {
+  to: string;
+  recipientName: string;
+  eventTitle: string;
+  orderShortId: string;
+  totalFormatted: string;
+  orderUrl: string;
+  locale: Locale;
+}
+
+const PAYMENT_REMINDER_SUBJECT = {
+  en: "Payment reminder — DBC Germany",
+  de: "Zahlungserinnerung — DBC Germany",
+  fr: "Rappel de paiement — DBC Germany",
+};
+
+export async function sendPaymentReminder(input: SendPaymentReminderInput) {
+  const html = await render(
+    React.createElement(PaymentReminderEmail, {
+      recipientName: input.recipientName,
+      eventTitle: input.eventTitle,
+      orderShortId: input.orderShortId,
+      totalFormatted: input.totalFormatted,
+      orderUrl: input.orderUrl,
+      locale: input.locale,
+    })
+  );
+  const resend = createEmailClient();
+  const res = await resend.emails.send({
+    from: ticketsFrom(),
+    to: input.to,
+    subject: PAYMENT_REMINDER_SUBJECT[input.locale],
     html,
   });
   if (res.error) throw new Error(`Resend: ${res.error.message}`);

@@ -86,6 +86,7 @@ export const ADMIN_MODULES = [
   "ads",
   "auditLog",
   "devInfo",
+  "emailPreviews",
 ] as const;
 export type AdminModule = (typeof ADMIN_MODULES)[number];
 
@@ -124,6 +125,7 @@ export const PERMISSIONS: Record<
   ads:                   { read: "admin",       create: "admin",      update: "admin",     delete: "admin"      },
   auditLog:              { read: "super_admin", create: null,         update: null,        delete: null         },
   devInfo:               { read: "super_admin", create: null,         update: null,        delete: null         },
+  emailPreviews:         { read: "super_admin", create: "super_admin", update: null,        delete: null         },
 };
 
 /** Returns true when `role` meets the minimum required for this module/action.

@@ -422,6 +422,7 @@
       "contacts": "Contacts",
       "dashboard": "Dashboard",
       "devInfo": "Dev Info",
+      "emailPreviews": "Email previews",
       "doorSale": "Manual Sales",
       "chapterDelegates": "Chapter Delegates",
       "events": "Events",
@@ -900,6 +901,23 @@
       "actionFailedToast": "Action failed: {error}",
       "resyncStripe": "Resync to Stripe",
       "resyncedStripeToast": "Resynced to Stripe"
+    },
+    "emailPreviews": {
+      "title": "Email template previews",
+      "description": "Super-admin only. Sends every transactional / marketing template to a target inbox in the chosen language. Uses fixture data — no production data is read or written.",
+      "targetEmail": "Target inbox",
+      "targetEmailHint": "Where to deliver all preview emails.",
+      "locale": "Language",
+      "send": "Send all templates",
+      "sending": "Sending…",
+      "summary": "{sent} of {total} sent — {failed} failed.",
+      "tableTemplate": "Template",
+      "tableStatus": "Status",
+      "tableError": "Error",
+      "statusSent": "Sent",
+      "statusFailed": "Failed",
+      "successToast": "Previews dispatched.",
+      "failureToast": "Some previews failed — see the table."
     },
     "eventsList": {
       "title": "Events",

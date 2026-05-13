@@ -422,6 +422,7 @@
       "contacts": "Contacts",
       "dashboard": "Tableau de bord",
       "devInfo": "Infos dev",
+      "emailPreviews": "Aperçus e-mail",
       "doorSale": "Ventes manuelles",
       "chapterDelegates": "Délégués d’antenne",
       "events": "Événements",
@@ -900,6 +901,23 @@
       "actionFailedToast": "Action échouée : {error}",
       "resyncStripe": "Resynchroniser avec Stripe",
       "resyncedStripeToast": "Resynchronisé avec Stripe"
+    },
+    "emailPreviews": {
+      "title": "Aperçus des modèles d'e-mail",
+      "description": "Super-admin uniquement. Envoie chaque modèle transactionnel / marketing à une boîte de réception cible dans la langue choisie. Utilise des données fictives — aucune donnée de production n'est lue ni écrite.",
+      "targetEmail": "Boîte de réception cible",
+      "targetEmailHint": "Où livrer tous les e-mails d'aperçu.",
+      "locale": "Langue",
+      "send": "Envoyer tous les modèles",
+      "sending": "Envoi en cours…",
+      "summary": "{sent} sur {total} envoyés — {failed} échecs.",
+      "tableTemplate": "Modèle",
+      "tableStatus": "Statut",
+      "tableError": "Erreur",
+      "statusSent": "Envoyé",
+      "statusFailed": "Échec",
+      "successToast": "Aperçus envoyés.",
+      "failureToast": "Certains aperçus ont échoué — voir le tableau."
     },
     "eventsList": {
       "title": "Événements",

@@ -422,6 +422,7 @@
       "contacts": "Kontakte",
       "dashboard": "Übersicht",
       "devInfo": "Dev-Info",
+      "emailPreviews": "E-Mail-Vorschau",
       "doorSale": "Direktverkauf",
       "chapterDelegates": "Sektions-Delegierte",
       "events": "Veranstaltungen",
@@ -900,6 +901,23 @@
       "actionFailedToast": "Aktion fehlgeschlagen: {error}",
       "resyncStripe": "Mit Stripe neu synchronisieren",
       "resyncedStripeToast": "Mit Stripe synchronisiert"
+    },
+    "emailPreviews": {
+      "title": "E-Mail-Vorlagen-Vorschau",
+      "description": "Nur Super-Admin. Sendet jede transaktionale / Marketing-Vorlage in der gewählten Sprache an einen Empfänger. Verwendet Beispieldaten — keine Produktionsdaten werden gelesen oder geschrieben.",
+      "targetEmail": "Empfänger",
+      "targetEmailHint": "Wohin alle Vorschau-Mails geliefert werden sollen.",
+      "locale": "Sprache",
+      "send": "Alle Vorlagen senden",
+      "sending": "Wird gesendet…",
+      "summary": "{sent} von {total} versendet — {failed} fehlgeschlagen.",
+      "tableTemplate": "Vorlage",
+      "tableStatus": "Status",
+      "tableError": "Fehler",
+      "statusSent": "Versendet",
+      "statusFailed": "Fehlgeschlagen",
+      "successToast": "Vorschauen versendet.",
+      "failureToast": "Einige Vorschauen sind fehlgeschlagen — siehe Tabelle."
     },
     "eventsList": {
       "title": "Veranstaltungen",
