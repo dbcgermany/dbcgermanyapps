@@ -84,7 +84,17 @@ export async function sendAllTemplatePreviews(input: {
   const locale = input.locale;
   const results: PreviewResult[] = [];
 
+  // Resend's free-tier rate limit is 5 req/s. With 30 templates fired back
+  // to back the last few hit "Too many requests". Sleep 250ms between sends
+  // (~4 req/s) to stay safely under the cap. Skip the gap before the first
+  // send so the action's wall-clock latency is roughly 30 × 250ms = 7.5s.
+  let isFirst = true;
+
   async function run(template: string, fn: () => Promise<unknown>) {
+    if (!isFirst) {
+      await new Promise((r) => setTimeout(r, 250));
+    }
+    isFirst = false;
     try {
       await fn();
       results.push({ template, sent: true });
