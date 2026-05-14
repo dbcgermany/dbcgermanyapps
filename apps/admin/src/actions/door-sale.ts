@@ -66,7 +66,11 @@ export async function createDoorSale(formData: FormData) {
   // bought online.
   const firstName = ((formData.get("first_name") as string) || "").trim();
   const lastName = ((formData.get("last_name") as string) || "").trim();
-  const attendeeEmail = ((formData.get("attendee_email") as string) || "")
+  // The SSOT AttendeeIdentityFields molecule (shared with the public checkout)
+  // submits the email under name="email". Reading `attendee_email` from
+  // FormData always returned null, so the "Eine gültige E-Mail-Adresse…"
+  // validation banner fired even when the operator had typed a valid address.
+  const attendeeEmail = ((formData.get("email") as string) || "")
     .trim()
     .toLowerCase();
   const country =
