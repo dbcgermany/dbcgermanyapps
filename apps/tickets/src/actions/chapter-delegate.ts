@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 import { createServerClient, notifyAdmins } from "@dbc/supabase/server";
 import { DBC_CHAPTER_COUNTRY_CODES } from "@dbc/ui";
+import { captureServerError } from "@/lib/observe";
 
 // Honeypot field — bots fill anything labelled "website". Real users never
 // see it. The form on the public site emits an <input name="website"> that
@@ -60,6 +61,33 @@ async function verifyTurnstile(token: string | undefined, ip: string | null) {
 }
 
 export async function submitChapterDelegateRegistration(
+  input: ChapterDelegateInput
+): Promise<{ success?: true; error?: string }> {
+  try {
+    return await submitChapterDelegateRegistrationImpl(input);
+  } catch (err) {
+    // Defensive shell — every prior throw in this action surfaced as
+    // /[locale]/error.tsx ("Something went wrong"), giving the operator
+    // no way to triage and no row landing in admin. Catch every uncaught
+    // exception, capture the real cause to Sentry with the input shape,
+    // and return a structured banner so the form renders inline.
+    captureServerError(err, {
+      scope: "tickets.chapter_delegate.submit",
+      data: {
+        eventSlug: input?.eventSlug ?? null,
+        chapterCountry: input?.chapterCountry ?? null,
+        emailLen: input?.email?.length ?? 0,
+        bringsCompanion: !!input?.bringsCompanion,
+      },
+    });
+    return {
+      error:
+        "We hit an unexpected error saving your registration. Our team has been notified. Please try again, and contact us if it keeps happening.",
+    };
+  }
+}
+
+async function submitChapterDelegateRegistrationImpl(
   input: ChapterDelegateInput
 ): Promise<{ success?: true; error?: string }> {
   // 1. Honeypot — silently succeed so bots think the form worked.
@@ -192,6 +220,10 @@ export async function submitChapterDelegateRegistration(
       "[chapterDelegate] upsert_contact_from_checkout (delegate) failed:",
       delegateContactErr
     );
+    captureServerError(delegateContactErr ?? new Error("upsert_contact_from_checkout returned no id"), {
+      scope: "tickets.chapter_delegate.upsertContact",
+      data: { email, chapter },
+    });
     return { error: "Couldn't save your contact details." };
   }
 
@@ -244,6 +276,14 @@ export async function submitChapterDelegateRegistration(
     .select("id")
     .single();
   if (insertDelegateErr || !delegateInvolvement) {
+    console.error(
+      "[chapterDelegate] contact_event_involvements insert failed:",
+      insertDelegateErr
+    );
+    captureServerError(insertDelegateErr ?? new Error("contact_event_involvements insert returned no row"), {
+      scope: "tickets.chapter_delegate.insertInvolvement",
+      data: { email, chapter, eventId: event.id, delegateContactId },
+    });
     return {
       error:
         "Couldn't save your registration. Please try again or contact us.",
@@ -262,29 +302,39 @@ export async function submitChapterDelegateRegistration(
     });
   }
 
-  // 7. Notify Germany admin.
-  try {
-    await notifyAdmins(supabase, {
-      // Reuses the generic "new_application" notification channel so admins
-      // get a ping in-app + email without us inventing a new notification
-      // type. Body makes the chapter-delegate context explicit.
-      type: "new_application",
-      title: `New chapter delegate: ${firstName} ${lastName} (${chapter})`,
-      body: `Position: ${position}\nEmail: ${email}\nCompanion: ${
-        companionPayload
-          ? `${companionPayload.firstName} ${companionPayload.lastName} <${companionPayload.email}>`
-          : "—"
-      }\nBranch Ambassador: ${leadEmail ?? "—"}\n\nReview at /admin/${input.locale}/chapter-delegates`,
-      data: {
-        kind: "chapter_delegate_pending",
-        involvement_id: delegateInvolvement.id,
-        event_id: event.id,
-        chapter,
-      },
-    });
-  } catch (err) {
-    console.error("[chapter-delegate] notifyAdmins failed:", err);
-  }
+  // 7. Notify Germany admin — fire-and-forget. The row is already saved; if
+  // the notification dispatch throws (Sentry has seen RangeError on this code
+  // path), it must never bubble to the action's return path and block the
+  // success banner. We log + capture, then return success unconditionally.
+  void (async () => {
+    try {
+      await notifyAdmins(supabase, {
+        type: "new_application",
+        title: `New chapter delegate: ${firstName} ${lastName} (${chapter})`,
+        body: `Position: ${position}\nEmail: ${email}\nCompanion: ${
+          companionPayload
+            ? `${companionPayload.firstName} ${companionPayload.lastName} <${companionPayload.email}>`
+            : "—"
+        }\nBranch Ambassador: ${leadEmail ?? "—"}\n\nReview at /admin/${input.locale}/chapter-delegates`,
+        data: {
+          kind: "chapter_delegate_pending",
+          involvement_id: delegateInvolvement.id,
+          event_id: event.id,
+          chapter,
+        },
+      });
+    } catch (err) {
+      console.error("[chapter-delegate] notifyAdmins failed:", err);
+      captureServerError(err, {
+        scope: "tickets.chapter_delegate.notifyAdmins",
+        data: {
+          involvement_id: delegateInvolvement.id,
+          event_id: event.id,
+          chapter,
+        },
+      });
+    }
+  })();
 
   return { success: true };
 }

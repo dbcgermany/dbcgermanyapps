@@ -17,6 +17,7 @@ export const DBC_CHAPTER_COUNTRY_CODES = [
   "SN", // Senegal
   "US", // United States
   "GB", // United Kingdom — added 2026-05-14
+  "NO", // Norway — added 2026-05-15
   "ZA", // South Africa
   "CI", // Ivory Coast
 ] as const;
