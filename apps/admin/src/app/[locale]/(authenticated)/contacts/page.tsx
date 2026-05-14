@@ -151,6 +151,11 @@ async function ContactsTabContent({
     role,
     pipelineStatus,
     marketingOnly: sp.marketing === "1",
+    // Pure attendees (event_attendees tag only, no other category) live in
+    // the dedicated Attendees tab — hide them here so the Contacts tab stays
+    // focused on sponsors / press / speakers / founders / etc. Sponsors who
+    // also bought a ticket keep showing because they carry another category.
+    excludePureAttendees: true,
   });
 
   return (

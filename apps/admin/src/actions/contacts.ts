@@ -87,6 +87,13 @@ export async function listContacts(filters: {
   role?: InvolvementRole;
   pipelineStatus?: PipelineStatus | "none";
   limit?: number;
+  /**
+   * Hide contacts whose ONLY category tag is `event_attendees`. The Contacts
+   * tab uses this to keep ticket-only buyers out of the main list — they
+   * already have their own Attendees tab. Sponsors/press/speakers who also
+   * happen to have a ticket stay visible because they carry another category.
+   */
+  excludePureAttendees?: boolean;
 } = {}): Promise<ContactListRow[]> {
   const user = await requireRole("manager");
   const supabase = await createServerClient();
@@ -131,16 +138,19 @@ export async function listContacts(filters: {
   // Pipeline filter — scoped to the current user via contact_user_state.
   // "none" means: no row exists yet for this (contact, user) pair.
   let pipelineContactIds: string[] | null = null;
-  let excludeWithStateIds: string[] | null = null;
+  // Unified exclude-set: pipeline "none" sentinel ids + pure-attendee ids.
+  // Merged before the .not("id","in",…) is applied so a single PostgREST
+  // filter covers everything that needs to be hidden.
+  const excludeIdSet = new Set<string>();
   if (filters.pipelineStatus) {
     if (filters.pipelineStatus === "none") {
       const { data: stateRows } = await supabase
         .from("contact_user_state")
         .select("contact_id")
         .eq("user_id", user.userId);
-      excludeWithStateIds = Array.from(
-        new Set((stateRows ?? []).map((r) => r.contact_id as string))
-      );
+      for (const r of stateRows ?? []) {
+        excludeIdSet.add(r.contact_id as string);
+      }
     } else {
       const { data: stateRows } = await supabase
         .from("contact_user_state")
@@ -151,6 +161,40 @@ export async function listContacts(filters: {
         new Set((stateRows ?? []).map((r) => r.contact_id as string))
       );
       if (pipelineContactIds.length === 0) return [];
+    }
+  }
+
+  // Hide contacts whose ONLY category is `event_attendees`. Two cheap
+  // round-trips (~Nattendees * 1 row each) compose a "tagged attendee
+  // AND no other category" anti-join in app code, which keeps the
+  // PostgREST query shape simple and avoids an SQL view.
+  if (filters.excludePureAttendees) {
+    const { data: attendeeCategory } = await supabase
+      .from("contact_categories")
+      .select("id")
+      .eq("slug", "event_attendees")
+      .maybeSingle();
+    if (attendeeCategory) {
+      const { data: attendeeLinks } = await supabase
+        .from("contact_category_links")
+        .select("contact_id")
+        .eq("category_id", attendeeCategory.id);
+      const attendeeIds = Array.from(
+        new Set((attendeeLinks ?? []).map((l) => l.contact_id as string))
+      );
+      if (attendeeIds.length > 0) {
+        const { data: otherLinks } = await supabase
+          .from("contact_category_links")
+          .select("contact_id")
+          .in("contact_id", attendeeIds)
+          .neq("category_id", attendeeCategory.id);
+        const hasOtherCategory = new Set(
+          (otherLinks ?? []).map((l) => l.contact_id as string)
+        );
+        for (const id of attendeeIds) {
+          if (!hasOtherCategory.has(id)) excludeIdSet.add(id);
+        }
+      }
     }
   }
 
@@ -188,11 +232,12 @@ export async function listContacts(filters: {
     .limit(filters.limit ?? 100);
 
   if (idFilter) query = query.in("id", idFilter);
-  if (excludeWithStateIds && excludeWithStateIds.length > 0) {
+  if (excludeIdSet.size > 0) {
+    const excludeIds = Array.from(excludeIdSet);
     query = query.not(
       "id",
       "in",
-      `(${excludeWithStateIds.map((id) => `"${id}"`).join(",")})`
+      `(${excludeIds.map((id) => `"${id}"`).join(",")})`
     );
   }
   if (filters.search && filters.search.trim().length > 0) {
