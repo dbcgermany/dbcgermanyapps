@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { ChapterSelect } from "@dbc/ui";
+import { submitChapterDelegateRegistration } from "@/actions/chapter-delegate";
 
 // window.turnstile is declared globally by checkout-form.tsx; reuse that type.
 
@@ -96,13 +97,52 @@ export function RegisterForm({
   turnstileSiteKey: string | null;
 }) {
   const t = T[locale];
-  const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [bringsCompanion, setBringsCompanion] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const turnstileRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
+
+  // Same hook + submission shape as apps/tickets/.../checkout/.../checkout-form.tsx
+  // — the SSOT pattern for public-facing forms in this app. React 19's
+  // useActionState handles error propagation cleanly so a thrown action
+  // never reaches the route error boundary, and the form action wrapper
+  // routes through Next.js's standard server-action endpoint (no bespoke
+  // /api/... route to maintain in parallel).
+  const [state, formAction, isPending] = useActionState(
+    async (
+      _prev: { success?: true; error?: string } | null,
+      formData: FormData
+    ) => {
+      const result = await submitChapterDelegateRegistration({
+        eventSlug,
+        firstName: (formData.get("first_name") as string) ?? "",
+        lastName: (formData.get("last_name") as string) ?? "",
+        email: (formData.get("email") as string) ?? "",
+        position: (formData.get("position") as string) ?? "",
+        chapterCountry: (formData.get("chapter_country") as string) ?? "",
+        chapterLeadName:
+          (formData.get("chapter_lead_name") as string) || undefined,
+        chapterLeadEmail:
+          (formData.get("chapter_lead_email") as string) || undefined,
+        bringsCompanion,
+        companionFirstName:
+          (formData.get("companion_first_name") as string) || undefined,
+        companionLastName:
+          (formData.get("companion_last_name") as string) || undefined,
+        companionEmail:
+          (formData.get("companion_email") as string) || undefined,
+        consent: formData.get("consent") === "on",
+        locale,
+        honeypot: (formData.get("website") as string) || undefined,
+        turnstileToken: turnstileToken ?? undefined,
+      });
+      if (result.success) setSuccess(true);
+      return result;
+    },
+    null
+  );
+  const error = state?.error ?? null;
 
   // Cloudflare Turnstile widget loader (mirrors checkout-form).
   useEffect(() => {
@@ -136,65 +176,11 @@ export function RegisterForm({
     );
   }
 
-  function handleSubmit(formData: FormData) {
-    setError(null);
-    // POST to a plain JSON API route instead of calling the server action
-    // directly. Server-action IDs are encryption-keyed per-build and a tab
-    // loaded before a deploy will fail with a stale-action error on submit;
-    // a regular fetch has no such coupling and works across deploys.
-    startTransition(async () => {
-      try {
-        const res = await fetch("/api/chapter-delegate/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            eventSlug,
-            firstName: (formData.get("first_name") as string) ?? "",
-            lastName: (formData.get("last_name") as string) ?? "",
-            email: (formData.get("email") as string) ?? "",
-            position: (formData.get("position") as string) ?? "",
-            chapterCountry: (formData.get("chapter_country") as string) ?? "",
-            chapterLeadName:
-              (formData.get("chapter_lead_name") as string) || undefined,
-            chapterLeadEmail:
-              (formData.get("chapter_lead_email") as string) || undefined,
-            bringsCompanion,
-            companionFirstName:
-              (formData.get("companion_first_name") as string) || undefined,
-            companionLastName:
-              (formData.get("companion_last_name") as string) || undefined,
-            companionEmail:
-              (formData.get("companion_email") as string) || undefined,
-            consent: formData.get("consent") === "on",
-            locale,
-            honeypot: (formData.get("website") as string) || undefined,
-            turnstileToken: turnstileToken ?? undefined,
-          }),
-        });
-        const data = (await res.json().catch(() => ({}))) as {
-          success?: true;
-          error?: string;
-        };
-        if (data.error) setError(data.error);
-        else if (data.success) setSuccess(true);
-        else
-          setError(
-            "Unexpected response from the server. Please try again or contact us."
-          );
-      } catch (err) {
-        console.error("[chapter-delegate] fetch failed:", err);
-        setError(
-          "Couldn't reach the server. Check your connection and try again."
-        );
-      }
-    });
-  }
-
   const inputClass =
     "w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring";
 
   return (
-    <form action={handleSubmit} className="mt-8 space-y-6">
+    <form action={formAction} className="mt-8 space-y-6">
       {error && (
         <div className="rounded-md border border-danger-border bg-danger-soft/40 p-3 text-sm text-danger">
           {error}

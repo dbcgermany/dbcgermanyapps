@@ -5,13 +5,14 @@ import { createServerClient, notifyAdmins } from "@dbc/supabase/server";
 import { DBC_CHAPTER_COUNTRY_CODES } from "@dbc/ui";
 import { captureServerError } from "@/lib/observe";
 
-// Honeypot field — bots fill anything labelled "website". Real users never
-// see it. The form on the public site emits an <input name="website"> that
-// the action reads as input.honeypot below.
-
-const RATE_WINDOW_SECONDS = 60;
-const RATE_MAX_PER_EMAIL = 3;
-const RATE_MAX_PER_IP = 6;
+// Anti-bot policy for this form: honeypot only. User decision — this is an
+// internal-team registration form, not a high-value target. Rate-limiting
+// against abuse_events (inet column, separate insert path) and Cloudflare
+// Turnstile verification both used to live here and were each one more
+// surface that could throw and break the whole submission for a real
+// branch teammate. The honeypot field below (`<input name="website">`
+// hidden via CSS) catches automated submissions; everything else is a
+// silent drop with no extra round-trips.
 
 const CHAPTER_SET = new Set<string>(DBC_CHAPTER_COUNTRY_CODES);
 
@@ -31,33 +32,13 @@ export interface ChapterDelegateInput {
   consent: boolean;
   locale: string;
   honeypot?: string;
+  /**
+   * Kept on the input shape so the existing client form can still pass it
+   * during the deploy transition; the server intentionally ignores it.
+   * Cloudflare Turnstile is not configured on the tickets Vercel project
+   * (no TURNSTILE_SECRET_KEY), so verifying was always a no-op.
+   */
   turnstileToken?: string;
-}
-
-// Cloudflare Turnstile sitewide verification — same endpoint the checkout
-// uses. Optional: if TURNSTILE_SECRET_KEY isn't configured we skip verify.
-async function verifyTurnstile(token: string | undefined, ip: string | null) {
-  const secret = process.env.TURNSTILE_SECRET_KEY;
-  if (!secret) return true; // dev / unconfigured — let it through
-  if (!token) return false;
-  try {
-    const res = await fetch(
-      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          secret,
-          response: token,
-          ...(ip ? { remoteip: ip } : {}),
-        }),
-      }
-    );
-    const data = (await res.json()) as { success?: boolean };
-    return !!data.success;
-  } catch {
-    return false;
-  }
 }
 
 export async function submitChapterDelegateRegistration(
@@ -150,42 +131,11 @@ async function submitChapterDelegateRegistrationImpl(
     null;
   const ua = hdrs.get("user-agent") ?? null;
 
-  // 2. Turnstile.
-  const turnstileOk = await verifyTurnstile(input.turnstileToken, ipRaw);
-  if (!turnstileOk) {
-    return { error: "Bot check failed. Refresh the page and try again." };
-  }
+  // turnstileToken intentionally not verified server-side — see comment on
+  // ChapterDelegateInput.turnstileToken. Honeypot above is the active defence.
+  void input.turnstileToken;
 
-  // 3. Rate limit (email + IP).
-  const since = new Date(Date.now() - RATE_WINDOW_SECONDS * 1000).toISOString();
-  const { count: emailHits } = await supabase
-    .from("abuse_events")
-    .select("id", { count: "exact", head: true })
-    .eq("scope", "chapter_delegate")
-    .eq("key", email)
-    .gte("occurred_at", since);
-  if ((emailHits ?? 0) >= RATE_MAX_PER_EMAIL) {
-    return {
-      error:
-        "Please wait a minute before submitting another registration with the same email.",
-    };
-  }
-  if (ipRaw) {
-    const { count: ipHits } = await supabase
-      .from("abuse_events")
-      .select("id", { count: "exact", head: true })
-      .eq("scope", "chapter_delegate")
-      .eq("ip", ipRaw)
-      .gte("occurred_at", since);
-    if ((ipHits ?? 0) >= RATE_MAX_PER_IP) {
-      return { error: "Too many requests. Please try again in a minute." };
-    }
-  }
-  await supabase
-    .from("abuse_events")
-    .insert({ scope: "chapter_delegate", key: email, ip: ipRaw });
-
-  // 4. Resolve the event by slug and confirm the program is enabled.
+  // 2. Resolve the event by slug and confirm the program is enabled.
   const { data: event } = await supabase
     .from("events")
     .select(
