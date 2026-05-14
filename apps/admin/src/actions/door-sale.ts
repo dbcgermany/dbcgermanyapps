@@ -3,11 +3,55 @@
 import { createServerClient, notifyAdmins, requireRole } from "@dbc/supabase/server";
 import { CONTACT_CATEGORY } from "@dbc/types";
 import { generateTicketPdf, sendTicketsForOrder } from "@dbc/email";
+import {
+  GENDER_VALUES,
+  TITLE_VALUES,
+  impliedGenderFromTitle,
+  type Gender,
+  type Title,
+} from "@dbc/ui";
 import { captureServerError } from "@/lib/observe";
 import { revalidatePath } from "next/cache";
 
 /** Placeholder addresses synthesised before email was required. */
 const PLACEHOLDER_EMAIL_SUFFIX = "@no-email.local";
+
+/**
+ * Patches optional address fields onto the contact without overwriting any
+ * already-set value (an earlier order or admin edit always wins). Mirrors
+ * `applyOptionalContactFields` in apps/tickets/src/actions/purchase.ts so a
+ * manual sale ends up with the same contact row shape as an online one.
+ */
+async function applyOptionalContactFields(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any,
+  contactId: string | null,
+  incoming: {
+    address_line_1: string | null;
+    address_line_2: string | null;
+    postal_code: string | null;
+    city: string | null;
+  }
+) {
+  if (!contactId) return;
+  if (!Object.values(incoming).some((v) => v !== null)) return;
+
+  const { data: current } = await supabase
+    .from("contacts")
+    .select("address_line_1, address_line_2, postal_code, city")
+    .eq("id", contactId)
+    .single();
+  if (!current) return;
+
+  const patch: Record<string, string> = {};
+  for (const [key, value] of Object.entries(incoming)) {
+    if (value === null) continue;
+    if (current[key as keyof typeof current]) continue;
+    patch[key] = value;
+  }
+  if (Object.keys(patch).length === 0) return;
+  await supabase.from("contacts").update(patch).eq("id", contactId);
+}
 
 export async function createDoorSale(formData: FormData) {
   const user = await requireRole("door_sales");
@@ -15,17 +59,50 @@ export async function createDoorSale(formData: FormData) {
 
   const eventId = formData.get("event_id") as string;
   const tierId = formData.get("tier_id") as string;
-  const rawName = (formData.get("attendee_name") as string) || "";
-  const rawEmail = (formData.get("attendee_email") as string) || "";
-  const attendeeName = rawName.trim();
-  const attendeeEmail = rawEmail.trim().toLowerCase();
+
+  // Required identity fields — match the public checkout 1:1 so the contact
+  // + ticket rows look identical whether the ticket was sold at the door or
+  // bought online.
+  const firstName = ((formData.get("first_name") as string) || "").trim();
+  const lastName = ((formData.get("last_name") as string) || "").trim();
+  const attendeeEmail = ((formData.get("attendee_email") as string) || "")
+    .trim()
+    .toLowerCase();
+  const country =
+    ((formData.get("country") as string) || "").trim().toUpperCase() || null;
+
+  // Optional identity — same SSOT atoms as the new-contact form + public
+  // checkout. Title is constrained to TITLE_VALUES, gender to GENDER_VALUES.
+  const titleRaw = ((formData.get("title") as string) || "").trim();
+  const title = (TITLE_VALUES as readonly string[]).includes(titleRaw)
+    ? (titleRaw as Title)
+    : null;
+  const genderRaw = ((formData.get("gender") as string) || "").trim();
+  const rawGender = (GENDER_VALUES as readonly string[]).includes(genderRaw)
+    ? (genderRaw as Gender)
+    : null;
+  const gender = impliedGenderFromTitle(title) ?? rawGender;
+  const birthday =
+    ((formData.get("birthday") as string) || "").trim() || null;
+  const occupation =
+    ((formData.get("occupation") as string) || "").trim() || null;
+  const addressLine1 =
+    ((formData.get("address_line_1") as string) || "").trim() || null;
+  const addressLine2 =
+    ((formData.get("address_line_2") as string) || "").trim() || null;
+  const postalCode =
+    ((formData.get("postal_code") as string) || "").trim() || null;
+  const city = ((formData.get("city") as string) || "").trim() || null;
+  const phone = ((formData.get("phone") as string) || "").trim() || null;
+
+  const attendeeName = [firstName, lastName].filter(Boolean).join(" ");
   const rawPayment = (formData.get("payment_method") as string) || "cash";
   const paymentMethod = rawPayment === "comp" ? null : rawPayment;
   const isComp = rawPayment === "comp";
   const locale = formData.get("locale") as string;
 
-  if (!attendeeName) {
-    return { error: "Attendee name is required." };
+  if (!firstName || !lastName) {
+    return { error: "First and last name are required." };
   }
   // Email is required so the ticket PDF + QR can actually reach the buyer.
   // Historic behaviour synthesised a `door-sale-<ts>@no-email.local` placeholder
@@ -35,6 +112,9 @@ export async function createDoorSale(formData: FormData) {
       error:
         "A valid attendee email is required so the ticket PDF + QR can be delivered.",
     };
+  }
+  if (!country || !/^[A-Z]{2}$/.test(country)) {
+    return { error: "Country is required (ISO 2-letter code)." };
   }
 
   // Fetch tier to get price and validate availability
@@ -58,21 +138,51 @@ export async function createDoorSale(formData: FormData) {
     return { error: `"${tier.name_en}" is sold out.` };
   }
 
-  // Upsert contact — email is now guaranteed to be real, so every sale
-  // attaches to a contact row (dedupes by email at the RPC layer).
-  const [firstName, ...rest] = attendeeName.split(/\s+/);
-  const lastName = rest.join(" ");
+  // Upsert contact — same RPC + same param shape as the public checkout, so
+  // the contact row this seeds is indistinguishable from one created by an
+  // online buyer (first/last/country/birthday/gender/occupation/locale all
+  // get persisted). Address fields aren't on the RPC signature; patched
+  // below via applyOptionalContactFields without overwriting existing data.
   let contactId: string | null = null;
   const { data: contactIdData } = await supabase.rpc(
     "upsert_contact_from_checkout",
     {
       p_email: attendeeEmail,
       p_first_name: firstName,
-      p_last_name: lastName || null,
+      p_last_name: lastName,
+      p_country: country,
+      p_birthday: birthday,
+      p_gender: gender,
+      p_occupation: occupation,
       p_auto_category_slug: CONTACT_CATEGORY.event_attendees,
+      p_locale: locale,
     }
   );
   contactId = (contactIdData as string | null) ?? null;
+
+  // Patch optional address fields (and phone — same field on contacts).
+  await applyOptionalContactFields(supabase, contactId, {
+    address_line_1: addressLine1,
+    address_line_2: addressLine2,
+    postal_code: postalCode,
+    city,
+  });
+  // Title + phone aren't on the RPC signature; fill them in directly if the
+  // contact didn't already have them. Same "first-write wins" approach as
+  // address fields so an admin edit isn't clobbered by a later door sale.
+  if (contactId && (title || phone)) {
+    const { data: current } = await supabase
+      .from("contacts")
+      .select("title, phone")
+      .eq("id", contactId)
+      .single();
+    const patch: Record<string, string> = {};
+    if (title && !current?.title) patch.title = title;
+    if (phone && !current?.phone) patch.phone = phone;
+    if (Object.keys(patch).length > 0) {
+      await supabase.from("contacts").update(patch).eq("id", contactId);
+    }
+  }
 
   // Create order
   const totalCents = isComp ? 0 : tier.price_cents;
@@ -110,16 +220,20 @@ export async function createDoorSale(formData: FormData) {
     return { error: "Failed to create order." };
   }
 
-  // Create ticket (already paid, ready for immediate entry)
+  // Create ticket — same identity columns the online flow writes, so the
+  // Attendees tab + scanner + email pull from one canonical set of fields.
   const { error: ticketError } = await supabase.from("tickets").insert({
     order_id: order.id,
     event_id: eventId,
     tier_id: tierId,
     contact_id: contactId,
     attendee_name: attendeeName,
-    attendee_first_name: firstName || null,
-    attendee_last_name: lastName || null,
+    attendee_first_name: firstName,
+    attendee_last_name: lastName,
     attendee_email: attendeeEmail,
+    attendee_title: title,
+    attendee_gender: gender,
+    attendee_birthday: birthday,
   });
 
   if (ticketError) {
