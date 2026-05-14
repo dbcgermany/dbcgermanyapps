@@ -2,7 +2,7 @@
 
 import { headers } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
-import { sendTicketsForOrder } from "@/lib/send-tickets-for-order";
+import { sendTicketsForOrder } from "@dbc/email";
 import { captureServerError } from "@/lib/observe";
 
 // Self-service "resend tickets to my email" from the confirmation page.
@@ -78,6 +78,11 @@ export async function resendOrderTickets(
   try {
     const result = await sendTicketsForOrder(supabase, orderId, {
       forceResend: false,
+      onError: (e, ctx) =>
+        captureServerError(e, {
+          scope: "send_tickets_for_order",
+          data: ctx,
+        }),
     });
     return { ok: true, sent: result.sent, skipped: result.skipped };
   } catch (err) {

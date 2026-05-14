@@ -1,5 +1,9 @@
 import { getTranslations } from "next-intl/server";
-import { getDoorSaleEvents, getEventTiers } from "@/actions/door-sale";
+import {
+  getDoorSaleEvents,
+  getEventTiers,
+  listOrdersWithPlaceholderEmail,
+} from "@/actions/door-sale";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
 import { DoorSaleClient } from "./door-sale-client";
@@ -19,6 +23,10 @@ export default async function DoorSalePage({
   const events = await getDoorSaleEvents(mode);
   const selectedEventId = sp.event ?? events[0]?.id ?? null;
   const tiers = selectedEventId ? await getEventTiers(selectedEventId) : [];
+  // Historic door-sale rows whose attendee_email is still the synthesised
+  // `door-sale-<ts>@no-email.local` placeholder from before email was required.
+  // Surfaces a collapsible "fix + resend" UI inside the client component.
+  const placeholderRows = await listOrdersWithPlaceholderEmail();
 
   const emptyMsg =
     mode === "door" ? t("emptyDoor") : t("emptyAdvance");
@@ -68,6 +76,7 @@ export default async function DoorSalePage({
                   ? null
                   : t.max_quantity - t.quantity_sold,
             }))}
+            placeholderRows={placeholderRows}
           />
         )}
       </div>

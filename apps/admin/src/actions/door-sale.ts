@@ -2,8 +2,12 @@
 
 import { createServerClient, notifyAdmins, requireRole } from "@dbc/supabase/server";
 import { CONTACT_CATEGORY } from "@dbc/types";
-import { sendTicketEmail } from "@dbc/email";
+import { generateTicketPdf, sendTicketsForOrder } from "@dbc/email";
+import { captureServerError } from "@/lib/observe";
 import { revalidatePath } from "next/cache";
+
+/** Placeholder addresses synthesised before email was required. */
+const PLACEHOLDER_EMAIL_SUFFIX = "@no-email.local";
 
 export async function createDoorSale(formData: FormData) {
   const user = await requireRole("door_sales");
@@ -14,10 +18,7 @@ export async function createDoorSale(formData: FormData) {
   const rawName = (formData.get("attendee_name") as string) || "";
   const rawEmail = (formData.get("attendee_email") as string) || "";
   const attendeeName = rawName.trim();
-  const hasRealEmail = rawEmail.trim().length > 0 && rawEmail.includes("@");
-  const attendeeEmail = hasRealEmail
-    ? rawEmail.trim().toLowerCase()
-    : `door-sale-${Date.now()}@no-email.local`;
+  const attendeeEmail = rawEmail.trim().toLowerCase();
   const rawPayment = (formData.get("payment_method") as string) || "cash";
   const paymentMethod = rawPayment === "comp" ? null : rawPayment;
   const isComp = rawPayment === "comp";
@@ -25,6 +26,15 @@ export async function createDoorSale(formData: FormData) {
 
   if (!attendeeName) {
     return { error: "Attendee name is required." };
+  }
+  // Email is required so the ticket PDF + QR can actually reach the buyer.
+  // Historic behaviour synthesised a `door-sale-<ts>@no-email.local` placeholder
+  // which silently skipped delivery — never again.
+  if (!attendeeEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(attendeeEmail)) {
+    return {
+      error:
+        "A valid attendee email is required so the ticket PDF + QR can be delivered.",
+    };
   }
 
   // Fetch tier to get price and validate availability
@@ -48,22 +58,21 @@ export async function createDoorSale(formData: FormData) {
     return { error: `"${tier.name_en}" is sold out.` };
   }
 
-  // Upsert contact (only if we have a real email)
+  // Upsert contact — email is now guaranteed to be real, so every sale
+  // attaches to a contact row (dedupes by email at the RPC layer).
   const [firstName, ...rest] = attendeeName.split(/\s+/);
   const lastName = rest.join(" ");
   let contactId: string | null = null;
-  if (hasRealEmail) {
-    const { data: contactIdData } = await supabase.rpc(
-      "upsert_contact_from_checkout",
-      {
-        p_email: attendeeEmail,
-        p_first_name: firstName,
-        p_last_name: lastName || null,
-        p_auto_category_slug: CONTACT_CATEGORY.event_attendees,
-      }
-    );
-    contactId = (contactIdData as string | null) ?? null;
-  }
+  const { data: contactIdData } = await supabase.rpc(
+    "upsert_contact_from_checkout",
+    {
+      p_email: attendeeEmail,
+      p_first_name: firstName,
+      p_last_name: lastName || null,
+      p_auto_category_slug: CONTACT_CATEGORY.event_attendees,
+    }
+  );
+  contactId = (contactIdData as string | null) ?? null;
 
   // Create order
   const totalCents = isComp ? 0 : tier.price_cents;
@@ -138,14 +147,18 @@ export async function createDoorSale(formData: FormData) {
       );
   }
 
-  // Email the PDF immediately (only if we have a real inbox to send to)
-  if (hasRealEmail) {
-    try {
-      await deliverDoorSaleTicket(supabase, order.id, locale);
-    } catch (err) {
-      console.error("Door-sale email delivery failed:", err);
-      // Don't fail the sale — ticket exists, staff can resend from contact profile
-    }
+  // Email the PDF immediately via the SHARED helper that the public Stripe
+  // webhook + free-order flow also call. Same template, same PDF, same QR —
+  // a manually-sold ticket and an online-bought ticket are byte-for-byte
+  // identical to the recipient. Email is required upstream so this always
+  // fires. Failure here doesn't roll back the sale.
+  try {
+    await sendTicketsForOrder(supabase, order.id, {
+      onError: (e, ctx) =>
+        captureServerError(e, { scope: "door_sale_send_ticket", data: ctx }),
+    });
+  } catch (err) {
+    console.error("Door-sale email delivery failed:", err);
   }
 
   // Audit log
@@ -290,23 +303,39 @@ export async function getEventTiers(eventId: string) {
   return data ?? [];
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function deliverDoorSaleTicket(supabase: any, orderId: string, locale: string) {
-  const [{ data: ticket }, { data: event }, { data: companyInfo }] = await Promise.all([
+// Note: ticket delivery (template, PDF, QR, idempotency, message-ID stamp)
+// is the shared @dbc/email `sendTicketsForOrder` helper — same one the
+// online Stripe webhook calls. No admin-local duplicate.
+
+// ---------------------------------------------------------------------------
+// Post-sale "Download PDF" — staff can hand the buyer a printed ticket on the
+// spot while the email is also in flight. Re-renders the same PDF the email
+// path attaches (identical QR code derived from the ticket_token).
+// ---------------------------------------------------------------------------
+export async function downloadDoorSaleTicketPdf(
+  orderId: string,
+  locale: string
+): Promise<
+  { pdfBase64: string; filename: string } | { error: string }
+> {
+  await requireRole("door_sales");
+  const supabase = await createServerClient();
+
+  const [{ data: ticket }, { data: order }, { data: companyInfo }] = await Promise.all([
     supabase
       .from("tickets")
       .select(
         "id, ticket_token, attendee_name, attendee_email, tier:ticket_tiers(name_en, name_de, name_fr)"
       )
       .eq("order_id", orderId)
-      .single(),
+      .maybeSingle(),
     supabase
       .from("orders")
       .select(
         "event:events(title_en, title_de, title_fr, event_type, starts_at, ends_at, venue_name, venue_address, city, timezone), acquisition_type"
       )
       .eq("id", orderId)
-      .single(),
+      .maybeSingle(),
     supabase
       .from("company_info")
       .select(
@@ -316,48 +345,199 @@ async function deliverDoorSaleTicket(supabase: any, orderId: string, locale: str
       .maybeSingle(),
   ]);
 
-  if (!ticket || !event?.event) return;
+  if (!ticket || !order?.event) return { error: "Order or ticket not found." };
 
-  const loc = (locale as "en" | "de" | "fr") || "en";
-  const eventTitle = event.event[`title_${loc}`] || event.event.title_en;
-  const tierName = ticket.tier?.[`name_${loc}`] || ticket.tier?.name_en || "Ticket";
+  // Supabase typed-join still infers FK embeds as arrays in some cases; flatten
+  // to the single row both at the order/event level and the ticket/tier level
+  // before we feed the PDF generator.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const ev: any = Array.isArray(order.event) ? order.event[0] : order.event;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const tr: any = Array.isArray(ticket.tier) ? ticket.tier[0] : ticket.tier;
+
+  const loc = (locale === "de" || locale === "fr" ? locale : "en") as
+    | "en"
+    | "de"
+    | "fr";
+  const eventTitle = ev[`title_${loc}`] || ev.title_en;
+  const tierName = tr?.[`name_${loc}`] || tr?.name_en || "Ticket";
   const legalName = companyInfo
     ? [companyInfo.legal_name, companyInfo.legal_form].filter(Boolean).join(" ")
     : undefined;
 
-  const result = await sendTicketEmail({
+  const buffer = await generateTicketPdf({
     attendeeName: ticket.attendee_name,
     attendeeEmail: ticket.attendee_email,
-    eventTitle,
-    eventType: event.event.event_type,
-    startsAt: new Date(event.event.starts_at),
-    endsAt: new Date(event.event.ends_at),
-    venueName: event.event.venue_name ?? "",
-    venueAddress: event.event.venue_address ?? "",
-    city: event.event.city ?? "",
-    timezone: event.event.timezone,
-    tierName,
+    eventTitle: String(eventTitle),
+    eventType: ev.event_type,
+    startsAt: new Date(ev.starts_at),
+    endsAt: new Date(ev.ends_at),
+    venueName: ev.venue_name ?? "",
+    venueAddress: ev.venue_address ?? "",
+    city: ev.city ?? "",
+    timezone: ev.timezone,
+    tierName: String(tierName),
     ticketToken: ticket.ticket_token,
     locale: loc,
-    orderUrl: `${process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://tickets.dbc-germany.com"}/${loc}/confirmation/${orderId}`,
     brandName: companyInfo?.brand_name ?? undefined,
     legalName,
     supportEmail: companyInfo?.support_email ?? undefined,
     primaryColor: companyInfo?.primary_color ?? undefined,
     logoUrl: companyInfo?.logo_light_url ?? undefined,
-    isInvitation: event.acquisition_type === "invited" || event.acquisition_type === "assigned",
+    isInvitation:
+      order.acquisition_type === "invited" ||
+      order.acquisition_type === "assigned",
   });
 
+  const shortId = ticket.ticket_token.slice(0, 8).toUpperCase();
+  return {
+    pdfBase64: buffer.toString("base64"),
+    filename: `ticket-${shortId}.pdf`,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Backfill — orders whose attendee_email is still the legacy
+// `door-sale-<ts>@no-email.local` placeholder from before email was required.
+// The page surfaces these so staff can fix them one-by-one and trigger a
+// resend instead of leaving paid attendees without a ticket.
+// ---------------------------------------------------------------------------
+export interface PlaceholderOrderRow {
+  order_id: string;
+  ticket_id: string;
+  created_at: string;
+  attendee_name: string;
+  attendee_email: string;
+  event_title: string;
+  event_starts_at: string;
+  tier_name: string;
+}
+
+export async function listOrdersWithPlaceholderEmail(): Promise<
+  PlaceholderOrderRow[]
+> {
+  await requireRole("door_sales");
+  const supabase = await createServerClient();
+
+  const { data } = await supabase
+    .from("tickets")
+    .select(
+      `id, attendee_name, attendee_email, created_at,
+       order:orders!inner(id, acquisition_type),
+       event:events(title_en, starts_at),
+       tier:ticket_tiers(name_en)`
+    )
+    .like("attendee_email", `%${PLACEHOLDER_EMAIL_SUFFIX}`)
+    .order("created_at", { ascending: false })
+    .limit(200);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return ((data ?? []) as any[])
+    .filter((t) => t.order?.acquisition_type === "door_sale")
+    .map((t) => ({
+      order_id: t.order.id,
+      ticket_id: t.id,
+      created_at: t.created_at,
+      attendee_name: t.attendee_name,
+      attendee_email: t.attendee_email,
+      event_title: t.event?.title_en ?? "",
+      event_starts_at: t.event?.starts_at ?? "",
+      tier_name: t.tier?.name_en ?? "Ticket",
+    }));
+}
+
+export async function updateAttendeeEmailAndResend(
+  ticketId: string,
+  newEmail: string,
+  locale: string
+): Promise<{ success: true } | { error: string }> {
+  const user = await requireRole("door_sales");
+  const supabase = await createServerClient();
+
+  const normalized = newEmail.trim().toLowerCase();
+  if (!normalized || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)) {
+    return { error: "Please enter a valid email address." };
+  }
+
+  const { data: ticket, error: ticketError } = await supabase
+    .from("tickets")
+    .select("id, order_id, attendee_name, contact_id, event_id")
+    .eq("id", ticketId)
+    .single();
+  if (ticketError || !ticket) return { error: "Ticket not found." };
+
+  // Update both the ticket and the order so they stay in sync — the email
+  // helper reads ticket.attendee_email, the dashboard reads orders.recipient_email.
   await supabase
     .from("tickets")
-    .update({
-      pdf_url: `sent:${new Date().toISOString()}`,
-      email_message_id: result?.id ?? null,
-    })
-    .eq("id", ticket.id);
+    .update({ attendee_email: normalized })
+    .eq("id", ticketId);
 
   await supabase
     .from("orders")
-    .update({ email_sent_at: new Date().toISOString() })
-    .eq("id", orderId);
+    .update({ recipient_email: normalized })
+    .eq("id", ticket.order_id);
+
+  // Re-attach to a real contact (or merge if one already exists at this address).
+  const nameParts = (ticket.attendee_name ?? "").trim().split(/\s+/);
+  const firstName = nameParts[0] || "";
+  const lastName = nameParts.slice(1).join(" ") || null;
+  const { data: contactIdData } = await supabase.rpc(
+    "upsert_contact_from_checkout",
+    {
+      p_email: normalized,
+      p_first_name: firstName,
+      p_last_name: lastName,
+      p_auto_category_slug: CONTACT_CATEGORY.event_attendees,
+    }
+  );
+  const newContactId = (contactIdData as string | null) ?? null;
+  if (newContactId && newContactId !== ticket.contact_id) {
+    await supabase
+      .from("tickets")
+      .update({ contact_id: newContactId })
+      .eq("id", ticketId);
+    await supabase
+      .from("orders")
+      .update({ contact_id: newContactId })
+      .eq("id", ticket.order_id);
+    if (ticket.event_id) {
+      await supabase
+        .from("contact_event_involvements")
+        .upsert(
+          {
+            contact_id: newContactId,
+            event_id: ticket.event_id,
+            role: "attendee",
+            added_by: user.userId,
+          },
+          { onConflict: "contact_id,event_id,role", ignoreDuplicates: false }
+        );
+    }
+  }
+
+  try {
+    await sendTicketsForOrder(supabase, ticket.order_id, {
+      forceResend: true,
+      onError: (e, ctx) =>
+        captureServerError(e, {
+          scope: "door_sale_email_fix",
+          data: ctx,
+        }),
+    });
+  } catch (err) {
+    console.error("Door-sale resend failed:", err);
+    return { error: "Email could not be sent. Check Resend dashboard." };
+  }
+
+  await supabase.from("audit_log").insert({
+    user_id: user.userId,
+    action: "door_sale_email_fix",
+    entity_type: "tickets",
+    entity_id: ticketId,
+    details: { new_email: normalized, order_id: ticket.order_id },
+  });
+
+  revalidatePath(`/${locale}/door-sale`);
+  return { success: true };
 }

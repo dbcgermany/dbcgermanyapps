@@ -12,6 +12,7 @@ export {
 export type { DomainStatus, DomainCheckResult } from "./domain-check";
 export { sendTicketEmail } from "./send-ticket";
 export type { SendTicketEmailInput } from "./send-ticket";
+export { sendTicketsForOrder } from "./send-tickets-for-order";
 export { generateTicketPdf } from "./pdf/generate-ticket";
 export type { GenerateTicketInput } from "./pdf/generate-ticket";
 export { TicketPdf } from "./pdf/ticket-pdf";

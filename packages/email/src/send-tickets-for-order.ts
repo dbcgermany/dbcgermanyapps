@@ -1,25 +1,42 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
-import { sendTicketEmail } from "@dbc/email";
-import { captureServerError } from "@/lib/observe";
+import { sendTicketEmail } from "./send-ticket";
+
+// Loosely-typed supabase client — both consumers already type their own
+// clients more strictly; we only need the chainable from()/select()/eq()
+// methods here. Avoiding a hard dependency on @supabase/supabase-js keeps
+// the email package self-contained.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SupabaseLike = any;
 
 /**
  * Generates PDF tickets and emails one to each attendee on the order.
+ *
+ * Single source of truth for ticket delivery — both the public checkout
+ * (Stripe webhook, free-order code path) and the admin manual sales
+ * (door + advance) call this. Same email template, same PDF generator,
+ * same QR. Only the originating sale flow differs.
  *
  * Idempotency:
  *   - Per-ticket: each row carries `tickets.email_sent_at`. The loop only
  *     attempts rows where it's NULL (or all rows when forceResend is set).
  *   - Per-order: `orders.email_sent_at` is stamped only after every ticket
  *     has its own stamp. A partial-failure batch leaves order.email_sent_at
- *     NULL so the next caller (Stripe webhook retry, manual resend, cron)
- *     re-enters the loop and only the un-sent rows fire.
+ *     NULL so the next caller (Stripe webhook retry, manual resend, cron,
+ *     admin "Resend") re-enters the loop and only the un-sent rows fire.
  *
- * Designed to be called from the Stripe webhook OR from a free-order code path.
- * Uses a service-role Supabase client (no cookie auth).
+ * Observability is left to the caller — pass `onError` to wire your app's
+ * Sentry / log scope. Returning `failed` counts lets callers react too.
  */
 export async function sendTicketsForOrder(
-  supabase: SupabaseClient,
+  supabase: SupabaseLike,
   orderId: string,
-  options: { forceResend?: boolean; overrideEmail?: string } = {}
+  options: {
+    forceResend?: boolean;
+    overrideEmail?: string;
+    onError?: (
+      err: unknown,
+      ctx: { orderId: string; ticketId: string; eventId: string }
+    ) => void;
+  } = {}
 ): Promise<{ sent: number; skipped: number; failed: number }> {
   // Fetch order
   const { data: order, error: orderError } = await supabase
@@ -70,13 +87,19 @@ export async function sendTicketsForOrder(
   }
 
   // Fetch all tiers in one query
-  const tierIds = [...new Set(tickets.map((t) => t.tier_id))];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const ticketRows = tickets as any[];
+  const tierIds = [...new Set(ticketRows.map((t) => t.tier_id as string))];
   const { data: tiers } = await supabase
     .from("ticket_tiers")
     .select("id, name_en, name_de, name_fr")
     .in("id", tierIds);
 
-  const tierMap = new Map((tiers ?? []).map((t) => [t.id, t]));
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const tierMap = new Map(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ((tiers as any[]) ?? []).map((t: any) => [t.id as string, t])
+  );
 
   // Fetch branding once per batch. Includes the legal/company address +
   // bank details so the invitation letter PDF shows the right "sender"
@@ -105,7 +128,7 @@ export async function sendTicketsForOrder(
   let skipped = 0;
   let failed = 0;
 
-  for (const ticket of tickets) {
+  for (const ticket of ticketRows) {
     // Per-ticket skip when already sent (and not forcing). The legacy
     // `pdf_url: 'sent:<iso>'` sentinel is also honoured so existing rows
     // from before this column existed don't get duplicates on first run
@@ -118,10 +141,10 @@ export async function sendTicketsForOrder(
       continue;
     }
 
-    const tier = tierMap.get(ticket.tier_id);
+    const tier = tierMap.get(ticket.tier_id as string);
     const tierName = tier
       ? ((tier[`name_${locale}` as keyof typeof tier] as string) ||
-        tier.name_en)
+        (tier.name_en as string))
       : "Ticket";
 
     const legalName = companyInfo
@@ -154,14 +177,11 @@ export async function sendTicketsForOrder(
         supportEmail: companyInfo?.support_email ?? undefined,
         primaryColor: companyInfo?.primary_color ?? undefined,
         logoUrl: companyInfo?.logo_light_url ?? undefined,
-        // Sender block — DBC Germany UG registered address (Düsseldorf), NOT
-        // the event venue. Used on the invitation letter PDF.
         senderLine1: companyInfo?.registered_address ?? undefined,
         senderPostalCode: companyInfo?.registered_postal_code ?? undefined,
         senderCity: companyInfo?.registered_city ?? undefined,
         senderCountry: companyInfo?.registered_country ?? undefined,
         senderPhone: companyInfo?.phone ?? undefined,
-        // Bank details (footer block on the invitation letter PDF).
         accountHolder: companyInfo?.account_holder ?? undefined,
         iban: companyInfo?.iban ?? undefined,
         bic: companyInfo?.bic ?? undefined,
@@ -187,22 +207,15 @@ export async function sendTicketsForOrder(
       sent++;
     } catch (err) {
       failed++;
-      captureServerError(err, {
-        scope: "send_tickets_for_order",
-        data: {
-          order_id: orderId,
-          ticket_id: ticket.id,
-          event_id: order.event_id,
-        },
+      options.onError?.(err, {
+        orderId,
+        ticketId: ticket.id,
+        eventId: order.event_id,
       });
-      // ticket.id is enough for forensics; attendee_email kept out of the
-      // log to keep Vercel runtime logs PII-clean. (Sentry already gets the
-      // structured event via captureServerError above with PII scrubbing.)
       console.error(
         `Failed to send ticket ${ticket.id}:`,
         err instanceof Error ? err.message : err
       );
-      // Continue with other tickets — don't fail the whole batch.
     }
   }
 

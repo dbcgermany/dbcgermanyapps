@@ -6,7 +6,7 @@ import { createClient } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
 import { after } from "next/server";
 import type Stripe from "stripe";
-import { sendTicketsForOrder } from "@/lib/send-tickets-for-order";
+import { sendTicketsForOrder } from "@dbc/email";
 import { captureServerError } from "@/lib/observe";
 import {
   filterToActive,
@@ -673,7 +673,13 @@ export async function createCheckoutSession(input: CheckoutInput) {
         process.env.SUPABASE_SERVICE_ROLE_KEY!
       );
       try {
-        await sendTicketsForOrder(serviceClient, orderIdForEmail);
+        await sendTicketsForOrder(serviceClient, orderIdForEmail, {
+          onError: (e, ctx) =>
+            captureServerError(e, {
+              scope: "send_tickets_for_order",
+              data: ctx,
+            }),
+        });
       } catch (err) {
         captureServerError(err, {
           scope: "free_order_send_tickets",

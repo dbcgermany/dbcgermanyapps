@@ -6,9 +6,9 @@ import { notifyAdmins } from "@dbc/supabase/server";
 import {
   sendOrderReceipt,
   sendTeamFriendCodeRedeemed,
+  sendTicketsForOrder,
   resolveRecipientLocale,
 } from "@dbc/email";
-import { sendTicketsForOrder } from "@/lib/send-tickets-for-order";
 import { sendAskSpeakersPromptForOrder } from "@/lib/send-ask-speakers-prompt";
 import { captureServerError } from "@/lib/observe";
 import { getStripe } from "@/lib/stripe";
@@ -303,7 +303,13 @@ export async function POST(request: Request) {
     // sent (Stripe expects 200 within 10s; PDF rendering + batch emails are slow).
     after(async () => {
       try {
-        await sendTicketsForOrder(supabase, orderId);
+        await sendTicketsForOrder(supabase, orderId, {
+          onError: (e, ctx) =>
+            captureServerError(e, {
+              scope: "send_tickets_for_order",
+              data: ctx,
+            }),
+        });
       } catch (err) {
         // Buyer charged + order marked paid but ticket delivery failed —
         // page operators immediately. This is the highest-stakes failure mode.

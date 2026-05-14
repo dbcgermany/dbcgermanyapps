@@ -3,7 +3,13 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button, ConfirmDialog, PhoneInput } from "@dbc/ui";
-import { createDoorSale, voidDoorSale } from "@/actions/door-sale";
+import {
+  createDoorSale,
+  downloadDoorSaleTicketPdf,
+  updateAttendeeEmailAndResend,
+  voidDoorSale,
+  type PlaceholderOrderRow,
+} from "@/actions/door-sale";
 
 interface Tier {
   id: string;
@@ -18,12 +24,14 @@ export function DoorSaleClient({
   events,
   initialEventId,
   initialTiers,
+  placeholderRows,
 }: {
   locale: string;
   mode: "door" | "advance";
   events: { id: string; title: string }[];
   initialEventId: string;
   initialTiers: Tier[];
+  placeholderRows: PlaceholderOrderRow[];
 }) {
   const router = useRouter();
   const [eventId, setEventId] = useState(initialEventId);
@@ -67,6 +75,35 @@ export function DoorSaleClient({
     name: string;
   } | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [downloading, setDownloading] = useState(false);
+
+  async function handleDownloadPdf(orderId: string) {
+    setDownloading(true);
+    try {
+      const res = await downloadDoorSaleTicketPdf(orderId, locale);
+      if ("error" in res) {
+        setResult({ error: res.error });
+        return;
+      }
+      // Build a Blob from the base64 PDF and trigger a download. Standard
+      // browser pattern — no extra deps. Object URL is revoked after click
+      // so we don't leak memory.
+      const bytes = Uint8Array.from(atob(res.pdfBase64), (c) =>
+        c.charCodeAt(0)
+      );
+      const blob = new Blob([bytes], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = res.filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } finally {
+      setDownloading(false);
+    }
+  }
 
   // Persist draft on every change so the next route.push restore picks it up.
   // Cheap (~few writes per keystroke); no debounce needed at this volume.
@@ -134,58 +171,105 @@ export function DoorSaleClient({
       selectEvent: "Event",
       selectTier: "Ticket tier",
       name: "Attendee name",
-      email: "Attendee email (optional)",
+      email: "Attendee email",
+      emailHint:
+        "Required \u2014 the ticket PDF + QR code are emailed here right after the sale.",
       phoneLbl: "Phone (optional)",
       payment: "Payment method",
       cash: "Cash",
       bankTransfer: "Bank transfer",
       comp: "Complimentary",
       create: "Create ticket",
-      success: "Ticket created. Ready for entry.",
+      success: "Ticket created and emailed.",
       creating: "Creating...",
       soldOut: "Sold out",
       remaining: "{n} remaining",
       cashOnlyNote: "Card buyers should scan the online-purchase poster.",
+      downloadPdf: "Download PDF",
+      downloading: "\u2026",
+      placeholderBanner:
+        "{n} historic door-sale ticket(s) still have no real email \u2014 fix below to deliver",
+      placeholderColAttendee: "Attendee",
+      placeholderColEvent: "Event",
+      placeholderColEmail: "New email",
+      placeholderResend: "Send",
+      placeholderSent: "\u2713 Sent",
+      placeholderResendErr: "Failed",
     },
     de: {
       selectEvent: "Veranstaltung",
       selectTier: "Ticketart",
       name: "Name des Teilnehmers",
-      email: "E-Mail des Teilnehmers (optional)",
+      email: "E-Mail des Teilnehmers",
+      emailHint:
+        "Pflicht \u2014 Ticket-PDF + QR-Code gehen direkt nach dem Verkauf an diese Adresse.",
       phoneLbl: "Telefon (optional)",
       payment: "Zahlungsmethode",
       cash: "Bar",
       bankTransfer: "\u00DCberweisung",
       comp: "Kostenlos",
       create: "Ticket erstellen",
-      success: "Ticket erstellt. Bereit f\u00FCr den Einlass.",
+      success: "Ticket erstellt und per E-Mail gesendet.",
       creating: "Wird erstellt...",
       soldOut: "Ausverkauft",
       remaining: "Noch {n}",
       cashOnlyNote: "Kartenzahler sollten den Online-Kaufposter scannen.",
+      downloadPdf: "PDF herunterladen",
+      downloading: "\u2026",
+      placeholderBanner:
+        "{n} historische T\u00FCrticket(s) ohne echte E-Mail \u2014 hier eintragen und neu versenden",
+      placeholderColAttendee: "Teilnehmer",
+      placeholderColEvent: "Veranstaltung",
+      placeholderColEmail: "Neue E-Mail",
+      placeholderResend: "Senden",
+      placeholderSent: "\u2713 Gesendet",
+      placeholderResendErr: "Fehler",
     },
     fr: {
       selectEvent: "\u00C9v\u00E9nement",
       selectTier: "Type de billet",
       name: "Nom du participant",
-      email: "E-mail du participant (optionnel)",
+      email: "E-mail du participant",
+      emailHint:
+        "Obligatoire \u2014 le billet PDF + QR sont envoy\u00E9s \u00E0 cette adresse imm\u00E9diatement.",
       phoneLbl: "T\u00E9l\u00E9phone (optionnel)",
       payment: "Mode de paiement",
       cash: "Esp\u00E8ces",
       bankTransfer: "Virement",
       comp: "Gratuit",
       create: "Cr\u00E9er le billet",
-      success: "Billet cr\u00E9\u00E9. Pr\u00EAt pour l\u2019entr\u00E9e.",
+      success: "Billet cr\u00E9\u00E9 et envoy\u00E9 par e-mail.",
       creating: "Cr\u00E9ation...",
       soldOut: "\u00C9puis\u00E9",
       remaining: "{n} restants",
-      cashOnlyNote: "Les acheteurs par carte doivent scanner l\u2019affiche d\u2019achat en ligne.",
+      cashOnlyNote:
+        "Les acheteurs par carte doivent scanner l\u2019affiche d\u2019achat en ligne.",
+      downloadPdf: "T\u00E9l\u00E9charger le PDF",
+      downloading: "\u2026",
+      placeholderBanner:
+        "{n} billet(s) historique(s) sans vraie e-mail \u2014 saisissez ci-dessous pour renvoyer",
+      placeholderColAttendee: "Participant",
+      placeholderColEvent: "\u00C9v\u00E9nement",
+      placeholderColEmail: "Nouvelle e-mail",
+      placeholderResend: "Envoyer",
+      placeholderSent: "\u2713 Envoy\u00E9",
+      placeholderResendErr: "\u00C9chec",
     },
   }[locale] ?? {
-    selectEvent: "Event", selectTier: "Tier", name: "Name", email: "Email", phoneLbl: "Phone",
+    selectEvent: "Event", selectTier: "Tier", name: "Name", email: "Email",
+    emailHint: "Required.",
+    phoneLbl: "Phone",
     payment: "Payment", cash: "Cash", bankTransfer: "Transfer", comp: "Comp",
     create: "Create", success: "Done", creating: "...", soldOut: "Sold out",
     remaining: "{n} left", cashOnlyNote: "Card buyers scan the poster.",
+    downloadPdf: "Download PDF", downloading: "\u2026",
+    placeholderBanner: "{n} historic tickets need a real email",
+    placeholderColAttendee: "Attendee",
+    placeholderColEvent: "Event",
+    placeholderColEmail: "New email",
+    placeholderResend: "Send",
+    placeholderSent: "\u2713 Sent",
+    placeholderResendErr: "Failed",
   };
 
   return (
@@ -204,23 +288,33 @@ export function DoorSaleClient({
             <span>
               &#x2713; {t.success} &mdash; {lastSale.name}
             </span>
-            <ConfirmDialog
-              trigger={
-                <button
-                  type="button"
-                  disabled={isPending}
-                  className="rounded-md border border-danger-border bg-white px-3 py-1 text-xs font-medium text-danger hover:bg-danger-soft disabled:opacity-50 dark:bg-transparent"
-                >
-                  Undo / Void
-                </button>
-              }
-              title={`Void the ticket for ${lastSale.name}?`}
-              description="This restores inventory + refunds payment if it was a card sale."
-              confirmLabel="Void"
-              cancelLabel="Cancel"
-              variant="danger"
-              onConfirm={handleVoid}
-            />
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => handleDownloadPdf(lastSale.orderId)}
+                disabled={isPending || downloading}
+                className="rounded-md border border-border bg-white px-3 py-1 text-xs font-medium hover:bg-muted disabled:opacity-50 dark:bg-transparent"
+              >
+                {downloading ? t.downloading : t.downloadPdf}
+              </button>
+              <ConfirmDialog
+                trigger={
+                  <button
+                    type="button"
+                    disabled={isPending}
+                    className="rounded-md border border-danger-border bg-white px-3 py-1 text-xs font-medium text-danger hover:bg-danger-soft disabled:opacity-50 dark:bg-transparent"
+                  >
+                    Undo / Void
+                  </button>
+                }
+                title={`Void the ticket for ${lastSale.name}?`}
+                description="This restores inventory + refunds payment if it was a card sale."
+                confirmLabel="Void"
+                cancelLabel="Cancel"
+                variant="danger"
+                onConfirm={handleVoid}
+              />
+            </div>
           </div>
         </div>
       )}
@@ -305,16 +399,20 @@ export function DoorSaleClient({
         />
       </div>
 
-      {/* Email */}
+      {/* Email — required so the ticket PDF + QR actually reach the buyer.
+          Pre-2026-05-15 this was optional and the action silently invented
+          a `door-sale-<ts>@no-email.local` placeholder; never again. */}
       <div>
         <label className="block text-sm font-medium mb-1.5">{t.email}</label>
         <input
           name="attendee_email"
           type="email"
+          required
           value={attendeeEmail}
           onChange={(e) => setAttendeeEmail(e.target.value)}
           className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
         />
+        <p className="mt-1 text-xs text-muted-foreground">{t.emailHint}</p>
       </div>
 
       {/* Phone (advance mode) */}
@@ -365,6 +463,119 @@ export function DoorSaleClient({
         disabled={isPending || !tierId || !attendeeName.trim()}>
         {isPending ? t.creating : t.create}
       </Button>
+
+      {/* Historic placeholder-email rows — collapsible, hidden when empty.
+          Lets staff drop a real address on a pre-fix sale and trigger the
+          delivery their buyer never got. */}
+      {placeholderRows.length > 0 && (
+        <PlaceholderBackfill rows={placeholderRows} locale={locale} t={t} />
+      )}
     </form>
+  );
+}
+
+function PlaceholderBackfill({
+  rows,
+  locale,
+  t,
+}: {
+  rows: PlaceholderOrderRow[];
+  locale: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  t: any;
+}) {
+  const router = useRouter();
+  const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [status, setStatus] = useState<
+    Record<string, "idle" | "sending" | "sent" | "error">
+  >({});
+
+  async function handleResend(ticketId: string) {
+    const newEmail = (drafts[ticketId] ?? "").trim();
+    if (!newEmail) return;
+    setStatus((s) => ({ ...s, [ticketId]: "sending" }));
+    const res = await updateAttendeeEmailAndResend(ticketId, newEmail, locale);
+    if ("success" in res) {
+      setStatus((s) => ({ ...s, [ticketId]: "sent" }));
+      // Refresh so the row drops out of the next render.
+      router.refresh();
+    } else {
+      setStatus((s) => ({ ...s, [ticketId]: "error" }));
+    }
+  }
+
+  return (
+    <details className="mt-8 rounded-md border border-warning-border bg-warning-soft/30 p-4">
+      <summary className="cursor-pointer text-sm font-medium text-warning-strong">
+        {t.placeholderBanner.replace("{n}", String(rows.length))}
+      </summary>
+      <table className="mt-4 min-w-full text-sm">
+        <thead className="text-xs uppercase tracking-wider text-muted-foreground">
+          <tr>
+            <th className="px-2 py-1 text-left">{t.placeholderColAttendee}</th>
+            <th className="px-2 py-1 text-left">{t.placeholderColEvent}</th>
+            <th className="px-2 py-1 text-left">{t.placeholderColEmail}</th>
+            <th className="px-2 py-1 text-right" />
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-border">
+          {rows.map((r) => {
+            const s = status[r.ticket_id] ?? "idle";
+            return (
+              <tr key={r.ticket_id}>
+                <td className="px-2 py-2">
+                  <div className="font-medium">{r.attendee_name}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {r.attendee_email}
+                  </div>
+                </td>
+                <td className="px-2 py-2">
+                  <div>{r.event_title}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {r.tier_name}
+                  </div>
+                </td>
+                <td className="px-2 py-2">
+                  <input
+                    type="email"
+                    value={drafts[r.ticket_id] ?? ""}
+                    onChange={(e) =>
+                      setDrafts((d) => ({
+                        ...d,
+                        [r.ticket_id]: e.target.value,
+                      }))
+                    }
+                    placeholder="buyer@example.com"
+                    className="w-full rounded-md border border-input bg-background px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                </td>
+                <td className="px-2 py-2 text-right">
+                  {s === "sent" ? (
+                    <span className="text-xs text-success">
+                      {t.placeholderSent}
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => handleResend(r.ticket_id)}
+                      disabled={
+                        s === "sending" || !(drafts[r.ticket_id] ?? "").trim()
+                      }
+                      className="rounded-md border border-border bg-white px-3 py-1 text-xs font-medium hover:bg-muted disabled:opacity-50 dark:bg-transparent"
+                    >
+                      {s === "sending"
+                        ? t.downloading
+                        : s === "error"
+                          ? t.placeholderResendErr
+                          : t.placeholderResend}
+                    </button>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </details>
   );
 }

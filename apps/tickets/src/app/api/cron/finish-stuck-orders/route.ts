@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { isAuthorisedCronRequest } from "@dbc/supabase/server";
-import { sendTicketsForOrder } from "@/lib/send-tickets-for-order";
+import { sendTicketsForOrder } from "@dbc/email";
 
 /**
  * P1.5 — Recovery sweeper. The Stripe webhook fires fulfilment inside an
