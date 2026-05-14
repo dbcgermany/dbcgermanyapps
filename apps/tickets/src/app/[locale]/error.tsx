@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import * as Sentry from "@sentry/nextjs";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -17,15 +17,9 @@ import { BrandedError } from "@dbc/ui";
 // matcher never caught, and the user landed on the static error screen.
 //
 // Strategy: treat any production-style numeric digest as recoverable too,
-// gated by a sessionStorage timestamp so we never enter a tight reload loop
-// on a real render bug — but stale-bundle errors that fire HOURS apart (e.g.
-// across two deploys in the same day) DO get a fresh auto-reload each time.
-// Previously stored the flag as "1" forever, which left users stuck on the
-// static error screen after their second stale-action error and they had to
-// clear site data manually.
-const RELOAD_FLAG = "dbc_tickets_error_reloaded_at";
-const RELOAD_GUARD_MS = 60_000; // 60s — short enough to break loops, long
-                                // enough to recover across same-day deploys.
+// gated by a sessionStorage flag so we never enter a reload loop on a real
+// render bug.
+const RELOAD_FLAG = "dbc_tickets_error_reloaded_once";
 
 function isLikelyStaleActionError(err: Error & { digest?: string }): boolean {
   const msg = err.message ?? "";
@@ -54,26 +48,20 @@ export default function LocaleErrorBoundary({
   const t = useTranslations("errors");
   const likelyStale = isLikelyStaleActionError(error);
 
-  // Loop guard: refuse to auto-reload if we already did so in the last
-  // RELOAD_GUARD_MS. Older flags expire so a stale-bundle error fired hours
-  // later still gets a fresh auto-reload. Computed in a useState initializer
-  // so the (impure) Date.now() call runs exactly once on mount, not on every
-  // render — keeps react-hooks/purity lint happy.
-  const [recentlyReloaded] = useState(() => {
-    if (typeof window === "undefined") return false;
-    const raw = window.sessionStorage?.getItem(RELOAD_FLAG);
-    if (!raw) return false;
-    const ts = Number(raw);
-    return Number.isFinite(ts) && Date.now() - ts < RELOAD_GUARD_MS;
-  });
-  const stale = likelyStale && !recentlyReloaded;
+  // Only auto-reload if we haven't already done so this session — prevents an
+  // infinite loop if the digest looks stale but the underlying cause is a
+  // genuine render bug that survives a refresh.
+  const alreadyReloaded =
+    typeof window !== "undefined" &&
+    window.sessionStorage?.getItem(RELOAD_FLAG) === "1";
+  const stale = likelyStale && !alreadyReloaded;
 
   useEffect(() => {
     Sentry.captureException(error);
     console.error("[tickets] route error", error);
     if (!stale) return;
     try {
-      window.sessionStorage?.setItem(RELOAD_FLAG, String(Date.now()));
+      window.sessionStorage?.setItem(RELOAD_FLAG, "1");
     } catch {
       // sessionStorage may be unavailable (private mode, blocked) — proceed
       // with the reload anyway; the worst case is one extra reload on the

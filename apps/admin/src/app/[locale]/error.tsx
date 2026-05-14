@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import * as Sentry from "@sentry/nextjs";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -11,15 +11,9 @@ import { BrandedError } from "@dbc/ui";
 // submits a form from a tab that loaded before the latest deploy.
 // NEXT_SERVER_ACTIONS_ENCRYPTION_KEY is pinned on Vercel but Next 16 can
 // still produce numeric-only digests for action errors that the older
-// named-constant matcher missed.
-//
-// Loop guard: store the LAST reload timestamp (not a boolean) and ignore
-// it after RELOAD_GUARD_MS so a stale-bundle error fired hours later still
-// gets a fresh auto-reload. Older boolean-flag approach left operators
-// stuck on the static error screen after their second stale-action error
-// in the same session.
-const RELOAD_FLAG = "dbc_admin_error_reloaded_at";
-const RELOAD_GUARD_MS = 60_000;
+// named-constant matcher missed. Treat numeric digests as likely stale,
+// guarded by sessionStorage to prevent reload loops on real render bugs.
+const RELOAD_FLAG = "dbc_admin_error_reloaded_once";
 
 function isLikelyStaleActionError(err: Error & { digest?: string }): boolean {
   const msg = err.message ?? "";
@@ -44,23 +38,17 @@ export default function LocaleErrorBoundary({
   const { locale } = useParams<{ locale: string }>();
   const t = useTranslations("errors");
   const likelyStale = isLikelyStaleActionError(error);
-  // useState initializer keeps the (impure) Date.now() call out of the render
-  // path — runs exactly once on mount, lint-clean.
-  const [recentlyReloaded] = useState(() => {
-    if (typeof window === "undefined") return false;
-    const raw = window.sessionStorage?.getItem(RELOAD_FLAG);
-    if (!raw) return false;
-    const ts = Number(raw);
-    return Number.isFinite(ts) && Date.now() - ts < RELOAD_GUARD_MS;
-  });
-  const stale = likelyStale && !recentlyReloaded;
+  const alreadyReloaded =
+    typeof window !== "undefined" &&
+    window.sessionStorage?.getItem(RELOAD_FLAG) === "1";
+  const stale = likelyStale && !alreadyReloaded;
 
   useEffect(() => {
     Sentry.captureException(error);
     console.error("[admin] route error", error);
     if (!stale) return;
     try {
-      window.sessionStorage?.setItem(RELOAD_FLAG, String(Date.now()));
+      window.sessionStorage?.setItem(RELOAD_FLAG, "1");
     } catch {
       // sessionStorage unavailable — proceed with reload anyway.
     }
