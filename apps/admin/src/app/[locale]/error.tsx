@@ -8,19 +8,24 @@ import { BrandedError } from "@dbc/ui";
 
 // Signature of Next's "the client bundle references a server action ID
 // that no longer exists on the server" error. Fires when a visitor
-// submits a form from a tab that loaded before the latest deploy and
-// the build's action-encryption key changed between then and now.
-// With NEXT_SERVER_ACTIONS_ENCRYPTION_KEY pinned on Vercel (see
-// cred/credentials.md) this should be rare, but we still silently
-// reload for any in-flight occurrence.
-function isStaleServerActionError(err: Error & { digest?: string }): boolean {
+// submits a form from a tab that loaded before the latest deploy.
+// NEXT_SERVER_ACTIONS_ENCRYPTION_KEY is pinned on Vercel but Next 16 can
+// still produce numeric-only digests for action errors that the older
+// named-constant matcher missed. Treat numeric digests as likely stale,
+// guarded by sessionStorage to prevent reload loops on real render bugs.
+const RELOAD_FLAG = "dbc_admin_error_reloaded_once";
+
+function isLikelyStaleActionError(err: Error & { digest?: string }): boolean {
   const msg = err.message ?? "";
   if (msg.includes("Server Action") && msg.includes("was not found")) return true;
   const digest = err.digest ?? "";
-  return (
+  if (
     digest.includes("DEPLOYMENT_ID_MISMATCH") ||
     digest.includes("NEXT_ACTION_NOT_FOUND")
-  );
+  ) {
+    return true;
+  }
+  return /^\d{6,}$/.test(digest);
 }
 
 export default function LocaleErrorBoundary({
@@ -32,14 +37,21 @@ export default function LocaleErrorBoundary({
 }) {
   const { locale } = useParams<{ locale: string }>();
   const t = useTranslations("errors");
-  const stale = isStaleServerActionError(error);
+  const likelyStale = isLikelyStaleActionError(error);
+  const alreadyReloaded =
+    typeof window !== "undefined" &&
+    window.sessionStorage?.getItem(RELOAD_FLAG) === "1";
+  const stale = likelyStale && !alreadyReloaded;
 
   useEffect(() => {
-    // Stale-server-action errors are deploy-flips, not real bugs — skip Sentry
-    // to keep the noise floor clean.
-    if (!stale) Sentry.captureException(error);
+    Sentry.captureException(error);
     console.error("[admin] route error", error);
     if (!stale) return;
+    try {
+      window.sessionStorage?.setItem(RELOAD_FLAG, "1");
+    } catch {
+      // sessionStorage unavailable — proceed with reload anyway.
+    }
     // Brief pause so the reload isn't hit in the same tick as the
     // boundary mount (avoids the "stop reloading" heuristics in
     // some browsers).
