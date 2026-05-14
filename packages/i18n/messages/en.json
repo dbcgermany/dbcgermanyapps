@@ -836,6 +836,15 @@
         "advance": "Advance Sale",
         "emptyDoor": "No upcoming events in the next 30 days.",
         "emptyAdvance": "No upcoming events."
+      },
+      "errors": {
+        "nameRequired": "First and last name are required.",
+        "emailRequired": "A valid attendee email is required so the ticket PDF and QR code can be delivered.",
+        "countryRequired": "Country is required (two-letter ISO code).",
+        "tierInvalid": "Invalid ticket tier.",
+        "soldOut": "\"{name}\" is sold out.",
+        "orderCreateFailed": "The order could not be created.",
+        "ticketCreateFailed": "The ticket could not be created."
       }
     },
     "staff": {

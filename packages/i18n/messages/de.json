@@ -836,6 +836,15 @@
         "advance": "Vorverkauf",
         "emptyDoor": "Keine bevorstehenden Veranstaltungen in den nächsten 30 Tagen.",
         "emptyAdvance": "Keine bevorstehenden Veranstaltungen."
+      },
+      "errors": {
+        "nameRequired": "Vor- und Nachname sind erforderlich.",
+        "emailRequired": "Eine gültige E-Mail-Adresse des Teilnehmers ist erforderlich, damit das Ticket-PDF und der QR-Code zugestellt werden können.",
+        "countryRequired": "Das Land ist erforderlich (zweistelliger ISO-Ländercode).",
+        "tierInvalid": "Ungültige Ticketkategorie.",
+        "soldOut": "„{name}\" ist ausverkauft.",
+        "orderCreateFailed": "Die Bestellung konnte nicht angelegt werden.",
+        "ticketCreateFailed": "Das Ticket konnte nicht angelegt werden."
       }
     },
     "staff": {

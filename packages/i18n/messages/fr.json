@@ -836,6 +836,15 @@
         "advance": "Prévente",
         "emptyDoor": "Aucun événement à venir dans les 30 prochains jours.",
         "emptyAdvance": "Aucun événement à venir."
+      },
+      "errors": {
+        "nameRequired": "Le prénom et le nom sont obligatoires.",
+        "emailRequired": "Une adresse e-mail valide du participant est requise pour pouvoir lui transmettre le PDF du billet et le QR code.",
+        "countryRequired": "Le pays est requis (code ISO à deux lettres).",
+        "tierInvalid": "Catégorie de billet invalide.",
+        "soldOut": "« {name} » est épuisé.",
+        "orderCreateFailed": "Impossible de créer la commande.",
+        "ticketCreateFailed": "Impossible de créer le billet."
       }
     },
     "staff": {

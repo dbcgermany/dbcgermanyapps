@@ -11,6 +11,7 @@ import {
   type Title,
 } from "@dbc/ui";
 import { captureServerError } from "@/lib/observe";
+import { getTranslations } from "next-intl/server";
 import { revalidatePath } from "next/cache";
 
 /** Placeholder addresses synthesised before email was required. */
@@ -99,22 +100,28 @@ export async function createDoorSale(formData: FormData) {
   const rawPayment = (formData.get("payment_method") as string) || "cash";
   const paymentMethod = rawPayment === "comp" ? null : rawPayment;
   const isComp = rawPayment === "comp";
-  const locale = formData.get("locale") as string;
+  const locale = (formData.get("locale") as string) || "en";
+
+  // Translations for every operator-visible error string in this action — the
+  // admin runs in DE for most of our operators, so returning hardcoded English
+  // on validation failures broke the bilingual UX. Use locale from the hidden
+  // form input; fall back to "en" if missing.
+  const t = await getTranslations({
+    locale,
+    namespace: "admin.doorSale.errors",
+  });
 
   if (!firstName || !lastName) {
-    return { error: "First and last name are required." };
+    return { error: t("nameRequired") };
   }
   // Email is required so the ticket PDF + QR can actually reach the buyer.
   // Historic behaviour synthesised a `door-sale-<ts>@no-email.local` placeholder
   // which silently skipped delivery — never again.
   if (!attendeeEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(attendeeEmail)) {
-    return {
-      error:
-        "A valid attendee email is required so the ticket PDF + QR can be delivered.",
-    };
+    return { error: t("emailRequired") };
   }
   if (!country || !/^[A-Z]{2}$/.test(country)) {
-    return { error: "Country is required (ISO 2-letter code)." };
+    return { error: t("countryRequired") };
   }
 
   // Fetch tier to get price and validate availability
@@ -125,7 +132,7 @@ export async function createDoorSale(formData: FormData) {
     .single();
 
   if (tierError || !tier || tier.event_id !== eventId) {
-    return { error: "Invalid ticket tier." };
+    return { error: t("tierInvalid") };
   }
 
   // Atomic reservation
@@ -135,7 +142,7 @@ export async function createDoorSale(formData: FormData) {
   });
 
   if (!reserved) {
-    return { error: `"${tier.name_en}" is sold out.` };
+    return { error: t("soldOut", { name: tier.name_en }) };
   }
 
   // Upsert contact — same RPC + same param shape as the public checkout, so
@@ -217,7 +224,7 @@ export async function createDoorSale(formData: FormData) {
       p_tier_id: tierId,
       p_quantity: 1,
     });
-    return { error: "Failed to create order." };
+    return { error: t("orderCreateFailed") };
   }
 
   // Create ticket — same identity columns the online flow writes, so the
@@ -244,7 +251,7 @@ export async function createDoorSale(formData: FormData) {
       p_tier_id: tierId,
       p_quantity: 1,
     });
-    return { error: "Failed to create ticket." };
+    return { error: t("ticketCreateFailed") };
   }
 
   if (contactId) {
