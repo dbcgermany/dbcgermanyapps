@@ -54,10 +54,26 @@ export default async function EventDetailPage({
     notFound();
   }
 
-  const [checklist, liveStats] = await Promise.all([
-    getEventChecklist(id),
-    getLiveEventStats(id),
-  ]);
+  const isExternal = event.event_branch === "other";
+
+  // Ticketing-only data: only fetch when we'll actually render it.
+  const [checklist, liveStats] = isExternal
+    ? [
+        { progress: { done: 0, total: 0, overdue: 0 } },
+        {
+          totalTickets: 0,
+          revenueCents: 0,
+          checkedIn: 0,
+          checkedInPct: 0,
+          revenueByTier: [] as Array<{
+            tier_id: string;
+            tier_name: string;
+            tickets_sold: number;
+            revenue_cents: number;
+          }>,
+        },
+      ]
+    : await Promise.all([getEventChecklist(id), getLiveEventStats(id)]);
   const clPct = checklist.progress.total > 0
     ? Math.round((checklist.progress.done / checklist.progress.total) * 100)
     : 0;
@@ -157,20 +173,35 @@ export default async function EventDetailPage({
           <Badge variant={event.is_published ? "success" : "warning"}>
             {event.is_published ? t("published") : t("draft")}
           </Badge>
-          <span className="text-sm text-muted-foreground capitalize">
-            {event.event_type}
-          </span>
+          {isExternal ? (
+            <Badge variant="accent">{t("externalBranch")}</Badge>
+          ) : (
+            <span className="text-sm text-muted-foreground capitalize">
+              {event.event_type}
+            </span>
+          )}
+          {isExternal && event.external_url && (
+            <a
+              href={event.external_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm font-medium text-primary hover:underline"
+            >
+              {t("openExternal")} &#x2197;
+            </a>
+          )}
         </div>
       </div>
 
-      {/* Team-member's own team-friend invite codes for this event.
-          Hidden when the user has no quota / no codes. Admins see THEIR
-          codes here; the all-staff matrix lives at /events/[id]/team-invites. */}
+      {/* Team-member's own team-friend invite codes (ticketing-only). */}
+      {!isExternal && (
       <div className="mt-8">
         <YourInvitesCard eventId={id} />
       </div>
+      )}
 
-      {/* Event KPIs — 4 cards */}
+      {/* Event KPIs — 4 cards (ticketing-only) */}
+      {!isExternal && (
       <div className="mt-8">
         <StatGrid cols={4}>
           <StatCard
@@ -196,8 +227,10 @@ export default async function EventDetailPage({
           />
         </StatGrid>
       </div>
+      )}
 
-      {/* Per-tier sales breakdown — quickly answers "which tier is moving?" */}
+      {/* Per-tier sales breakdown (ticketing-only) */}
+      {!isExternal && (
       <section className="mt-8">
         <h2 className="font-heading text-lg font-semibold">{t("salesByTier")}</h2>
         {liveStats.revenueByTier.length === 0 ? (
@@ -231,6 +264,7 @@ export default async function EventDetailPage({
           </div>
         )}
       </section>
+      )}
 
       {/* Event Info */}
       <div className="mt-8 grid gap-8 lg:grid-cols-2">
@@ -272,6 +306,7 @@ export default async function EventDetailPage({
             </p>
           </section>
 
+          {!isExternal && (
           <section>
             <h2 className="text-sm font-medium text-muted-foreground">
               {t("capacity")}
@@ -283,8 +318,9 @@ export default async function EventDetailPage({
               {t("maxPerOrder", { n: String(event.max_tickets_per_order) })}
             </p>
           </section>
+          )}
 
-          {(ticketProgressPct != null || revenueProgressPct != null) && (
+          {!isExternal && (ticketProgressPct != null || revenueProgressPct != null) && (
             <section>
               <h2 className="text-sm font-medium text-muted-foreground">
                 {t("salesTarget")}
@@ -326,6 +362,7 @@ export default async function EventDetailPage({
             </section>
           )}
 
+          {!isExternal && (
           <section>
             <h2 className="text-sm font-medium text-muted-foreground">
               {t("paymentMethods")}
@@ -338,6 +375,7 @@ export default async function EventDetailPage({
               ))}
             </div>
           </section>
+          )}
         </div>
 
         <div className="space-y-6">
@@ -354,7 +392,9 @@ export default async function EventDetailPage({
 
       {/* Event-page QR — distinct from the per-ticket check-in QR. Encodes
           the public landing URL so people can scan a flyer / poster / slide
-          and land on the event page (where they'll then choose to buy). */}
+          and land on the event page (where they'll then choose to buy).
+          External events don't live on our domain, so the QR is hidden. */}
+      {!isExternal && (
       <section className="mt-8">
         <EventQrCard
           pngDataUrl={publicEventQrPng}
@@ -371,8 +411,10 @@ export default async function EventDetailPage({
           }}
         />
       </section>
+      )}
 
-      {/* Management Hub — all sub-pages grouped */}
+      {/* Management Hub — all sub-pages grouped (ticketing-only) */}
+      {!isExternal && (
       <div className="mt-12 space-y-10 border-t border-border pt-8">
         {/* Setup */}
         <section>
@@ -451,6 +493,7 @@ export default async function EventDetailPage({
           </div>
         </section>
       </div>
+      )}
 
       {/* Danger zone */}
       <div className="mt-12 rounded-lg border border-danger-border p-6">

@@ -1,7 +1,7 @@
 import { createServerClient } from "@dbc/supabase/server";
 
 const EVENT_LIST =
-  "id, slug, title_en, title_de, title_fr, event_type, venue_name, city, starts_at, ends_at, cover_image_url" as const;
+  "id, slug, title_en, title_de, title_fr, event_type, event_branch, external_url, venue_name, city, starts_at, ends_at, cover_image_url" as const;
 
 export async function getUpcomingEvents(limit = 3) {
   const supabase = await createServerClient();

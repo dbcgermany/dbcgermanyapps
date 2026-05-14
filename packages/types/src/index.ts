@@ -147,6 +147,14 @@ export function canDo(
 export const EVENT_TYPE_VALUES = ["conference", "masterclass"] as const;
 export type EventType = (typeof EVENT_TYPE_VALUES)[number];
 
+// Which DBC branch owns an event. DBC Germany events use our admin + checkout
+// stack end-to-end. "Other" branches run their events on their own infra;
+// we surface their cards in our listings but click out to their URL in a
+// new tab. Mirrors the events.event_branch column
+// (supabase/migrations/20260514000001_events_external_branch.sql).
+export const EVENT_BRANCH_VALUES = ["dbc_germany", "other"] as const;
+export type EventBranch = (typeof EVENT_BRANCH_VALUES)[number];
+
 export const EVENT_MEDIA_TYPE_VALUES = ["photo", "video", "link"] as const;
 export type EventMediaType = (typeof EVENT_MEDIA_TYPE_VALUES)[number];
 

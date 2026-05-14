@@ -1,5 +1,6 @@
-import Link from "next/link";
 import { getTranslations } from "next-intl/server";
+import { resolveEventLink } from "@dbc/ui";
+import type { EventBranch } from "@dbc/types";
 import { getPublishedEvents } from "@/lib/queries";
 
 export const revalidate = 60;
@@ -75,6 +76,13 @@ export default async function EventListingPage({
                 startsAt={event.starts_at}
                 cover={event.cover_image_url}
                 cta={t("cta")}
+                externalCta={t("externalCta")}
+                sisterBadge={t("sisterBadge")}
+                eventBranch={
+                  (event.event_branch as EventBranch | undefined) ??
+                  "dbc_germany"
+                }
+                externalUrl={event.external_url ?? null}
               />
             ))}
           </div>
@@ -94,6 +102,10 @@ function EventCard({
   startsAt,
   cover,
   cta,
+  externalCta,
+  sisterBadge,
+  eventBranch,
+  externalUrl,
 }: {
   locale: string;
   slug: string;
@@ -104,6 +116,10 @@ function EventCard({
   startsAt: string;
   cover: string | null;
   cta: string;
+  externalCta: string;
+  sisterBadge: string;
+  eventBranch: EventBranch;
+  externalUrl: string | null;
 }) {
   const dateLabel = new Date(startsAt).toLocaleDateString(locale, {
     month: "short",
@@ -118,12 +134,19 @@ function EventCard({
     minute: "2-digit",
   });
 
+  const link = resolveEventLink(
+    { event_branch: eventBranch, external_url: externalUrl },
+    `/${locale}/events/${slug}`
+  );
+
   return (
-    <Link
-      href={`/${locale}/events/${slug}`}
+    <a
+      href={link.href}
+      target={link.target}
+      rel={link.rel}
       className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl"
     >
-      <div className="relative aspect-[16/9] overflow-hidden">
+      <div className="relative aspect-video overflow-hidden">
         {cover ? (
           /* eslint-disable-next-line @next/next/no-img-element */
           <img
@@ -132,14 +155,11 @@ function EventCard({
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
           />
         ) : (
-          <div className="h-full w-full bg-gradient-to-br from-primary/15 via-background to-accent/15" />
+          <div className="h-full w-full bg-linear-to-br from-primary/15 via-background to-accent/15" />
         )}
         <div className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-background/95 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-primary shadow-sm backdrop-blur">
-          <span
-            aria-hidden
-            className="h-1.5 w-1.5 rounded-full bg-primary"
-          />
-          {eventType}
+          <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-primary" />
+          {link.isExternal ? sisterBadge : eventType}
         </div>
       </div>
 
@@ -149,6 +169,9 @@ function EventCard({
         </p>
         <h3 className="mt-3 font-heading text-xl font-bold leading-snug group-hover:text-primary sm:text-2xl">
           {title}
+          {link.isExternal && (
+            <span aria-hidden className="ml-1 text-primary">&#x2197;</span>
+          )}
         </h3>
         {(venue || city) && (
           <p className="mt-2 text-sm text-muted-foreground">
@@ -158,7 +181,7 @@ function EventCard({
           </p>
         )}
         <div className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
-          {cta}
+          {link.isExternal ? externalCta : cta}
           <span
             aria-hidden
             className="transition-transform group-hover:translate-x-1"
@@ -167,6 +190,6 @@ function EventCard({
           </span>
         </div>
       </div>
-    </Link>
+    </a>
   );
 }

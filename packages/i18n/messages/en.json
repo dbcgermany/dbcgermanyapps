@@ -254,6 +254,8 @@
         "subtitle": "Masterclasses, conferences and meet-ups for founders, investors and operators building the EU ↔ Africa corridor.",
         "noEvents": "No upcoming events at the moment. Check back soon.",
         "cta": "Reserve your seat",
+        "externalCta": "Visit event",
+        "sisterBadge": "Sister event",
         "soldOut": "Sold out"
       },
       "detail": {
@@ -524,6 +526,17 @@
       "edit": "Edit Event",
       "publish": "Publish",
       "unpublish": "Unpublish",
+      "branch": {
+        "label": "Branch",
+        "values": {
+          "dbc_germany": "DBC Germany",
+          "other": "Other DBC branch"
+        }
+      },
+      "externalUrl": {
+        "label": "External event URL",
+        "hint": "Visitors who click the card will open this URL in a new tab. Must start with http:// or https://"
+      },
       "manageTiers": "Manage Tiers",
       "manageCoupons": "Manage Coupons",
       "manageSchedule": "Manage Schedule",
@@ -580,6 +593,8 @@
         "daysAgo": "days ago",
         "day": "day",
         "days": "days",
+        "externalBranch": "Other DBC branch",
+        "openExternal": "Open event page",
         "dateTime": "Date & Time",
         "venue": "Venue",
         "venueNotSet": "Not set",
@@ -2163,7 +2178,8 @@
       "title": "Events that change careers.",
       "subtitle": "Live moments built for founders, investors and the diaspora shaping Africa's economy.",
       "cta": "See all events",
-      "noUpcoming": "Our next public event is being announced soon. Join the list below."
+      "noUpcoming": "Our next public event is being announced soon. Join the list below.",
+      "sisterBadge": "Sister event"
     },
     "testimonials": {
       "eyebrow": "Voices from the network",

@@ -1,7 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
-import { HeroBanner, Reveal } from "@dbc/ui";
+import { HeroBanner, Reveal, resolveEventLink } from "@dbc/ui";
+import type { EventBranch } from "@dbc/types";
 import { getUpcomingEvents } from "@/lib/queries";
 import { getHomeHero } from "@/lib/home-hero";
 import { getFeaturedSiteTestimonials } from "@/lib/site-testimonials";
@@ -313,12 +314,27 @@ export default async function HomePage({
                 const title =
                   (event[titleKey] as string) || event.title_en;
                 const cover = event.cover_image_url ?? DBC.photo.eventFallback;
+                const link = resolveEventLink(
+                  {
+                    event_branch:
+                      (event.event_branch as EventBranch) ?? "dbc_germany",
+                    external_url: event.external_url ?? null,
+                  },
+                  `${ticketsUrl}/${locale}/events/${event.slug}`
+                );
                 return (
                   <Reveal key={event.id} delay={Math.min(i, 5) * 60} className="h-full">
                   <a
-                    href={`${ticketsUrl}/${locale}/events/${event.slug}`}
-                    className="group block h-full overflow-hidden rounded-2xl border border-border bg-background transition-all hover:-translate-y-1 hover:shadow-lg"
+                    href={link.href}
+                    target={link.target}
+                    rel={link.rel}
+                    className="group relative block h-full overflow-hidden rounded-2xl border border-border bg-background transition-all hover:-translate-y-1 hover:shadow-lg"
                   >
+                    {link.isExternal && (
+                      <span className="absolute right-3 top-3 z-10 inline-flex items-center gap-1 rounded-full bg-background/95 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-primary shadow-sm backdrop-blur">
+                        {t("events.sisterBadge")}
+                      </span>
+                    )}
                     <div className="relative aspect-video w-full overflow-hidden">
                       <Image
                         src={cover}
@@ -335,6 +351,9 @@ export default async function HomePage({
                       </p>
                       <h3 className="mt-2 font-heading text-lg font-bold group-hover:text-primary">
                         {title}
+                        {link.isExternal && (
+                          <span aria-hidden className="ml-1 text-primary">&#x2197;</span>
+                        )}
                       </h3>
                       <p className="mt-2 text-sm text-muted-foreground">
                         {new Date(event.starts_at).toLocaleDateString(locale, {

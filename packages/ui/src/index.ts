@@ -1,5 +1,7 @@
 export { cn } from "./utils";
 export { BRAND, BRAND_HEX } from "./brand";
+export { resolveEventLink } from "./event-link";
+export type { EventLinkInput, ResolvedEventLink } from "./event-link";
 export {
   ThemeProvider,
   useTheme,

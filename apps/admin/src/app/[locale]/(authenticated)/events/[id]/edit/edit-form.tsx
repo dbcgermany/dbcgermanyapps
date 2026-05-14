@@ -1,8 +1,14 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { EVENT_TYPE_VALUES, type EventType } from "@dbc/types";
+import { useTranslations } from "next-intl";
+import {
+  EVENT_BRANCH_VALUES,
+  EVENT_TYPE_VALUES,
+  type EventBranch,
+  type EventType,
+} from "@dbc/types";
 import { Button, LinkButton } from "@dbc/ui";
 import { updateEvent } from "@/actions/events";
 import { CoverImageUpload } from "@/components/cover-image-upload";
@@ -102,6 +108,8 @@ type EventRow = {
   max_total_tickets?: number | null;
   ticket_pdf_hero_url?: string | null;
   funnel_brand_accent_hex?: string | null;
+  event_branch?: EventBranch | null;
+  external_url?: string | null;
   tiers?: { id: string; name_en: string; name_de: string | null; price_cents: number; purpose: string | null }[];
 };
 
@@ -119,6 +127,13 @@ export function EditEventForm({
 }) {
   const router = useRouter();
   const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
+  const tBranch = useTranslations("admin.events.branch");
+  const tExternal = useTranslations("admin.events.externalUrl");
+
+  const [branch, setBranch] = useState<EventBranch>(
+    (event.event_branch as EventBranch | null) ?? "dbc_germany"
+  );
+  const isExternal = branch === "other";
 
   const [state, formAction, isPending] = useActionState(
     async (
@@ -147,7 +162,45 @@ export function EditEventForm({
         </div>
       )}
 
-      {/* Event Type */}
+      {/* Branch (DBC Germany vs Other) */}
+      <fieldset className="rounded-md border border-border p-4">
+        <legend className="px-2 text-sm font-medium">{tBranch("label")}</legend>
+        <div className="flex flex-wrap gap-4">
+          {EVENT_BRANCH_VALUES.map((value) => (
+            <label key={value} className="flex items-center gap-2 text-sm">
+              <input
+                type="radio"
+                name="event_branch"
+                value={value}
+                checked={branch === value}
+                onChange={() => setBranch(value)}
+                className="accent-primary"
+              />
+              {tBranch(`values.${value}`)}
+            </label>
+          ))}
+        </div>
+        {isExternal && (
+          <div className="mt-4 space-y-2">
+            <label htmlFor="external_url" className="block text-sm font-medium">
+              {tExternal("label")}
+            </label>
+            <input
+              id="external_url"
+              name="external_url"
+              type="url"
+              required={isExternal}
+              defaultValue={event.external_url ?? ""}
+              placeholder="https://"
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+            <p className="text-xs text-muted-foreground">{tExternal("hint")}</p>
+          </div>
+        )}
+      </fieldset>
+
+      {/* Event Type (DBC Germany only) */}
+      {!isExternal && (
       <fieldset>
         <legend className="text-sm font-medium mb-2">{t.eventType}</legend>
         <div className="flex gap-4">
@@ -168,6 +221,7 @@ export function EditEventForm({
           ))}
         </div>
       </fieldset>
+      )}
 
       {/* URL slug */}
       <div>
@@ -310,8 +364,8 @@ export function EditEventForm({
         </div>
       </div>
 
-      {/* Total capacity is derived from sum of per-tier max_quantity.
-          Shown read-only here; edit it by changing tier limits. */}
+      {/* Capacity + max-per-order — ticketing-only */}
+      {!isExternal && (
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium mb-1">{t.capacity}</label>
@@ -333,8 +387,10 @@ export function EditEventForm({
           />
         </div>
       </div>
+      )}
 
-      {/* Sales targets & feedback */}
+      {/* Sales targets & feedback (ticketing-only) */}
+      {!isExternal && (
       <div className="grid gap-4 sm:grid-cols-3">
         <div>
           <label htmlFor="sales_target_tickets" className="block text-sm font-medium mb-1">
@@ -383,11 +439,14 @@ export function EditEventForm({
           />
         </div>
       </div>
+      )}
 
+      {!isExternal && (
       <PaymentMethodsSelect
         locale={locale}
         initialValues={event.enabled_payment_methods ?? []}
       />
+      )}
 
       <CoverImageUpload initialUrl={event.cover_image_url} />
 
@@ -397,7 +456,8 @@ export function EditEventForm({
         value={event.timezone ?? "Europe/Berlin"}
       />
 
-      {/* Guest program configuration */}
+      {/* Guest program configuration (ticketing-only) */}
+      {!isExternal && (
       <fieldset className="rounded-lg border border-border bg-muted/20 p-4 space-y-4">
         <legend className="px-1 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           Guest program configuration
@@ -528,8 +588,10 @@ export function EditEventForm({
           </label>
         </div>
       </fieldset>
+      )}
 
-      {/* Event settings — operations, policy, email cadence, capacity */}
+      {/* Event settings — operations, policy, email cadence, capacity (ticketing-only) */}
+      {!isExternal && (
       <fieldset className="rounded-lg border border-border bg-muted/20 p-4 space-y-4">
         <legend className="px-1 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
           Event settings
@@ -780,6 +842,7 @@ export function EditEventForm({
           />
         </div>
       </fieldset>
+      )}
 
       <div className="flex gap-3 pt-4">
         <Button type="submit" disabled={isPending}>

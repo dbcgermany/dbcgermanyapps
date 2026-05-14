@@ -7,9 +7,39 @@ import { redirect } from "next/navigation";
 import { slugify, uniqueSlug } from "@/lib/slugify";
 import { pingBoth } from "@/lib/revalidate";
 import {
+  EVENT_BRANCH_VALUES,
   STRIPE_PAYMENT_METHOD_TYPE_VALUES,
+  type EventBranch,
   type StripePaymentMethodType,
 } from "@dbc/types";
+
+// Read the (branch, external_url) pair from FormData and validate the
+// coherence rule that the DB check constraint enforces: dbc_germany events
+// have no external URL; "other" events must have an http(s) URL. Returns
+// the patch fragment or an Error to short-circuit the mutation.
+function readEventBranch(
+  fd: FormData
+): { event_branch: EventBranch; external_url: string | null } | { error: string } {
+  const rawBranch = ((fd.get("event_branch") as string) || "dbc_germany").trim();
+  const branch = (EVENT_BRANCH_VALUES as readonly string[]).includes(rawBranch)
+    ? (rawBranch as EventBranch)
+    : "dbc_germany";
+
+  if (branch === "dbc_germany") {
+    return { event_branch: "dbc_germany", external_url: null };
+  }
+
+  const url = ((fd.get("external_url") as string) || "").trim();
+  if (!url) {
+    return { error: "External URL is required for other-branch events." };
+  }
+  if (!/^https?:\/\/\S+$/.test(url)) {
+    return {
+      error: "External URL must start with http:// or https://.",
+    };
+  }
+  return { event_branch: "other", external_url: url };
+}
 
 // Keep only Stripe-canonical values the SSOT allows. Anything else (a
 // stale 'sepa' instead of 'sepa_debit', a typo, a manually crafted FormData
@@ -48,10 +78,10 @@ function getServiceClient() {
 // SUM(ticket_tiers.max_quantity) per event. See getEventCapacities().
 // ---------------------------------------------------------------------------
 const EVENT_LIST_COLUMNS =
-  "id, slug, title_en, title_de, title_fr, event_type, starts_at, ends_at, is_published, cover_image_url, city" as const;
+  "id, slug, title_en, title_de, title_fr, event_type, event_branch, external_url, starts_at, ends_at, is_published, cover_image_url, city" as const;
 
 const EVENT_DETAIL_COLUMNS =
-  "id, slug, title_en, title_de, title_fr, description_en, description_de, description_fr, event_type, venue_name, venue_address, city, country, timezone, starts_at, ends_at, max_tickets_per_order, enabled_payment_methods, cover_image_url, is_published, feedback_survey_url, sales_target_tickets, sales_target_revenue_cents, created_at, updated_at, team_invite_quota, team_invite_tier_id, team_invite_discount_type, team_invite_discount_value, team_invite_applicable_tier_ids, chapter_delegate_tier_id, chapter_companion_tier_id, team_member_tier_id, chapter_delegate_program_enabled, catering_enabled, delegate_review_notify_email, door_sale_enabled, coupons_enabled, waitlist_enabled, ticket_transfer_enabled, ticket_transfer_cutoff_hours, refund_policy_days, refund_policy_text_de, refund_policy_text_en, refund_policy_text_fr, requires_photo_consent, photo_consent_text_de, photo_consent_text_en, photo_consent_text_fr, aftercare_emails_enabled, check_in_opens_minutes_before, check_in_closes_minutes_after, max_total_tickets, ticket_pdf_hero_url, funnel_brand_accent_hex" as const;
+  "id, slug, title_en, title_de, title_fr, description_en, description_de, description_fr, event_type, event_branch, external_url, venue_name, venue_address, city, country, timezone, starts_at, ends_at, max_tickets_per_order, enabled_payment_methods, cover_image_url, is_published, feedback_survey_url, sales_target_tickets, sales_target_revenue_cents, created_at, updated_at, team_invite_quota, team_invite_tier_id, team_invite_discount_type, team_invite_discount_value, team_invite_applicable_tier_ids, chapter_delegate_tier_id, chapter_companion_tier_id, team_member_tier_id, chapter_delegate_program_enabled, catering_enabled, delegate_review_notify_email, door_sale_enabled, coupons_enabled, waitlist_enabled, ticket_transfer_enabled, ticket_transfer_cutoff_hours, refund_policy_days, refund_policy_text_de, refund_policy_text_en, refund_policy_text_fr, requires_photo_consent, photo_consent_text_de, photo_consent_text_en, photo_consent_text_fr, aftercare_emails_enabled, check_in_opens_minutes_before, check_in_closes_minutes_after, max_total_tickets, ticket_pdf_hero_url, funnel_brand_accent_hex" as const;
 
 // ---------------------------------------------------------------------------
 // Capacity helpers (derived from sum of tier max_quantity per event)
@@ -127,6 +157,10 @@ export async function createEvent(formData: FormData) {
   const supabase = await createServerClient();
   const locale = formData.get("locale") as string;
 
+  const branchPatch = readEventBranch(formData);
+  if ("error" in branchPatch) return { error: branchPatch.error };
+  const isExternal = branchPatch.event_branch === "other";
+
   const titleEn = (formData.get("title_en") as string).trim();
   const manualSlug = ((formData.get("slug") as string) ?? "").trim();
   const base = manualSlug || slugify(titleEn, "event");
@@ -141,7 +175,9 @@ export async function createEvent(formData: FormData) {
     description_en: formData.get("description_en") as string,
     description_de: formData.get("description_de") as string,
     description_fr: formData.get("description_fr") as string,
-    event_type: formData.get("event_type") as string,
+    event_type: (formData.get("event_type") as string) || "conference",
+    event_branch: branchPatch.event_branch,
+    external_url: branchPatch.external_url,
     venue_name: formData.get("venue_name") as string,
     venue_address: formData.get("venue_address") as string,
     city: formData.get("city") as string,
@@ -152,7 +188,8 @@ export async function createEvent(formData: FormData) {
       (formData.get("max_tickets_per_order") as string) || "10",
       10
     ),
-    enabled_payment_methods: readPaymentMethods(formData),
+    // External events don't sell tickets through us — skip payment methods.
+    enabled_payment_methods: isExternal ? [] : readPaymentMethods(formData),
     cover_image_url:
       ((formData.get("cover_image_url") as string) || "").trim() || null,
     is_published: false,
@@ -166,8 +203,9 @@ export async function createEvent(formData: FormData) {
 
   if (error) return { error: error.message };
 
-  // Auto-populate checklist from template
-  try {
+  // Auto-populate checklist from template (DBC Germany events only — for
+  // external branches we don't run the event)
+  if (!isExternal) try {
     const { data: templates } = await supabase
       .from("event_checklist_templates")
       .select("title, category, description, default_offset_days, estimated_cost_cents, sort_order")
@@ -196,8 +234,8 @@ export async function createEvent(formData: FormData) {
     console.error("[createEvent] checklist auto-populate failed:", err);
   }
 
-  // Auto-populate run sheet from template
-  try {
+  // Auto-populate run sheet from template (skip for external events)
+  if (!isExternal) try {
     const { data: rsTemplates } = await supabase
       .from("event_runsheet_templates")
       .select("title, description, responsible_role, default_offset_minutes, default_duration_minutes, location_note, sort_order")
@@ -253,6 +291,10 @@ export async function updateEvent(id: string, formData: FormData) {
   // Optimistic locking: check updated_at hasn't changed
   const expectedUpdatedAt = formData.get("updated_at") as string;
 
+  const branchPatch = readEventBranch(formData);
+  if ("error" in branchPatch) return { error: branchPatch.error };
+  const isExternal = branchPatch.event_branch === "other";
+
   const eventData: Record<string, unknown> = {
     title_en: formData.get("title_en") as string,
     title_de: formData.get("title_de") as string,
@@ -260,7 +302,9 @@ export async function updateEvent(id: string, formData: FormData) {
     description_en: formData.get("description_en") as string,
     description_de: formData.get("description_de") as string,
     description_fr: formData.get("description_fr") as string,
-    event_type: formData.get("event_type") as string,
+    event_type: (formData.get("event_type") as string) || "conference",
+    event_branch: branchPatch.event_branch,
+    external_url: branchPatch.external_url,
     venue_name: formData.get("venue_name") as string,
     venue_address: formData.get("venue_address") as string,
     city: formData.get("city") as string,
@@ -271,7 +315,7 @@ export async function updateEvent(id: string, formData: FormData) {
       formData.get("max_tickets_per_order") as string,
       10
     ),
-    enabled_payment_methods: readPaymentMethods(formData),
+    enabled_payment_methods: isExternal ? [] : readPaymentMethods(formData),
     cover_image_url:
       ((formData.get("cover_image_url") as string) || "").trim() || null,
     feedback_survey_url:
@@ -351,6 +395,33 @@ export async function updateEvent(id: string, formData: FormData) {
       ((formData.get("funnel_brand_accent_hex") as string) || "").trim() ||
       null,
   };
+
+  // For external-branch events we never run ticketing, so zero out every
+  // program / sales / inventory / refund-policy flag. Cover, title, dates,
+  // city stay as the user entered them on the card.
+  if (isExternal) {
+    Object.assign(eventData, {
+      enabled_payment_methods: [],
+      max_tickets_per_order: 0,
+      sales_target_tickets: null,
+      sales_target_revenue_cents: null,
+      team_invite_quota: 0,
+      team_invite_tier_id: null,
+      chapter_delegate_tier_id: null,
+      chapter_companion_tier_id: null,
+      team_member_tier_id: null,
+      chapter_delegate_program_enabled: false,
+      catering_enabled: false,
+      delegate_review_notify_email: null,
+      door_sale_enabled: false,
+      coupons_enabled: false,
+      waitlist_enabled: false,
+      ticket_transfer_enabled: false,
+      requires_photo_consent: false,
+      aftercare_emails_enabled: false,
+      max_total_tickets: null,
+    });
+  }
 
   // Optional: admin can rename the slug. If provided, sanitise + ensure uniqueness.
   const rawSlug = ((formData.get("slug") as string) ?? "").trim();

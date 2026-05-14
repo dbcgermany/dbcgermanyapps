@@ -1,7 +1,7 @@
 import { createServerClient } from "@dbc/supabase/server";
 
 const EVENT_PUBLIC_LIST =
-  "id, slug, title_en, title_de, title_fr, event_type, venue_name, city, starts_at, ends_at, cover_image_url" as const;
+  "id, slug, title_en, title_de, title_fr, event_type, event_branch, external_url, venue_name, city, starts_at, ends_at, cover_image_url" as const;
 
 const EVENT_PUBLIC_DETAIL =
   "id, slug, title_en, title_de, title_fr, description_en, description_de, description_fr, event_type, venue_name, venue_address, city, country, timezone, starts_at, ends_at, max_tickets_per_order, enabled_payment_methods, cover_image_url, seo_title, seo_description, og_image_url, hero_video_url, hero_overlay_image_url, hero_overlay_text_en, hero_overlay_text_de, hero_overlay_text_fr, hero_darkening_strength, funnel_tagline_en, funnel_tagline_de, funnel_tagline_fr, funnel_intro_en, funnel_intro_de, funnel_intro_fr, funnel_closing_en, funnel_closing_de, funnel_closing_fr, scarcity_threshold" as const;

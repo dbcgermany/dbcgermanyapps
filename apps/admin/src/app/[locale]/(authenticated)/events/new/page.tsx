@@ -1,8 +1,14 @@
 "use client";
 
-import { useActionState, use } from "react";
+import { useActionState, useState, use } from "react";
 import { useTranslations } from "next-intl";
-import { DEFAULTS, EVENT_TYPE_VALUES, type EventType } from "@dbc/types";
+import {
+  DEFAULTS,
+  EVENT_BRANCH_VALUES,
+  EVENT_TYPE_VALUES,
+  type EventBranch,
+  type EventType,
+} from "@dbc/types";
 import { Button } from "@dbc/ui";
 import { createEvent } from "@/actions/events";
 import { CoverImageUpload } from "@/components/cover-image-upload";
@@ -16,7 +22,12 @@ export default function NewEventPage({
 }) {
   const { locale } = use(params);
   const t = useTranslations("admin.events.new");
+  const tBranch = useTranslations("admin.events.branch");
+  const tExternal = useTranslations("admin.events.externalUrl");
   const tBack = useTranslations("admin.back");
+
+  const [branch, setBranch] = useState<EventBranch>("dbc_germany");
+  const isExternal = branch === "other";
 
   const [state, formAction, isPending] = useActionState(
     async (_prev: { error: string } | null, formData: FormData) => {
@@ -40,7 +51,51 @@ export default function NewEventPage({
           </div>
         )}
 
-        {/* Event Type */}
+        {/* Branch (DBC Germany vs Other) */}
+        <fieldset className="rounded-md border border-border p-4">
+          <legend className="px-2 text-sm font-medium">
+            {tBranch("label")}
+          </legend>
+          <div className="flex flex-wrap gap-4">
+            {EVENT_BRANCH_VALUES.map((value) => (
+              <label key={value} className="flex items-center gap-2 text-sm">
+                <input
+                  type="radio"
+                  name="event_branch"
+                  value={value}
+                  checked={branch === value}
+                  onChange={() => setBranch(value)}
+                  className="accent-primary"
+                />
+                {tBranch(`values.${value}`)}
+              </label>
+            ))}
+          </div>
+          {isExternal && (
+            <div className="mt-4 space-y-2">
+              <label
+                htmlFor="external_url"
+                className="block text-sm font-medium"
+              >
+                {tExternal("label")}
+              </label>
+              <input
+                id="external_url"
+                name="external_url"
+                type="url"
+                required={isExternal}
+                placeholder="https://"
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+              <p className="text-xs text-muted-foreground">
+                {tExternal("hint")}
+              </p>
+            </div>
+          )}
+        </fieldset>
+
+        {/* Event Type (DBC Germany events only) */}
+        {!isExternal && (
         <fieldset>
           <legend className="text-sm font-medium mb-2">{t("eventType")}</legend>
           <div className="flex gap-4">
@@ -61,6 +116,7 @@ export default function NewEventPage({
             ))}
           </div>
         </fieldset>
+        )}
 
         {/* Titles (trilingual) */}
         <div className="space-y-4">
@@ -178,23 +234,27 @@ export default function NewEventPage({
           </div>
         </div>
 
-        {/* Max tickets per order — total event capacity is derived from
-            the sum of each tier's max_quantity once tiers are added. */}
-        <div>
-          <label htmlFor="max_tickets_per_order" className="block text-sm font-medium mb-1">
-            {t("maxPerOrder")}
-          </label>
-          <input
-            id="max_tickets_per_order"
-            name="max_tickets_per_order"
-            type="number"
-            min="1"
-            defaultValue={String(DEFAULTS.MAX_TICKETS_PER_ORDER)}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        </div>
+        {/* Max tickets per order + payment methods — DBC Germany events only.
+            External events don't run through our checkout. */}
+        {!isExternal && (
+          <>
+            <div>
+              <label htmlFor="max_tickets_per_order" className="block text-sm font-medium mb-1">
+                {t("maxPerOrder")}
+              </label>
+              <input
+                id="max_tickets_per_order"
+                name="max_tickets_per_order"
+                type="number"
+                min="1"
+                defaultValue={String(DEFAULTS.MAX_TICKETS_PER_ORDER)}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+            </div>
 
-        <PaymentMethodsSelect locale={locale} initialValues={[]} />
+            <PaymentMethodsSelect locale={locale} initialValues={[]} />
+          </>
+        )}
 
         <CoverImageUpload />
 

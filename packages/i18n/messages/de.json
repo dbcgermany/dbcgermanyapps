@@ -254,6 +254,8 @@
         "subtitle": "Masterclasses, Konferenzen und Meet-ups für Gründer, Investoren und Operatoren, die den EU ↔ Afrika-Korridor gestalten.",
         "noEvents": "Derzeit keine bevorstehenden Veranstaltungen. Schauen Sie bald wieder vorbei.",
         "cta": "Platz reservieren",
+        "externalCta": "Event besuchen",
+        "sisterBadge": "Schwester-Event",
         "soldOut": "Ausverkauft"
       },
       "detail": {
@@ -524,6 +526,17 @@
       "edit": "Edit Event",
       "publish": "Publish",
       "unpublish": "Unpublish",
+      "branch": {
+        "label": "Niederlassung",
+        "values": {
+          "dbc_germany": "DBC Germany",
+          "other": "Andere DBC-Niederlassung"
+        }
+      },
+      "externalUrl": {
+        "label": "Externe Event-URL",
+        "hint": "Beim Klick auf die Karte wird diese URL in einem neuen Tab geöffnet. Muss mit http:// oder https:// beginnen."
+      },
       "manageTiers": "Manage Tiers",
       "manageCoupons": "Manage Coupons",
       "manageSchedule": "Manage Schedule",
@@ -580,6 +593,8 @@
         "daysAgo": "Tagen her",
         "day": "Tag",
         "days": "Tagen",
+        "externalBranch": "Andere DBC-Niederlassung",
+        "openExternal": "Event-Seite öffnen",
         "dateTime": "Datum & Uhrzeit",
         "venue": "Veranstaltungsort",
         "venueNotSet": "Nicht festgelegt",
@@ -2163,7 +2178,8 @@
       "title": "Events, die Karrieren verändern.",
       "subtitle": "Live-Momente für Gründer, Investoren und die Diaspora, die Afrikas Wirtschaft prägt.",
       "cta": "Alle Veranstaltungen",
-      "noUpcoming": "Unsere nächste Veranstaltung wird bald angekündigt. Tragen Sie sich unten ein."
+      "noUpcoming": "Unsere nächste Veranstaltung wird bald angekündigt. Tragen Sie sich unten ein.",
+      "sisterBadge": "Schwester-Event"
     },
     "testimonials": {
       "eyebrow": "Stimmen aus dem Netzwerk",
