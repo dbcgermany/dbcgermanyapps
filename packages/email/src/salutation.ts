@@ -85,21 +85,22 @@ function germanSalutation(
   name: string,
   lastName: string | null
 ): string {
-  if (gender === "male") {
+  if (gender === "male" && lastName) {
     const titlePart = buildGermanTitlePart(title);
-    return `Sehr geehrter Herr ${titlePart}${name}`;
+    return `Sehr geehrter Herr ${titlePart}${lastName}`;
   }
 
-  if (gender === "female") {
+  if (gender === "female" && lastName) {
     const titlePart = buildGermanTitlePart(title);
-    return `Sehr geehrte Frau ${titlePart}${name}`;
+    return `Sehr geehrte Frau ${titlePart}${lastName}`;
   }
 
-  // diverse / unknown
-  if (lastName || name) {
-    return `Guten Tag ${name}`;
-  }
-  return "Guten Tag";
+  // diverse / unknown gender, or last name missing → strict formal fallback.
+  // First-name salutations are never appropriate for cold outreach to
+  // sponsors, press, or speakers; better to fall back to the German
+  // equivalent of "Dear Sir or Madam".
+  void name;
+  return "Sehr geehrte Damen und Herren";
 }
 
 function buildGermanTitlePart(title: string | null): string {
@@ -120,27 +121,20 @@ function frenchSalutation(
   name: string,
   lastName: string | null
 ): string {
-  if (gender === "male") {
-    if (title === "Dr.") {
-      return lastName ? `Cher Docteur ${name}` : `Cher Docteur`;
-    }
-    if (title === "Prof.") {
-      return lastName ? `Cher Professeur ${name}` : `Cher Professeur`;
-    }
-    return `Cher Monsieur ${name}`;
+  if (gender === "male" && lastName) {
+    if (title === "Dr.") return `Cher Docteur ${lastName}`;
+    if (title === "Prof.") return `Cher Professeur ${lastName}`;
+    return `Cher Monsieur ${lastName}`;
   }
 
-  if (gender === "female") {
-    if (title === "Dr.") {
-      return lastName ? `Chère Docteure ${name}` : `Chère Docteure`;
-    }
-    if (title === "Prof.") {
-      return lastName ? `Chère Professeure ${name}` : `Chère Professeure`;
-    }
-    return `Chère Madame ${name}`;
+  if (gender === "female" && lastName) {
+    if (title === "Dr.") return `Chère Docteure ${lastName}`;
+    if (title === "Prof.") return `Chère Professeure ${lastName}`;
+    return `Chère Madame ${lastName}`;
   }
 
-  // diverse / unknown
+  // diverse / unknown gender, or last name missing
+  void name;
   return "Madame, Monsieur";
 }
 
@@ -155,27 +149,26 @@ function englishSalutation(
   lastName: string | null,
   firstName: string
 ): string {
-  if (gender === "male") {
+  if (gender === "male" && lastName) {
     if (title === "Dr." || title === "Prof.") {
-      return `Dear ${title} ${name}`;
+      return `Dear ${title} ${lastName}`;
     }
-    return `Dear Mr. ${name}`;
+    return `Dear Mr. ${lastName}`;
   }
 
-  if (gender === "female") {
+  if (gender === "female" && lastName) {
     if (title === "Dr." || title === "Prof.") {
-      return `Dear ${title} ${name}`;
+      return `Dear ${title} ${lastName}`;
     }
     if (title === "Mrs.") {
-      return `Dear Mrs. ${name}`;
+      return `Dear Mrs. ${lastName}`;
     }
-    return `Dear Ms. ${name}`;
+    return `Dear Ms. ${lastName}`;
   }
 
-  // diverse / unknown
-  if (firstName) {
-    return `Dear ${firstName}`;
-  }
+  // diverse / unknown gender, or last name missing → strict formal fallback
+  void name;
+  void firstName;
   return "Dear Sir or Madam";
 }
 
