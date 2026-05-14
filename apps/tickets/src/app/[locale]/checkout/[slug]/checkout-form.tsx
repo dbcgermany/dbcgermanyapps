@@ -4,12 +4,11 @@ import { useEffect, useRef, useState, useActionState } from "react";
 import Script from "next/script";
 import { useTranslations } from "next-intl";
 import {
-  CountrySelect,
-  NameFields,
-  TitleGenderFields,
-  BirthdayField,
+  AttendeeIdentityFields,
   TITLE_VALUES,
   GENDER_VALUES,
+  type AttendeeIdentity,
+  type AttendeeIdentityLabels,
   type Gender,
   type Title,
 } from "@dbc/ui";
@@ -143,6 +142,56 @@ export function CheckoutForm({
   };
   // Reference GENDER_VALUES to keep the enum SSOT bundled and tree-shake-proof.
   void GENDER_VALUES;
+
+  // Labels for the SSOT AttendeeIdentityFields molecule — all sourced from
+  // packages/i18n JSON. Same `person.*` set the admin door-sale form passes,
+  // so the two surfaces render identical labels in every locale.
+  const identityLabels: AttendeeIdentityLabels = {
+    firstName: tPerson("firstName"),
+    lastName: tPerson("lastName"),
+    email: tPerson("email"),
+    country: tPerson("country"),
+    countryPlaceholder: tPerson("country"),
+    addOptional: `+ ${tPerson("moreDetails")}`,
+    hideOptional: `− ${tPerson("hideDetails")}`,
+    optionalCaption: tPerson("optionalCaption"),
+    title: tPerson("title"),
+    gender: tPerson("gender"),
+    birthday: tPerson("birthday"),
+    occupation: tPerson("occupation"),
+    streetAddress: tPerson("streetAddress"),
+    addressLine2: tPerson("addressLine2"),
+    postalCode: tPerson("postalCode"),
+    city: tPerson("city"),
+    titleOptions: titleLabels,
+    genderOptions: genderLabels,
+  };
+
+  // Per-attendee setter that swaps in the molecule's full `AttendeeIdentity`
+  // payload while preserving the checkout-only fields (tierId + showOptional).
+  function setAttendeeIdentity(index: number, next: AttendeeIdentity) {
+    setAttendees(
+      attendees.map((a, i) =>
+        i === index
+          ? {
+              ...a,
+              first_name: next.first_name,
+              last_name: next.last_name,
+              email: next.email,
+              country: next.country,
+              title: next.title,
+              gender: next.gender,
+              birthday: next.birthday,
+              occupation: next.occupation,
+              address_line_1: next.address_line_1,
+              address_line_2: next.address_line_2,
+              postal_code: next.postal_code,
+              city: next.city,
+            }
+          : a
+      )
+    );
+  }
 
   // P2.2 — debounced coupon preview. Fires after 400ms of idle typing so
   // users see "invalid" / discount label before submitting the whole form.
@@ -306,28 +355,50 @@ export function CheckoutForm({
 
       {/* Attendees */}
       <div className="space-y-6">
-        {attendees.map((attendee, index) => (
-          <div key={index} className="rounded-lg border border-border p-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium">
-                {locale === "de"
-                  ? `Ticket ${index + 1} von ${attendees.length}`
-                  : locale === "fr"
-                    ? `Billet ${index + 1} sur ${attendees.length}`
-                    : `Ticket ${index + 1} of ${attendees.length}`}
-              </h3>
-              {attendees.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => removeAttendee(index)}
-                  className="text-xs text-danger hover:text-danger/80"
-                >
-                  {tCheckout("removeAttendee")}
-                </button>
-              )}
-            </div>
+        {attendees.map((attendee, index) => {
+          const identity: AttendeeIdentity = {
+            first_name: attendee.first_name,
+            last_name: attendee.last_name,
+            email: attendee.email,
+            country: attendee.country,
+            title: attendee.title,
+            gender: attendee.gender,
+            birthday: attendee.birthday,
+            occupation: attendee.occupation,
+            address_line_1: attendee.address_line_1,
+            address_line_2: attendee.address_line_2,
+            postal_code: attendee.postal_code,
+            city: attendee.city,
+          };
+          const lc = attendee.email.trim().toLowerCase();
+          const dupeCount = lc
+            ? attendees.filter(
+                (a, i) => i !== index && a.email.trim().toLowerCase() === lc
+              ).length
+            : 0;
+          return (
+            <div key={index} className="space-y-4 rounded-lg border border-border p-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-medium">
+                  {tCheckout("ticketNumber", {
+                    number: index + 1,
+                    total: attendees.length,
+                  })}
+                </h3>
+                {attendees.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeAttendee(index)}
+                    className="text-xs text-danger hover:text-danger/80"
+                  >
+                    {tCheckout("removeAttendee")}
+                  </button>
+                )}
+              </div>
 
-            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              {/* Ticket-tier picker — checkout-specific, stays out of the
+                  identity molecule (which is identity-only + shared with
+                  the admin door-sale form). */}
               <div>
                 <label className="block text-xs text-muted-foreground mb-1">
                   {tCheckout("ticketType")}
@@ -341,224 +412,42 @@ export function CheckoutForm({
                 >
                   {tiers.map((tier) => (
                     <option key={tier.id} value={tier.id}>
-                      {tier.name} &mdash; {tier.priceCents === 0 ? tCheckout("free") : `\u20AC${(tier.priceCents / 100).toFixed(2)}`}
+                      {tier.name} &mdash;{" "}
+                      {tier.priceCents === 0
+                        ? tCheckout("free")
+                        : `€${(tier.priceCents / 100).toFixed(2)}`}
                     </option>
                   ))}
                 </select>
               </div>
-              <div>
-                <label className="block text-xs text-muted-foreground mb-1">
-                  {tPerson("country")}
-                </label>
-                <CountrySelect
-                  locale={locale}
-                  value={attendee.country}
-                  required
-                  autoComplete="country"
-                  onChange={(e) =>
-                    updateAttendee(index, "country", e.target.value)
-                  }
-                  placeholder={
-                    locale === "de"
-                      ? "Land ausw\u00e4hlen"
-                      : locale === "fr"
-                        ? "S\u00e9lectionner le pays"
-                        : "Select country"
-                  }
-                />
-              </div>
-            </div>
 
-            <div className="mt-3">
-              <NameFields
-                firstName={attendee.first_name}
-                lastName={attendee.last_name}
-                onFirstNameChange={(v) => updateAttendee(index, "first_name", v)}
-                onLastNameChange={(v) => updateAttendee(index, "last_name", v)}
-                firstNameLabel={tPerson("firstName")}
-                lastNameLabel={tPerson("lastName")}
-                required
-              />
-            </div>
-
-            <div className="mt-3">
-              <label className="block text-xs text-muted-foreground mb-1">
-                {tPerson("email")}
-              </label>
-              <input
-                type="email"
-                required
-                autoComplete="email"
-                value={attendee.email}
-                onChange={(e) =>
-                  updateAttendee(index, "email", e.target.value)
+              {/* SSOT identity block — the same AttendeeIdentityFields molecule
+                  the admin door-sale form uses. Same atoms, same field order,
+                  same labels per locale, same hidden-input names — so an
+                  online purchase and a manual sale produce byte-identical
+                  contacts + tickets.attendee_* rows. */}
+              <AttendeeIdentityFields
+                value={identity}
+                onChange={(next) => setAttendeeIdentity(index, next)}
+                locale={locale}
+                showOptional={attendee.showOptional}
+                onShowOptionalChange={(next) =>
+                  updateAttendee(index, "showOptional", next)
                 }
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                labels={identityLabels}
               />
-              {/* P2.4 — duplicate-email warning. Non-blocking; some attendees
-                  share a household address. Just a heads-up so the buyer
-                  doesn't accidentally route every QR to the same inbox. */}
-              {(() => {
-                const lc = attendee.email.trim().toLowerCase();
-                if (!lc) return null;
-                const dupes = attendees.filter(
-                  (a, i) => i !== index && a.email.trim().toLowerCase() === lc
-                ).length;
-                if (dupes === 0) return null;
-                return (
-                  <p className="mt-1 text-[11px] text-warning">
-                    {locale === "de"
-                      ? "Hinweis: Diese E-Mail wird von mehreren Teilnehmenden geteilt. Alle Tickets werden an dieselbe Adresse gesendet."
-                      : locale === "fr"
-                        ? "Note : cette adresse est partagée par plusieurs participants. Tous les billets seront envoyés à la même adresse."
-                        : "Note: this email is shared across multiple attendees. All tickets will be sent to the same inbox."}
-                  </p>
-                );
-              })()}
-            </div>
 
-            <div className="mt-4">
-              <button
-                type="button"
-                onClick={() =>
-                  updateAttendee(index, "showOptional", !attendee.showOptional)
-                }
-                className="text-xs font-medium text-primary hover:text-primary/80"
-              >
-                {attendee.showOptional ? "− " : "+ "}
-                {tPerson("moreDetails")}
-              </button>
-
-              {attendee.showOptional && (
-                <div className="mt-3 space-y-3">
-                  <p className="text-[11px] leading-snug text-muted-foreground">
-                    {locale === "de"
-                      ? "Optional. Hilft uns, unsere Community besser zu verstehen — keines dieser Felder ist Pflicht."
-                      : locale === "fr"
-                        ? "Facultatif. Nous aide à mieux comprendre notre communauté — aucun de ces champs n'est obligatoire."
-                        : "Optional. Helps us understand our community better — none of these fields are required."}
-                  </p>
-                  <TitleGenderFields
-                    title={attendee.title}
-                    gender={attendee.gender}
-                    onTitleChange={(v) => updateAttendee(index, "title", v)}
-                    onGenderChange={(v) => updateAttendee(index, "gender", v)}
-                    titleLabel={tPerson("title")}
-                    genderLabel={tPerson("gender")}
-                    titleOptionLabels={titleLabels}
-                    genderOptionLabels={genderLabels}
-                  />
-                  <BirthdayField
-                    value={attendee.birthday}
-                    onChange={(iso) =>
-                      updateAttendee(index, "birthday", iso ?? "")
-                    }
-                    label={tPerson("birthday")}
-                  />
-                  <div>
-                    <label className="block text-xs text-muted-foreground mb-1">
-                      {locale === "de"
-                        ? "Beruf / Tätigkeit"
-                        : locale === "fr"
-                          ? "Profession / activité"
-                          : "Occupation"}
-                    </label>
-                    <input
-                      type="text"
-                      autoComplete="organization-title"
-                      value={attendee.occupation}
-                      onChange={(e) =>
-                        updateAttendee(index, "occupation", e.target.value)
-                      }
-                      placeholder={
-                        locale === "de"
-                          ? "z. B. Software-Ingenieur"
-                          : locale === "fr"
-                            ? "p. ex. ingénieur logiciel"
-                            : "e.g. Software engineer"
-                      }
-                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-muted-foreground mb-1">
-                      {locale === "de"
-                        ? "Straße und Hausnummer"
-                        : locale === "fr"
-                          ? "Adresse (ligne 1)"
-                          : "Street address"}
-                    </label>
-                    <input
-                      type="text"
-                      autoComplete="address-line1"
-                      value={attendee.address_line_1}
-                      onChange={(e) =>
-                        updateAttendee(index, "address_line_1", e.target.value)
-                      }
-                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs text-muted-foreground mb-1">
-                      {locale === "de"
-                        ? "Adresszusatz (optional)"
-                        : locale === "fr"
-                          ? "Complément d'adresse"
-                          : "Address line 2"}
-                    </label>
-                    <input
-                      type="text"
-                      autoComplete="address-line2"
-                      value={attendee.address_line_2}
-                      onChange={(e) =>
-                        updateAttendee(index, "address_line_2", e.target.value)
-                      }
-                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                    />
-                  </div>
-                  <div className="grid grid-cols-3 gap-2">
-                    <div className="col-span-1">
-                      <label className="block text-xs text-muted-foreground mb-1">
-                        {locale === "de"
-                          ? "PLZ"
-                          : locale === "fr"
-                            ? "Code postal"
-                            : "Postal code"}
-                      </label>
-                      <input
-                        type="text"
-                        autoComplete="postal-code"
-                        value={attendee.postal_code}
-                        onChange={(e) =>
-                          updateAttendee(index, "postal_code", e.target.value)
-                        }
-                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                      />
-                    </div>
-                    <div className="col-span-2">
-                      <label className="block text-xs text-muted-foreground mb-1">
-                        {locale === "de"
-                          ? "Stadt"
-                          : locale === "fr"
-                            ? "Ville"
-                            : "City"}
-                      </label>
-                      <input
-                        type="text"
-                        autoComplete="address-level2"
-                        value={attendee.city}
-                        onChange={(e) =>
-                          updateAttendee(index, "city", e.target.value)
-                        }
-                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-                      />
-                    </div>
-                  </div>
-                </div>
+              {/* Duplicate-email warning — non-blocking; some attendees share
+                  a household address. Lives outside the molecule because it
+                  needs cross-attendee context. */}
+              {dupeCount > 0 && (
+                <p className="text-[11px] text-warning">
+                  {tCheckout("duplicateEmail")}
+                </p>
               )}
             </div>
-          </div>
-        ))}
+          );
+        })}
 
         {attendees.length < maxPerOrder && (
           <button

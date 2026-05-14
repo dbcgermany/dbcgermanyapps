@@ -48,7 +48,7 @@ export function EventStickyCta({
   scarcityCount?: number | null;
   scarcityLabel?: string;
 }) {
-  const t = useTranslations("tickets.event.detail");
+  const t = useTranslations("tickets.events.funnel");
   const targetIso = deadlineIso ?? eventStartsAt;
 
   const [parts, setParts] = useState<Parts | null>(() => compute(targetIso));

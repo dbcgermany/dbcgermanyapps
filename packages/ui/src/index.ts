@@ -64,6 +64,15 @@ export { DatePicker } from "./date-picker";
 export type { DatePickerProps } from "./date-picker";
 export { AddressFields, EMPTY_ADDRESS } from "./address-fields";
 export type { Address, AddressFieldsProps } from "./address-fields";
+export {
+  AttendeeIdentityFields,
+  EMPTY_ATTENDEE_IDENTITY,
+} from "./attendee-identity-fields";
+export type {
+  AttendeeIdentity,
+  AttendeeIdentityFieldsProps,
+  AttendeeIdentityLabels,
+} from "./attendee-identity-fields";
 export { AssetUpload } from "./asset-upload";
 export type { AssetUploadProps } from "./asset-upload";
 export { HeroBanner } from "./hero-banner";

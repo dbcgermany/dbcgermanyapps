@@ -2,20 +2,16 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
-  AddressFields,
-  BirthdayField,
+  AttendeeIdentityFields,
   Button,
   ConfirmDialog,
-  CountrySelect,
-  EMPTY_ADDRESS,
-  FormField,
-  Input,
-  NameFields,
+  EMPTY_ATTENDEE_IDENTITY,
   PhoneInput,
   TITLE_VALUES,
-  TitleGenderFields,
-  type Address,
+  type AttendeeIdentity,
+  type AttendeeIdentityLabels,
   type Gender,
   type Title,
 } from "@dbc/ui";
@@ -34,6 +30,28 @@ interface Tier {
   remaining: number | null;
 }
 
+type PaymentMethod = "cash" | "sepa" | "comp";
+
+// Persisted draft mirrors the AttendeeIdentity SSOT shape 1:1 so the form
+// always rehydrates the same field set the molecule reads.
+interface DoorSaleDraft {
+  attendee: AttendeeIdentity;
+  phone: string;
+  showOptional: boolean;
+  paymentMethod: PaymentMethod;
+}
+
+const STORAGE_KEY = "doorSaleDraft";
+
+function loadDraft(): Partial<DoorSaleDraft> {
+  if (typeof window === "undefined") return {};
+  try {
+    return JSON.parse(window.sessionStorage.getItem(STORAGE_KEY) ?? "{}");
+  } catch {
+    return {};
+  }
+}
+
 export function DoorSaleClient({
   locale,
   mode,
@@ -50,51 +68,18 @@ export function DoorSaleClient({
   placeholderRows: PlaceholderOrderRow[];
 }) {
   const router = useRouter();
+  const t = useTranslations("admin.doorSale");
+  const tPerson = useTranslations("person");
+
   const [eventId, setEventId] = useState(initialEventId);
   const [tierId, setTierId] = useState(initialTiers[0]?.id ?? "");
-  // Persist form across the router.push() that fires when the operator
+
+  // Persist the form across the router.push() that fires when the operator
   // switches event (it reloads the page so React state would otherwise
-  // reset). sessionStorage survives same-tab navigation; pulled out into
-  // a small helper so we don't crash during SSR (window undefined).
-  const STORAGE_KEY = "doorSaleDraft";
-  // Draft shape mirrors the public checkout's attendee block 1:1 so the
-  // restored form after an event-switch (which does router.push and loses
-  // React state) always picks up the same field set the server expects.
-  const draft =
-    typeof window !== "undefined"
-      ? (() => {
-          try {
-            return JSON.parse(
-              window.sessionStorage.getItem(STORAGE_KEY) ?? "{}"
-            ) as {
-              firstName?: string;
-              lastName?: string;
-              attendeeEmail?: string;
-              country?: string;
-              title?: Title | "";
-              gender?: Gender | "";
-              birthday?: string;
-              occupation?: string;
-              address?: Address;
-              phone?: string;
-              showOptional?: boolean;
-              paymentMethod?: "cash" | "sepa" | "comp";
-            };
-          } catch {
-            return {};
-          }
-        })()
-      : {};
-  const [firstName, setFirstName] = useState(draft.firstName ?? "");
-  const [lastName, setLastName] = useState(draft.lastName ?? "");
-  const [attendeeEmail, setAttendeeEmail] = useState(draft.attendeeEmail ?? "");
-  const [country, setCountry] = useState(draft.country ?? "");
-  const [title, setTitle] = useState<Title | "">(draft.title ?? "");
-  const [gender, setGender] = useState<Gender | "">(draft.gender ?? "");
-  const [birthday, setBirthday] = useState(draft.birthday ?? "");
-  const [occupation, setOccupation] = useState(draft.occupation ?? "");
-  const [address, setAddress] = useState<Address>(
-    draft.address ?? EMPTY_ADDRESS
+  // reset). sessionStorage survives same-tab navigation.
+  const draft = loadDraft();
+  const [attendee, setAttendee] = useState<AttendeeIdentity>(
+    draft.attendee ?? EMPTY_ATTENDEE_IDENTITY
   );
   const [phone, setPhone] = useState(draft.phone ?? "");
   const [showOptional, setShowOptional] = useState(
@@ -102,10 +87,10 @@ export function DoorSaleClient({
   );
   // "cash" + "sepa" are DB payment_method enum values. "comp" is a UX-only
   // pseudo-value the action translates to a NULL payment_method (for comped
-  // tickets). Prior bug: this state used "bank_transfer", which isn't in
-  // the DB enum — any submission with that value failed the insert.
-  const [paymentMethod, setPaymentMethod] =
-    useState<"cash" | "sepa" | "comp">(draft.paymentMethod ?? "cash");
+  // tickets).
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(
+    draft.paymentMethod ?? "cash"
+  );
   const [result, setResult] = useState<{
     error?: string;
     success?: boolean;
@@ -118,6 +103,38 @@ export function DoorSaleClient({
   const [isPending, startTransition] = useTransition();
   const [downloading, setDownloading] = useState(false);
 
+  // Persist draft on every change. Cheap (~few writes per keystroke); no
+  // debounce needed at this volume.
+  if (typeof window !== "undefined") {
+    try {
+      window.sessionStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          attendee,
+          phone,
+          showOptional,
+          paymentMethod,
+        } satisfies DoorSaleDraft)
+      );
+    } catch {
+      /* sessionStorage may be disabled — silently skip. */
+    }
+  }
+
+  function clearDraft() {
+    if (typeof window === "undefined") return;
+    try {
+      window.sessionStorage.removeItem(STORAGE_KEY);
+    } catch {
+      /* no-op */
+    }
+  }
+
+  function handleEventChange(newEventId: string) {
+    setEventId(newEventId);
+    router.push(`?mode=${mode}&event=${newEventId}`);
+  }
+
   async function handleDownloadPdf(orderId: string) {
     setDownloading(true);
     try {
@@ -127,8 +144,8 @@ export function DoorSaleClient({
         return;
       }
       // Build a Blob from the base64 PDF and trigger a download. Standard
-      // browser pattern — no extra deps. Object URL is revoked after click
-      // so we don't leak memory.
+      // browser pattern — no extra deps. Object URL revoked after click so
+      // we don't leak memory.
       const bytes = Uint8Array.from(atob(res.pdfBase64), (c) =>
         c.charCodeAt(0)
       );
@@ -146,54 +163,8 @@ export function DoorSaleClient({
     }
   }
 
-  // Persist draft on every change so the next route.push restore picks it up.
-  // Cheap (~few writes per keystroke); no debounce needed at this volume.
-  if (typeof window !== "undefined") {
-    try {
-      window.sessionStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({
-          firstName,
-          lastName,
-          attendeeEmail,
-          country,
-          title,
-          gender,
-          birthday,
-          occupation,
-          address,
-          phone,
-          showOptional,
-          paymentMethod,
-        })
-      );
-    } catch {
-      // sessionStorage may be disabled (private mode) — silently skip.
-    }
-  }
-
-  function clearDraft() {
-    if (typeof window === "undefined") return;
-    try {
-      window.sessionStorage.removeItem(STORAGE_KEY);
-    } catch {
-      // no-op
-    }
-  }
-
-  function handleEventChange(newEventId: string) {
-    setEventId(newEventId);
-    // Navigate to reload tiers for the new event, preserve mode. The
-    // sessionStorage block above already saved the draft, so the form
-    // values come back when this page re-renders.
-    router.push(`?mode=${mode}&event=${newEventId}`);
-  }
-
   function handleSubmit(formData: FormData) {
-    const submittedName = [
-      (formData.get("first_name") as string) || "",
-      (formData.get("last_name") as string) || "",
-    ]
+    const submittedName = [attendee.first_name, attendee.last_name]
       .map((s) => s.trim())
       .filter(Boolean)
       .join(" ");
@@ -202,19 +173,10 @@ export function DoorSaleClient({
       setResult(res);
       if (res.success && res.orderId) {
         setLastSale({ orderId: res.orderId, name: submittedName });
-        setFirstName("");
-        setLastName("");
-        setAttendeeEmail("");
-        setCountry("");
-        setTitle("");
-        setGender("");
-        setBirthday("");
-        setOccupation("");
-        setAddress(EMPTY_ADDRESS);
+        setAttendee(EMPTY_ATTENDEE_IDENTITY);
         setPhone("");
         setShowOptional(false);
         clearDraft();
-        // Refresh to update tier remaining counts
         router.refresh();
       }
     });
@@ -234,223 +196,52 @@ export function DoorSaleClient({
     });
   }
 
-  const t = {
-    en: {
-      selectEvent: "Event",
-      selectTier: "Ticket tier",
-      firstName: "First name",
-      lastName: "Last name",
-      country: "Country",
-      countryPlaceholder: "Select country",
-      email: "Attendee email",
-      emailHint:
-        "Required \u2014 the ticket PDF + QR code are emailed here right after the sale.",
-      phoneLbl: "Phone (optional)",
-      payment: "Payment method",
-      cash: "Cash",
-      bankTransfer: "Bank transfer",
-      comp: "Complimentary",
-      create: "Create ticket",
-      success: "Ticket created and emailed.",
-      creating: "Creating...",
-      soldOut: "Sold out",
-      remaining: "{n} remaining",
-      cashOnlyNote: "Card buyers should scan the online-purchase poster.",
-      downloadPdf: "Download PDF",
-      downloading: "\u2026",
-      addOptional: "+ Add optional details (title, birthday, address)",
-      hideOptional: "\u2212 Hide optional details",
-      title: "Title",
-      gender: "Gender",
-      birthday: "Birthday",
-      occupation: "Occupation / Field of work",
-      titleMr: "Mr",
-      titleMs: "Ms",
-      titleMrs: "Mrs",
-      titleMx: "Mx",
-      titleDr: "Dr",
-      titleProf: "Prof",
-      titleExcellency: "His/Her Excellency",
-      titleHonourable: "Hon.",
-      titleRev: "Rev",
-      genderFemale: "Female",
-      genderMale: "Male",
-      genderNonBinary: "Non-binary",
-      genderPreferNotToSay: "Prefer not to say",
-      placeholderBanner:
-        "{n} historic door-sale ticket(s) still have no real email \u2014 fix below to deliver",
-      placeholderColAttendee: "Attendee",
-      placeholderColEvent: "Event",
-      placeholderColEmail: "New email",
-      placeholderResend: "Send",
-      placeholderSent: "\u2713 Sent",
-      placeholderResendErr: "Failed",
-    },
-    de: {
-      selectEvent: "Veranstaltung",
-      selectTier: "Ticketart",
-      firstName: "Vorname",
-      lastName: "Nachname",
-      country: "Land",
-      countryPlaceholder: "Land w\u00E4hlen",
-      email: "E-Mail des Teilnehmers",
-      emailHint:
-        "Pflicht \u2014 Ticket-PDF + QR-Code gehen direkt nach dem Verkauf an diese Adresse.",
-      phoneLbl: "Telefon (optional)",
-      payment: "Zahlungsmethode",
-      cash: "Bar",
-      bankTransfer: "\u00DCberweisung",
-      comp: "Kostenlos",
-      create: "Ticket erstellen",
-      success: "Ticket erstellt und per E-Mail gesendet.",
-      creating: "Wird erstellt...",
-      soldOut: "Ausverkauft",
-      remaining: "Noch {n}",
-      cashOnlyNote: "Kartenzahler sollten den Online-Kaufposter scannen.",
-      downloadPdf: "PDF herunterladen",
-      downloading: "\u2026",
-      addOptional:
-        "+ Optionale Angaben hinzuf\u00FCgen (Anrede, Geburtstag, Adresse)",
-      hideOptional: "\u2212 Optionale Angaben ausblenden",
-      title: "Anrede",
-      gender: "Geschlecht",
-      birthday: "Geburtstag",
-      occupation: "Beruf / T\u00E4tigkeitsfeld",
-      titleMr: "Herr",
-      titleMs: "Frau",
-      titleMrs: "Frau",
-      titleMx: "Divers",
-      titleDr: "Dr.",
-      titleProf: "Prof.",
-      titleExcellency: "Exzellenz",
-      titleHonourable: "Hon.",
-      titleRev: "Hochw\u00FCrden",
-      genderFemale: "Weiblich",
-      genderMale: "M\u00E4nnlich",
-      genderNonBinary: "Nicht-bin\u00E4r",
-      genderPreferNotToSay: "Keine Angabe",
-      placeholderBanner:
-        "{n} historische T\u00FCrticket(s) ohne echte E-Mail \u2014 hier eintragen und neu versenden",
-      placeholderColAttendee: "Teilnehmer",
-      placeholderColEvent: "Veranstaltung",
-      placeholderColEmail: "Neue E-Mail",
-      placeholderResend: "Senden",
-      placeholderSent: "\u2713 Gesendet",
-      placeholderResendErr: "Fehler",
-    },
-    fr: {
-      selectEvent: "\u00C9v\u00E9nement",
-      selectTier: "Type de billet",
-      firstName: "Pr\u00E9nom",
-      lastName: "Nom",
-      country: "Pays",
-      countryPlaceholder: "Choisir le pays",
-      email: "E-mail du participant",
-      emailHint:
-        "Obligatoire \u2014 le billet PDF + QR sont envoy\u00E9s \u00E0 cette adresse imm\u00E9diatement.",
-      phoneLbl: "T\u00E9l\u00E9phone (optionnel)",
-      payment: "Mode de paiement",
-      cash: "Esp\u00E8ces",
-      bankTransfer: "Virement",
-      comp: "Gratuit",
-      create: "Cr\u00E9er le billet",
-      success: "Billet cr\u00E9\u00E9 et envoy\u00E9 par e-mail.",
-      creating: "Cr\u00E9ation...",
-      soldOut: "\u00C9puis\u00E9",
-      remaining: "{n} restants",
-      cashOnlyNote:
-        "Les acheteurs par carte doivent scanner l\u2019affiche d\u2019achat en ligne.",
-      downloadPdf: "T\u00E9l\u00E9charger le PDF",
-      downloading: "\u2026",
-      addOptional:
-        "+ Ajouter des d\u00E9tails optionnels (civilit\u00E9, anniversaire, adresse)",
-      hideOptional: "\u2212 Masquer les d\u00E9tails optionnels",
-      title: "Civilit\u00E9",
-      gender: "Genre",
-      birthday: "Date de naissance",
-      occupation: "Profession / Domaine",
-      titleMr: "M.",
-      titleMs: "Mme",
-      titleMrs: "Mme",
-      titleMx: "Mx",
-      titleDr: "Dr",
-      titleProf: "Prof.",
-      titleExcellency: "Son Excellence",
-      titleHonourable: "L\u2019Hon.",
-      titleRev: "R\u00E9v\u00E9rend",
-      genderFemale: "F\u00E9minin",
-      genderMale: "Masculin",
-      genderNonBinary: "Non binaire",
-      genderPreferNotToSay: "Pr\u00E9f\u00E8re ne pas r\u00E9pondre",
-      placeholderBanner:
-        "{n} billet(s) historique(s) sans vraie e-mail \u2014 saisissez ci-dessous pour renvoyer",
-      placeholderColAttendee: "Participant",
-      placeholderColEvent: "\u00C9v\u00E9nement",
-      placeholderColEmail: "Nouvelle e-mail",
-      placeholderResend: "Envoyer",
-      placeholderSent: "\u2713 Envoy\u00E9",
-      placeholderResendErr: "\u00C9chec",
-    },
-  }[locale] ?? {
-    selectEvent: "Event", selectTier: "Tier",
-    firstName: "First name", lastName: "Last name",
-    country: "Country", countryPlaceholder: "Select country",
-    email: "Email",
-    emailHint: "Required.",
-    phoneLbl: "Phone",
-    payment: "Payment", cash: "Cash", bankTransfer: "Transfer", comp: "Comp",
-    create: "Create", success: "Done", creating: "...", soldOut: "Sold out",
-    remaining: "{n} left", cashOnlyNote: "Card buyers scan the poster.",
-    downloadPdf: "Download PDF", downloading: "\u2026",
-    addOptional: "+ Add optional details",
-    hideOptional: "\u2212 Hide optional details",
-    title: "Title",
-    gender: "Gender",
-    birthday: "Birthday",
-    occupation: "Occupation",
-    titleMr: "Mr",
-    titleMs: "Ms",
-    titleMrs: "Mrs",
-    titleMx: "Mx",
-    titleDr: "Dr",
-    titleProf: "Prof",
-    titleExcellency: "His/Her Excellency",
-    titleHonourable: "Hon.",
-    titleRev: "Rev",
-    genderFemale: "Female",
-    genderMale: "Male",
-    genderNonBinary: "Non-binary",
-    genderPreferNotToSay: "Prefer not to say",
-    placeholderBanner: "{n} historic tickets need a real email",
-    placeholderColAttendee: "Attendee",
-    placeholderColEvent: "Event",
-    placeholderColEmail: "New email",
-    placeholderResend: "Send",
-    placeholderSent: "\u2713 Sent",
-    placeholderResendErr: "Failed",
-  };
-
-  // Pre-compute label maps for the SSOT atoms so they render in the same
-  // locale as the rest of the form.
+  // Labels for the molecule — all sourced from JSON SSOT. `person.*` carries
+  // the canonical identity labels (firstName, lastName, email, country, title,
+  // gender, birthday, occupation, titleX, genderX). `admin.doorSale.*` carries
+  // the door-sale-specific copy (email hint, country placeholder, "more
+  // details" prefix, street/postal/city — which currently sit on person.* too).
   const titleLabels: Record<Title, string> = {
-    mr: t.titleMr,
-    ms: t.titleMs,
-    mrs: t.titleMrs,
-    mx: t.titleMx,
-    dr: t.titleDr,
-    prof: t.titleProf,
-    excellency: t.titleExcellency,
-    honourable: t.titleHonourable,
-    rev: t.titleRev,
+    mr: tPerson("titleMr"),
+    ms: tPerson("titleMs"),
+    mrs: tPerson("titleMrs"),
+    mx: tPerson("titleMx"),
+    dr: tPerson("titleDr"),
+    prof: tPerson("titleProf"),
+    excellency: tPerson("titleExcellency"),
+    honourable: tPerson("titleHonourable"),
+    rev: tPerson("titleRev"),
   };
   const genderLabels: Record<Gender, string> = {
-    female: t.genderFemale,
-    male: t.genderMale,
-    non_binary: t.genderNonBinary,
-    prefer_not_to_say: t.genderPreferNotToSay,
+    female: tPerson("genderFemale"),
+    male: tPerson("genderMale"),
+    non_binary: tPerson("genderNonBinary"),
+    prefer_not_to_say: tPerson("genderPreferNotToSay"),
   };
-  // Keep TITLE_VALUES referenced so the import isn't a lint warning if the
-  // atom's internal default ever drops it.
+  const labels: AttendeeIdentityLabels = {
+    firstName: tPerson("firstName"),
+    lastName: tPerson("lastName"),
+    email: t("attendeeEmail"),
+    emailHint: t("emailHint"),
+    country: tPerson("country"),
+    countryPlaceholder: t("countryPlaceholder"),
+    addOptional: `+ ${tPerson("moreDetails")}`,
+    hideOptional: `− ${tPerson("hideDetails")}`,
+    optionalCaption: tPerson("optionalCaption"),
+    title: tPerson("title"),
+    gender: tPerson("gender"),
+    birthday: tPerson("birthday"),
+    occupation: tPerson("occupation"),
+    streetAddress: tPerson("streetAddress"),
+    addressLine2: tPerson("addressLine2"),
+    postalCode: tPerson("postalCode"),
+    city: tPerson("city"),
+    titleOptions: titleLabels,
+    genderOptions: genderLabels,
+  };
+  // Keep TITLE_VALUES referenced so the import isn't a lint warning — the
+  // molecule's labels.titleOptions enforces a Record<Title, string> already,
+  // which keeps us aligned with the enum if it changes.
   void TITLE_VALUES;
 
   return (
@@ -466,9 +257,7 @@ export function DoorSaleClient({
       {result.success && lastSale && (
         <div className="rounded-md bg-success-soft p-4 text-sm text-success">
           <div className="flex items-center justify-between gap-4">
-            <span>
-              &#x2713; {t.success} &mdash; {lastSale.name}
-            </span>
+            <span>✓ {t("success")} — {lastSale.name}</span>
             <div className="flex items-center gap-2">
               <button
                 type="button"
@@ -476,7 +265,7 @@ export function DoorSaleClient({
                 disabled={isPending || downloading}
                 className="rounded-md border border-border bg-white px-3 py-1 text-xs font-medium hover:bg-muted disabled:opacity-50 dark:bg-transparent"
               >
-                {downloading ? t.downloading : t.downloadPdf}
+                {downloading ? t("downloading") : t("downloadPdf")}
               </button>
               <ConfirmDialog
                 trigger={
@@ -485,13 +274,13 @@ export function DoorSaleClient({
                     disabled={isPending}
                     className="rounded-md border border-danger-border bg-white px-3 py-1 text-xs font-medium text-danger hover:bg-danger-soft disabled:opacity-50 dark:bg-transparent"
                   >
-                    Undo / Void
+                    {t("undo")}
                   </button>
                 }
-                title={`Void the ticket for ${lastSale.name}?`}
-                description="This restores inventory + refunds payment if it was a card sale."
-                confirmLabel="Void"
-                cancelLabel="Cancel"
+                title={t("voidTitle", { name: lastSale.name })}
+                description={t("voidDescription")}
+                confirmLabel={t("voidConfirm")}
+                cancelLabel={t("voidCancel")}
                 variant="danger"
                 onConfirm={handleVoid}
               />
@@ -503,7 +292,7 @@ export function DoorSaleClient({
       {/* Event */}
       <div>
         <label className="block text-sm font-medium mb-1.5">
-          {t.selectEvent}
+          {t("selectEvent")}
         </label>
         <select
           value={eventId}
@@ -521,7 +310,7 @@ export function DoorSaleClient({
       {/* Tier */}
       <div>
         <label className="block text-sm font-medium mb-1.5">
-          {t.selectTier}
+          {t("selectTier")}
         </label>
         <div className="space-y-2">
           {initialTiers.map((tier) => {
@@ -549,17 +338,17 @@ export function DoorSaleClient({
                     <p className="font-medium">{tier.name}</p>
                     <p className="text-xs text-muted-foreground">
                       {soldOut
-                        ? t.soldOut
+                        ? t("soldOut")
                         : tier.remaining !== null
-                          ? t.remaining.replace("{n}", String(tier.remaining))
+                          ? t("remaining", { n: tier.remaining })
                           : ""}
                     </p>
                   </div>
                 </div>
                 <p className="font-heading font-bold">
                   {tier.priceCents === 0
-                    ? "\u2014"
-                    : `\u20AC${(tier.priceCents / 100).toFixed(2)}`}
+                    ? "—"
+                    : `€${(tier.priceCents / 100).toFixed(2)}`}
                 </p>
               </label>
             );
@@ -567,51 +356,27 @@ export function DoorSaleClient({
         </div>
       </div>
 
-      {/* Name — same SSOT atom the public checkout uses (first + last in one
-          row), so the resulting `contacts` row and Attendees-tab listing have
-          identical column shape regardless of where the ticket was sold. */}
-      <NameFields
-        firstNameLabel={t.firstName}
-        lastNameLabel={t.lastName}
-        firstName={firstName}
-        lastName={lastName}
-        onFirstNameChange={setFirstName}
-        onLastNameChange={setLastName}
-        required
+      {/* Attendee identity — single SSOT molecule. Same atoms, same order,
+          same labels as the public checkout (apps/tickets/.../checkout-form),
+          so the resulting contacts row + tickets.attendee_* columns are
+          interchangeable. The molecule already covers Country, NameFields,
+          Email, and the optional Title/Gender/Birthday/Occupation/Address
+          collapse. No duplicate country, no state/region. */}
+      <AttendeeIdentityFields
+        value={attendee}
+        onChange={setAttendee}
+        locale={locale}
+        showOptional={showOptional}
+        onShowOptionalChange={setShowOptional}
+        labels={labels}
       />
 
-      {/* Country — required by the contact RPC (online checkout also requires
-          it). CountrySelect is a native <select> wrapper that emits its value
-          under name="country" on submit. */}
-      <FormField label={t.country} required>
-        <CountrySelect
-          name="country"
-          value={country}
-          onChange={(e) => setCountry(e.target.value)}
-          locale={locale}
-          placeholder={t.countryPlaceholder}
-          required
-        />
-      </FormField>
-
-      {/* Email — required so the ticket PDF + QR actually reach the buyer.
-          Pre-2026-05-15 this was optional and the action silently invented
-          a `door-sale-<ts>@no-email.local` placeholder; never again. */}
-      <FormField label={t.email} hint={t.emailHint} required>
-        <Input
-          type="email"
-          name="attendee_email"
-          required
-          autoComplete="email"
-          value={attendeeEmail}
-          onChange={(e) => setAttendeeEmail(e.target.value)}
-        />
-      </FormField>
-
-      {/* Phone — optional, available in advance mode (no useful path for
-          door-sales at the till). Same SSOT atom as the public checkout. */}
+      {/* Phone — optional, advance mode only (no useful path at the till). */}
       {mode === "advance" && (
-        <FormField label={t.phoneLbl}>
+        <div>
+          <label className="block text-sm font-medium mb-1.5">
+            {t("phoneLabel")}
+          </label>
           <PhoneInput
             name="phone"
             value={phone}
@@ -619,89 +384,15 @@ export function DoorSaleClient({
             size="sm"
             className="py-2 text-sm"
           />
-        </FormField>
+        </div>
       )}
-
-      {/* Optional identity details — title, gender, birthday, occupation,
-          full address. Collapsed by default to keep the door-sale fast at
-          the till. Mirrors the public checkout's `+ Add optional details`
-          panel so the resulting contact row has the same shape either way. */}
-      <div>
-        <button
-          type="button"
-          onClick={() => setShowOptional((v) => !v)}
-          className="text-sm font-medium text-primary hover:underline"
-        >
-          {showOptional ? t.hideOptional : t.addOptional}
-        </button>
-        {showOptional && (
-          <div className="mt-3 space-y-4 rounded-md border border-border bg-muted/20 p-4">
-            <TitleGenderFields
-              title={title}
-              gender={gender}
-              onTitleChange={setTitle}
-              onGenderChange={setGender}
-              titleLabel={t.title}
-              genderLabel={t.gender}
-              titleOptionLabels={titleLabels}
-              genderOptionLabels={genderLabels}
-            />
-            <BirthdayField
-              value={birthday}
-              onChange={(iso) => setBirthday(iso ?? "")}
-              label={t.birthday}
-            />
-            <FormField label={t.occupation}>
-              <Input
-                type="text"
-                name="occupation"
-                value={occupation}
-                onChange={(e) => setOccupation(e.target.value)}
-              />
-            </FormField>
-            <AddressFields
-              value={address}
-              onChange={setAddress}
-              locale={locale}
-            />
-            {/* AddressFields is controlled — mirror its state into hidden
-                inputs so the server action can read flat FormData keys that
-                map 1:1 to contacts.* columns. */}
-            <input
-              type="hidden"
-              name="address_line_1"
-              value={address.line1}
-            />
-            <input
-              type="hidden"
-              name="address_line_2"
-              value={address.line2}
-            />
-            <input
-              type="hidden"
-              name="postal_code"
-              value={address.postal_code}
-            />
-            <input type="hidden" name="city" value={address.city} />
-          </div>
-        )}
-      </div>
-
-      {/* Hidden mirrors for the controlled SSOT atoms — NameFields +
-          TitleGenderFields + BirthdayField each write their own FormData
-          keys, but the door-sale action reads `first_name`/`last_name`/
-          `title`/`gender`/`birthday` so we always have them available even
-          if a future @dbc/ui change renames their internal hidden inputs. */}
-      <input type="hidden" name="first_name" value={firstName} />
-      <input type="hidden" name="last_name" value={lastName} />
-      <input type="hidden" name="title" value={title} />
-      <input type="hidden" name="gender" value={gender} />
-      <input type="hidden" name="birthday" value={birthday} />
 
       {/* Payment method */}
       {mode === "advance" ? (
         <div>
-          <label className="block text-sm font-medium mb-1.5">{t.payment}</label>
+          <label className="block text-sm font-medium mb-1.5">
+            {t("payment")}
+          </label>
           <input type="hidden" name="payment_method" value={paymentMethod} />
           <div className="flex gap-2">
             {(["cash", "sepa", "comp"] as const).map((m) => (
@@ -715,7 +406,11 @@ export function DoorSaleClient({
                     : "border-border text-muted-foreground hover:text-foreground"
                 }`}
               >
-                {m === "cash" ? t.cash : m === "sepa" ? t.bankTransfer : t.comp}
+                {m === "cash"
+                  ? t("cash")
+                  : m === "sepa"
+                    ? t("bankTransfer")
+                    : t("comp")}
               </button>
             ))}
           </div>
@@ -723,8 +418,8 @@ export function DoorSaleClient({
       ) : (
         <div className="rounded-md border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
           <input type="hidden" name="payment_method" value="cash" />
-          {t.payment}: <strong className="text-foreground">{t.cash}</strong> &middot;
-          {" "}{t.cashOnlyNote}
+          {t("payment")}: <strong className="text-foreground">{t("cash")}</strong>{" "}
+          · {t("cashOnlyNote")}
         </div>
       )}
 
@@ -733,20 +428,20 @@ export function DoorSaleClient({
         disabled={
           isPending ||
           !tierId ||
-          !firstName.trim() ||
-          !lastName.trim() ||
-          !attendeeEmail.trim() ||
-          !country
+          !attendee.first_name.trim() ||
+          !attendee.last_name.trim() ||
+          !attendee.email.trim() ||
+          !attendee.country
         }
       >
-        {isPending ? t.creating : t.create}
+        {isPending ? t("creating") : t("create")}
       </Button>
 
       {/* Historic placeholder-email rows — collapsible, hidden when empty.
           Lets staff drop a real address on a pre-fix sale and trigger the
           delivery their buyer never got. */}
       {placeholderRows.length > 0 && (
-        <PlaceholderBackfill rows={placeholderRows} locale={locale} t={t} />
+        <PlaceholderBackfill rows={placeholderRows} locale={locale} />
       )}
     </form>
   );
@@ -755,14 +450,12 @@ export function DoorSaleClient({
 function PlaceholderBackfill({
   rows,
   locale,
-  t,
 }: {
   rows: PlaceholderOrderRow[];
   locale: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  t: any;
 }) {
   const router = useRouter();
+  const t = useTranslations("admin.doorSale.placeholder");
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<
     Record<string, "idle" | "sending" | "sent" | "error">
@@ -775,7 +468,6 @@ function PlaceholderBackfill({
     const res = await updateAttendeeEmailAndResend(ticketId, newEmail, locale);
     if ("success" in res) {
       setStatus((s) => ({ ...s, [ticketId]: "sent" }));
-      // Refresh so the row drops out of the next render.
       router.refresh();
     } else {
       setStatus((s) => ({ ...s, [ticketId]: "error" }));
@@ -785,14 +477,14 @@ function PlaceholderBackfill({
   return (
     <details className="mt-8 rounded-md border border-warning-border bg-warning-soft/30 p-4">
       <summary className="cursor-pointer text-sm font-medium text-warning-strong">
-        {t.placeholderBanner.replace("{n}", String(rows.length))}
+        {t("banner", { n: rows.length })}
       </summary>
       <table className="mt-4 min-w-full text-sm">
         <thead className="text-xs uppercase tracking-wider text-muted-foreground">
           <tr>
-            <th className="px-2 py-1 text-left">{t.placeholderColAttendee}</th>
-            <th className="px-2 py-1 text-left">{t.placeholderColEvent}</th>
-            <th className="px-2 py-1 text-left">{t.placeholderColEmail}</th>
+            <th className="px-2 py-1 text-left">{t("colAttendee")}</th>
+            <th className="px-2 py-1 text-left">{t("colEvent")}</th>
+            <th className="px-2 py-1 text-left">{t("colEmail")}</th>
             <th className="px-2 py-1 text-right" />
           </tr>
         </thead>
@@ -829,9 +521,7 @@ function PlaceholderBackfill({
                 </td>
                 <td className="px-2 py-2 text-right">
                   {s === "sent" ? (
-                    <span className="text-xs text-success">
-                      {t.placeholderSent}
-                    </span>
+                    <span className="text-xs text-success">{t("sent")}</span>
                   ) : (
                     <button
                       type="button"
@@ -842,10 +532,10 @@ function PlaceholderBackfill({
                       className="rounded-md border border-border bg-white px-3 py-1 text-xs font-medium hover:bg-muted disabled:opacity-50 dark:bg-transparent"
                     >
                       {s === "sending"
-                        ? t.downloading
+                        ? "…"
                         : s === "error"
-                          ? t.placeholderResendErr
-                          : t.placeholderResend}
+                          ? t("error")
+                          : t("resend")}
                     </button>
                   )}
                 </td>

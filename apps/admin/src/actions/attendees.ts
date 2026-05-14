@@ -3,11 +3,22 @@
 import { createServerClient, requireRole } from "@dbc/supabase/server";
 import { revalidatePath } from "next/cache";
 
+export interface AttendeeCategoryChip {
+  slug: string;
+  name_en: string;
+  color: string | null;
+}
+
 export interface CrossEventAttendee {
-  id: string;
+  id: string;                        // ticket id
+  contact_id: string | null;         // joined contact (null = legacy ticket)
   ticket_token: string;
   attendee_name: string;
   attendee_email: string;
+  country: string | null;            // pulled from the joined contact
+  categories: AttendeeCategoryChip[];
+  marketing_consent: boolean;
+  unsubscribed_at: string | null;
   event_id: string;
   event_title: string;
   event_starts_at: string;
@@ -19,12 +30,13 @@ export interface CrossEventAttendee {
 
 /**
  * List attendees across all events (or scoped to one event), for the
- * /contacts → Attendees tab. Lighter than getEventAttendees: skips notes
- * and the per-event scope, includes the event title so the table can
- * stay sortable across events.
+ * /contacts → Attendees tab. Joins each ticket to its underlying contact
+ * so the table can render Country + Categories + Newsletter parity columns
+ * with the Contacts tab, and each row can deep-link into the contact
+ * profile when contact_id is present.
  */
 export async function getAllAttendees(
-  opts: { eventId?: string } = {}
+  opts: { eventId?: string; marketingOnly?: boolean } = {}
 ): Promise<CrossEventAttendee[]> {
   await requireRole("manager");
   const supabase = await createServerClient();
@@ -32,11 +44,17 @@ export async function getAllAttendees(
   let query = supabase
     .from("tickets")
     .select(
-      `id, ticket_token, attendee_name, attendee_email, event_id, tier_id,
-       checked_in_at, created_at, order_id,
+      `id, ticket_token, attendee_name, attendee_email, contact_id,
+       event_id, tier_id, checked_in_at, created_at, order_id,
        tier:ticket_tiers(name_en),
        event:events(title_en, starts_at),
-       order:orders(acquisition_type)`
+       order:orders(acquisition_type),
+       contact:contacts(
+         id, country, marketing_consent, unsubscribed_at,
+         links:contact_category_links(
+           category:contact_categories(slug, name_en, color)
+         )
+       )`
     )
     .order("created_at", { ascending: false })
     .limit(500);
@@ -45,19 +63,40 @@ export async function getAllAttendees(
 
   const { data } = await query;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return ((data ?? []) as any[]).map((t) => ({
-    id: t.id,
-    ticket_token: t.ticket_token,
-    attendee_name: t.attendee_name,
-    attendee_email: t.attendee_email,
-    event_id: t.event_id,
-    event_title: t.event?.title_en ?? "",
-    event_starts_at: t.event?.starts_at ?? "",
-    tier_name: t.tier?.name_en ?? "Ticket",
-    acquisition_type: t.order?.acquisition_type ?? "purchased",
-    checked_in_at: t.checked_in_at,
-    created_at: t.created_at,
-  }));
+  const rows = ((data ?? []) as any[]).map((t) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const contact = (Array.isArray(t.contact) ? t.contact[0] : t.contact) as any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const categories: AttendeeCategoryChip[] = ((contact?.links ?? []) as any[])
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .map((l: any) => l.category)
+      .filter(Boolean);
+    return {
+      id: t.id,
+      contact_id: contact?.id ?? t.contact_id ?? null,
+      ticket_token: t.ticket_token,
+      attendee_name: t.attendee_name,
+      attendee_email: t.attendee_email,
+      country: contact?.country ?? null,
+      categories,
+      marketing_consent: Boolean(contact?.marketing_consent),
+      unsubscribed_at: contact?.unsubscribed_at ?? null,
+      event_id: t.event_id,
+      event_title: t.event?.title_en ?? "",
+      event_starts_at: t.event?.starts_at ?? "",
+      tier_name: t.tier?.name_en ?? "Ticket",
+      acquisition_type: t.order?.acquisition_type ?? "purchased",
+      checked_in_at: t.checked_in_at,
+      created_at: t.created_at,
+    };
+  });
+
+  if (opts.marketingOnly) {
+    return rows.filter(
+      (r) => r.marketing_consent && !r.unsubscribed_at
+    );
+  }
+  return rows;
 }
 
 export async function getEventAttendees(eventId: string) {

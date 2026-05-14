@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Badge } from "@dbc/ui";
 import type { CrossEventAttendee } from "@/actions/attendees";
@@ -17,15 +18,19 @@ export function AttendeesTab({
   selectedEventId: string;
 }) {
   const t = useTranslations("admin.contacts.attendeesTab");
+  const tContacts = useTranslations("admin.contacts");
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<"all" | "checked_in" | "not_checked_in">(
     "all"
   );
+  const [marketingOnly, setMarketingOnly] = useState(false);
 
   const filtered = useMemo(() => {
     return attendees.filter((a) => {
       if (filter === "checked_in" && !a.checked_in_at) return false;
       if (filter === "not_checked_in" && a.checked_in_at) return false;
+      if (marketingOnly && (!a.marketing_consent || a.unsubscribed_at))
+        return false;
       if (query.trim()) {
         const q = query.toLowerCase();
         return (
@@ -36,7 +41,7 @@ export function AttendeesTab({
       }
       return true;
     });
-  }, [attendees, query, filter]);
+  }, [attendees, query, filter, marketingOnly]);
 
   const acqLabels: Record<string, string> = {
     purchased: t("purchased"),
@@ -49,18 +54,24 @@ export function AttendeesTab({
     const headers = [
       "name",
       "email",
+      "country",
+      "categories",
       "event",
       "tier",
       "acquisition",
+      "marketing",
       "checked_in_at",
       "ticket_id",
     ];
     const rows = filtered.map((a) => [
       a.attendee_name,
       a.attendee_email,
+      a.country ?? "",
+      a.categories.map((c) => c.slug).join("|"),
       a.event_title,
       a.tier_name,
       a.acquisition_type,
+      a.marketing_consent && !a.unsubscribed_at ? "yes" : "no",
       a.checked_in_at ?? "",
       a.ticket_token,
     ]);
@@ -137,6 +148,16 @@ export function AttendeesTab({
             </button>
           ))}
         </div>
+        {/* Newsletter-only filter — parity with the Contacts tab. The same
+            `marketing_consent` + `unsubscribed_at` columns drive both. */}
+        <label className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm">
+          <input
+            type="checkbox"
+            checked={marketingOnly}
+            onChange={(e) => setMarketingOnly(e.target.checked)}
+          />
+          {tContacts("marketingOnly")}
+        </label>
         <button
           onClick={exportCsv}
           className="rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-muted"
@@ -155,54 +176,130 @@ export function AttendeesTab({
             <thead>
               <tr className="border-b border-border bg-muted/50">
                 <th className="px-4 py-3 text-left font-medium">{t("name")}</th>
+                <th className="px-4 py-3 text-left font-medium">
+                  {tContacts("country")}
+                </th>
                 <th className="px-4 py-3 text-left font-medium">{t("event")}</th>
                 <th className="px-4 py-3 text-left font-medium">{t("tier")}</th>
+                <th className="px-4 py-3 text-left font-medium">
+                  {tContacts("categories")}
+                </th>
+                <th className="px-4 py-3 text-left font-medium">
+                  {tContacts("marketing")}
+                </th>
                 <th className="px-4 py-3 text-left font-medium">{t("status")}</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map((a) => (
-                <tr
-                  key={a.id}
-                  className="border-b border-border last:border-0 align-top"
-                >
-                  <td className="px-4 py-3">
-                    <p className="font-medium">{a.attendee_name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {a.attendee_email}
-                    </p>
-                  </td>
-                  <td className="px-4 py-3">
-                    <p className="truncate">{a.event_title}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(a.event_starts_at).toLocaleDateString(locale, {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </p>
-                  </td>
-                  <td className="px-4 py-3">
-                    <p>{a.tier_name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {acqLabels[a.acquisition_type] ?? a.acquisition_type}
-                    </p>
-                  </td>
-                  <td className="px-4 py-3">
-                    {a.checked_in_at ? (
-                      <Badge variant="success">
-                        &#x2713;{" "}
-                        {new Date(a.checked_in_at).toLocaleTimeString(locale, {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </Badge>
-                    ) : (
-                      <Badge variant="default">{t("notScanned")}</Badge>
-                    )}
-                  </td>
-                </tr>
-              ))}
+              {filtered.map((a) => {
+                // Every cell renders a Link to the contact profile when a
+                // contact_id is present (post-2026 tickets always carry one).
+                // Pre-fix rows with NULL contact_id fall back to a plain
+                // span so the row at least still displays.
+                const href = a.contact_id
+                  ? `/${locale}/contacts/${a.contact_id}`
+                  : null;
+                const cellClass =
+                  "block px-4 py-3 hover:bg-muted/30 focus:bg-muted/40 focus:outline-none";
+                const Cell = ({
+                  children,
+                }: {
+                  children: React.ReactNode;
+                }) =>
+                  href ? (
+                    <Link href={href} className={cellClass} tabIndex={-1}>
+                      {children}
+                    </Link>
+                  ) : (
+                    <span className={`block px-4 py-3 ${a.contact_id ? "" : "cursor-default"}`}>
+                      {children}
+                    </span>
+                  );
+
+                return (
+                  <tr
+                    key={a.id}
+                    className="border-b border-border align-top last:border-0"
+                  >
+                    <td className="p-0">
+                      <Cell>
+                        <p className="font-medium">{a.attendee_name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {a.attendee_email}
+                        </p>
+                      </Cell>
+                    </td>
+                    <td className="p-0">
+                      <Cell>{a.country ?? "—"}</Cell>
+                    </td>
+                    <td className="p-0">
+                      <Cell>
+                        <p className="truncate">{a.event_title}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(a.event_starts_at).toLocaleDateString(
+                            locale,
+                            {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                            }
+                          )}
+                        </p>
+                      </Cell>
+                    </td>
+                    <td className="p-0">
+                      <Cell>
+                        <p>{a.tier_name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {acqLabels[a.acquisition_type] ?? a.acquisition_type}
+                        </p>
+                      </Cell>
+                    </td>
+                    <td className="p-0">
+                      <Cell>
+                        {a.categories.length === 0 ? (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        ) : (
+                          <div className="flex flex-wrap gap-1">
+                            {a.categories.map((c) => (
+                              <Badge key={c.slug} variant="default">
+                                {c.name_en}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                      </Cell>
+                    </td>
+                    <td className="p-0">
+                      <Cell>
+                        {a.marketing_consent && !a.unsubscribed_at ? (
+                          <Badge variant="success">✓</Badge>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
+                      </Cell>
+                    </td>
+                    <td className="p-0">
+                      <Cell>
+                        {a.checked_in_at ? (
+                          <Badge variant="success">
+                            ✓{" "}
+                            {new Date(a.checked_in_at).toLocaleTimeString(
+                              locale,
+                              {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              }
+                            )}
+                          </Badge>
+                        ) : (
+                          <Badge variant="default">{t("notScanned")}</Badge>
+                        )}
+                      </Cell>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
