@@ -215,12 +215,34 @@ export async function createDoorSale(formData: FormData) {
       payment_method: paymentMethod,
       recipient_email: attendeeEmail,
       recipient_name: attendeeName,
+      // orders.recipient_first_name is NOT NULL — every public-checkout order
+      // writes it, so a door-sale insert without it was always rejected by
+      // Postgres and surfaced as the generic "Bestellung konnte nicht angelegt
+      // werden" banner. recipient_last_name + recipient_title + recipient_gender
+      // are nullable but mirror the same identity payload the online flow ships
+      // so the contact/order/ticket rows look identical regardless of channel.
+      recipient_first_name: firstName,
+      recipient_last_name: lastName,
+      recipient_title: title,
+      recipient_gender: gender,
       locale,
     })
     .select("id")
     .single();
 
   if (orderError || !order) {
+    // Surface the underlying Postgres error to Sentry — the prior version
+    // swallowed orderError and only returned a generic banner, so a NOT NULL
+    // violation (recipient_first_name) was indistinguishable from a transient
+    // RLS failure. Operators saw "Bestellung konnte nicht angelegt werden"
+    // with no way to triage.
+    captureServerError(
+      orderError ?? new Error("orders.insert returned no row"),
+      {
+        scope: "door_sale.createDoorSale.orderInsert",
+        data: { eventId, tierId, userId: user.userId },
+      }
+    );
     // Rollback: release the seat we just reserved. release_tickets is atomic
     // — using a raw write of `quantity_sold` would corrupt counts under
     // concurrent door sales.
