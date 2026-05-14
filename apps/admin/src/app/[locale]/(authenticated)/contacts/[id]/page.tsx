@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { Badge, PageBack } from "@dbc/ui";
 import { getContact } from "@/actions/contacts";
 import { listContactMessages } from "@/actions/contact-messages";
+import { listOutreachTemplates } from "@/actions/outreach-templates";
 import { ContactProfileTabs } from "./profile-tabs";
 import { ComposeDialog } from "./compose-dialog";
 import { DeleteContactButton } from "./delete-contact-button";
@@ -15,8 +16,11 @@ export default async function ContactDetailPage({
   const { locale, id } = await params;
   const t = await getTranslations({ locale, namespace: "admin.contacts.detail" });
   const tBack = await getTranslations({ locale, namespace: "admin.back" });
-  const data = await getContact(id);
-  const messages = await listContactMessages(id);
+  const [data, messages, outreachTemplates] = await Promise.all([
+    getContact(id),
+    listContactMessages(id),
+    listOutreachTemplates(),
+  ]);
 
   const displayName =
     [data.contact.first_name, data.contact.last_name]
@@ -65,6 +69,7 @@ export default async function ContactDetailPage({
             contactId={data.contact.id}
             contactEmail={data.contact.email}
             defaultLocale={locale}
+            templates={outreachTemplates}
           />
           <DeleteContactButton
             contactId={data.contact.id}

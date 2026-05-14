@@ -149,6 +149,7 @@
       "pageTitle": "Paiement",
       "removeAttendee": "Supprimer",
       "ticketType": "Type de billet",
+      "selectTierPlaceholder": "Choisir le type de billet",
       "addAnotherTicket": "Ajouter un billet",
       "couponCode": "Code promo",
       "summary": "Résumé"
@@ -430,6 +431,53 @@
     }
   },
   "admin": {
+    "outreach": {
+      "locales": {
+        "en": "English",
+        "de": "Deutsch",
+        "fr": "Français"
+      },
+      "compose": {
+        "openButton": "Envoyer un e-mail…",
+        "title": "Envoyer un e-mail",
+        "recipient": "À <mono>{email}</mono>. Message personnel ponctuel — pas du marketing, pas de pied de désinscription.",
+        "template": "Modèle",
+        "freeForm": "— Libre",
+        "language": "Langue",
+        "subject": "Objet",
+        "message": "Message",
+        "bodyPlaceholder": "Bonjour Ada, …",
+        "bodyHint": "Les lignes vides séparent les paragraphes. Texte brut uniquement.",
+        "replyToLabel": "Répondre à",
+        "cancel": "Annuler",
+        "send": "Envoyer",
+        "sending": "Envoi…",
+        "sentTo": "Envoyé à {email}"
+      },
+      "editor": {
+        "indexTitle": "Modèles d'outreach",
+        "indexSubtitle": "Textes prêts à l'emploi utilisés depuis le dialogue Envoyer un e-mail de chaque contact. Tous les champs sont modifiables — le prochain envoi utilise immédiatement le nouveau texte.",
+        "colName": "Modèle",
+        "colDescription": "Usage",
+        "colReplyTo": "Répondre à",
+        "colUpdated": "Mis à jour",
+        "edit": "Modifier",
+        "editTitle": "Modifier le modèle",
+        "fieldName": "Nom d'affichage",
+        "fieldDescription": "Description d'usage",
+        "fieldReplyTo": "Adresse de réponse",
+        "fieldReplyToHint": "Où arrivent les réponses lorsque le destinataire clique sur Répondre. Une boîte commune (par ex. sponsors@dbc-germany.com) est recommandée pour ne pas dépendre d'une seule personne.",
+        "fieldSubject": "Objet",
+        "fieldBody": "Corps",
+        "variables": "Variables disponibles",
+        "variablesHint": "Ces jetons sont remplacés à l'envoi par les données du contact. Les jetons sans valeur (par ex. un contact sans organisation) deviennent vides.",
+        "tab": "Contenu {locale}",
+        "save": "Enregistrer",
+        "saving": "Enregistrement…",
+        "saved": "Enregistré",
+        "back": "Retour aux modèles"
+      }
+    },
     "nav": {
       "ads": "Annonces tableau de bord",
       "allContacts": "Tous les contacts",
@@ -450,6 +498,7 @@
       "legalPages": "Textes juridiques",
       "news": "Actualités",
       "newsletters": "Newsletters",
+      "outreachTemplates": "Modèles d'outreach",
       "notifications": "Notifications",
       "orders": "Commandes",
       "partners": "Sponsors & partenaires",

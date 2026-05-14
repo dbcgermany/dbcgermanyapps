@@ -8,8 +8,14 @@ export interface ContactMessageInput {
   contactId: string;
   subject: string;
   body: string;
+  /** Per-template pool inbox (sponsors@ / press@ / speakers@) or operator override.
+   *  Takes precedence over the operator's profile email. */
   replyTo?: string | null;
   locale?: "en" | "de" | "fr";
+  /** Outreach-template slug if this message was composed from a template.
+   *  Logged into contact_messages.template_slug for the per-contact timeline.
+   *  NULL = free-form send. */
+  templateSlug?: string | null;
 }
 
 export async function sendContactMessage(input: ContactMessageInput) {
@@ -65,6 +71,7 @@ export async function sendContactMessage(input: ContactMessageInput) {
     body_md: body,
     reply_to: replyTo,
     resend_message_id: resendMessageId,
+    template_slug: input.templateSlug ?? null,
   });
 
   await supabase.from("audit_log").insert({
@@ -72,7 +79,11 @@ export async function sendContactMessage(input: ContactMessageInput) {
     action: "send_contact_message",
     entity_type: "contacts",
     entity_id: contact.id,
-    details: { subject, resend_message_id: resendMessageId },
+    details: {
+      subject,
+      resend_message_id: resendMessageId,
+      template_slug: input.templateSlug ?? null,
+    },
   });
 
   revalidatePath(`/[locale]/contacts/${contact.id}`, "layout");

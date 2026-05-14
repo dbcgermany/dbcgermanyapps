@@ -61,6 +61,7 @@ const NAV_ITEMS: NavItem[] = [
 
   { labelKey: "news", href: "/news", icon: Newspaper, mod: "news", dividerAbove: true },
   { labelKey: "newsletters", href: "/newsletters", icon: Mail, mod: "newsletters" },
+  { labelKey: "outreachTemplates", href: "/outreach/templates", icon: Mail, mod: "contacts" },
   { labelKey: "funnels", href: "/funnels", icon: Zap, mod: "funnels" },
   { labelKey: "applications", href: "/applications", icon: FileText, mod: "applications" },
   { labelKey: "jobOffers", href: "/job-offers", icon: Briefcase, mod: "jobOffers" },

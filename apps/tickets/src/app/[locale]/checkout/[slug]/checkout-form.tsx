@@ -102,8 +102,11 @@ export function CheckoutForm({
 }) {
   const tPerson = useTranslations("person");
   const tCheckout = useTranslations("tickets.checkout");
+  // Start with NO tier pre-picked unless the visitor deep-linked from a funnel
+  // CTA that carried `?tier=<id>`. Forces a deliberate "Which ticket?" choice;
+  // the submit button stays disabled until the operator picks one.
   const [attendees, setAttendees] = useState<Attendee[]>([
-    emptyAttendee(initialTierId ?? tiers[0]?.id ?? ""),
+    emptyAttendee(initialTierId ?? ""),
   ]);
   const [couponCode, setCouponCode] = useState(initialCouponCode ?? "");
   // P2.2 — live coupon preview (debounced 400ms)
@@ -405,11 +408,15 @@ export function CheckoutForm({
                 </label>
                 <select
                   value={attendee.tierId}
+                  required
                   onChange={(e) =>
                     updateAttendee(index, "tierId", e.target.value)
                   }
                   className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                 >
+                  <option value="" disabled>
+                    {tCheckout("selectTierPlaceholder")}
+                  </option>
                   {tiers.map((tier) => (
                     <option key={tier.id} value={tier.id}>
                       {tier.name} &mdash;{" "}
@@ -633,12 +640,14 @@ export function CheckoutForm({
         </span>
       </label>
 
-      {/* Submit */}
+      {/* Submit — blocked until every attendee has explicitly picked a tier
+          (no more "Starter €49.00" auto-pick masking a missing choice). */}
       <button
         type="submit"
         disabled={
           isPending ||
           !revocationWaived ||
+          attendees.some((a) => !a.tierId) ||
           (Boolean(turnstileSiteKey) && !turnstileToken)
         }
         className="w-full rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 disabled:opacity-50 transition-colors"

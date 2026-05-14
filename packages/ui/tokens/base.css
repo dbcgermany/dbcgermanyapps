@@ -12,6 +12,12 @@
    LIGHT THEME (default)
    ========================================================================= */
 :root {
+  /* Tells the user-agent which palette to render native form controls
+     against. Without this, native <select> dropdown arrows on iOS Safari
+     stay dark-on-dark in dark mode (invisible). Toggled by the .dark
+     class below so the browser swaps native control colors in lockstep
+     with our tokens. */
+  color-scheme: light;
   /* --- Layer 1: DBC Semantic Color Tokens --- */
   --dbc-color-bg:                #ffffff;
   --dbc-color-bg-secondary:      #fafafa;
@@ -141,6 +147,10 @@
    DARK THEME
    ========================================================================= */
 .dark {
+  /* Mirror of :root color-scheme — flips native form controls (the
+     <select> arrow most visibly) to the dark variant so they don't
+     stay invisible against our dark surfaces. */
+  color-scheme: dark;
   /* --- Layer 1: DBC Semantic Color Tokens (dark) --- */
   --dbc-color-bg:                #0a0a0a;
   --dbc-color-bg-secondary:      #141414;

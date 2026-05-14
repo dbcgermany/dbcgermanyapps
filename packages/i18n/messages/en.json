@@ -149,6 +149,7 @@
       "pageTitle": "Checkout",
       "removeAttendee": "Remove",
       "ticketType": "Ticket type",
+      "selectTierPlaceholder": "Select ticket type",
       "addAnotherTicket": "Add another ticket",
       "couponCode": "Coupon code",
       "summary": "Summary"
@@ -430,6 +431,53 @@
     }
   },
   "admin": {
+    "outreach": {
+      "locales": {
+        "en": "English",
+        "de": "Deutsch",
+        "fr": "Français"
+      },
+      "compose": {
+        "openButton": "Send email…",
+        "title": "Send email",
+        "recipient": "To <mono>{email}</mono>. Personal one-off message — not marketing, no unsubscribe footer.",
+        "template": "Template",
+        "freeForm": "— Free-form",
+        "language": "Language",
+        "subject": "Subject",
+        "message": "Message",
+        "bodyPlaceholder": "Hi Ada, …",
+        "bodyHint": "Blank lines split paragraphs. Plain text only.",
+        "replyToLabel": "Reply-To",
+        "cancel": "Cancel",
+        "send": "Send",
+        "sending": "Sending…",
+        "sentTo": "Sent to {email}"
+      },
+      "editor": {
+        "indexTitle": "Outreach templates",
+        "indexSubtitle": "Pre-canned cold-outreach copy used from the per-contact Send email dialog. Edit any field — the next send uses your new wording immediately.",
+        "colName": "Template",
+        "colDescription": "Use",
+        "colReplyTo": "Reply-To",
+        "colUpdated": "Updated",
+        "edit": "Edit",
+        "editTitle": "Edit template",
+        "fieldName": "Display name",
+        "fieldDescription": "When to use it",
+        "fieldReplyTo": "Reply-To",
+        "fieldReplyToHint": "Where replies land when the recipient hits Reply. Pool inbox (e.g. sponsors@dbc-germany.com) is recommended so coverage doesn't depend on one person.",
+        "fieldSubject": "Subject",
+        "fieldBody": "Body",
+        "variables": "Variables you can use",
+        "variablesHint": "These tokens are replaced at send-time with the contact's data. Tokens with no value (e.g. a contact missing organization) become empty.",
+        "tab": "{locale} content",
+        "save": "Save",
+        "saving": "Saving…",
+        "saved": "Saved",
+        "back": "Back to templates"
+      }
+    },
     "nav": {
       "ads": "Dashboard ads",
       "allContacts": "All contacts",
@@ -450,6 +498,7 @@
       "legalPages": "Legal Pages",
       "news": "News",
       "newsletters": "Newsletters",
+      "outreachTemplates": "Outreach templates",
       "notifications": "Notifications",
       "orders": "Orders",
       "partners": "Sponsors & Partners",

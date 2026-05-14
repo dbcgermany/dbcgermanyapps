@@ -149,6 +149,7 @@
       "pageTitle": "Kasse",
       "removeAttendee": "Entfernen",
       "ticketType": "Ticketart",
+      "selectTierPlaceholder": "Ticketart auswählen",
       "addAnotherTicket": "Weiteres Ticket hinzufügen",
       "couponCode": "Gutscheincode",
       "summary": "Zusammenfassung"
@@ -430,6 +431,53 @@
     }
   },
   "admin": {
+    "outreach": {
+      "locales": {
+        "en": "English",
+        "de": "Deutsch",
+        "fr": "Français"
+      },
+      "compose": {
+        "openButton": "E-Mail senden …",
+        "title": "E-Mail senden",
+        "recipient": "An <mono>{email}</mono>. Persönliche Einzel-Nachricht — kein Marketing, kein Abmelde-Footer.",
+        "template": "Vorlage",
+        "freeForm": "— Frei formuliert",
+        "language": "Sprache",
+        "subject": "Betreff",
+        "message": "Nachricht",
+        "bodyPlaceholder": "Hallo Ada, …",
+        "bodyHint": "Leerzeilen trennen Absätze. Nur Klartext.",
+        "replyToLabel": "Antwort an",
+        "cancel": "Abbrechen",
+        "send": "Senden",
+        "sending": "Wird gesendet …",
+        "sentTo": "Gesendet an {email}"
+      },
+      "editor": {
+        "indexTitle": "Outreach-Vorlagen",
+        "indexSubtitle": "Vorbereitete Cold-Outreach-Texte, die im Send-E-Mail-Dialog pro Kontakt verwendet werden. Jedes Feld ist editierbar — der nächste Versand nutzt sofort den neuen Text.",
+        "colName": "Vorlage",
+        "colDescription": "Anwendung",
+        "colReplyTo": "Antwort an",
+        "colUpdated": "Aktualisiert",
+        "edit": "Bearbeiten",
+        "editTitle": "Vorlage bearbeiten",
+        "fieldName": "Anzeigename",
+        "fieldDescription": "Einsatzbeschreibung",
+        "fieldReplyTo": "Antwort-an-Adresse",
+        "fieldReplyToHint": "Wohin Antworten gehen, wenn der Empfänger auf Antworten klickt. Eine Sammeladresse (z. B. sponsors@dbc-germany.com) wird empfohlen, damit die Abdeckung nicht von einer Person abhängt.",
+        "fieldSubject": "Betreff",
+        "fieldBody": "Body",
+        "variables": "Verfügbare Platzhalter",
+        "variablesHint": "Diese Tokens werden beim Versand mit den Daten des Kontakts ersetzt. Tokens ohne Wert (z. B. ein Kontakt ohne Organisation) werden leer.",
+        "tab": "Inhalt {locale}",
+        "save": "Speichern",
+        "saving": "Wird gespeichert …",
+        "saved": "Gespeichert",
+        "back": "Zurück zu den Vorlagen"
+      }
+    },
     "nav": {
       "ads": "Dashboard-Anzeigen",
       "allContacts": "Alle Kontakte",
@@ -450,6 +498,7 @@
       "legalPages": "Rechtstexte",
       "news": "Aktuelles",
       "newsletters": "Newsletter",
+      "outreachTemplates": "Outreach-Vorlagen",
       "notifications": "Benachrichtigungen",
       "orders": "Bestellungen",
       "partners": "Sponsoren & Partner",
