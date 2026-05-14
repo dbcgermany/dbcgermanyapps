@@ -199,13 +199,25 @@ export function NewContactForm({
             <Input type="text" name="organization" />
           </FormField>
         </div>
-        <FormField label={t("linkedinUrl")}>
-          <Input
-            type="url"
-            name="linkedin_url"
-            placeholder="https://www.linkedin.com/in/…"
-          />
-        </FormField>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <FormField label={t("linkedinUrl")}>
+            <Input
+              type="url"
+              name="linkedin_url"
+              placeholder="https://www.linkedin.com/in/…"
+            />
+          </FormField>
+          <FormField
+            label={t("fields.websiteUrl")}
+            hint={t("fields.websiteUrlHint")}
+          >
+            <Input
+              type="url"
+              name="website_url"
+              placeholder="https://…"
+            />
+          </FormField>
+        </div>
       </section>
 
       {/* Address */}

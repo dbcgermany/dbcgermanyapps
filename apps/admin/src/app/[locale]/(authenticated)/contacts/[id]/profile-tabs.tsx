@@ -559,16 +559,31 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
             className="h-auto! py-2 text-sm"
           />
         </div>
-        <label className="block">
-          <span className="mb-1 block text-sm font-medium">{tFields("linkedinUrl")}</span>
-          <input
-            name="linkedin_url"
-            type="url"
-            placeholder="https://www.linkedin.com/in/…"
-            defaultValue={contact.linkedin_url ?? ""}
-            className={input}
-          />
-        </label>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <label className="block">
+            <span className="mb-1 block text-sm font-medium">{tFields("linkedinUrl")}</span>
+            <input
+              name="linkedin_url"
+              type="url"
+              placeholder="https://www.linkedin.com/in/…"
+              defaultValue={contact.linkedin_url ?? ""}
+              className={input}
+            />
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-sm font-medium">{tFields("fields.websiteUrl")}</span>
+            <input
+              name="website_url"
+              type="url"
+              placeholder="https://…"
+              defaultValue={contact.website_url ?? ""}
+              className={input}
+            />
+            <span className="mt-1 block text-[11px] text-muted-foreground">
+              {tFields("fields.websiteUrlHint")}
+            </span>
+          </label>
+        </div>
       </fieldset>
 
       {/* Professional */}

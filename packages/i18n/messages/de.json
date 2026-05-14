@@ -1092,7 +1092,9 @@
         "adminNotesPlaceholder": "Kontext fürs Team — Beziehungshistorie, Do-not-Contact-Hinweise, Folgeaufgaben…",
         "emailVerifiedBadge": "Verifiziert",
         "emailUnverifiedBadge": "Ungeprüft",
-        "emailVerifiedToggle": "Diese E-Mail als verifiziert markieren (Person darüber erreichbar)"
+        "emailVerifiedToggle": "Diese E-Mail als verifiziert markieren (Person darüber erreichbar)",
+        "websiteUrl": "Website",
+        "websiteUrlHint": "Website der Publikation, Firma oder Person. Getrennt von LinkedIn."
       },
       "profile": {
         "sections": {
@@ -1131,7 +1133,10 @@
           "email": "E-Mail",
           "phone": "Telefon",
           "linkedin": "LinkedIn",
-          "in_person": "Persönlich"
+          "in_person": "Persönlich",
+          "whatsapp": "WhatsApp",
+          "instagram": "Instagram-DM",
+          "web_form": "Web-Formular"
         }
       },
       "pipeline": {

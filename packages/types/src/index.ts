@@ -621,6 +621,9 @@ export const BEST_CONTACT_METHODS = [
   "phone",
   "linkedin",
   "in_person",
+  "whatsapp",
+  "instagram",
+  "web_form",
 ] as const;
 export type BestContactMethod = (typeof BEST_CONTACT_METHODS)[number];
 

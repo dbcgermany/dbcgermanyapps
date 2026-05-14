@@ -1092,7 +1092,9 @@
         "adminNotesPlaceholder": "Contexte pour l'équipe — historique de la relation, indicateurs « ne pas contacter », rappels de suivi…",
         "emailVerifiedBadge": "Vérifié",
         "emailUnverifiedBadge": "Non vérifié",
-        "emailVerifiedToggle": "Marquer cette adresse comme vérifiée (personne joignable à cette adresse)"
+        "emailVerifiedToggle": "Marquer cette adresse comme vérifiée (personne joignable à cette adresse)",
+        "websiteUrl": "Site web",
+        "websiteUrlHint": "Site de la publication, de l'entreprise ou personnel. Distinct de LinkedIn."
       },
       "profile": {
         "sections": {
@@ -1131,7 +1133,10 @@
           "email": "E-mail",
           "phone": "Téléphone",
           "linkedin": "LinkedIn",
-          "in_person": "En personne"
+          "in_person": "En personne",
+          "whatsapp": "WhatsApp",
+          "instagram": "DM Instagram",
+          "web_form": "Formulaire web"
         }
       },
       "pipeline": {

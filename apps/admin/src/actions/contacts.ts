@@ -51,6 +51,7 @@ export interface Contact {
   confidence: number | null;
   email_verified: boolean;
   hq_country: string | null;
+  website_url: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -175,7 +176,7 @@ export async function listContacts(filters: {
        phone, marketing_consent, marketing_consent_confirmed_at,
        marketing_consent_source, unsubscribed_at, admin_notes, created_at, updated_at,
        tier, sector, best_contact_method, pitch_tier, confidence,
-       email_verified, hq_country,
+       email_verified, hq_country, website_url,
        links:contact_category_links(
          category:contact_categories(slug, name_en, color)
        ),
@@ -363,6 +364,8 @@ export async function createContact(formData: FormData): Promise<
     ((formData.get("organization") as string) || "").trim() || null;
   const linkedinUrl =
     ((formData.get("linkedin_url") as string) || "").trim() || null;
+  const websiteUrl =
+    ((formData.get("website_url") as string) || "").trim() || null;
   const addressLine1 =
     ((formData.get("address_line_1") as string) || "").trim() || null;
   const addressLine2 =
@@ -432,6 +435,7 @@ export async function createContact(formData: FormData): Promise<
   if (birthday) patch.birthday = birthday;
   if (organization) patch.organization = organization;
   if (linkedinUrl) patch.linkedin_url = linkedinUrl;
+  if (websiteUrl) patch.website_url = websiteUrl;
   if (addressLine1) patch.address_line_1 = addressLine1;
   if (addressLine2) patch.address_line_2 = addressLine2;
   if (postalCode) patch.postal_code = postalCode;
@@ -583,6 +587,7 @@ export async function updateContactProfile(id: string, formData: FormData) {
     "title",
     "organization",
     "linkedin_url",
+    "website_url",
     "address_line_1",
     "address_line_2",
     "postal_code",
