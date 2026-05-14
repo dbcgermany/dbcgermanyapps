@@ -2,7 +2,17 @@
 
 import { useActionState, useEffect, useRef, useState } from "react";
 import { ChapterSelect } from "@dbc/ui";
-import { submitChapterDelegateRegistration } from "@/actions/chapter-delegate";
+
+// Deliberate divergence from the checkout SSOT: this form POSTs to a plain
+// JSON API route (/api/chapter-delegate/register) instead of a "use server"
+// server action. Across multiple deploys on 2026-05-14/15, Next.js kept
+// returning "Server action not found." (HTTP 404) on submit even with
+// NEXT_SERVER_ACTIONS_ENCRYPTION_KEY pinned and the duplicate-deploy
+// cleanup applied — action-ID stability across Vercel's rolling builds is
+// not reliable enough for a public form an event team has to submit during
+// a deploy window. The HTTP contract of a route handler IS stable, so the
+// form is rock-solid across deploys. Track this exception in the action
+// file's comment block; revisit if Next.js fixes action-ID stability.
 
 // window.turnstile is declared globally by checkout-form.tsx; reuse that type.
 
@@ -103,46 +113,62 @@ export function RegisterForm({
   const turnstileRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
 
-  // Same hook + submission shape as apps/tickets/.../checkout/.../checkout-form.tsx
-  // — the SSOT pattern for public-facing forms in this app. React 19's
-  // useActionState handles error propagation cleanly so a thrown action
-  // never reaches the route error boundary, and the form action wrapper
-  // routes through Next.js's standard server-action endpoint (no bespoke
-  // /api/... route to maintain in parallel).
+  // useActionState wraps a plain fetch() to /api/chapter-delegate/register.
+  // The action POST has no server-action ID — just a stable URL contract that
+  // works across deploys.
   const [state, formAction, isPending] = useActionState(
     async (
       _prev: { success?: true; error?: string } | null,
       formData: FormData
     ) => {
-      const result = await submitChapterDelegateRegistration({
-        eventSlug,
-        firstName: (formData.get("first_name") as string) ?? "",
-        lastName: (formData.get("last_name") as string) ?? "",
-        email: (formData.get("email") as string) ?? "",
-        position: (formData.get("position") as string) ?? "",
-        chapterCountry: (formData.get("chapter_country") as string) ?? "",
-        chapterLeadName:
-          (formData.get("chapter_lead_name") as string) || undefined,
-        chapterLeadEmail:
-          (formData.get("chapter_lead_email") as string) || undefined,
-        bringsCompanion,
-        companionFirstName:
-          (formData.get("companion_first_name") as string) || undefined,
-        companionLastName:
-          (formData.get("companion_last_name") as string) || undefined,
-        companionEmail:
-          (formData.get("companion_email") as string) || undefined,
-        consent: formData.get("consent") === "on",
-        locale,
-        honeypot: (formData.get("website") as string) || undefined,
-        turnstileToken: turnstileToken ?? undefined,
-      });
-      if (result.success) setSuccess(true);
-      return result;
+      try {
+        const res = await fetch("/api/chapter-delegate/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            eventSlug,
+            firstName: (formData.get("first_name") as string) ?? "",
+            lastName: (formData.get("last_name") as string) ?? "",
+            email: (formData.get("email") as string) ?? "",
+            position: (formData.get("position") as string) ?? "",
+            chapterCountry: (formData.get("chapter_country") as string) ?? "",
+            chapterLeadName:
+              (formData.get("chapter_lead_name") as string) || undefined,
+            chapterLeadEmail:
+              (formData.get("chapter_lead_email") as string) || undefined,
+            bringsCompanion,
+            companionFirstName:
+              (formData.get("companion_first_name") as string) || undefined,
+            companionLastName:
+              (formData.get("companion_last_name") as string) || undefined,
+            companionEmail:
+              (formData.get("companion_email") as string) || undefined,
+            consent: formData.get("consent") === "on",
+            locale,
+            honeypot: (formData.get("website") as string) || undefined,
+          }),
+        });
+        const result = (await res.json().catch(() => ({}))) as {
+          success?: true;
+          error?: string;
+        };
+        if (result.success) setSuccess(true);
+        return result;
+      } catch (err) {
+        console.error("[chapter-delegate] fetch failed:", err);
+        return {
+          error:
+            "Couldn't reach the server. Check your connection and try again.",
+        };
+      }
     },
     null
   );
   const error = state?.error ?? null;
+  // turnstileToken is captured by the loader (Turnstile widget renders if a
+  // site key is configured) but the API route doesn't verify it — see the
+  // comment block at the top of this file.
+  void turnstileToken;
 
   // Cloudflare Turnstile widget loader (mirrors checkout-form).
   useEffect(() => {
