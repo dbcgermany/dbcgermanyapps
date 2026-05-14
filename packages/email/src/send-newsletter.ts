@@ -96,6 +96,19 @@ export interface SendStaffMessageInput {
   senderName: string;
   senderEmail: string;
   replyTo?: string;
+  /**
+   * Override the From address itself (not just the display name). Useful for
+   * outreach templates that want the recipient to see the department mailbox
+   * directly in the From header (e.g. `sponsors@dbc-germany.com`) instead of
+   * the generic staff sender. Any address on a Resend-verified domain works.
+   */
+  fromAddress?: string;
+  /**
+   * Optional department / role suffix shown after the sender name in the
+   * From display, e.g. "Jay Kalala · Sponsorships". Without it the recipient
+   * just sees the name, which can feel ambiguous for cold outreach.
+   */
+  fromDepartment?: string;
   locale: Locale;
 }
 
@@ -109,14 +122,23 @@ export async function sendStaffMessage(input: SendStaffMessageInput) {
     })
   );
   const resend = createEmailClient();
-  // During onboarding we can't send from arbitrary @dbc-germany.com addresses,
-  // so fall back to the shared Resend sender with the staff member's name in
-  // the display portion and reply-to pointing at their real mailbox.
-  const staffFrom =
+  // Resolve the bare sending address. Caller can override (outreach templates
+  // pass the per-template pool inbox like sponsors@dbc-germany.com so the
+  // From and Reply-To match — that combo is what gets through Gmail's spam
+  // heuristic cleanly). Without an override we fall back through the staff
+  // env → generic Resend env → DEFAULT_FROM chain.
+  const overrideBare = input.fromAddress?.trim();
+  const staffEnv =
     process.env.RESEND_STAFF_FROM_ADDRESS ?? process.env.RESEND_FROM_ADDRESS;
-  const from = staffFrom
-    ? `${input.senderName} <${staffFrom.replace(/^[^<]*<|>$/g, "")}>`
-    : `${input.senderName} <${DEFAULT_FROM.replace(/^[^<]*<|>$/g, "")}>`;
+  const bareAddress = overrideBare
+    ? overrideBare
+    : staffEnv
+      ? staffEnv.replace(/^[^<]*<|>$/g, "")
+      : DEFAULT_FROM.replace(/^[^<]*<|>$/g, "");
+  const displayName = input.fromDepartment
+    ? `${input.senderName} · ${input.fromDepartment}`
+    : input.senderName;
+  const from = `${displayName} <${bareAddress}>`;
   const res = await resend.emails.send({
     from,
     to: input.to,

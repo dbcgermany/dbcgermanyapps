@@ -26,6 +26,10 @@ const VARIABLES: Array<{ token: string; example: string }> = [
   { token: "{eventDate}", example: "13 June 2026" },
   { token: "{eventCity}", example: "Essen" },
   { token: "{eventVenue}", example: "Messe Essen" },
+  {
+    token: "{eventUrl}",
+    example: "https://tickets.dbc-germany.com/en/events/richesses-dafrique-germany-2026",
+  },
   { token: "{senderName}", example: "Jay Kalala" },
   { token: "{senderEmail}", example: "jay@dbc-germany.com" },
   { token: "{senderRole}", example: "admin" },

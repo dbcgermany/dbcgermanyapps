@@ -50,7 +50,7 @@ const TRANSLATIONS = {
     tierLabel: "Ticket type",
     ticketLabel: "Ticket #",
     viewOrder: "View order online",
-    footer: "Sent by DBC Germany (UG i.G.) \u00B7 tickets.dbc-germany.com",
+    footer: "Sent by DBC Germany UG \u00B7 tickets.dbc-germany.com",
     questions:
       "Questions? Reply to this email or contact us at hello@dbc-germany.com.",
   },
@@ -62,7 +62,7 @@ const TRANSLATIONS = {
     tierLabel: "Ticketart",
     ticketLabel: "Ticket-Nr.",
     viewOrder: "Bestellung online ansehen",
-    footer: "Gesendet von DBC Germany (UG i.G.) \u00B7 tickets.dbc-germany.com",
+    footer: "Gesendet von DBC Germany UG \u00B7 tickets.dbc-germany.com",
     questions:
       "Fragen? Antworten Sie auf diese E-Mail oder kontaktieren Sie uns unter hello@dbc-germany.com.",
   },
@@ -75,7 +75,7 @@ const TRANSLATIONS = {
     ticketLabel: "Billet n\u00B0",
     viewOrder: "Voir la commande en ligne",
     footer:
-      "Envoy\u00E9 par DBC Germany (UG i.G.) \u00B7 tickets.dbc-germany.com",
+      "Envoy\u00E9 par DBC Germany UG \u00B7 tickets.dbc-germany.com",
     questions:
       "Des questions ? R\u00E9pondez \u00E0 cet e-mail ou contactez-nous \u00E0 hello@dbc-germany.com.",
   },
