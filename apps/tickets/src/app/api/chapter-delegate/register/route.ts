@@ -1,8 +1,20 @@
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { createServerClient, notifyAdmins } from "@dbc/supabase/server";
-import { DBC_CHAPTER_COUNTRY_CODES } from "@dbc/ui";
 import { captureServerError } from "@/lib/observe";
+
+// Hardcoded list of ISO-3166 alpha-2 codes for the countries DBC has a
+// chapter in. Mirrors packages/ui/src/chapter-select.tsx
+// DBC_CHAPTER_COUNTRY_CODES exactly, but inlined here because importing
+// the @dbc/ui constant via a "use client" boundary into this route
+// handler broke Turbopack's page-data collection
+// ("function is not iterable" on new Set(undefined)). The select on the
+// public form is the authoritative source of valid options — this is just
+// the server-side validation gate to reject hand-crafted POSTs. Update
+// both lists in lockstep when a chapter is added.
+const DBC_CHAPTER_COUNTRY_CODES = [
+  "DE", "FR", "CA", "BE", "GA", "CD", "SN", "US", "GB", "NO", "ZA", "CI",
+] as const;
 
 // ---------------------------------------------------------------------------
 // Why this exists as a regular route handler (and not a server action):
