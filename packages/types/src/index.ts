@@ -576,9 +576,10 @@ export type InvolvementRole = (typeof INVOLVEMENT_ROLES)[number];
 // filter. Identity-flavoured roles (sponsor/partner/press) are filtered
 // via the Category dropdown instead — they're durable identities, not
 // event-bound actions. Backfill migration 20260513000005 ensures legacy
-// rows are also reachable via Category.
+// rows are also reachable via Category. `attendee` is intentionally
+// excluded — the dedicated Attendees tab covers that audience, so it
+// would only duplicate rows in the main Contacts list.
 export const EVENT_ROLE_FILTER_VALUES = [
-  "attendee",
   "invited_guest",
   "speaker",
   "moderator",

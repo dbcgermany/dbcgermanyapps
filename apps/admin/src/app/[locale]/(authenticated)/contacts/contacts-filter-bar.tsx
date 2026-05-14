@@ -162,12 +162,15 @@ export function ContactsFilterBar({
           aria-label={t("filters.pipelineLabel")}
         >
           <option value="">{t("filters.pipelineAll")}</option>
+          {/* "new" matches both contacts the operator explicitly set to New
+              AND contacts they haven't touched yet (no contact_user_state row).
+              That's why there's no separate "Not set" option anymore — every
+              contact is "New" until the operator promotes it. */}
           {(PIPELINE_STATUS_VALUES as readonly PipelineStatus[]).map((s) => (
             <option key={s} value={s}>
               {tPipeline(`statuses.${s}`)}
             </option>
           ))}
-          <option value="none">{t("filters.pipelineNone")}</option>
         </select>
 
         <label className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm">

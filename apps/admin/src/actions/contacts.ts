@@ -136,32 +136,48 @@ export async function listContacts(filters: {
   }
 
   // Pipeline filter — scoped to the current user via contact_user_state.
-  // "none" means: no row exists yet for this (contact, user) pair.
+  //   • "new"  — explicit `new` rows AND contacts with no state row yet
+  //              (every contact starts in "new" the moment it lands here).
+  //   • "engaged" / "considering" / "declined" — only contacts the operator
+  //              has explicitly stamped with that status.
+  //   • "none" — legacy sentinel: contacts with NO state row. Kept for URL
+  //              compatibility but no longer surfaced in the filter UI
+  //              (it's a subset of "new").
   let pipelineContactIds: string[] | null = null;
-  // Unified exclude-set: pipeline "none" sentinel ids + pure-attendee ids.
+  // Unified exclude-set: pure-attendee ids + pipeline-driven exclusions.
   // Merged before the .not("id","in",…) is applied so a single PostgREST
   // filter covers everything that needs to be hidden.
   const excludeIdSet = new Set<string>();
-  if (filters.pipelineStatus) {
-    if (filters.pipelineStatus === "none") {
-      const { data: stateRows } = await supabase
-        .from("contact_user_state")
-        .select("contact_id")
-        .eq("user_id", user.userId);
-      for (const r of stateRows ?? []) {
-        excludeIdSet.add(r.contact_id as string);
-      }
-    } else {
-      const { data: stateRows } = await supabase
-        .from("contact_user_state")
-        .select("contact_id")
-        .eq("user_id", user.userId)
-        .eq("pipeline_status", filters.pipelineStatus);
-      pipelineContactIds = Array.from(
-        new Set((stateRows ?? []).map((r) => r.contact_id as string))
-      );
-      if (pipelineContactIds.length === 0) return [];
+  if (filters.pipelineStatus === "none") {
+    const { data: stateRows } = await supabase
+      .from("contact_user_state")
+      .select("contact_id")
+      .eq("user_id", user.userId);
+    for (const r of stateRows ?? []) {
+      excludeIdSet.add(r.contact_id as string);
     }
+  } else if (filters.pipelineStatus === "new") {
+    // "new" = explicit `new` ∪ no-state. Implemented as: exclude every
+    // state row whose status is NOT 'new'. Contacts with no row at all
+    // pass through untouched.
+    const { data: stateRows } = await supabase
+      .from("contact_user_state")
+      .select("contact_id")
+      .eq("user_id", user.userId)
+      .neq("pipeline_status", "new");
+    for (const r of stateRows ?? []) {
+      excludeIdSet.add(r.contact_id as string);
+    }
+  } else if (filters.pipelineStatus) {
+    const { data: stateRows } = await supabase
+      .from("contact_user_state")
+      .select("contact_id")
+      .eq("user_id", user.userId)
+      .eq("pipeline_status", filters.pipelineStatus);
+    pipelineContactIds = Array.from(
+      new Set((stateRows ?? []).map((r) => r.contact_id as string))
+    );
+    if (pipelineContactIds.length === 0) return [];
   }
 
   // Hide contacts whose ONLY category is `event_attendees`. Two cheap
