@@ -349,6 +349,25 @@ export function NewContactForm({
               placeholder="0–100"
             />
           </FormField>
+          <FormField label={tBusiness("fields.hqCountry")} hint={tBusiness("fields.hqCountryHint")}>
+            <Input
+              type="text"
+              name="hq_country"
+              maxLength={2}
+              placeholder={tBusiness("fields.hqCountryPlaceholder")}
+              autoCapitalize="characters"
+            />
+          </FormField>
+          <FormField label={tBusiness("fields.emailVerified")} hint={tBusiness("fields.emailVerifiedHint")}>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                name="email_verified"
+                className="size-4 rounded border-input"
+              />
+              <span>{tBusiness("fields.emailVerifiedToggle")}</span>
+            </label>
+          </FormField>
         </div>
       </section>
 

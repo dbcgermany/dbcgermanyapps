@@ -320,6 +320,13 @@
         "stickyFromPrice": "From {price}",
         "stickyDeadlinePrefix": "Ends in",
         "stickyScarcity": "Only {n} left",
+        "stickyEarlyBirdHeader": "Early Bird ends in",
+        "stickyEventStartsHeader": "Event starts in",
+        "stickyUntilDate": "Until {date}",
+        "stickyChipDays": "DAYS",
+        "stickyChipHours": "HOURS",
+        "stickyChipMinutes": "MINUTES",
+        "stickyChipSeconds": "SECONDS",
         "trustEyebrow": "Trusted by",
         "speakersBack": "All speakers"
       }
@@ -1082,7 +1089,10 @@
         "city": "City",
         "stateRegion": "State / region",
         "adminNotes": "Admin notes",
-        "adminNotesPlaceholder": "Context for the team — relationship history, do-not-contact flags, follow-up reminders…"
+        "adminNotesPlaceholder": "Context for the team — relationship history, do-not-contact flags, follow-up reminders…",
+        "emailVerifiedBadge": "Verified",
+        "emailUnverifiedBadge": "Unverified",
+        "emailVerifiedToggle": "Mark this email as verified (confirmed reaching the person)"
       },
       "profile": {
         "sections": {
@@ -1109,7 +1119,13 @@
           "pitchTier": "Pitch tier",
           "pitchTierPlaceholder": "High / Medium / Low",
           "confidence": "Confidence",
-          "confidenceHint": "Your confidence that this contact converts (0–100)."
+          "confidenceHint": "Your confidence that this contact converts (0–100).",
+          "hqCountry": "HQ country",
+          "hqCountryPlaceholder": "NG",
+          "hqCountryHint": "ISO 2-letter code for the company's HQ / origin country (separate from the contact's current location).",
+          "emailVerified": "Email status",
+          "emailVerifiedHint": "Toggle once a person has been reached at this address, or to confirm a published / verified inbox.",
+          "emailVerifiedToggle": "Email verified"
         },
         "bestContactMethods": {
           "email": "Email",

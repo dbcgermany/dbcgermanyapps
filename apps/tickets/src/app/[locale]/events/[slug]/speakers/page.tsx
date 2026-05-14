@@ -166,7 +166,20 @@ export default async function EventSpeakersPage({
             }),
           })}
           deadlineIso={activeDeadlineTier?.sales_end_at ?? null}
-          deadlinePrefix={f("stickyDeadlinePrefix")}
+          deadlineDisplayDate={
+            activeDeadlineTier?.sales_end_at
+              ? new Date(activeDeadlineTier.sales_end_at).toLocaleString(
+                  locale,
+                  {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  },
+                )
+              : null
+          }
           scarcityCount={scarcestTier?.stats?.displayRemaining ?? null}
           scarcityLabel={f("stickyScarcity")}
         />

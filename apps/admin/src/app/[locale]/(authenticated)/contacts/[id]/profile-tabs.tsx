@@ -515,7 +515,19 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
           {tFields("sectionContact")}
         </legend>
         <label className="block">
-          <span className="mb-1 block text-sm font-medium">{tFields("fields.email")}</span>
+          <span className="mb-1 flex items-center gap-2 text-sm font-medium">
+            <span>{tFields("fields.email")}</span>
+            {contact.email_verified ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-success-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-success">
+                <span aria-hidden>✓</span>
+                {tFields("fields.emailVerifiedBadge")}
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                {tFields("fields.emailUnverifiedBadge")}
+              </span>
+            )}
+          </span>
           <input
             name="email"
             type="email"
@@ -526,6 +538,16 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
           <span className="mt-1 block text-[11px] text-muted-foreground">
             {tFields("fields.emailHint")}
           </span>
+        </label>
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            name="email_verified"
+            defaultChecked={contact.email_verified}
+            className="size-4 rounded border-input"
+          />
+          <input type="hidden" name="email_verified_present" value="1" />
+          <span>{tFields("fields.emailVerifiedToggle")}</span>
         </label>
         <div className="block">
           <span className="mb-1 block text-sm font-medium">{tFields("fields.phone")}</span>
@@ -621,16 +643,32 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
             />
           </label>
         </div>
-        <div className="block">
-          <span className="mb-1 block text-sm font-medium">{tFields("country")}</span>
-          <CountrySelect
-            name="country"
-            defaultValue={contact.country ?? ""}
-            locale={locale}
-            placeholder="—"
-            size="sm"
-            className="h-auto! py-2 text-sm"
-          />
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="block">
+            <span className="mb-1 block text-sm font-medium">{tFields("country")}</span>
+            <CountrySelect
+              name="country"
+              defaultValue={contact.country ?? ""}
+              locale={locale}
+              placeholder="—"
+              size="sm"
+              className="h-auto! py-2 text-sm"
+            />
+          </div>
+          <label className="block">
+            <span className="mb-1 block text-sm font-medium">{tBusiness("fields.hqCountry")}</span>
+            <input
+              name="hq_country"
+              defaultValue={contact.hq_country ?? ""}
+              maxLength={2}
+              placeholder={tBusiness("fields.hqCountryPlaceholder")}
+              className={input}
+              style={{ textTransform: "uppercase" }}
+            />
+            <span className="mt-1 block text-[11px] text-muted-foreground">
+              {tBusiness("fields.hqCountryHint")}
+            </span>
+          </label>
         </div>
       </fieldset>
 

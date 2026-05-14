@@ -282,7 +282,7 @@ export default async function EventDetailPage({
   };
 
   return (
-    <main className="pb-20">
+    <main className="pb-40 md:pb-32">
       <JsonLd data={eventSchema} />
       <JsonLd data={breadcrumbSchema} />
       {faqSchema && <JsonLd data={faqSchema} />}
@@ -721,10 +721,10 @@ export default async function EventDetailPage({
         ctaLabel={f("closingCta")}
       />
 
-      {/* STICKY BOTTOM CTA — follows the visitor through every section.
-          Carries event countdown + cheapest-tier price + optional tier
-          deadline + optional scarcity badge. Hides automatically when the
-          desktop tickets sidebar is visible. */}
+      {/* STICKY BOTTOM CTA — always visible BCS-style urgency bar with
+          chip countdown (Days · Hours · Minutes · Seconds) on the soonest
+          tier deadline (or event start as fallback). Persists at every
+          scroll position so the deadline stays in peripheral view. */}
       {startsAt > now && minPrice != null && (
         <EventStickyCta
           eventStartsAt={event.starts_at}
@@ -737,7 +737,20 @@ export default async function EventDetailPage({
             }),
           })}
           deadlineIso={activeDeadlineTier?.sales_end_at ?? null}
-          deadlinePrefix={f("stickyDeadlinePrefix")}
+          deadlineDisplayDate={
+            activeDeadlineTier?.sales_end_at
+              ? new Date(activeDeadlineTier.sales_end_at).toLocaleString(
+                  locale,
+                  {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  },
+                )
+              : null
+          }
           scarcityCount={scarcestTier?.stats?.displayRemaining ?? null}
           scarcityLabel={f("stickyScarcity")}
         />

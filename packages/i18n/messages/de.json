@@ -320,6 +320,13 @@
         "stickyFromPrice": "Ab {price}",
         "stickyDeadlinePrefix": "Endet in",
         "stickyScarcity": "Nur noch {n}",
+        "stickyEarlyBirdHeader": "Early Bird endet in",
+        "stickyEventStartsHeader": "Event startet in",
+        "stickyUntilDate": "Nur noch bis {date}",
+        "stickyChipDays": "TAGE",
+        "stickyChipHours": "STUNDEN",
+        "stickyChipMinutes": "MINUTEN",
+        "stickyChipSeconds": "SEKUNDEN",
         "trustEyebrow": "Vertrauen von",
         "speakersBack": "Alle Speaker"
       }
@@ -1082,7 +1089,10 @@
         "city": "Stadt",
         "stateRegion": "Bundesland / Region",
         "adminNotes": "Admin-Notizen",
-        "adminNotesPlaceholder": "Kontext fürs Team — Beziehungshistorie, Do-not-Contact-Hinweise, Folgeaufgaben…"
+        "adminNotesPlaceholder": "Kontext fürs Team — Beziehungshistorie, Do-not-Contact-Hinweise, Folgeaufgaben…",
+        "emailVerifiedBadge": "Verifiziert",
+        "emailUnverifiedBadge": "Ungeprüft",
+        "emailVerifiedToggle": "Diese E-Mail als verifiziert markieren (Person darüber erreichbar)"
       },
       "profile": {
         "sections": {
@@ -1109,7 +1119,13 @@
           "pitchTier": "Pitch-Stufe",
           "pitchTierPlaceholder": "Hoch / Mittel / Niedrig",
           "confidence": "Konfidenz",
-          "confidenceHint": "Wie sicher du bist, dass dieser Kontakt konvertiert (0–100)."
+          "confidenceHint": "Wie sicher du bist, dass dieser Kontakt konvertiert (0–100).",
+          "hqCountry": "HQ-Land",
+          "hqCountryPlaceholder": "NG",
+          "hqCountryHint": "ISO-2-Buchstaben-Code für das Herkunfts- / HQ-Land (getrennt vom aktuellen Standort des Kontakts).",
+          "emailVerified": "E-Mail-Status",
+          "emailVerifiedHint": "Aktivieren, sobald jemand unter dieser Adresse erreicht wurde — oder bei einem offiziell veröffentlichten Postfach.",
+          "emailVerifiedToggle": "E-Mail verifiziert"
         },
         "bestContactMethods": {
           "email": "E-Mail",

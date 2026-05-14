@@ -320,6 +320,13 @@
         "stickyFromPrice": "À partir de {price}",
         "stickyDeadlinePrefix": "Se termine dans",
         "stickyScarcity": "Plus que {n}",
+        "stickyEarlyBirdHeader": "L'Early Bird se termine dans",
+        "stickyEventStartsHeader": "L'événement commence dans",
+        "stickyUntilDate": "Jusqu'au {date}",
+        "stickyChipDays": "JOURS",
+        "stickyChipHours": "HEURES",
+        "stickyChipMinutes": "MINUTES",
+        "stickyChipSeconds": "SECONDES",
         "trustEyebrow": "Ils nous font confiance",
         "speakersBack": "Tous les intervenants"
       }
@@ -1082,7 +1089,10 @@
         "city": "Ville",
         "stateRegion": "État / région",
         "adminNotes": "Notes admin",
-        "adminNotesPlaceholder": "Contexte pour l'équipe — historique de la relation, indicateurs « ne pas contacter », rappels de suivi…"
+        "adminNotesPlaceholder": "Contexte pour l'équipe — historique de la relation, indicateurs « ne pas contacter », rappels de suivi…",
+        "emailVerifiedBadge": "Vérifié",
+        "emailUnverifiedBadge": "Non vérifié",
+        "emailVerifiedToggle": "Marquer cette adresse comme vérifiée (personne joignable à cette adresse)"
       },
       "profile": {
         "sections": {
@@ -1109,7 +1119,13 @@
           "pitchTier": "Niveau de pitch",
           "pitchTierPlaceholder": "Élevé / Moyen / Faible",
           "confidence": "Confiance",
-          "confidenceHint": "Ta confiance que ce contact convertit (0–100)."
+          "confidenceHint": "Ta confiance que ce contact convertit (0–100).",
+          "hqCountry": "Pays du siège",
+          "hqCountryPlaceholder": "NG",
+          "hqCountryHint": "Code ISO à 2 lettres du pays d'origine / du siège (distinct du pays actuel du contact).",
+          "emailVerified": "Statut de l'e-mail",
+          "emailVerifiedHint": "À cocher dès qu'une personne a été jointe à cette adresse, ou pour une boîte officielle publiée.",
+          "emailVerifiedToggle": "E-mail vérifié"
         },
         "bestContactMethods": {
           "email": "E-mail",

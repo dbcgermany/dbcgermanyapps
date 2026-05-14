@@ -49,6 +49,8 @@ export interface Contact {
   best_contact_method: BestContactMethod | null;
   pitch_tier: string | null;
   confidence: number | null;
+  email_verified: boolean;
+  hq_country: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -173,6 +175,7 @@ export async function listContacts(filters: {
        phone, marketing_consent, marketing_consent_confirmed_at,
        marketing_consent_source, unsubscribed_at, admin_notes, created_at, updated_at,
        tier, sector, best_contact_method, pitch_tier, confidence,
+       email_verified, hq_country,
        links:contact_category_links(
          category:contact_categories(slug, name_en, color)
        ),
@@ -369,6 +372,12 @@ export async function createContact(formData: FormData): Promise<
   const city = ((formData.get("city") as string) || "").trim() || null;
   const stateRegion =
     ((formData.get("state_region") as string) || "").trim() || null;
+  const hqCountryRaw =
+    ((formData.get("hq_country") as string) || "").trim().toUpperCase();
+  const hqCountry =
+    /^[A-Z]{2}$/.test(hqCountryRaw) ? hqCountryRaw : null;
+  const emailVerified =
+    ((formData.get("email_verified") as string) || "") === "on";
 
   if (!firstName || !lastName) {
     return { error: "First and last name are required." };
@@ -433,6 +442,9 @@ export async function createContact(formData: FormData): Promise<
   if (pitchTier) patch.pitch_tier = pitchTier;
   if (bestContactMethod) patch.best_contact_method = bestContactMethod;
   if (confidence !== null) patch.confidence = confidence;
+  if (hqCountry) patch.hq_country = hqCountry;
+  // email_verified is always persisted (boolean toggle, even when off)
+  patch.email_verified = emailVerified;
   if (Object.keys(patch).length > 0) {
     await supabase.from("contacts").update(patch).eq("id", contactId);
   }
@@ -558,7 +570,7 @@ export async function updateContactProfile(id: string, formData: FormData) {
   // post-event consolidation of duplicates) but it is normalized to
   // lowercase + trimmed before write so the lower(email) unique index
   // catches collisions explicitly via the returned error.
-  const patch: Record<string, string | null> = {};
+  const patch: Record<string, string | boolean | null> = {};
   const textFields = [
     "first_name",
     "last_name",
@@ -581,6 +593,21 @@ export async function updateContactProfile(id: string, formData: FormData) {
     const raw = formData.get(f);
     const val = typeof raw === "string" ? raw.trim() : "";
     patch[f] = val === "" ? null : val;
+  }
+
+  // hq_country normalises to uppercase ISO 3166-1 alpha-2 to satisfy the
+  // contacts_hq_country_iso2_chk CHECK constraint.
+  const hqRaw = formData.get("hq_country");
+  if (typeof hqRaw === "string") {
+    const normalized = hqRaw.trim().toUpperCase();
+    patch.hq_country = /^[A-Z]{2}$/.test(normalized) ? normalized : null;
+  }
+
+  // email_verified is a checkbox — present in FormData only when checked.
+  // The form must always submit the field set so an unchecked box flips the
+  // value to false (it does — `name="email_verified"` is the checkbox key).
+  if (formData.has("email_verified_present")) {
+    patch.email_verified = formData.get("email_verified") === "on";
   }
 
   const emailRaw = formData.get("email");
