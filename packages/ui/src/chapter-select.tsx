@@ -3,7 +3,7 @@
 import * as React from "react";
 import { cn } from "./utils";
 
-// Constrained ISO-3166-1 alpha-2 list — only the 10 countries where a DBC
+// Constrained ISO-3166-1 alpha-2 list — only the countries where a DBC
 // chapter currently exists. Update here when chapters are added so the
 // chapter-delegate registration form, admin filters, and reports all stay
 // in sync.
@@ -16,6 +16,7 @@ export const DBC_CHAPTER_COUNTRY_CODES = [
   "CD", // Democratic Republic of the Congo
   "SN", // Senegal
   "US", // United States
+  "GB", // United Kingdom — added 2026-05-14
   "ZA", // South Africa
   "CI", // Ivory Coast
 ] as const;
