@@ -4,29 +4,30 @@ import { RegisterForm } from "./register-form";
 
 const T = {
   en: {
-    title: "Chapter delegate registration",
+    title: "Branch delegate registration",
     intro:
       "Register yourself as a DBC team member from outside Germany for the event below. Tickets are issued only after the DBC Germany team confirms your registration.",
     accessWarning:
       "Important: anyone who is NOT registered will be denied entry at the venue. Make sure every team member who plans to attend is registered through this form.",
     closed:
-      "Chapter delegate registration is not open for this event right now.",
+      "Branch delegate registration is not open for this event right now.",
   },
   de: {
-    title: "Anmeldung als Sektions-Delegierte:r",
+    title: "Anmeldung als Niederlassungs-Delegierte:r",
     intro:
       "Melde dich als DBC-Team-Mitglied außerhalb Deutschlands für die unten genannte Veranstaltung an. Tickets werden erst nach Freigabe durch das DBC Germany Team versendet.",
     accessWarning:
       "Wichtig: Wer NICHT registriert ist, wird am Einlass abgewiesen. Bitte stelle sicher, dass jedes Team-Mitglied, das teilnehmen möchte, über dieses Formular angemeldet ist.",
-    closed: "Die Anmeldung für Sektions-Delegierte ist aktuell geschlossen.",
+    closed:
+      "Die Anmeldung für Niederlassungs-Delegierte ist aktuell geschlossen.",
   },
   fr: {
-    title: "Inscription en tant que délégué·e d’antenne",
+    title: "Inscription en tant que délégué·e de succursale",
     intro:
-      "Inscrivez-vous en tant que membre de l’équipe DBC d’un autre pays pour l’événement ci-dessous. Les billets sont émis uniquement après confirmation de l’équipe DBC Allemagne.",
+      "Inscrivez-vous en tant que membre de l'équipe DBC d'un autre pays pour l'événement ci-dessous. Les billets sont émis uniquement après confirmation de l'équipe DBC Allemagne.",
     accessWarning:
-      "Important : toute personne NON inscrite se verra refuser l’accès au lieu. Assurez-vous que chaque membre de l’équipe qui souhaite participer est inscrit via ce formulaire.",
-    closed: "L’inscription des délégué·e·s d’antenne est actuellement fermée.",
+      "Important : toute personne NON inscrite se verra refuser l'accès au lieu. Assurez-vous que chaque membre de l'équipe qui souhaite participer est inscrit via ce formulaire.",
+    closed: "L'inscription des délégué·e·s de succursale est actuellement fermée.",
   },
 } as const;
 

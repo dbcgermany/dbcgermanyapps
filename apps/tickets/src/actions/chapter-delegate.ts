@@ -82,13 +82,13 @@ export async function submitChapterDelegateRegistration(
     return { error: "Please enter a valid email address." };
   }
   if (!CHAPTER_SET.has(chapter)) {
-    return { error: "Please pick a chapter from the list." };
+    return { error: "Please pick a branch from the list." };
   }
   if (!input.consent) {
     return { error: "Please confirm your team membership to continue." };
   }
   if (leadEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(leadEmail)) {
-    return { error: "Chapter Ambassador email looks invalid." };
+    return { error: "Branch Ambassador email looks invalid." };
   }
 
   let companionPayload: {
@@ -168,7 +168,7 @@ export async function submitChapterDelegateRegistration(
   if (!event) return { error: "Event not found." };
   if (!event.chapter_delegate_program_enabled) {
     return {
-      error: "Chapter delegate registration is closed for this event.",
+      error: "Branch delegate registration is closed for this event.",
     };
   }
 
@@ -274,7 +274,7 @@ export async function submitChapterDelegateRegistration(
         companionPayload
           ? `${companionPayload.firstName} ${companionPayload.lastName} <${companionPayload.email}>`
           : "—"
-      }\nChapter Ambassador: ${leadEmail ?? "—"}\n\nReview at /admin/${input.locale}/chapter-delegates`,
+      }\nBranch Ambassador: ${leadEmail ?? "—"}\n\nReview at /admin/${input.locale}/chapter-delegates`,
       data: {
         kind: "chapter_delegate_pending",
         involvement_id: delegateInvolvement.id,
