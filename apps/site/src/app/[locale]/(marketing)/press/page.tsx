@@ -82,7 +82,7 @@ export default async function PressPage({
         de: "Einheit Deutschland",
         fr: "Entité Allemagne",
       }[l],
-      value: "DBC Germany (UG i.G.) · Düsseldorf · 2026",
+      value: "DBC Germany UG · Düsseldorf · 2026",
     },
     {
       label: { en: "Startups accompanied", de: "Begleitete Startups", fr: "Startups accompagnées" }[l],

@@ -17,7 +17,7 @@ export function TicketsFooter({ locale }: { locale: string }) {
   return (
     <footer className="mt-16 border-t border-border bg-muted/20">
       <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-8 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-        <p>© {year} DBC Germany (UG i.G.)</p>
+        <p>© {year} DBC Germany UG</p>
         <nav className="flex flex-wrap gap-x-6 gap-y-2">
           <Link href={`/${locale}/imprint`} className="hover:text-foreground">
             {t("imprint")}

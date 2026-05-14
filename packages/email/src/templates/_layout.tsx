@@ -103,11 +103,14 @@ export function EmailLayout({
 }
 
 export const FOOTER_SIGNATURE =
-  "Sent by DBC Germany UG \u00B7 tickets.dbc-germany.com";
+  "DBC Germany UG \u00B7 tickets.dbc-germany.com";
+// No email in the footer \u2014 the recipient already has the From / Reply-To
+// addresses to write back to. Listing a separate "contact us at hello@\u2026"
+// adds noise (and historically used the wrong inbox).
 export const FOOTER_QUESTIONS = {
-  en: "Questions? Reply to this email or contact hello@dbc-germany.com.",
-  de: "Fragen? Antworten Sie auf diese E-Mail oder schreiben Sie an hello@dbc-germany.com.",
-  fr: "Des questions ? R\u00E9pondez \u00E0 cet e-mail ou \u00E9crivez \u00E0 hello@dbc-germany.com.",
+  en: "Questions? Just reply to this email.",
+  de: "Fragen? Antworten Sie einfach auf diese E-Mail.",
+  fr: "Des questions ? R\u00E9pondez simplement \u00E0 cet e-mail.",
 };
 
 export function DetailRow({

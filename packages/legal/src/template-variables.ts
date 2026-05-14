@@ -6,9 +6,9 @@ export const TEMPLATE_VARIABLES: ReadonlyArray<{
   key: string;
   description: string;
 }> = [
-  { key: "legal_name_with_form", description: "DBC Germany (UG i.G.)" },
+  { key: "legal_name_with_form", description: "DBC Germany UG" },
   { key: "legal_name", description: "DBC Germany" },
-  { key: "legal_form", description: "UG i.G." },
+  { key: "legal_form", description: "UG" },
   { key: "trade_name", description: "Trading-as name" },
   { key: "brand_name", description: "Brand display name" },
   { key: "registered_address", description: "Registered office (one line)" },

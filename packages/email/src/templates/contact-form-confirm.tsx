@@ -17,7 +17,7 @@ const T = {
     body1:
       "Thank you for reaching out to DBC Germany. We have received your message and our team will get back to you as soon as possible.",
     body2:
-      "If your inquiry is urgent, you can also reach us directly at hello@dbc-germany.com.",
+      "If your inquiry is urgent, just reply to this email and it will reach the team directly.",
     closing: "Best regards,",
     team: "The DBC Germany Team",
   },
@@ -27,7 +27,7 @@ const T = {
     body1:
       "vielen Dank f\u00FCr Ihre Nachricht an DBC Germany. Wir haben Ihre Anfrage erhalten und unser Team wird sich so schnell wie m\u00F6glich bei Ihnen melden.",
     body2:
-      "F\u00FCr dringende Anfragen erreichen Sie uns auch direkt unter hello@dbc-germany.com.",
+      "F\u00FCr dringende Anfragen antworten Sie einfach auf diese E-Mail \u2014 sie erreicht das Team direkt.",
     closing: "Mit freundlichen Gr\u00FC\u00DFen,",
     team: "Das DBC Germany Team",
   },
@@ -37,7 +37,7 @@ const T = {
     body1:
       "Merci d\u2019avoir contact\u00E9 DBC Germany. Nous avons bien re\u00E7u votre message et notre \u00E9quipe vous r\u00E9pondra dans les meilleurs d\u00E9lais.",
     body2:
-      "Pour toute demande urgente, vous pouvez \u00E9galement nous contacter directement \u00E0 hello@dbc-germany.com.",
+      "Pour toute demande urgente, r\u00E9pondez simplement \u00E0 cet e-mail \u2014 il parvient directement \u00E0 l'\u00E9quipe.",
     closing: "Cordialement,",
     team: "L\u2019\u00E9quipe DBC Germany",
   },

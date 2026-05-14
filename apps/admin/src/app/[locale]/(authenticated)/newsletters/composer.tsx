@@ -245,7 +245,7 @@ export function NewsletterComposer({
                 </div>
                 <hr className="my-3 border-border" />
                 <p className="text-xs text-muted-foreground">
-                  DBC Germany (UG i.G.) · Speditionstraße 15a, 40221 Düsseldorf
+                  DBC Germany UG · Speditionstraße 15a, 40221 Düsseldorf
                 </p>
               </div>
             </Field>

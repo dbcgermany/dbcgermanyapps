@@ -52,7 +52,7 @@ const TRANSLATIONS = {
     viewOrder: "View order online",
     footer: "Sent by DBC Germany UG \u00B7 tickets.dbc-germany.com",
     questions:
-      "Questions? Reply to this email or contact us at hello@dbc-germany.com.",
+      "Questions? Just reply to this email.",
   },
   de: {
     preview: "Ihre Einladung zu {event}",
@@ -64,7 +64,7 @@ const TRANSLATIONS = {
     viewOrder: "Bestellung online ansehen",
     footer: "Gesendet von DBC Germany UG \u00B7 tickets.dbc-germany.com",
     questions:
-      "Fragen? Antworten Sie auf diese E-Mail oder kontaktieren Sie uns unter hello@dbc-germany.com.",
+      "Fragen? Antworten Sie einfach auf diese E-Mail.",
   },
   fr: {
     preview: "Votre invitation \u00E0 {event}",
@@ -77,7 +77,7 @@ const TRANSLATIONS = {
     footer:
       "Envoy\u00E9 par DBC Germany UG \u00B7 tickets.dbc-germany.com",
     questions:
-      "Des questions ? R\u00E9pondez \u00E0 cet e-mail ou contactez-nous \u00E0 hello@dbc-germany.com.",
+      "Des questions ? R\u00E9pondez simplement \u00E0 cet e-mail.",
   },
 };
 

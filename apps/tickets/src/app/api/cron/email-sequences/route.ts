@@ -70,7 +70,7 @@ export async function GET(request: Request) {
   const resend = createEmailClient();
   const fromAddress =
     process.env.RESEND_FROM_ADDRESS ??
-    "DBC Germany <hello@dbc-germany.com>";
+    "DBC Germany UG <info@dbc-germany.com>";
 
   let totalSent = 0;
   let totalFailed = 0;
@@ -128,7 +128,7 @@ export async function GET(request: Request) {
           from: fromAddress,
           to: order.recipient_email,
           subject,
-          html: `<div style="font-family:system-ui,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:${BRAND_HEX.ink};"><p>Hi ${safeName},</p><div style="white-space:pre-wrap;line-height:1.6;">${safeBody}</div><hr style="margin:24px 0;border:none;border-top:1px solid ${BRAND_HEX.border};"/><p style="font-size:12px;color:${BRAND_HEX.inkMuted};">DBC Germany (UG i.G.)</p></div>`,
+          html: `<div style="font-family:system-ui,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:${BRAND_HEX.ink};"><p>Hi ${safeName},</p><div style="white-space:pre-wrap;line-height:1.6;">${safeBody}</div><hr style="margin:24px 0;border:none;border-top:1px solid ${BRAND_HEX.border};"/><p style="font-size:12px;color:${BRAND_HEX.inkMuted};">DBC Germany UG</p></div>`,
         });
         if (result.error) {
           totalFailed += 1;
