@@ -1,6 +1,7 @@
 "use server";
 
 import { createServerClient, requireRole } from "@dbc/supabase/server";
+import { formalSalutation } from "@dbc/email";
 import { revalidatePath } from "next/cache";
 
 /* -------------------------------------------------------------------------- */
@@ -94,14 +95,14 @@ export async function getOutreachTemplateForContact(
       supabase
         .from("contacts")
         .select(
-          "id, first_name, last_name, organization, country, sector, tier, pitch_tier"
+          "id, first_name, last_name, organization, country, sector, tier, pitch_tier, gender, title"
         )
         .eq("id", contactId)
         .maybeSingle(),
       supabase
         .from("events")
         .select(
-          "title_en, title_de, title_fr, starts_at, city, venue_name"
+          "title_en, title_de, title_fr, starts_at, ends_at, city, venue_name, venue_address"
         )
         .eq("slug", "richesses-dafrique-germany-2026")
         .maybeSingle(),
@@ -150,13 +151,36 @@ export async function getOutreachTemplateForContact(
     : "";
   const eventDate = event?.starts_at
     ? new Date(event.starts_at).toLocaleDateString(locale, {
+        weekday: "long",
         day: "numeric",
         month: "long",
         year: "numeric",
       })
     : "";
+  // Time block — "10:00 – 16:00 Uhr" (DE), "10:00 AM – 4:00 PM" (EN),
+  // "10h00 – 16h00" (FR). Reads each clock part with toLocaleTimeString and
+  // joins with an en-dash. DE gets the " Uhr" suffix; FR substitutes the
+  // colon with an "h" per local convention.
+  const eventTime = formatEventTime(
+    event?.starts_at ?? null,
+    event?.ends_at ?? null,
+    locale
+  );
   const eventCity = event?.city ?? "";
   const eventVenue = event?.venue_name ?? "";
+  const eventAddress = event?.venue_address ?? "";
+  // Formal salutation line — opens every executive outreach body so the
+  // recipient is addressed by name + title where known, gracefully degrading
+  // to first-name / generic when not. The helper omits trailing punctuation;
+  // we append the comma so templates can keep "{salutation}" on its own line.
+  const salutation =
+    formalSalutation(
+      locale,
+      contact.gender as "male" | "female" | "diverse" | null | undefined,
+      contact.title ?? null,
+      contact.last_name ?? null,
+      contact.first_name ?? ""
+    ) + ",";
   // Deep-link to the public event page so the recipient can click straight
   // through to programme + tier overview. Locale-aware so the page renders
   // in the recipient's language.
@@ -169,6 +193,7 @@ export async function getOutreachTemplateForContact(
     : "";
 
   const variables: Record<string, string> = {
+    salutation,
     firstName: contact.first_name ?? "",
     lastName: contact.last_name ?? "",
     fullName: [contact.first_name, contact.last_name]
@@ -182,8 +207,10 @@ export async function getOutreachTemplateForContact(
     pitchTier: contact.pitch_tier ?? "",
     eventTitle,
     eventDate,
+    eventTime,
     eventCity,
     eventVenue,
+    eventAddress,
     eventUrl,
     senderName: senderFullName,
     senderEmail: senderEmail,
@@ -334,4 +361,29 @@ function countryDisplayName(isoAlpha2: string, locale: OutreachLocale): string {
   } catch {
     return isoAlpha2;
   }
+}
+
+function formatEventTime(
+  startsAt: string | null,
+  endsAt: string | null,
+  locale: OutreachLocale
+): string {
+  if (!startsAt || !endsAt) return "";
+  const start = new Date(startsAt);
+  const end = new Date(endsAt);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return "";
+  const opts: Intl.DateTimeFormatOptions = {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: locale === "en",
+  };
+  const startStr = start.toLocaleTimeString(locale, opts);
+  const endStr = end.toLocaleTimeString(locale, opts);
+  if (locale === "fr") {
+    return `${startStr.replace(":", "h")} – ${endStr.replace(":", "h")}`;
+  }
+  if (locale === "de") {
+    return `${startStr} – ${endStr} Uhr`;
+  }
+  return `${startStr} – ${endStr}`;
 }
