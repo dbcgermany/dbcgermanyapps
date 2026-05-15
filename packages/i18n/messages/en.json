@@ -1959,6 +1959,53 @@
         "vegan": "Vegan",
         "halal": "Halal",
         "active": "Active (shown to guests)"
+      },
+      "printReport": "Print kitchen report",
+      "manual": {
+        "title": "Log a selection manually",
+        "hint": "Pick an attendee already on this event and record their dish choices (e.g. they confirmed by phone). Uses the same single-pick-per-course rule as the public form.",
+        "attendee": "Attendee",
+        "searchPlaceholder": "Search by name or email…",
+        "categories": {
+          "starter": "Starter",
+          "main": "Main",
+          "dessert": "Dessert",
+          "drink_non_alcoholic": "Non-alcoholic drinks",
+          "drink_alcoholic": "Alcoholic drinks",
+          "snack": "Snacks"
+        },
+        "pickOne": "Pick one",
+        "pickAny": "Pick any",
+        "notes": "Notes for the kitchen",
+        "notesPlaceholder": "Allergies, intolerances, special requests",
+        "cancel": "Cancel",
+        "save": "Save selection",
+        "saving": "Saving…",
+        "savedToast": "Selection recorded"
+      },
+      "print": {
+        "title": "Catering kitchen report",
+        "summary": "Summary",
+        "attendees": "Attendees with selections",
+        "totalPicks": "Total picks",
+        "vegetarian": "Vegetarian picks",
+        "vegan": "Vegan picks",
+        "sectionTotal": "{n} total",
+        "dish": "Dish",
+        "dietary": "Diet",
+        "allergens": "Allergens",
+        "count": "Count",
+        "printButton": "Print / Save as PDF",
+        "generatedAt": "Generated {ts}",
+        "footer": "Counts only — no attendee names. Browser will print to PDF.",
+        "categories": {
+          "starter": "Starters",
+          "main": "Mains",
+          "dessert": "Desserts",
+          "drink_non_alcoholic": "Non-alcoholic drinks",
+          "drink_alcoholic": "Alcoholic drinks",
+          "snack": "Snacks"
+        }
       }
     },
     "chapterDelegates": {

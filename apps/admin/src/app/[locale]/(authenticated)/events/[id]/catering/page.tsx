@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
+import { LinkButton } from "@dbc/ui";
 import { PageHeader } from "@/components/page-header";
 import { getEvent } from "@/actions/events";
 import { listCateringMenu } from "@/actions/catering";
 import { CateringMenuClient } from "./catering-menu-client";
+import { ManualCateringEntry } from "./manual-entry";
 
 export default async function EventCateringPage({
   params,
@@ -24,6 +26,14 @@ export default async function EventCateringPage({
         title={t("title")}
         description={event.title_en}
         back={{ href: `/${locale}/events/${id}`, label: tBack("event") }}
+        cta={
+          <LinkButton
+            href={`/${locale}/events/${id}/catering/print`}
+            variant="secondary"
+          >
+            {t("printReport")}
+          </LinkButton>
+        }
       />
 
       {!event.catering_enabled && (
@@ -43,6 +53,12 @@ export default async function EventCateringPage({
       )}
 
       <CateringMenuClient eventId={id} locale={locale} items={items} />
+
+      {event.catering_enabled && items.length > 0 && (
+        <div className="mt-8">
+          <ManualCateringEntry eventId={id} locale={locale} menu={items} />
+        </div>
+      )}
     </div>
   );
 }

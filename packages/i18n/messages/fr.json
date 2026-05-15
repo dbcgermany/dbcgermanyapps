@@ -1959,6 +1959,53 @@
         "vegan": "Végan",
         "halal": "Halal",
         "active": "Actif (visible aux invités)"
+      },
+      "printReport": "Imprimer la fiche cuisine",
+      "manual": {
+        "title": "Saisir une sélection manuellement",
+        "hint": "Sélectionnez une personne déjà inscrite à cet événement et enregistrez ses plats (par ex. confirmée par téléphone). Même règle « un par section » que le formulaire public.",
+        "attendee": "Invité",
+        "searchPlaceholder": "Rechercher par nom ou e-mail…",
+        "categories": {
+          "starter": "Entrée",
+          "main": "Plat principal",
+          "dessert": "Dessert",
+          "drink_non_alcoholic": "Boissons sans alcool",
+          "drink_alcoholic": "Boissons alcoolisées",
+          "snack": "Snacks"
+        },
+        "pickOne": "Choisir un",
+        "pickAny": "Choix libre",
+        "notes": "Notes pour la cuisine",
+        "notesPlaceholder": "Allergies, intolérances, demandes spéciales",
+        "cancel": "Annuler",
+        "save": "Enregistrer la sélection",
+        "saving": "Enregistrement…",
+        "savedToast": "Sélection enregistrée"
+      },
+      "print": {
+        "title": "Fiche cuisine restauration",
+        "summary": "Synthèse",
+        "attendees": "Invités avec sélection",
+        "totalPicks": "Sélections totales",
+        "vegetarian": "Sélections végétariennes",
+        "vegan": "Sélections véganes",
+        "sectionTotal": "{n} au total",
+        "dish": "Plat",
+        "dietary": "Régime",
+        "allergens": "Allergènes",
+        "count": "Quantité",
+        "printButton": "Imprimer / Enregistrer en PDF",
+        "generatedAt": "Généré le {ts}",
+        "footer": "Quantités uniquement — aucun nom d'invité. Le navigateur exporte en PDF.",
+        "categories": {
+          "starter": "Entrées",
+          "main": "Plats principaux",
+          "dessert": "Desserts",
+          "drink_non_alcoholic": "Boissons sans alcool",
+          "drink_alcoholic": "Boissons alcoolisées",
+          "snack": "Snacks"
+        }
       }
     },
     "chapterDelegates": {

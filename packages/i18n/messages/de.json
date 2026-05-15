@@ -1959,6 +1959,53 @@
         "vegan": "Vegan",
         "halal": "Halal",
         "active": "Aktiv (für Gäste sichtbar)"
+      },
+      "printReport": "Küchenliste drucken",
+      "manual": {
+        "title": "Auswahl manuell erfassen",
+        "hint": "Wähle eine Person, die bereits ein Ticket für diese Veranstaltung hat, und trage ihre Wunschgerichte ein (z. B. wenn sie telefonisch bestätigt hat). Dieselbe Pro-Gang-Auswahlregel wie im öffentlichen Formular.",
+        "attendee": "Gast",
+        "searchPlaceholder": "Nach Name oder E-Mail suchen…",
+        "categories": {
+          "starter": "Vorspeise",
+          "main": "Hauptgang",
+          "dessert": "Dessert",
+          "drink_non_alcoholic": "Alkoholfreie Getränke",
+          "drink_alcoholic": "Alkoholische Getränke",
+          "snack": "Snacks"
+        },
+        "pickOne": "Eines wählen",
+        "pickAny": "Beliebig wählen",
+        "notes": "Hinweise für die Küche",
+        "notesPlaceholder": "Allergien, Unverträglichkeiten, Sonderwünsche",
+        "cancel": "Abbrechen",
+        "save": "Auswahl speichern",
+        "saving": "Wird gespeichert…",
+        "savedToast": "Auswahl gespeichert"
+      },
+      "print": {
+        "title": "Catering-Küchenliste",
+        "summary": "Übersicht",
+        "attendees": "Gäste mit Auswahl",
+        "totalPicks": "Auswahlen gesamt",
+        "vegetarian": "Vegetarische Auswahlen",
+        "vegan": "Vegane Auswahlen",
+        "sectionTotal": "{n} gesamt",
+        "dish": "Gericht",
+        "dietary": "Ernährung",
+        "allergens": "Allergene",
+        "count": "Anzahl",
+        "printButton": "Drucken / Als PDF speichern",
+        "generatedAt": "Erstellt am {ts}",
+        "footer": "Nur Anzahlen — keine Gästenamen. Der Browser druckt in eine PDF-Datei.",
+        "categories": {
+          "starter": "Vorspeisen",
+          "main": "Hauptgänge",
+          "dessert": "Desserts",
+          "drink_non_alcoholic": "Alkoholfreie Getränke",
+          "drink_alcoholic": "Alkoholische Getränke",
+          "snack": "Snacks"
+        }
       }
     },
     "chapterDelegates": {
