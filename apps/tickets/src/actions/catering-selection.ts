@@ -2,6 +2,11 @@
 
 import { headers } from "next/headers";
 import { createServerClient } from "@dbc/supabase/server";
+import {
+  resolveTicketAccess,
+  type InvolvementRole,
+  type TierRow,
+} from "@dbc/supabase";
 import { revalidatePath } from "next/cache";
 
 const RATE_WINDOW_SECONDS = 5;
@@ -55,9 +60,9 @@ export async function loadCateringContextForToken(
   const { data: ticket } = await supabase
     .from("tickets")
     .select(
-      `id, event_id, attendee_name, attendee_email, attendee_first_name, attendee_last_name, revoked_at, catering_eligible_override,
-       ticket_tiers!inner(id, name_en, name_de, name_fr, catering_included),
-       events!inner(id, title_en, title_de, title_fr, catering_enabled)`
+      `id, event_id, contact_id, attendee_name, attendee_email, attendee_first_name, attendee_last_name, revoked_at, catering_eligible_override,
+       ticket_tiers!inner(id, name_en, name_de, name_fr, price_cents, currency, scanner_badge_label, purpose, is_team, is_companion, catering_included),
+       events!inner(id, title_en, title_de, title_fr, catering_enabled, chapter_companion_value_tier_id, catering_eligible_roles)`
     )
     .eq("ticket_token", trimmed)
     .maybeSingle();
@@ -66,16 +71,51 @@ export async function loadCateringContextForToken(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const event = (ticket as any).events;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const tier = (ticket as any).ticket_tiers;
+  const tier = (ticket as any).ticket_tiers as TierRow | null;
   if (!event?.catering_enabled) {
     return { status: "catering_disabled_for_event" };
   }
-  const eligible =
-    ticket.catering_eligible_override === true
-      ? true
-      : ticket.catering_eligible_override === false
-        ? false
-        : !!tier?.catering_included;
+
+  // Resolve the reference tier (for companion +1 dynamic access) and the
+  // active roles for this contact on this event. Both are optional — when
+  // null/empty, the helper falls through to the legacy tier+override path.
+  let referenceTier: TierRow | null = null;
+  if (event.chapter_companion_value_tier_id) {
+    const { data: refTier } = await supabase
+      .from("ticket_tiers")
+      .select(
+        "id, name_en, name_de, name_fr, price_cents, currency, scanner_badge_label, purpose, is_team, is_companion, catering_included"
+      )
+      .eq("id", event.chapter_companion_value_tier_id)
+      .maybeSingle();
+    referenceTier = (refTier as TierRow | null) ?? null;
+  }
+
+  let activeRoles: InvolvementRole[] = [];
+  if (ticket.contact_id) {
+    const { data: involvements } = await supabase
+      .from("contact_event_involvements")
+      .select("role, status")
+      .eq("contact_id", ticket.contact_id)
+      .eq("event_id", ticket.event_id);
+    activeRoles = ((involvements ?? []) as { role: string; status: string | null }[])
+      .filter((i) => i.status === "active" || i.status === null)
+      .map((i) => i.role as InvolvementRole);
+  }
+
+  const access = resolveTicketAccess({
+    locale: "en",
+    issuedTier: tier,
+    event: {
+      chapter_companion_value_tier_id: event.chapter_companion_value_tier_id ?? null,
+      catering_eligible_roles:
+        (event.catering_eligible_roles as InvolvementRole[] | null) ?? [],
+    },
+    referenceTier,
+    cateringOverride: ticket.catering_eligible_override ?? null,
+    activeRoles,
+  });
+  const eligible = access.cateringIncluded;
   if (!eligible) {
     return {
       status: "not_eligible_for_this_ticket",

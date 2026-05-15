@@ -44,11 +44,35 @@ export default async function ChapterDelegateRegisterPage({
   const { data: event } = await supabase
     .from("events")
     .select(
-      "id, slug, title_en, title_de, title_fr, starts_at, ends_at, city, venue_name, chapter_delegate_program_enabled"
+      "id, slug, title_en, title_de, title_fr, starts_at, ends_at, city, venue_name, chapter_delegate_program_enabled, chapter_companion_value_tier_id"
     )
     .eq("slug", eventSlug)
     .maybeSingle();
   if (!event) notFound();
+
+  let companionValueTier: {
+    name_en: string | null;
+    name_de: string | null;
+    name_fr: string | null;
+    price_cents: number;
+    currency: string;
+  } | null = null;
+  if (event.chapter_companion_value_tier_id) {
+    const { data: tierRow } = await supabase
+      .from("ticket_tiers")
+      .select("name_en, name_de, name_fr, price_cents, currency")
+      .eq("id", event.chapter_companion_value_tier_id)
+      .maybeSingle();
+    if (tierRow) {
+      companionValueTier = {
+        name_en: tierRow.name_en ?? null,
+        name_de: tierRow.name_de ?? null,
+        name_fr: tierRow.name_fr ?? null,
+        price_cents: tierRow.price_cents ?? 0,
+        currency: tierRow.currency ?? "EUR",
+      };
+    }
+  }
 
   const eventTitle =
     (event[`title_${lang}` as keyof typeof event] as string) ||
@@ -89,6 +113,7 @@ export default async function ChapterDelegateRegisterPage({
           locale={lang}
           eventSlug={eventSlug}
           turnstileSiteKey={turnstileSiteKey}
+          companionValueTier={companionValueTier}
         />
       )}
     </main>

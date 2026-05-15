@@ -88,7 +88,7 @@ export async function createInvitation(input: InvitationInput) {
   const { data: event } = await supabase
     .from("events")
     .select(
-      "id, title_en, title_de, title_fr, event_type, starts_at, ends_at, venue_name, venue_address, city, timezone, catering_enabled"
+      "id, title_en, title_de, title_fr, event_type, starts_at, ends_at, venue_name, venue_address, city, timezone, catering_enabled, catering_eligible_roles"
     )
     .eq("id", input.eventId)
     .single();
@@ -229,14 +229,33 @@ export async function createInvitation(input: InvitationInput) {
     return { success: true, orderId: order.id };
   }
 
-  // If this ticket gets catering, append a quick CTA to the email body so the
-  // recipient knows where to pre-select their meal. Only used for the formal
-  // invitation flow (customBody is supported there); informal ticket-delivery
-  // emails fall back to the standard layout — admin can share the URL manually.
-  const cateringUrl =
-    tier.catering_included && event.catering_enabled
-      ? `${process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://tickets.dbc-germany.com"}/${loc}/tickets/${ticket.ticket_token}/catering`
-      : null;
+  // Catering CTA: appended to the invitation email body when the recipient
+  // is eligible — either via tier.catering_included OR via a role in
+  // event.catering_eligible_roles. The check mirrors the resolver in
+  // packages/supabase/src/ticket-access.ts so admins and the public catering
+  // form agree on who gets the link.
+  let cateringUrl: string | null = null;
+  if (event.catering_enabled) {
+    let cateringGranted = !!tier.catering_included;
+    if (!cateringGranted && contactId) {
+      const eligibleRoles =
+        (event.catering_eligible_roles as string[] | null) ?? [];
+      if (eligibleRoles.length > 0) {
+        const { data: involvements } = await supabase
+          .from("contact_event_involvements")
+          .select("role, status")
+          .eq("contact_id", contactId as string)
+          .eq("event_id", input.eventId);
+        const activeRoles = ((involvements ?? []) as { role: string; status: string | null }[])
+          .filter((i) => i.status === "active" || i.status === null)
+          .map((i) => i.role);
+        cateringGranted = activeRoles.some((r) => eligibleRoles.includes(r));
+      }
+    }
+    if (cateringGranted) {
+      cateringUrl = `${process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://tickets.dbc-germany.com"}/${loc}/tickets/${ticket.ticket_token}/catering`;
+    }
+  }
   const cateringHint =
     cateringUrl
       ? loc === "de"

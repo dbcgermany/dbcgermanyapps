@@ -1,6 +1,11 @@
 "use server";
 
 import { createServerClient, notifyAdmins, requireRole } from "@dbc/supabase/server";
+import {
+  resolveTicketAccess,
+  type InvolvementRole,
+  type TierRow,
+} from "@dbc/supabase";
 
 // Fire a check_in_milestone notification when the event crosses a 25% /
 // 50% / 75% / 100% check-in threshold. Idempotent via an audit_log row
@@ -70,6 +75,13 @@ export interface ScanResult {
   tierPurpose?: string | null;
   isTeam?: boolean;
   isCompanion?: boolean;
+  /** Display price for the tier (or reference tier for companions) in minor units. */
+  tierPriceCents?: number;
+  tierCurrency?: string;
+  /** True when the resolver grants catering (tier, role, or override). */
+  cateringIncluded?: boolean;
+  /** Set on companion tickets when an event-level reference tier is configured. */
+  referenceTier?: { name: string; priceCents: number; currency: string } | null;
   alreadyCheckedInAt?: string;
   alreadyCheckedInBy?: string;
   error?: string;
@@ -115,7 +127,7 @@ export async function checkInTicket(
     const { data: ticketStatus } = await supabase
       .from("tickets")
       .select(
-        "id, revoked_at, revocation_reason, tier_id, ticket_tiers:ticket_tiers(scanner_badge_label, purpose, is_team, is_companion, name_en, name_de, name_fr)"
+        "id, revoked_at, revocation_reason, tier_id, contact_id, event_id, catering_eligible_override, ticket_tiers:ticket_tiers(id, scanner_badge_label, purpose, is_team, is_companion, name_en, name_de, name_fr, price_cents, currency, catering_included), events:events(chapter_companion_value_tier_id, catering_eligible_roles)"
       )
       .eq("ticket_token", trimmed)
       .maybeSingle();
@@ -129,15 +141,53 @@ export async function checkInTicket(
       };
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const tierFlags = (ticketStatus as any)?.ticket_tiers as
-      | {
-          scanner_badge_label: string | null;
-          purpose: string | null;
-          is_team: boolean | null;
-          is_companion: boolean | null;
-        }
-      | null
-      | undefined;
+    const issuedTier = ((ticketStatus as any)?.ticket_tiers ?? null) as TierRow | null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const eventRow = ((ticketStatus as any)?.events ?? null) as {
+      chapter_companion_value_tier_id: string | null;
+      catering_eligible_roles: InvolvementRole[] | null;
+    } | null;
+
+    // Pull the reference tier when companion + per-event override is set.
+    let referenceTier: TierRow | null = null;
+    if (issuedTier?.is_companion && eventRow?.chapter_companion_value_tier_id) {
+      const { data: refTier } = await supabase
+        .from("ticket_tiers")
+        .select(
+          "id, name_en, name_de, name_fr, price_cents, currency, scanner_badge_label, purpose, is_team, is_companion, catering_included"
+        )
+        .eq("id", eventRow.chapter_companion_value_tier_id)
+        .maybeSingle();
+      referenceTier = (refTier as TierRow | null) ?? null;
+    }
+
+    // Active roles for this contact on this event — drives role-based catering.
+    let activeRoles: InvolvementRole[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const contactId = (ticketStatus as any)?.contact_id as string | null;
+    if (contactId && eventRow) {
+      const { data: involvements } = await supabase
+        .from("contact_event_involvements")
+        .select("role, status")
+        .eq("contact_id", contactId)
+        .eq("event_id", eventId);
+      activeRoles = ((involvements ?? []) as { role: string; status: string | null }[])
+        .filter((i) => i.status === "active" || i.status === null)
+        .map((i) => i.role as InvolvementRole);
+    }
+
+    const access = resolveTicketAccess({
+      locale: "en",
+      issuedTier,
+      event: {
+        chapter_companion_value_tier_id: eventRow?.chapter_companion_value_tier_id ?? null,
+        catering_eligible_roles: eventRow?.catering_eligible_roles ?? [],
+      },
+      referenceTier,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      cateringOverride: (ticketStatus as any)?.catering_eligible_override ?? null,
+      activeRoles,
+    });
 
     const { data, error } = await supabase.rpc("check_in_ticket", {
       p_ticket_token: trimmed,
@@ -173,11 +223,15 @@ export async function checkInTicket(
         success: true,
         attendeeName: row.attendee_name,
         attendeeEmail: row.attendee_email,
-        tierName: row.tier_name,
-        tierBadgeLabel: tierFlags?.scanner_badge_label ?? null,
-        tierPurpose: tierFlags?.purpose ?? null,
-        isTeam: !!tierFlags?.is_team,
-        isCompanion: !!tierFlags?.is_companion,
+        tierName: access.displayTierName || row.tier_name,
+        tierBadgeLabel: access.scannerBadgeLabel,
+        tierPurpose: access.purpose,
+        isTeam: access.isTeam,
+        isCompanion: access.isCompanion,
+        tierPriceCents: access.displayPriceCents,
+        tierCurrency: access.currency,
+        cateringIncluded: access.cateringIncluded,
+        referenceTier: access.referenceTier,
       };
     }
 
@@ -186,11 +240,15 @@ export async function checkInTicket(
       success: false,
       attendeeName: row.attendee_name,
       attendeeEmail: row.attendee_email,
-      tierName: row.tier_name,
-      tierBadgeLabel: tierFlags?.scanner_badge_label ?? null,
-      tierPurpose: tierFlags?.purpose ?? null,
-      isTeam: !!tierFlags?.is_team,
-      isCompanion: !!tierFlags?.is_companion,
+      tierName: access.displayTierName || row.tier_name,
+      tierBadgeLabel: access.scannerBadgeLabel,
+      tierPurpose: access.purpose,
+      isTeam: access.isTeam,
+      isCompanion: access.isCompanion,
+      tierPriceCents: access.displayPriceCents,
+      tierCurrency: access.currency,
+      cateringIncluded: access.cateringIncluded,
+      referenceTier: access.referenceTier,
       alreadyCheckedInAt: row.already_checked_in_at,
       alreadyCheckedInBy: row.already_checked_in_by ?? "Unknown staff",
     };

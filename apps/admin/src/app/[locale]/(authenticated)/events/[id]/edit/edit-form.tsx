@@ -85,9 +85,11 @@ type EventRow = {
   team_invite_tier_id?: string | null;
   chapter_delegate_tier_id?: string | null;
   chapter_companion_tier_id?: string | null;
+  chapter_companion_value_tier_id?: string | null;
   team_member_tier_id?: string | null;
   chapter_delegate_program_enabled?: boolean | null;
   catering_enabled?: boolean | null;
+  catering_eligible_roles?: string[] | null;
   delegate_review_notify_email?: string | null;
   door_sale_enabled?: boolean | null;
   coupons_enabled?: boolean | null;
@@ -516,7 +518,7 @@ export function EditEventForm({
           </div>
           <div>
             <label className="block text-xs text-muted-foreground mb-1">
-              Companion (+1) tier
+              Companion (+1) tier (operational, €0)
             </label>
             <select
               name="chapter_companion_tier_id"
@@ -531,6 +533,26 @@ export function EditEventForm({
                 </option>
               ))}
             </select>
+          </div>
+          <div>
+            <label className="block text-xs text-muted-foreground mb-1">
+              Companion (+1) reference tier (display + access)
+            </label>
+            <select
+              name="chapter_companion_value_tier_id"
+              defaultValue={event.chapter_companion_value_tier_id ?? ""}
+              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+            >
+              <option value="">— None —</option>
+              {(event.tiers ?? []).map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name_de || t.name_en} · €{(t.price_cents / 100).toFixed(2)}
+                </option>
+              ))}
+            </select>
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              Defines what value the +1 sees on the public register page and which tier they get access to at the venue. The +1 is still issued the free Companion tier above.
+            </p>
           </div>
           <div>
             <label className="block text-xs text-muted-foreground mb-1">
@@ -587,6 +609,46 @@ export function EditEventForm({
             Catering enabled for this event
           </label>
         </div>
+        <fieldset className="mt-2 rounded-md border border-border bg-background/40 p-3">
+          <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Catering access by role
+          </legend>
+          <p className="mb-2 text-[11px] text-muted-foreground">
+            Anyone with one of these active roles on this event gets catering access regardless of their ticket tier. Per-ticket overrides still win. Leave all unchecked to keep catering strictly tier-driven.
+          </p>
+          <div className="grid grid-cols-2 gap-1 sm:grid-cols-3">
+            {[
+              { value: "speaker", label: "Speaker" },
+              { value: "moderator", label: "Moderator / Host" },
+              { value: "sponsor", label: "Sponsor" },
+              { value: "vip", label: "VIP" },
+              { value: "institutional_guest", label: "Institutional guest" },
+              { value: "team_member_de", label: "DBC Germany team" },
+              { value: "team_member_external", label: "DBC international team" },
+              { value: "chapter_delegate", label: "Chapter delegate" },
+              { value: "delegate_companion", label: "Delegate companion (+1)" },
+              { value: "partner", label: "Partner" },
+              { value: "press", label: "Press" },
+              { value: "staff", label: "Staff" },
+              { value: "volunteer", label: "Volunteer" },
+              { value: "contractor", label: "Contractor" },
+              { value: "invited_guest", label: "Invited guest" },
+            ].map((r) => (
+              <label key={r.value} className="flex items-center gap-1.5 text-xs">
+                <input
+                  type="checkbox"
+                  name="catering_eligible_roles"
+                  value={r.value}
+                  defaultChecked={
+                    (event.catering_eligible_roles ?? []).includes(r.value)
+                  }
+                  className="accent-primary"
+                />
+                <span>{r.label}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
       </fieldset>
       )}
 

@@ -36,6 +36,8 @@ const T = {
     companionFirst: "Companion first name",
     companionLast: "Companion last name",
     companionEmail: "Companion email",
+    companionPerk:
+      "Your +1 will receive a free ticket valued at {price} with {tier}-level access — included in your chapter delegate registration.",
     consent: "I confirm I'm a DBC branch team member.",
     submit: "Send registration",
     submitting: "Sending…",
@@ -62,6 +64,8 @@ const T = {
     companionFirst: "Vorname Begleitung",
     companionLast: "Nachname Begleitung",
     companionEmail: "E-Mail Begleitung",
+    companionPerk:
+      "Deine Begleitung erhält ein kostenloses Ticket im Wert von {price} mit {tier}-Zugang — in deiner Anmeldung enthalten.",
     consent: "Ich bestätige, dass ich Mitglied einer DBC-Niederlassung bin.",
     submit: "Registrierung absenden",
     submitting: "Wird gesendet…",
@@ -88,6 +92,8 @@ const T = {
     companionFirst: "Prénom",
     companionLast: "Nom",
     companionEmail: "E-mail",
+    companionPerk:
+      "Votre accompagnateur recevra un billet gratuit d'une valeur de {price} avec un accès {tier} — inclus dans votre inscription.",
     consent: "Je confirme être membre d'une succursale DBC.",
     submit: "Envoyer l'inscription",
     submitting: "Envoi…",
@@ -101,12 +107,47 @@ export function RegisterForm({
   locale,
   eventSlug,
   turnstileSiteKey,
+  companionValueTier,
 }: {
   locale: "en" | "de" | "fr";
   eventSlug: string;
   turnstileSiteKey: string | null;
+  companionValueTier: {
+    name_en: string | null;
+    name_de: string | null;
+    name_fr: string | null;
+    price_cents: number;
+    currency: string;
+  } | null;
 }) {
   const t = T[locale];
+  const companionPerkLine = (() => {
+    if (!companionValueTier) return null;
+    const tierName =
+      (locale === "de"
+        ? companionValueTier.name_de
+        : locale === "fr"
+          ? companionValueTier.name_fr
+          : companionValueTier.name_en) ||
+      companionValueTier.name_en ||
+      companionValueTier.name_de ||
+      companionValueTier.name_fr ||
+      "";
+    const localeTag = locale === "de" ? "de-DE" : locale === "fr" ? "fr-FR" : "en-IE";
+    let price: string;
+    try {
+      price = new Intl.NumberFormat(localeTag, {
+        style: "currency",
+        currency: companionValueTier.currency || "EUR",
+        maximumFractionDigits: 2,
+      }).format(companionValueTier.price_cents / 100);
+    } catch {
+      price = `${(companionValueTier.price_cents / 100).toFixed(2)} ${companionValueTier.currency || "EUR"}`;
+    }
+    return t.companionPerk
+      .replace("{price}", price)
+      .replace("{tier}", tierName);
+  })();
   const [success, setSuccess] = useState(false);
   const [bringsCompanion, setBringsCompanion] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
@@ -330,6 +371,11 @@ export function RegisterForm({
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               {t.companionHeader}
             </p>
+            {companionPerkLine && (
+              <p className="mt-2 rounded-md border-l-4 border-success/60 bg-success-soft/40 p-3 text-xs leading-5 text-foreground">
+                {companionPerkLine}
+              </p>
+            )}
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
               <div>
                 <label className="block text-xs text-muted-foreground mb-1">

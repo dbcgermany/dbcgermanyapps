@@ -311,7 +311,38 @@ export function ScanClient({
               </p>
               <p className="mt-1 text-sm text-muted-foreground">
                 {status.result.tierName}
+                {typeof status.result.tierPriceCents === "number" &&
+                status.result.tierPriceCents > 0 ? (
+                  <>
+                    {" · "}
+                    <span className="font-semibold text-foreground">
+                      {new Intl.NumberFormat(locale, {
+                        style: "currency",
+                        currency: status.result.tierCurrency || "EUR",
+                        maximumFractionDigits: 2,
+                      }).format(status.result.tierPriceCents / 100)}
+                    </span>
+                  </>
+                ) : null}
               </p>
+              {status.result.referenceTier && (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Access: <span className="font-semibold">{status.result.referenceTier.name}</span>
+                  {" · "}
+                  {new Intl.NumberFormat(locale, {
+                    style: "currency",
+                    currency: status.result.referenceTier.currency || "EUR",
+                    maximumFractionDigits: 2,
+                  }).format(status.result.referenceTier.priceCents / 100)}
+                </p>
+              )}
+              {status.result.cateringIncluded && (
+                <p className="mt-2">
+                  <span className="inline-flex items-center rounded-full bg-success-strong px-3 py-1 text-xs font-bold uppercase tracking-wide text-white">
+                    Catering
+                  </span>
+                </p>
+              )}
               <div className="mt-6 flex items-center justify-between border-t border-success-border pt-4 text-sm">
                 <span className="text-success">
                   {t("tapOrEnter")}

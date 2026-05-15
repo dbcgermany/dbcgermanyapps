@@ -4,3 +4,16 @@
 
 export { createBrowserClient } from "./browser-client";
 export { createMiddlewareClient } from "./middleware-client";
+export {
+  resolveTicketAccess,
+  formatPrice,
+  ALL_INVOLVEMENT_ROLES,
+  ROLE_LABELS,
+} from "./ticket-access";
+export type {
+  InvolvementRole,
+  TierRow,
+  EventAccessRow,
+  TicketAccessView,
+  ResolveArgs,
+} from "./ticket-access";

@@ -81,7 +81,7 @@ const EVENT_LIST_COLUMNS =
   "id, slug, title_en, title_de, title_fr, event_type, event_branch, external_url, starts_at, ends_at, is_published, cover_image_url, city" as const;
 
 const EVENT_DETAIL_COLUMNS =
-  "id, slug, title_en, title_de, title_fr, description_en, description_de, description_fr, event_type, event_branch, external_url, venue_name, venue_address, city, country, timezone, starts_at, ends_at, max_tickets_per_order, enabled_payment_methods, cover_image_url, is_published, feedback_survey_url, sales_target_tickets, sales_target_revenue_cents, created_at, updated_at, team_invite_quota, team_invite_tier_id, team_invite_discount_type, team_invite_discount_value, team_invite_applicable_tier_ids, chapter_delegate_tier_id, chapter_companion_tier_id, team_member_tier_id, chapter_delegate_program_enabled, catering_enabled, delegate_review_notify_email, door_sale_enabled, coupons_enabled, waitlist_enabled, ticket_transfer_enabled, ticket_transfer_cutoff_hours, refund_policy_days, refund_policy_text_de, refund_policy_text_en, refund_policy_text_fr, requires_photo_consent, photo_consent_text_de, photo_consent_text_en, photo_consent_text_fr, aftercare_emails_enabled, check_in_opens_minutes_before, check_in_closes_minutes_after, max_total_tickets, ticket_pdf_hero_url, funnel_brand_accent_hex" as const;
+  "id, slug, title_en, title_de, title_fr, description_en, description_de, description_fr, event_type, event_branch, external_url, venue_name, venue_address, city, country, timezone, starts_at, ends_at, max_tickets_per_order, enabled_payment_methods, cover_image_url, is_published, feedback_survey_url, sales_target_tickets, sales_target_revenue_cents, created_at, updated_at, team_invite_quota, team_invite_tier_id, team_invite_discount_type, team_invite_discount_value, team_invite_applicable_tier_ids, chapter_delegate_tier_id, chapter_companion_tier_id, chapter_companion_value_tier_id, team_member_tier_id, chapter_delegate_program_enabled, catering_enabled, catering_eligible_roles, delegate_review_notify_email, door_sale_enabled, coupons_enabled, waitlist_enabled, ticket_transfer_enabled, ticket_transfer_cutoff_hours, refund_policy_days, refund_policy_text_de, refund_policy_text_en, refund_policy_text_fr, requires_photo_consent, photo_consent_text_de, photo_consent_text_en, photo_consent_text_fr, aftercare_emails_enabled, check_in_opens_minutes_before, check_in_closes_minutes_after, max_total_tickets, ticket_pdf_hero_url, funnel_brand_accent_hex" as const;
 
 // ---------------------------------------------------------------------------
 // Capacity helpers (derived from sum of tier max_quantity per event)
@@ -340,11 +340,15 @@ export async function updateEvent(id: string, formData: FormData) {
     chapter_companion_tier_id:
       ((formData.get("chapter_companion_tier_id") as string) || "").trim() ||
       null,
+    chapter_companion_value_tier_id:
+      ((formData.get("chapter_companion_value_tier_id") as string) || "").trim() ||
+      null,
     team_member_tier_id:
       ((formData.get("team_member_tier_id") as string) || "").trim() || null,
     chapter_delegate_program_enabled:
       formData.get("chapter_delegate_program_enabled") === "true",
     catering_enabled: formData.get("catering_enabled") === "true",
+    catering_eligible_roles: formData.getAll("catering_eligible_roles") as string[],
     delegate_review_notify_email:
       ((formData.get("delegate_review_notify_email") as string) || "").trim() ||
       null,
@@ -409,9 +413,11 @@ export async function updateEvent(id: string, formData: FormData) {
       team_invite_tier_id: null,
       chapter_delegate_tier_id: null,
       chapter_companion_tier_id: null,
+      chapter_companion_value_tier_id: null,
       team_member_tier_id: null,
       chapter_delegate_program_enabled: false,
       catering_enabled: false,
+      catering_eligible_roles: [],
       delegate_review_notify_email: null,
       door_sale_enabled: false,
       coupons_enabled: false,
@@ -465,6 +471,14 @@ export async function updateEvent(id: string, formData: FormData) {
     .single();
   const p = eventPublicPaths(row?.slug);
   await pingBoth(p.site, p.tickets);
+  // Chapter-delegate register page reads chapter_companion_value_tier_id +
+  // catering_eligible_roles from this row — bust ISR in all 3 locales so the
+  // public notice + access logic reflect the admin save immediately.
+  if (row?.slug) {
+    for (const loc of ["en", "de", "fr"] as const) {
+      revalidatePath(`/${loc}/chapter-delegate/${row.slug}/register`);
+    }
+  }
   return { success: true };
 }
 

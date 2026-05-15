@@ -199,6 +199,10 @@ export function SponsorsClient({
 
   function handleSubmit(formData: FormData) {
     formData.set("locale", locale);
+    // updateSponsor reads event_id from formData; without this, the
+    // contact_event_involvements upsert receives undefined and silently
+    // fails, and revalidatePath uses an undefined path.
+    formData.set("event_id", eventId);
     startTransition(async () => {
       const res = editing
         ? await updateSponsor(editing.id, formData)
