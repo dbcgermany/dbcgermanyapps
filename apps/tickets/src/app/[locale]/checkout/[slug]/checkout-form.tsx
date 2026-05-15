@@ -109,9 +109,14 @@ export function CheckoutForm({
     emptyAttendee(initialTierId ?? ""),
   ]);
   const [couponCode, setCouponCode] = useState(initialCouponCode ?? "");
-  // P2.2 — live coupon preview (debounced 400ms)
+  // P2.2 — live coupon preview (debounced 400ms). The `valid` branch carries
+  // discountCents so the summary block can show Subtotal/Discount/Total
+  // before the customer is sent to Stripe (otherwise they have no proof the
+  // discount actually applied until the receipt email arrives).
   const [couponPreview, setCouponPreview] = useState<
-    { state: "idle" | "checking" } | { state: "valid"; label: string } | { state: "invalid"; error: string }
+    | { state: "idle" | "checking" }
+    | { state: "valid"; label: string; discountCents: number; eligibleCents: number }
+    | { state: "invalid"; error: string }
   >({ state: "idle" });
   const [revocationWaived, setRevocationWaived] = useState(false);
   // P1.4 — opt-in only, GDPR/PECR-compliant. Default unchecked.
@@ -213,7 +218,12 @@ export function CheckoutForm({
         tierIds,
       });
       if (res.valid) {
-        setCouponPreview({ state: "valid", label: res.label });
+        setCouponPreview({
+          state: "valid",
+          label: res.label,
+          discountCents: res.discountCents,
+          eligibleCents: res.eligibleCents,
+        });
       } else {
         setCouponPreview({ state: "invalid", error: res.error });
       }
@@ -528,21 +538,55 @@ export function CheckoutForm({
               </div>
             );
           })}
-          <div className="border-t border-border pt-2 flex justify-between font-medium text-base">
-            <span>Total</span>
-            <span>
-              {subtotalCents === 0
-                ? tCheckout("free")
-                : `\u20AC${(subtotalCents / 100).toFixed(2)}`}
-            </span>
-          </div>
-          {couponCode.trim() && (
+          {couponPreview.state === "valid" && couponPreview.discountCents > 0 ? (
+            <>
+              <div className="border-t border-border pt-2 flex justify-between text-muted-foreground">
+                <span>
+                  {locale === "de"
+                    ? "Zwischensumme"
+                    : locale === "fr"
+                      ? "Sous-total"
+                      : "Subtotal"}
+                </span>
+                <span>{`\u20AC${(subtotalCents / 100).toFixed(2)}`}</span>
+              </div>
+              <div className="flex justify-between text-success">
+                <span>
+                  {locale === "de"
+                    ? "Rabatt"
+                    : locale === "fr"
+                      ? "R\u00e9duction"
+                      : "Discount"}{" "}
+                  ({couponPreview.label})
+                </span>
+                <span>{`\u2212\u20AC${(couponPreview.discountCents / 100).toFixed(2)}`}</span>
+              </div>
+              <div className="flex justify-between font-medium text-base">
+                <span>Total</span>
+                <span>
+                  {Math.max(subtotalCents - couponPreview.discountCents, 0) === 0
+                    ? tCheckout("free")
+                    : `\u20AC${((subtotalCents - couponPreview.discountCents) / 100).toFixed(2)}`}
+                </span>
+              </div>
+            </>
+          ) : (
+            <div className="border-t border-border pt-2 flex justify-between font-medium text-base">
+              <span>Total</span>
+              <span>
+                {subtotalCents === 0
+                  ? tCheckout("free")
+                  : `\u20AC${(subtotalCents / 100).toFixed(2)}`}
+              </span>
+            </div>
+          )}
+          {couponCode.trim() && couponPreview.state !== "valid" && (
             <p className="text-xs text-muted-foreground">
               {locale === "de"
-                ? "Gutschein wird beim Bezahlen angewendet"
+                ? "Gutschein wird beim Bezahlen gepr\u00FCft"
                 : locale === "fr"
-                  ? "Le coupon sera appliqu\u00e9 au paiement"
-                  : "Coupon will be applied at payment"}
+                  ? "Le coupon sera v\u00e9rifi\u00e9 au paiement"
+                  : "Coupon will be checked at payment"}
             </p>
           )}
         </div>

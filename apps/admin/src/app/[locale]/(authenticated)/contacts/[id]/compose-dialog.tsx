@@ -41,9 +41,14 @@ export function ComposeDialog({
   const [body, setBody] = useState("");
   const [replyTo, setReplyTo] = useState<string | null>(null);
   const [loadingTemplate, setLoadingTemplate] = useState(false);
-  const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(
-    null
-  );
+  const [msg, setMsg] = useState<{ type: "err"; text: string } | null>(null);
+  // Persistent success state. Keeping the dialog mounted in this branch so
+  // the operator can't miss the confirmation (the previous 1.2s auto-close
+  // toast was easy to lose). "Send another" resets, "Close" dismisses.
+  const [sentInfo, setSentInfo] = useState<{
+    email: string;
+    timeLabel: string;
+  } | null>(null);
   const [isPending, startTransition] = useTransition();
 
   // Whenever the operator picks a template (or switches language while a
@@ -98,17 +103,28 @@ export function ComposeDialog({
       if ("error" in res && res.error) {
         setMsg({ type: "err", text: res.error });
       } else {
-        setMsg({ type: "ok", text: t("sentTo", { email: contactEmail }) });
+        const timeLabel = new Date().toLocaleTimeString(localeKey, {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+        setSentInfo({ email: contactEmail, timeLabel });
         setSubject("");
         setBody("");
         setReplyTo(null);
         setTemplateSlug(FREE_FORM_SLUG);
-        setTimeout(() => {
-          setOpen(false);
-          setMsg(null);
-        }, 1200);
       }
     });
+  }
+
+  function resetForAnother() {
+    setSentInfo(null);
+    setMsg(null);
+  }
+
+  function closeDialog() {
+    setOpen(false);
+    setSentInfo(null);
+    setMsg(null);
   }
 
   if (!open) {
@@ -126,12 +142,38 @@ export function ComposeDialog({
   return (
     <div
       className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 p-4 pt-20"
-      onClick={() => !isPending && setOpen(false)}
+      onClick={() => !isPending && closeDialog()}
     >
       <div
         className="w-full max-w-2xl rounded-lg border border-border bg-background p-6 shadow-lg"
         onClick={(e) => e.stopPropagation()}
       >
+        {sentInfo ? (
+          <div className="space-y-4">
+            <div className="flex items-start gap-3 rounded-lg border-l-4 border-success bg-success-soft/40 p-4">
+              <span className="text-2xl leading-none">✓</span>
+              <p className="text-sm text-foreground">
+                {t("sentAtBody", {
+                  email: sentInfo.email,
+                  time: sentInfo.timeLabel,
+                })}
+              </p>
+            </div>
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={resetForAnother}
+                className="rounded-md border border-border px-3 py-1.5 text-sm font-medium hover:bg-muted"
+              >
+                {t("sendAnother")}
+              </button>
+              <Button type="button" onClick={closeDialog}>
+                {t("close")}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <>
         <h2 className="font-heading text-lg font-bold">{t("title")}</h2>
         <p className="mt-1 text-xs text-muted-foreground">
           {t.rich("recipient", {
@@ -222,19 +264,13 @@ export function ComposeDialog({
           )}
 
           {msg && (
-            <p
-              className={`text-sm ${
-                msg.type === "err" ? "text-danger" : "text-success"
-              }`}
-            >
-              {msg.text}
-            </p>
+            <p className="text-sm text-danger">{msg.text}</p>
           )}
           <div className="flex justify-end gap-2">
             <button
               type="button"
               disabled={isPending}
-              onClick={() => setOpen(false)}
+              onClick={closeDialog}
               className="rounded-md border border-border px-3 py-1.5 text-sm font-medium hover:bg-muted"
             >
               {t("cancel")}
@@ -253,6 +289,8 @@ export function ComposeDialog({
             </Button>
           </div>
         </div>
+        </>
+        )}
       </div>
     </div>
   );

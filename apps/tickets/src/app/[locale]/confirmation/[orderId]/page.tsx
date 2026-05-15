@@ -52,7 +52,7 @@ export default async function ConfirmationPage({
   const { data: order } = await supabase
     .from("orders")
     .select(
-      "id, status, total_cents, recipient_name, recipient_email, event_id, created_at, email_sent_at"
+      "id, status, subtotal_cents, discount_cents, total_cents, recipient_name, recipient_email, event_id, created_at, email_sent_at"
     )
     .eq("id", orderId)
     .single();
@@ -132,18 +132,55 @@ export default async function ConfirmationPage({
           <span className="text-muted-foreground">{t("tickets")}</span>
           <span>{tickets?.length ?? 0}</span>
         </div>
-        <div className="border-t border-border pt-3 flex justify-between font-medium">
-          <span>{t("total")}</span>
-          <span>
-            {order.total_cents === 0
-              ? locale === "de"
-                ? "Kostenlos"
-                : locale === "fr"
-                  ? "Gratuit"
-                  : "Free"
-              : `\u20AC${(order.total_cents / 100).toFixed(2)}`}
-          </span>
-        </div>
+        {(order.discount_cents ?? 0) > 0 ? (
+          <>
+            <div className="border-t border-border pt-3 flex justify-between text-sm text-muted-foreground">
+              <span>
+                {locale === "de"
+                  ? "Zwischensumme"
+                  : locale === "fr"
+                    ? "Sous-total"
+                    : "Subtotal"}
+              </span>
+              <span>{`\u20AC${((order.subtotal_cents ?? 0) / 100).toFixed(2)}`}</span>
+            </div>
+            <div className="flex justify-between text-sm text-success">
+              <span>
+                {locale === "de"
+                  ? "Rabatt"
+                  : locale === "fr"
+                    ? "R\u00E9duction"
+                    : "Discount"}
+              </span>
+              <span>{`\u2212\u20AC${(order.discount_cents / 100).toFixed(2)}`}</span>
+            </div>
+            <div className="flex justify-between font-medium">
+              <span>{t("total")}</span>
+              <span>
+                {order.total_cents === 0
+                  ? locale === "de"
+                    ? "Kostenlos"
+                    : locale === "fr"
+                      ? "Gratuit"
+                      : "Free"
+                  : `\u20AC${(order.total_cents / 100).toFixed(2)}`}
+              </span>
+            </div>
+          </>
+        ) : (
+          <div className="border-t border-border pt-3 flex justify-between font-medium">
+            <span>{t("total")}</span>
+            <span>
+              {order.total_cents === 0
+                ? locale === "de"
+                  ? "Kostenlos"
+                  : locale === "fr"
+                    ? "Gratuit"
+                    : "Free"
+                : `\u20AC${(order.total_cents / 100).toFixed(2)}`}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Recovery panel — visible whenever any ticket is unsent OR the

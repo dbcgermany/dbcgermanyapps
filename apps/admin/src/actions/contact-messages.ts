@@ -144,9 +144,23 @@ export async function listContactMessages(contactId: string) {
   const { data } = await supabase
     .from("contact_messages")
     .select(
-      "id, subject, body_md, sent_at, sent_by, profiles:profiles!contact_messages_sent_by_fkey(full_name)"
+      "id, subject, body_md, sent_at, sent_by, resend_message_id, template_slug, reply_to, profiles:profiles!contact_messages_sent_by_fkey(display_name, first_name, last_name)"
     )
     .eq("contact_id", contactId)
     .order("sent_at", { ascending: false });
-  return data ?? [];
+
+  // Compose a display name with the same fallback chain the send action
+  // uses (display_name → first+last → fallback), so the timeline + send path
+  // never disagree about who sent a given message.
+  return (data ?? []).map((row) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const p = (row as any).profiles as
+      | { display_name: string | null; first_name: string | null; last_name: string | null }
+      | null;
+    const senderName =
+      p?.display_name?.trim() ||
+      [p?.first_name, p?.last_name].filter(Boolean).join(" ").trim() ||
+      "DBC Germany Team";
+    return { ...row, senderName };
+  });
 }

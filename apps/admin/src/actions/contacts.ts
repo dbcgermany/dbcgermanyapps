@@ -77,6 +77,8 @@ export interface ContactListRow extends Contact {
   orders_count: number;
   tickets_count: number;
   pipeline_status: PipelineStatus | null;
+  /** Latest contact_messages.sent_at for this contact, or null if never emailed. */
+  last_contacted_at: string | null;
 }
 
 export async function listContacts(filters: {
@@ -269,7 +271,29 @@ export async function listContacts(filters: {
   const { data } = await query;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const rows = ((data ?? []) as any[]).map((c) => ({
+  const rowsRaw = (data ?? []) as any[];
+
+  // "Last contacted" — read directly from the contact_messages SSOT so the
+  // value never drifts from the source-of-truth timeline on the contact
+  // profile. One query, ordered by sent_at desc, scan once and pick the
+  // first sent_at per contact. The existing idx_contact_messages_contact_sent
+  // index covers this.
+  const contactIds = rowsRaw.map((c) => c.id as string);
+  const lastContactedAt = new Map<string, string>();
+  if (contactIds.length > 0) {
+    const { data: messages } = await supabase
+      .from("contact_messages")
+      .select("contact_id, sent_at")
+      .in("contact_id", contactIds)
+      .order("sent_at", { ascending: false });
+    for (const m of (messages ?? []) as { contact_id: string; sent_at: string }[]) {
+      if (!lastContactedAt.has(m.contact_id)) {
+        lastContactedAt.set(m.contact_id, m.sent_at);
+      }
+    }
+  }
+
+  const rows = rowsRaw.map((c) => ({
     ...c,
     categories: (c.links ?? [])
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -279,6 +303,7 @@ export async function listContacts(filters: {
     tickets_count: c.tickets?.[0]?.count ?? 0,
     pipeline_status:
       (c.user_state?.[0]?.pipeline_status as PipelineStatus | null) ?? null,
+    last_contacted_at: lastContactedAt.get(c.id as string) ?? null,
   }));
   return rows;
 }

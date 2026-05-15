@@ -452,7 +452,10 @@
         "cancel": "Abbrechen",
         "send": "Senden",
         "sending": "Wird gesendet …",
-        "sentTo": "Gesendet an {email}"
+        "sentTo": "Gesendet an {email}",
+        "sentAtBody": "E-Mail wurde an {email} um {time} gesendet. Sie erscheint jetzt im E-Mail-Verlauf dieses Kontakts unten.",
+        "sendAnother": "Weitere senden",
+        "close": "Schließen"
       },
       "editor": {
         "indexTitle": "Outreach-Vorlagen",
@@ -461,8 +464,20 @@
         "colDescription": "Anwendung",
         "colReplyTo": "Antwort an",
         "colUpdated": "Aktualisiert",
+        "colSystem": "System",
+        "systemBadge": "System",
         "edit": "Bearbeiten",
+        "duplicate": "Duplizieren",
+        "delete": "Löschen",
+        "deleteConfirm": "Vorlage „{name}\" löschen? Das kann nicht rückgängig gemacht werden.",
+        "deleted": "Vorlage gelöscht.",
+        "cannotDeleteSystem": "Geseedete Vorlagen können nicht gelöscht werden — bitte den Text bearbeiten.",
+        "newButton": "+ Neue Vorlage",
+        "newTitle": "Neue Outreach-Vorlage",
+        "newSubtitle": "Eine eigene Vorlage für eine neue Zielgruppe oder einen neuen Anwendungsfall anlegen. Du kannst sie jederzeit später bearbeiten.",
         "editTitle": "Vorlage bearbeiten",
+        "fieldSlug": "Kennung",
+        "fieldSlugHint": "Wird in URLs und Audit-Logs verwendet. Nur Kleinbuchstaben, Zahlen und Unterstriche — z. B. vip_followup.",
         "fieldName": "Anzeigename",
         "fieldDescription": "Einsatzbeschreibung",
         "fieldReplyTo": "Antwort-an-Adresse",
@@ -1257,7 +1272,8 @@
       },
       "list": {
         "columns": {
-          "pipeline": "Pipeline"
+          "pipeline": "Pipeline",
+          "lastContacted": "Zuletzt kontaktiert"
         },
         "tabs": {
           "contacts": "Kontakte",
@@ -1287,7 +1303,10 @@
         "door": "Abendkasse",
         "buyer": "Käufer",
         "subscriber": "Abonnent",
-        "messageHistory": "Nachrichtenverlauf"
+        "messageHistory": "E-Mail-Verlauf",
+        "noMessagesYet": "An diesen Kontakt wurden noch keine E-Mails gesendet.",
+        "sentBy": "Gesendet von",
+        "lastContacted": "Zuletzt kontaktiert"
       }
     },
     "back": {

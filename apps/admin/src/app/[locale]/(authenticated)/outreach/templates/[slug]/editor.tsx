@@ -1,9 +1,12 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Button, FormField, Input, Textarea } from "@dbc/ui";
+import { Button, ConfirmDialog, FormField, Input, Textarea } from "@dbc/ui";
+import { toast } from "sonner";
 import {
+  deleteOutreachTemplate,
   upsertOutreachTemplate,
   type OutreachTemplateRow,
 } from "@/actions/outreach-templates";
@@ -41,13 +44,19 @@ const VARIABLES: Array<{ token: string; example: string }> = [
 export function OutreachTemplateEditor({
   template,
   locale,
+  mode = "edit",
 }: {
   template: OutreachTemplateRow;
   locale: string;
+  /** "create" enables the slug input and routes to the new template's page after save.
+   *  "edit" keeps the slug read-only and shows the Delete action for non-system rows. */
+  mode?: "create" | "edit";
 }) {
   const t = useTranslations("admin.outreach.editor");
   const tLocale = useTranslations("admin.outreach.locales");
+  const router = useRouter();
 
+  const [slug, setSlug] = useState(template.slug);
   const [name, setName] = useState(template.name);
   const [description, setDescription] = useState(template.description ?? "");
   const [replyTo, setReplyTo] = useState(template.reply_to);
@@ -75,7 +84,7 @@ export function OutreachTemplateEditor({
     setMsg(null);
     startTransition(async () => {
       const res = await upsertOutreachTemplate({
-        slug: template.slug,
+        slug: mode === "create" ? slug.trim() : template.slug,
         name,
         description: description || null,
         reply_to: replyTo,
@@ -89,17 +98,51 @@ export function OutreachTemplateEditor({
       });
       if ("error" in res) {
         setMsg({ type: "err", text: res.error });
+      } else if (mode === "create") {
+        // Land the operator on the edit page of the just-created template so
+        // they can iterate on copy without re-typing the slug.
+        router.push(`/${locale}/outreach/templates/${slug.trim()}`);
+        router.refresh();
       } else {
         setMsg({ type: "ok", text: t("saved") });
       }
     });
   }
 
+  async function handleDelete() {
+    const res = await deleteOutreachTemplate(template.slug);
+    if ("error" in res) {
+      toast.error(res.error);
+      return;
+    }
+    toast.success(t("deleted"));
+    router.push(`/${locale}/outreach/templates`);
+    router.refresh();
+  }
+
   return (
     <div className="mt-6 max-w-3xl space-y-6">
-      {/* Meta — name + description + reply-to live above the locale tabs
-          since they're shared across every locale. */}
+      {/* Meta — slug (create-only), name + description + reply-to live above
+          the locale tabs since they're shared across every locale. */}
       <div className="space-y-4 rounded-lg border border-border p-4">
+        {mode === "create" && (
+          <FormField label={t("fieldSlug")} hint={t("fieldSlugHint")} required>
+            <Input
+              type="text"
+              value={slug}
+              onChange={(e) =>
+                setSlug(
+                  e.target.value
+                    .toLowerCase()
+                    .replace(/[^a-z0-9_]+/g, "_")
+                    .replace(/^_+|_+$/g, "")
+                )
+              }
+              placeholder="vip_followup"
+              autoComplete="off"
+            />
+          </FormField>
+        )}
         <FormField label={t("fieldName")} required>
           <Input
             type="text"
@@ -198,8 +241,29 @@ export function OutreachTemplateEditor({
         </p>
       )}
 
-      <div className="flex justify-end">
-        <Button type="button" disabled={isPending} onClick={save}>
+      <div className="flex items-center justify-end gap-3">
+        {mode === "edit" && !template.is_system && (
+          <ConfirmDialog
+            trigger={
+              <button
+                type="button"
+                className="text-xs text-danger hover:opacity-80"
+              >
+                {t("delete")}
+              </button>
+            }
+            title={t("delete")}
+            description={t("deleteConfirm", { name: template.name })}
+            variant="danger"
+            confirmLabel={t("delete")}
+            onConfirm={handleDelete}
+          />
+        )}
+        <Button
+          type="button"
+          disabled={isPending || (mode === "create" && !slug.trim())}
+          onClick={save}
+        >
           {isPending ? t("saving") : t("save")}
         </Button>
       </div>

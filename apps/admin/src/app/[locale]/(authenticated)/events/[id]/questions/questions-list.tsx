@@ -8,6 +8,7 @@ import {
   type AdminSpeakerQuestion,
   type SpeakerQuestionStatus,
 } from "@/actions/speaker-questions";
+import { formatRelative } from "@/lib/relative-time";
 
 const STATUS_FILTERS: Array<{
   value: "all" | SpeakerQuestionStatus;
@@ -48,22 +49,6 @@ function maskEmail(email: string): string {
       ? domain
       : domain[0] + "*".repeat(Math.max(2, domain.length - 1));
   return `${maskLocal}@${maskDomain}${tld}`;
-}
-
-function formatRelative(iso: string, locale: string): string {
-  const ms = Date.now() - new Date(iso).getTime();
-  const sec = Math.round(ms / 1000);
-  const min = Math.round(sec / 60);
-  const hr = Math.round(min / 60);
-  const day = Math.round(hr / 24);
-  if (sec < 60) return "just now";
-  if (min < 60) return `${min}m ago`;
-  if (hr < 24) return `${hr}h ago`;
-  if (day < 7) return `${day}d ago`;
-  return new Date(iso).toLocaleDateString(locale, {
-    month: "short",
-    day: "numeric",
-  });
 }
 
 export function QuestionsList({

@@ -452,7 +452,10 @@
         "cancel": "Annuler",
         "send": "Envoyer",
         "sending": "Envoi…",
-        "sentTo": "Envoyé à {email}"
+        "sentTo": "Envoyé à {email}",
+        "sentAtBody": "E-mail envoyé à {email} à {time}. Il apparaît maintenant dans l'historique des e-mails de ce contact ci-dessous.",
+        "sendAnother": "Envoyer un autre",
+        "close": "Fermer"
       },
       "editor": {
         "indexTitle": "Modèles d'outreach",
@@ -461,8 +464,20 @@
         "colDescription": "Usage",
         "colReplyTo": "Répondre à",
         "colUpdated": "Mis à jour",
+        "colSystem": "Système",
+        "systemBadge": "Système",
         "edit": "Modifier",
+        "duplicate": "Dupliquer",
+        "delete": "Supprimer",
+        "deleteConfirm": "Supprimer le modèle « {name} » ? Cette action est irréversible.",
+        "deleted": "Modèle supprimé.",
+        "cannotDeleteSystem": "Les modèles intégrés ne peuvent pas être supprimés — modifiez plutôt leur texte.",
+        "newButton": "+ Nouveau modèle",
+        "newTitle": "Nouveau modèle d'outreach",
+        "newSubtitle": "Créez un modèle personnalisé pour une nouvelle audience ou un nouveau cas d'usage. Vous pourrez le modifier à tout moment.",
         "editTitle": "Modifier le modèle",
+        "fieldSlug": "Identifiant",
+        "fieldSlugHint": "Utilisé dans les URL et les journaux d'audit. Minuscules, chiffres et underscores uniquement — par ex. vip_followup.",
         "fieldName": "Nom d'affichage",
         "fieldDescription": "Description d'usage",
         "fieldReplyTo": "Adresse de réponse",
@@ -1257,7 +1272,8 @@
       },
       "list": {
         "columns": {
-          "pipeline": "Pipeline"
+          "pipeline": "Pipeline",
+          "lastContacted": "Dernier contact"
         },
         "tabs": {
           "contacts": "Contacts",
@@ -1287,7 +1303,10 @@
         "door": "Entrée",
         "buyer": "Acheteur",
         "subscriber": "Abonné",
-        "messageHistory": "Historique des messages"
+        "messageHistory": "Historique des e-mails",
+        "noMessagesYet": "Aucun e-mail n'a encore été envoyé à ce contact.",
+        "sentBy": "Envoyé par",
+        "lastContacted": "Dernier contact"
       }
     },
     "back": {

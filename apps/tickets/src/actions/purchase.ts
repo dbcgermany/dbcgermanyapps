@@ -226,7 +226,7 @@ export async function createCheckoutSession(input: CheckoutInput) {
   const { data: event, error: eventError } = await supabase
     .from("events")
     .select(
-      "id, slug, title_en, title_de, title_fr, max_tickets_per_order, max_total_tickets, enabled_payment_methods, is_published"
+      "id, slug, title_en, title_de, title_fr, max_tickets_per_order, max_total_tickets, enabled_payment_methods, is_published, team_invite_applicable_tier_ids"
     )
     .eq("slug", input.eventSlug)
     .eq("is_published", true)
@@ -375,7 +375,7 @@ export async function createCheckoutSession(input: CheckoutInput) {
     const { data: coupon } = await supabase
       .from("coupons")
       .select(
-        "id, discount_type, discount_value, max_uses, times_used, event_id, applicable_tier_ids, is_active, valid_from, valid_until, stripe_coupon_id, stripe_promotion_code_id"
+        "id, discount_type, discount_value, max_uses, times_used, event_id, applicable_tier_ids, is_active, valid_from, valid_until, stripe_coupon_id, stripe_promotion_code_id, purpose"
       )
       .eq("code", input.couponCode.toUpperCase().trim())
       .eq("is_active", true)
@@ -406,12 +406,16 @@ export async function createCheckoutSession(input: CheckoutInput) {
 
     // If the coupon restricts to specific tiers, only count those line items
     // toward the discount base. Unrestricted coupons apply to the full subtotal.
+    // For team_friend_invite codes the tier policy is the event's
+    // team_invite_applicable_tier_ids (SSOT) — the per-coupon column is a
+    // historical snapshot and drifts when admin changes policy.
+    const applicableTierIds = resolveCouponApplicableTierIds(
+      coupon,
+      event.team_invite_applicable_tier_ids
+    );
     let eligibleCents = subtotalCents;
-    if (
-      Array.isArray(coupon.applicable_tier_ids) &&
-      coupon.applicable_tier_ids.length > 0
-    ) {
-      const allowed = new Set(coupon.applicable_tier_ids as string[]);
+    if (applicableTierIds.length > 0) {
+      const allowed = new Set(applicableTierIds);
       eligibleCents = 0;
       for (const attendee of input.attendees) {
         if (allowed.has(attendee.tierId)) {
@@ -881,8 +885,33 @@ export type CouponPreviewResult =
       label: string;
       discountType: "percentage" | "fixed_amount";
       discountValue: number;
+      /** Resolved discount in cents against the current cart. */
+      discountCents: number;
+      /** Eligible portion of the cart subtotal in cents (= subtotal if unrestricted). */
+      eligibleCents: number;
     }
   | { valid: false; error: string };
+
+/**
+ * Single source of truth for which tier IDs a coupon applies to. For
+ * `team_friend_invite` codes we read the event's `team_invite_applicable_tier_ids`
+ * column rather than the per-coupon snapshot, so admin policy changes
+ * flow through to all historical codes without re-issuing. Other coupon
+ * purposes (admin-created `TEST343` etc.) keep using their own column.
+ */
+function resolveCouponApplicableTierIds(
+  coupon: { applicable_tier_ids: unknown; purpose: string | null },
+  eventTeamInviteTierIds: string[] | null
+): string[] {
+  if (coupon.purpose === "team_friend_invite") {
+    return Array.isArray(eventTeamInviteTierIds)
+      ? (eventTeamInviteTierIds as string[])
+      : [];
+  }
+  return Array.isArray(coupon.applicable_tier_ids)
+    ? (coupon.applicable_tier_ids as string[])
+    : [];
+}
 
 export async function previewCoupon(
   input: CouponPreviewInput
@@ -893,7 +922,7 @@ export async function previewCoupon(
 
   const { data: event } = await supabase
     .from("events")
-    .select("id")
+    .select("id, team_invite_applicable_tier_ids")
     .eq("slug", input.eventSlug)
     .eq("is_published", true)
     .maybeSingle();
@@ -902,7 +931,7 @@ export async function previewCoupon(
   const { data: coupon } = await supabase
     .from("coupons")
     .select(
-      "id, discount_type, discount_value, max_uses, times_used, event_id, applicable_tier_ids, is_active, valid_from, valid_until"
+      "id, discount_type, discount_value, max_uses, times_used, event_id, applicable_tier_ids, is_active, valid_from, valid_until, purpose"
     )
     .eq("code", code)
     .eq("is_active", true)
@@ -926,20 +955,46 @@ export async function previewCoupon(
     };
   }
 
-  if (
-    Array.isArray(coupon.applicable_tier_ids) &&
-    coupon.applicable_tier_ids.length > 0 &&
-    input.tierIds.length > 0
-  ) {
-    const allowed = new Set(coupon.applicable_tier_ids as string[]);
-    const overlap = input.tierIds.some((id) => allowed.has(id));
-    if (!overlap) {
+  const applicableTierIds = resolveCouponApplicableTierIds(
+    coupon,
+    event.team_invite_applicable_tier_ids as string[] | null
+  );
+
+  // Pull tier prices for the cart so we can report a real eligibleCents
+  // and discountCents (the UI needs them to render Subtotal/Discount/Total).
+  let cartTiers: { id: string; price_cents: number }[] = [];
+  if (input.tierIds.length > 0) {
+    const { data: tiers } = await supabase
+      .from("ticket_tiers")
+      .select("id, price_cents")
+      .in("id", input.tierIds)
+      .eq("event_id", event.id)
+      .eq("is_public", true);
+    cartTiers = (tiers ?? []).map((t) => ({
+      id: t.id,
+      price_cents: t.price_cents ?? 0,
+    }));
+  }
+  const cartSubtotal = cartTiers.reduce((s, t) => s + t.price_cents, 0);
+
+  let eligibleCents = cartSubtotal;
+  if (applicableTierIds.length > 0 && cartTiers.length > 0) {
+    const allowed = new Set(applicableTierIds);
+    eligibleCents = cartTiers
+      .filter((t) => allowed.has(t.id))
+      .reduce((s, t) => s + t.price_cents, 0);
+    if (eligibleCents === 0) {
       return {
         valid: false,
         error: "This coupon doesn't apply to any of the tiers in your cart.",
       };
     }
   }
+
+  const discountCents =
+    coupon.discount_type === "percentage"
+      ? Math.round(eligibleCents * (coupon.discount_value / 100))
+      : Math.min(coupon.discount_value, eligibleCents);
 
   const label =
     coupon.discount_type === "percentage"
@@ -951,5 +1006,7 @@ export async function previewCoupon(
     label,
     discountType: coupon.discount_type,
     discountValue: coupon.discount_value,
+    discountCents,
+    eligibleCents,
   };
 }

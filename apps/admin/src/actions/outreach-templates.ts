@@ -16,6 +16,7 @@ export interface OutreachTemplateSummary {
   description: string | null;
   reply_to: string;
   updated_at: string;
+  is_system: boolean;
 }
 
 export interface OutreachTemplateRow extends OutreachTemplateSummary {
@@ -51,7 +52,7 @@ export async function listOutreachTemplates(): Promise<
   const supabase = await createServerClient();
   const { data } = await supabase
     .from("outreach_templates")
-    .select("slug, name, description, reply_to, updated_at")
+    .select("slug, name, description, reply_to, updated_at, is_system")
     .order("sort_order", { ascending: true });
   return (data ?? []) as OutreachTemplateSummary[];
 }
@@ -311,6 +312,49 @@ export async function upsertOutreachTemplate(
     entity_type: "outreach_templates",
     entity_id: slug,
     details: { name: input.name, reply_to: replyTo },
+  });
+
+  revalidatePath(`/[locale]/outreach/templates`, "layout");
+  return { success: true };
+}
+
+/**
+ * Delete a custom outreach template. Templates flagged `is_system = true`
+ * are seeded by migrations and refuse to delete — removing them would just
+ * cause confusion on the next deploy when the seed re-inserts them. Admin
+ * can still edit their copy via the upsert path.
+ */
+export async function deleteOutreachTemplate(
+  slug: string
+): Promise<{ success: true } | { error: string }> {
+  const user = await requireRole("admin");
+  const supabase = await createServerClient();
+
+  const { data: row } = await supabase
+    .from("outreach_templates")
+    .select("slug, name, is_system")
+    .eq("slug", slug)
+    .maybeSingle();
+  if (!row) return { error: "Template not found." };
+  if (row.is_system) {
+    return {
+      error:
+        "This template is seeded by the system and can't be deleted. Edit its copy instead.",
+    };
+  }
+
+  const { error } = await supabase
+    .from("outreach_templates")
+    .delete()
+    .eq("slug", slug);
+  if (error) return { error: error.message };
+
+  await supabase.from("audit_log").insert({
+    user_id: user.userId,
+    action: "delete_outreach_template",
+    entity_type: "outreach_templates",
+    entity_id: slug,
+    details: { name: row.name },
   });
 
   revalidatePath(`/[locale]/outreach/templates`, "layout");

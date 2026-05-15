@@ -452,7 +452,10 @@
         "cancel": "Cancel",
         "send": "Send",
         "sending": "Sending…",
-        "sentTo": "Sent to {email}"
+        "sentTo": "Sent to {email}",
+        "sentAtBody": "Email sent to {email} at {time}. It now appears in this contact's Email history below.",
+        "sendAnother": "Send another",
+        "close": "Close"
       },
       "editor": {
         "indexTitle": "Outreach templates",
@@ -461,8 +464,20 @@
         "colDescription": "Use",
         "colReplyTo": "Reply-To",
         "colUpdated": "Updated",
+        "colSystem": "System",
+        "systemBadge": "System",
         "edit": "Edit",
+        "duplicate": "Duplicate",
+        "delete": "Delete",
+        "deleteConfirm": "Delete the template \"{name}\"? This cannot be undone.",
+        "deleted": "Template deleted.",
+        "cannotDeleteSystem": "Seeded templates can't be deleted — edit their copy instead.",
+        "newButton": "+ New template",
+        "newTitle": "New outreach template",
+        "newSubtitle": "Add a custom template for a new audience or use case. You can edit it any time afterwards.",
         "editTitle": "Edit template",
+        "fieldSlug": "Slug",
+        "fieldSlugHint": "Used in URLs and audit logs. Lowercase letters, numbers and underscores only — e.g. vip_followup.",
         "fieldName": "Display name",
         "fieldDescription": "When to use it",
         "fieldReplyTo": "Reply-To",
@@ -1257,7 +1272,8 @@
       },
       "list": {
         "columns": {
-          "pipeline": "Pipeline"
+          "pipeline": "Pipeline",
+          "lastContacted": "Last contacted"
         },
         "tabs": {
           "contacts": "Contacts",
@@ -1287,7 +1303,10 @@
         "door": "Door",
         "buyer": "Buyer",
         "subscriber": "Subscriber",
-        "messageHistory": "Message history"
+        "messageHistory": "Email history",
+        "noMessagesYet": "No emails have been sent to this contact yet.",
+        "sentBy": "Sent by",
+        "lastContacted": "Last contacted"
       }
     },
     "back": {

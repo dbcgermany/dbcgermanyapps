@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { Badge, PageBack } from "@dbc/ui";
+import { Mail } from "lucide-react";
 import { getContact } from "@/actions/contacts";
 import { listContactMessages } from "@/actions/contact-messages";
 import { listOutreachTemplates } from "@/actions/outreach-templates";
@@ -7,6 +8,7 @@ import { ContactProfileTabs } from "./profile-tabs";
 import { ComposeDialog } from "./compose-dialog";
 import { DeleteContactButton } from "./delete-contact-button";
 import { PipelineSelect } from "@/components/pipeline-select";
+import { EmptyState } from "@/components/empty-state";
 
 export default async function ContactDetailPage({
   params,
@@ -79,6 +81,44 @@ export default async function ContactDetailPage({
         </div>
       </div>
 
+      {/* Email history surfaces the contact_messages SSOT. Rendered above the
+          profile tabs because "did my last email actually go out?" is the
+          most frequent post-send question. Always visible — empty state when
+          nothing has been sent yet, so the operator can trust the page. */}
+      <section className="mt-10">
+        <h2 className="font-heading text-lg font-bold">{t("messageHistory")}</h2>
+        {messages.length === 0 ? (
+          <div className="mt-4">
+            <EmptyState icon={Mail} message={t("noMessagesYet")} />
+          </div>
+        ) : (
+          <ul className="mt-4 space-y-3">
+            {messages.map((m) => (
+              <li
+                key={m.id}
+                className="rounded-lg border border-border p-4 text-sm"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-medium">{m.subject}</p>
+                    <p className="mt-0.5 text-[11px] text-muted-foreground">
+                      {t("sentBy")} {m.senderName}
+                      {m.template_slug ? ` · ${m.template_slug}` : ""}
+                    </p>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {new Date(m.sent_at).toLocaleString()}
+                  </p>
+                </div>
+                <p className="mt-2 whitespace-pre-wrap text-xs text-muted-foreground">
+                  {m.body_md}
+                </p>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
       <ContactProfileTabs
         contact={data.contact}
         linkedCategories={data.linkedCategories}
@@ -96,30 +136,6 @@ export default async function ContactDetailPage({
         userState={data.userState}
         locale={locale}
       />
-
-      {messages.length > 0 && (
-        <section className="mt-10">
-          <h2 className="font-heading text-lg font-bold">{t("messageHistory")}</h2>
-          <ul className="mt-4 space-y-3">
-            {messages.map((m) => (
-              <li
-                key={m.id}
-                className="rounded-lg border border-border p-4 text-sm"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <p className="font-medium">{m.subject}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {new Date(m.sent_at).toLocaleString()}
-                  </p>
-                </div>
-                <p className="mt-2 whitespace-pre-wrap text-xs text-muted-foreground">
-                  {m.body_md}
-                </p>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
     </div>
   );
 }

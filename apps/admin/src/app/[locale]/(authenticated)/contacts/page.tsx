@@ -6,6 +6,7 @@ import {
   listEventsForContactFilter,
   listContactCategoriesForFilter,
 } from "@/actions/contacts";
+import { formatRelative } from "@/lib/relative-time";
 import { getAllAttendees } from "@/actions/attendees";
 import {
   EVENT_ROLE_FILTER_VALUES,
@@ -176,6 +177,7 @@ async function ContactsTabContent({
               <th className="px-4 py-3 text-left">{t("categories")}</th>
               <th className="px-4 py-3 text-left">{t("list.columns.pipeline")}</th>
               <th className="px-4 py-3 text-left">{t("marketing")}</th>
+              <th className="px-4 py-3 text-left">{t("list.columns.lastContacted")}</th>
               <th className="px-4 py-3 text-right">{t("orders")}</th>
               <th className="px-4 py-3 text-right">{t("tickets")}</th>
             </tr>
@@ -184,7 +186,7 @@ async function ContactsTabContent({
             {contacts.length === 0 ? (
               <tr>
                 <td
-                  colSpan={8}
+                  colSpan={9}
                   className="px-4 py-10 text-center text-muted-foreground"
                 >
                   {t("empty")}
@@ -264,6 +266,21 @@ async function ContactsTabContent({
                           <span className="text-xs text-muted-foreground">
                             —
                           </span>
+                        )}
+                      </Link>
+                    </td>
+                    <td className="p-0">
+                      <Link href={profileHref} className={cell}>
+                        {c.last_contacted_at ? (
+                          <time
+                            dateTime={c.last_contacted_at}
+                            title={new Date(c.last_contacted_at).toLocaleString()}
+                            className="text-xs text-muted-foreground"
+                          >
+                            {formatRelative(c.last_contacted_at, locale)}
+                          </time>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
                         )}
                       </Link>
                     </td>
