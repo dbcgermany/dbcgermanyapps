@@ -79,7 +79,7 @@ export async function createInvitation(input: InvitationInput) {
   const { data: tier } = await supabase
     .from("ticket_tiers")
     .select(
-      "id, event_id, price_cents, max_quantity, quantity_sold, name_en, name_de, name_fr, catering_included"
+      "id, event_id, price_cents, max_quantity, quantity_sold, name_en, name_de, name_fr, catering_included, purpose"
     )
     .eq("id", input.tierId)
     .single();
@@ -178,16 +178,28 @@ export async function createInvitation(input: InvitationInput) {
     return { error: "Failed to create ticket." };
   }
 
-  // Record the event involvement (invited_guest) so the person shows up when
-  // filtering Contacts by this event.
+  // Record the event involvement so the person shows up when filtering
+  // Contacts by this event. Tier purpose wins over acquisitionType — a
+  // ticket on the Team Germany / Team International tiers always lands the
+  // matching team_member_de / team_member_external role, so the operator
+  // can't accidentally issue a team ticket as 'assigned' and lose catering
+  // eligibility (attendee role is not in catering_eligible_roles).
   if (contactId) {
+    let resolvedRole: "invited_guest" | "attendee" | "team_member_de" | "team_member_external";
+    if (tier.purpose === "team_germany") {
+      resolvedRole = "team_member_de";
+    } else if (tier.purpose === "team_external") {
+      resolvedRole = "team_member_external";
+    } else {
+      resolvedRole = acquisitionType === "invited" ? "invited_guest" : "attendee";
+    }
     await supabase
       .from("contact_event_involvements")
       .upsert(
         {
           contact_id: contactId as string,
           event_id: input.eventId,
-          role: acquisitionType === "invited" ? "invited_guest" : "attendee",
+          role: resolvedRole,
           added_by: user.userId,
         },
         { onConflict: "contact_id,event_id,role", ignoreDuplicates: false }
