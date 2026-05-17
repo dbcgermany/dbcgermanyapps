@@ -209,6 +209,9 @@ export async function sendTicketsForOrder(
           order.acquisition_type === "assigned",
         transferUrl,
         transferCutoffDate,
+        // Every paid public-tier ticket also gets the Briefing Pack.
+        // (Invitations skip it inside sendTicketEmail by themselves.)
+        includeBriefingPack: true,
       });
 
       // Stamp the per-ticket idempotency token + Resend message ID. Both

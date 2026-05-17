@@ -144,6 +144,10 @@ export { RunsheetPdf } from "./pdf/runsheet-pdf";
 export type { RunsheetPdfItem, RunsheetPdfProps } from "./pdf/runsheet-pdf";
 export { generateRunsheetPdf } from "./pdf/generate-runsheet";
 export type { GenerateRunsheetInput } from "./pdf/generate-runsheet";
+export { BriefingPackPdf } from "./pdf/briefing-pack-pdf";
+export type { BriefingPackPdfProps } from "./pdf/briefing-pack-pdf";
+export { generateBriefingPackPdf } from "./pdf/generate-briefing-pack";
+export type { GenerateBriefingPackInput } from "./pdf/generate-briefing-pack";
 export {
   SUPPORTED_LOCALES,
   isSupportedLocale,

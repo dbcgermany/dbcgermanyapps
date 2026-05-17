@@ -3,6 +3,7 @@ import React from "react";
 import { createEmailClient, fromAddressFor, replyToAddressFor } from "./client";
 import { generateTicketPdf } from "./pdf/generate-ticket";
 import { generateInvitationLetterPdf } from "./pdf/generate-invitation-letter";
+import { generateBriefingPackPdf } from "./pdf/generate-briefing-pack";
 import { TicketDeliveryEmail } from "./templates/ticket-delivery";
 import {
   InvitationEmail,
@@ -63,6 +64,11 @@ export interface SendTicketEmailInput {
    */
   transferUrl?: string;
   transferCutoffDate?: string; // pre-formatted in the caller's locale
+  /**
+   * When true, generates and attaches the Briefing Pack PDF (Essen guide,
+   * languages, dress code, glossary). Skipped for invitation emails.
+   */
+  includeBriefingPack?: boolean;
 }
 
 const SUBJECT_TRANSLATIONS = {
@@ -235,6 +241,35 @@ export async function sendTicketEmail(
     );
   }
 
+  // 3b. Optionally generate the Briefing Pack PDF as a second attachment.
+  // Skipped for invitation emails (different audience, different tone) and
+  // when the caller opts out.
+  let briefingPackBuffer: Buffer | null = null;
+  if (input.includeBriefingPack && !input.isInvitation) {
+    try {
+      briefingPackBuffer = await generateBriefingPackPdf({
+        attendeeName: input.attendeeName,
+        eventTitle: input.eventTitle,
+        startsAt: input.startsAt,
+        endsAt: input.endsAt,
+        venueName: input.venueName,
+        venueAddress: input.venueAddress,
+        city: input.city,
+        locale: input.locale,
+        brandName: input.brandName,
+        legalName: input.legalName,
+        supportEmail: input.supportEmail,
+        primaryColor: input.primaryColor,
+        logoUrl: input.logoUrl,
+      });
+    } catch (err) {
+      // Briefing Pack is a "nice to have" attachment — never let its
+      // failure block the ticket itself from going out.
+      console.error("Briefing Pack generation failed:", err);
+      briefingPackBuffer = null;
+    }
+  }
+
   // 4. Send via Resend
   const resend = createEmailClient();
   const fromAddress = fromAddressFor("tickets");
@@ -253,6 +288,14 @@ export async function sendTicketEmail(
         filename: `ticket-${ticketShortId}.pdf`,
         content: pdfBuffer,
       },
+      ...(briefingPackBuffer
+        ? [
+            {
+              filename: `briefing-pack-${input.locale}.pdf`,
+              content: briefingPackBuffer,
+            },
+          ]
+        : []),
     ],
   });
 
