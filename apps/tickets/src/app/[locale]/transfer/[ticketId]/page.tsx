@@ -63,7 +63,7 @@ export default async function TransferPage({
   const [{ data: event }, { data: tier }] = await Promise.all([
     supabase
       .from("events")
-      .select("title_en, title_de, title_fr, ends_at")
+      .select("title_en, title_de, title_fr, starts_at, ends_at")
       .eq("id", ticket.event_id)
       .single(),
     supabase
@@ -74,6 +74,12 @@ export default async function TransferPage({
   ]);
 
   const eventEnded = event ? new Date(event.ends_at) < new Date() : false;
+  // Transfers must lock 7 days before the event so we have lead time to
+  // update wallet passes, catering counts, and the venue security manifest.
+  const cutoffMs = event
+    ? new Date(event.starts_at).getTime() - 7 * 24 * 60 * 60 * 1000
+    : 0;
+  const cutoffReached = event ? Date.now() > cutoffMs : false;
   const eventTitle = event
     ? ((event[`title_${locale}` as keyof typeof event] as string) ||
       event.title_en)
@@ -82,12 +88,22 @@ export default async function TransferPage({
     ? ((tier[`name_${locale}` as keyof typeof tier] as string) || tier.name_en)
     : "";
 
-  const blocked = Boolean(ticket.checked_in_at) || eventEnded;
+  const blocked =
+    Boolean(ticket.checked_in_at) || eventEnded || cutoffReached;
   const blockedReason = ticket.checked_in_at
     ? t("blockedCheckedIn")
     : eventEnded
       ? t("blockedEnded")
-      : null;
+      : cutoffReached
+        ? t("blockedCutoff")
+        : null;
+  const cutoffDateLabel = event
+    ? new Date(cutoffMs).toLocaleDateString(locale, {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : "";
 
   return (
     <main className="mx-auto max-w-lg px-4 py-12">
@@ -100,6 +116,12 @@ export default async function TransferPage({
 
       <h1 className="mt-4 font-heading text-2xl font-bold">{t("title")}</h1>
       <p className="mt-2 text-sm text-muted-foreground">{t("description")}</p>
+
+      {event && !blocked && (
+        <p className="mt-3 text-sm font-medium text-warning">
+          {t("cutoffNotice", { date: cutoffDateLabel })}
+        </p>
+      )}
 
       {/* Current ticket card */}
       <div className="mt-6 rounded-lg border border-border p-4">

@@ -176,24 +176,24 @@ export function TermsOfService({ company, locale, marketingSiteUrl }: LegalConte
         {{
           en: (
             <ul>
-              <li>You may transfer a ticket to another person using the transfer function in your account, free of charge.</li>
-              <li>Transfers must be initiated at least 48 hours before the event start time.</li>
+              <li>You may transfer a ticket to another person using the transfer function in your account, free of charge. Transfers initiated outside that function (e.g., handing over the ticket PDF) are not recognised: the name on file is the only attendee who may enter.</li>
+              <li>Transfers must be completed at least 7 days before the event start time. After that cutoff, the name on the ticket is final and cannot be changed.</li>
               <li>Each ticket may be transferred once. The new holder is bound by these Terms.</li>
               <li>We are not responsible for transfers arranged outside our platform.</li>
             </ul>
           ),
           de: (
             <ul>
-              <li>Sie können ein Ticket über die Übertragungsfunktion in Ihrem Konto kostenlos auf eine andere Person übertragen.</li>
-              <li>Übertragungen müssen mindestens 48 Stunden vor Veranstaltungsbeginn eingeleitet werden.</li>
+              <li>Sie können ein Ticket über die Übertragungsfunktion in Ihrem Konto kostenlos auf eine andere Person übertragen. Außerhalb dieser Funktion vereinbarte Übertragungen (z. B. Weitergabe der Ticket-PDF) werden nicht anerkannt: Einlass erhält ausschließlich die im System hinterlegte Person.</li>
+              <li>Übertragungen müssen mindestens 7 Tage vor Veranstaltungsbeginn abgeschlossen sein. Nach dieser Frist ist der Name auf dem Ticket endgültig und kann nicht mehr geändert werden.</li>
               <li>Jedes Ticket darf einmal übertragen werden. Der neue Inhaber ist an diese AGB gebunden.</li>
               <li>Für außerhalb unserer Plattform vereinbarte Übertragungen übernehmen wir keine Verantwortung.</li>
             </ul>
           ),
           fr: (
             <ul>
-              <li>Vous pouvez transférer un billet à une autre personne en utilisant la fonction de transfert de votre compte, gratuitement.</li>
-              <li>Les transferts doivent être initiés au moins 48 heures avant le début de l'événement.</li>
+              <li>Vous pouvez transférer un billet à une autre personne en utilisant la fonction de transfert de votre compte, gratuitement. Les transferts effectués en dehors de cette fonction (par exemple, la transmission du PDF) ne sont pas reconnus : seule la personne enregistrée dans le système peut entrer.</li>
+              <li>Les transferts doivent être effectués au moins 7 jours avant le début de l'événement. Après cette date limite, le nom sur le billet est définitif et ne peut plus être modifié.</li>
               <li>Chaque billet ne peut être transféré qu'une seule fois. Le nouveau titulaire est lié par ces Conditions.</li>
               <li>Nous ne sommes pas responsables des transferts organisés en dehors de notre plateforme.</li>
             </ul>

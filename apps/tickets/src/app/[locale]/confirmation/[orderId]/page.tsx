@@ -68,7 +68,7 @@ export default async function ConfirmationPage({
   const { data: tickets } = await supabase
     .from("tickets")
     .select(
-      "id, attendee_name, attendee_email, ticket_token, tier_id, email_sent_at"
+      "id, attendee_name, attendee_email, ticket_token, tier_id, email_sent_at, is_transferred"
     )
     .eq("order_id", orderId);
 
@@ -216,14 +216,24 @@ export default async function ConfirmationPage({
                     {ticket.ticket_token.slice(0, 8).toUpperCase()}
                   </span>
                   {isPaid && (
-                    <a
-                      href={`/api/tickets/${ticket.ticket_token}/pdf`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="rounded-md border border-border bg-background px-2.5 py-1 text-xs font-medium hover:bg-accent"
-                    >
-                      {t("downloadPdf")}
-                    </a>
+                    <>
+                      <a
+                        href={`/api/tickets/${ticket.ticket_token}/pdf`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="rounded-md border border-border bg-background px-2.5 py-1 text-xs font-medium hover:bg-accent"
+                      >
+                        {t("downloadPdf")}
+                      </a>
+                      {!ticket.is_transferred && (
+                        <Link
+                          href={`/${locale}/transfer/${ticket.id}`}
+                          className="rounded-md border border-border bg-background px-2.5 py-1 text-xs font-medium hover:bg-accent"
+                        >
+                          {t("transfer")}
+                        </Link>
+                      )}
+                    </>
                   )}
                 </div>
               </div>

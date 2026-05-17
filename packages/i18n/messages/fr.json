@@ -180,7 +180,8 @@
         "tickets": "Billets",
         "total": "Total",
         "backToEvents": "Retour aux événements",
-        "downloadPdf": "Télécharger le PDF"
+        "downloadPdf": "Télécharger le PDF",
+        "transfer": "Transférer"
       }
     },
     "transfer": {
@@ -206,6 +207,8 @@
         "currentAttendee": "Participant actuel",
         "blockedCheckedIn": "Ce billet a déjà été enregistré et ne peut pas être transféré.",
         "blockedEnded": "Cet événement est déjà terminé.",
+        "blockedCutoff": "Transferts fermés. La date limite (7 jours avant l'événement) est passée.",
+        "cutoffNotice": "Les transferts doivent être effectués avant le {date}.",
         "back": "Retour aux commandes"
       }
     },

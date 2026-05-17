@@ -25,6 +25,12 @@ interface TicketDeliveryEmailProps {
   orderUrl: string;
   locale: "en" | "de" | "fr";
   logoUrl?: string;
+  /**
+   * Optional transfer link surfaced as a small notice. Renders only when
+   * both fields are set (caller hides them once the 7-day cutoff passes).
+   */
+  transferUrl?: string;
+  transferCutoffDate?: string;
 }
 
 const TRANSLATIONS = {
@@ -44,6 +50,9 @@ const TRANSLATIONS = {
     footer: "Sent by DBC Germany \u00B7 tickets.dbc-germany.com",
     questions:
       "Questions? Reply to this email and we\u2019ll get back to you.",
+    transferNote:
+      "Plans changed? You can transfer this ticket to someone else until {date}.",
+    transferCta: "Transfer ticket",
   },
   de: {
     preview: "Ihr Ticket f\u00FCr {event}",
@@ -61,6 +70,9 @@ const TRANSLATIONS = {
     footer: "Gesendet von DBC Germany \u00B7 tickets.dbc-germany.com",
     questions:
       "Fragen? Antworten Sie einfach auf diese E-Mail \u2014 wir melden uns zur\u00FCck.",
+    transferNote:
+      "Pl\u00E4ne ge\u00E4ndert? Du kannst dieses Ticket bis zum {date} an jemand anderen \u00FCbertragen.",
+    transferCta: "Ticket \u00FCbertragen",
   },
   fr: {
     preview: "Votre billet pour {event}",
@@ -78,6 +90,9 @@ const TRANSLATIONS = {
     footer: "Envoy\u00E9 par DBC Germany \u00B7 tickets.dbc-germany.com",
     questions:
       "Une question ? R\u00E9pondez \u00E0 cet e-mail et nous vous recontacterons.",
+    transferNote:
+      "Plans chang\u00E9s ? Tu peux transf\u00E9rer ce billet \u00E0 quelqu\u2019un d\u2019autre jusqu\u2019au {date}.",
+    transferCta: "Transf\u00E9rer le billet",
   },
 };
 
@@ -155,6 +170,24 @@ export function TicketDeliveryEmail(props: TicketDeliveryEmailProps) {
                 {t.viewOrder}
               </Link>
             </Section>
+
+            {/* Transfer notice — shown only when the 7-day cutoff is still
+                in the future (caller drops the props after that). */}
+            {props.transferUrl && props.transferCutoffDate && (
+              <Section className="mt-6 rounded-md bg-neutral-50 p-4">
+                <Text className="m-0 text-xs leading-5 text-neutral-600">
+                  {interpolate(t.transferNote, {
+                    date: props.transferCutoffDate,
+                  })}
+                </Text>
+                <Link
+                  href={props.transferUrl}
+                  className="mt-2 inline-block text-xs font-semibold text-[#c8102e] no-underline"
+                >
+                  {t.transferCta} &rarr;
+                </Link>
+              </Section>
+            )}
 
             <Hr className="my-8 border-neutral-200" />
 

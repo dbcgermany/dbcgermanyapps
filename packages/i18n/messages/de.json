@@ -180,7 +180,8 @@
         "tickets": "Tickets",
         "total": "Gesamt",
         "backToEvents": "Zurück zu Veranstaltungen",
-        "downloadPdf": "PDF herunterladen"
+        "downloadPdf": "PDF herunterladen",
+        "transfer": "Übertragen"
       }
     },
     "transfer": {
@@ -206,6 +207,8 @@
         "currentAttendee": "Aktueller Teilnehmer",
         "blockedCheckedIn": "Dieses Ticket wurde bereits eingecheckt und kann nicht übertragen werden.",
         "blockedEnded": "Diese Veranstaltung ist bereits vorbei.",
+        "blockedCutoff": "Übertragungen geschlossen. Die Frist (7 Tage vor dem Event) ist verstrichen.",
+        "cutoffNotice": "Übertragungen müssen bis {date} abgeschlossen sein.",
         "back": "Zurück zu Bestellungen"
       }
     },

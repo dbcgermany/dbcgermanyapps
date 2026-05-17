@@ -180,7 +180,8 @@
         "tickets": "Tickets",
         "total": "Total",
         "backToEvents": "Back to events",
-        "downloadPdf": "Download PDF"
+        "downloadPdf": "Download PDF",
+        "transfer": "Transfer"
       }
     },
     "transfer": {
@@ -206,6 +207,8 @@
         "currentAttendee": "Current attendee",
         "blockedCheckedIn": "This ticket has already been checked in and cannot be transferred.",
         "blockedEnded": "This event has already ended.",
+        "blockedCutoff": "Transfers closed. The deadline (7 days before the event) has passed.",
+        "cutoffNotice": "Transfers must be completed by {date}.",
         "back": "Back to orders"
       }
     },

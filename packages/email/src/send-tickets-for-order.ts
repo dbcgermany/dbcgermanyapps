@@ -155,6 +155,24 @@ export async function sendTicketsForOrder(
 
     const recipientEmail = options.overrideEmail || ticket.attendee_email;
 
+    // Transfer surface: only shown if the 7-day cutoff is still in the
+    // future. Past that, the transfer page itself shows the blocked screen
+    // — no point pointing the buyer at a dead end from the email.
+    const cutoffDate = new Date(
+      new Date(event.starts_at).getTime() - 7 * 24 * 60 * 60 * 1000
+    );
+    const transferIsOpen = cutoffDate.getTime() > Date.now();
+    const transferUrl = transferIsOpen
+      ? `${ticketsBaseUrl}/${locale}/transfer/${ticket.id}`
+      : undefined;
+    const transferCutoffDate = transferIsOpen
+      ? cutoffDate.toLocaleDateString(locale, {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        })
+      : undefined;
+
     try {
       const result = await sendTicketEmail({
         attendeeName: ticket.attendee_name,
@@ -189,6 +207,8 @@ export async function sendTicketsForOrder(
         isInvitation:
           order.acquisition_type === "invited" ||
           order.acquisition_type === "assigned",
+        transferUrl,
+        transferCutoffDate,
       });
 
       // Stamp the per-ticket idempotency token + Resend message ID. Both

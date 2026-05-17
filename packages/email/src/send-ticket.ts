@@ -55,6 +55,14 @@ export interface SendTicketEmailInput {
   title?: string | null;
   lastName?: string | null;
   customBody?: string | null;
+  /**
+   * Optional transfer surface. When both fields are set AND the cutoff is
+   * still in the future, the informal ticket-delivery email renders a small
+   * "Plans changed? Transfer this ticket…" notice with a link to /transfer.
+   * Suppressed for invitation emails.
+   */
+  transferUrl?: string;
+  transferCutoffDate?: string; // pre-formatted in the caller's locale
 }
 
 const SUBJECT_TRANSLATIONS = {
@@ -216,6 +224,8 @@ export async function sendTicketEmail(
         orderUrl: input.orderUrl,
         locale: input.locale,
         logoUrl: input.logoUrl,
+        transferUrl: input.transferUrl,
+        transferCutoffDate: input.transferCutoffDate,
       })
     );
 
