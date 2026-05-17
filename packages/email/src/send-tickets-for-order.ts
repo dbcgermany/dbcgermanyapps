@@ -101,6 +101,22 @@ export async function sendTicketsForOrder(
     ((tiers as any[]) ?? []).map((t: any) => [t.id as string, t])
   );
 
+  // Fetch confirmed sponsors once per batch — same snapshot used across
+  // every ticket email in this run. Empty array = the Sponsors PDF
+  // attachment is suppressed downstream (no empty booklet).
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: sponsorRows } = await (supabase as any)
+    .from("event_sponsors")
+    .select(
+      "id, company_name, tier, sector, description_en, description_de, description_fr, logo_url, website_url"
+    )
+    .eq("event_id", order.event_id)
+    .in("status", ["confirmed", "active", "completed"])
+    .order("sort_order", { ascending: true });
+  const sponsors = (sponsorRows ?? []) as Parameters<
+    typeof sendTicketEmail
+  >[0]["sponsors"];
+
   // Fetch branding once per batch. Includes the legal/company address +
   // bank details so the invitation letter PDF shows the right "sender"
   // block (DBC Germany UG, Düsseldorf — NOT the event venue) and so the
@@ -212,6 +228,9 @@ export async function sendTicketsForOrder(
         // Every paid public-tier ticket also gets the Briefing Pack.
         // (Invitations skip it inside sendTicketEmail by themselves.)
         includeBriefingPack: true,
+        // Confirmed sponsors snapshot for this event — empty array means
+        // sendTicketEmail will suppress the Sponsors PDF attachment.
+        sponsors,
       });
 
       // Stamp the per-ticket idempotency token + Resend message ID. Both

@@ -4,6 +4,10 @@ import { createEmailClient, fromAddressFor, replyToAddressFor } from "./client";
 import { generateTicketPdf } from "./pdf/generate-ticket";
 import { generateInvitationLetterPdf } from "./pdf/generate-invitation-letter";
 import { generateBriefingPackPdf } from "./pdf/generate-briefing-pack";
+import {
+  generateSponsorsPdf,
+  type SponsorRow,
+} from "./pdf/generate-sponsors";
 import { TicketDeliveryEmail } from "./templates/ticket-delivery";
 import {
   InvitationEmail,
@@ -69,6 +73,12 @@ export interface SendTicketEmailInput {
    * languages, dress code, glossary). Skipped for invitation emails.
    */
   includeBriefingPack?: boolean;
+  /**
+   * Confirmed sponsors for this event. When the array is non-empty, the
+   * email gets a third attachment: the trilingual Sponsors PDF. Caller
+   * passes the locale-agnostic rows; we localize inside the generator.
+   */
+  sponsors?: SponsorRow[];
 }
 
 const SUBJECT_TRANSLATIONS = {
@@ -270,6 +280,33 @@ export async function sendTicketEmail(
     }
   }
 
+  // 3c. Optionally generate the Sponsors PDF as a third attachment.
+  // Renders only when the caller passed at least one confirmed sponsor;
+  // suppressed for invitation emails to keep the formal letter clean.
+  let sponsorsBuffer: Buffer | null = null;
+  if (
+    !input.isInvitation &&
+    input.sponsors &&
+    input.sponsors.length > 0
+  ) {
+    try {
+      sponsorsBuffer = await generateSponsorsPdf({
+        eventTitle: input.eventTitle,
+        startsAt: input.startsAt,
+        city: input.city,
+        sponsors: input.sponsors,
+        locale: input.locale,
+        brandName: input.brandName,
+        primaryColor: input.primaryColor,
+        logoUrl: input.logoUrl,
+      });
+    } catch (err) {
+      // Same posture as the Briefing Pack — failure must not block delivery.
+      console.error("Sponsors PDF generation failed:", err);
+      sponsorsBuffer = null;
+    }
+  }
+
   // 4. Send via Resend
   const resend = createEmailClient();
   const fromAddress = fromAddressFor("tickets");
@@ -293,6 +330,14 @@ export async function sendTicketEmail(
             {
               filename: `briefing-pack-${input.locale}.pdf`,
               content: briefingPackBuffer,
+            },
+          ]
+        : []),
+      ...(sponsorsBuffer
+        ? [
+            {
+              filename: `sponsors-${input.locale}.pdf`,
+              content: sponsorsBuffer,
             },
           ]
         : []),

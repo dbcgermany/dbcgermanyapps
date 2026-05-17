@@ -152,6 +152,17 @@ export { CertificatePdf } from "./pdf/certificate-pdf";
 export type { CertificatePdfProps } from "./pdf/certificate-pdf";
 export { generateCertificatePdf } from "./pdf/generate-certificate";
 export type { GenerateCertificateInput } from "./pdf/generate-certificate";
+export { SponsorsPdf } from "./pdf/sponsors-pdf";
+export type {
+  SponsorsPdfProps,
+  SponsorEntry,
+  SponsorTier,
+} from "./pdf/sponsors-pdf";
+export { generateSponsorsPdf } from "./pdf/generate-sponsors";
+export type {
+  GenerateSponsorsInput,
+  SponsorRow,
+} from "./pdf/generate-sponsors";
 export {
   SUPPORTED_LOCALES,
   isSupportedLocale,
