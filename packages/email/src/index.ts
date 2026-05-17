@@ -148,6 +148,10 @@ export { BriefingPackPdf } from "./pdf/briefing-pack-pdf";
 export type { BriefingPackPdfProps } from "./pdf/briefing-pack-pdf";
 export { generateBriefingPackPdf } from "./pdf/generate-briefing-pack";
 export type { GenerateBriefingPackInput } from "./pdf/generate-briefing-pack";
+export { CertificatePdf } from "./pdf/certificate-pdf";
+export type { CertificatePdfProps } from "./pdf/certificate-pdf";
+export { generateCertificatePdf } from "./pdf/generate-certificate";
+export type { GenerateCertificateInput } from "./pdf/generate-certificate";
 export {
   SUPPORTED_LOCALES,
   isSupportedLocale,
