@@ -163,6 +163,9 @@ export type {
   GenerateSponsorsInput,
   SponsorRow,
 } from "./pdf/generate-sponsors";
+export { generateOutcomesWorksheetPdf } from "./pdf/generate-outcomes-worksheet";
+export { generateGlossaryCardPdf } from "./pdf/generate-glossary-card";
+export { generateWhatsappCardPdf } from "./pdf/generate-whatsapp-card";
 export {
   SUPPORTED_LOCALES,
   isSupportedLocale,

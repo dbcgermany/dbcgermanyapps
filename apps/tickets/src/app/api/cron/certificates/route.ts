@@ -114,7 +114,7 @@ export async function GET(request: Request) {
 
   let totalSent = 0;
   let totalFailed = 0;
-  let totalSkipped = 0;
+  const totalSkipped = 0;
 
   for (const event of events) {
     // Step 2: find tickets that checked in but haven't been certified yet.

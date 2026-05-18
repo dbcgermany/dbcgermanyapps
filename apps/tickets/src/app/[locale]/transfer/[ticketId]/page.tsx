@@ -79,7 +79,7 @@ export default async function TransferPage({
   const cutoffMs = event
     ? new Date(event.starts_at).getTime() - 7 * 24 * 60 * 60 * 1000
     : 0;
-  const cutoffReached = event ? Date.now() > cutoffMs : false;
+  const cutoffReached = event ? new Date().getTime() > cutoffMs : false;
   const eventTitle = event
     ? ((event[`title_${locale}` as keyof typeof event] as string) ||
       event.title_en)
