@@ -20,6 +20,39 @@ function getSupabase() {
   );
 }
 
+// Mirrors the Postgres `payment_method` enum. Stripe occasionally surfaces
+// types we haven't enumerated (e.g. Link, Amazon Pay, regional methods); a
+// raw `UPDATE orders SET payment_method = '<unknown>'` would reject the
+// whole transaction and leave the order stuck at `pending` — see migration
+// 20260518000001 for the original incident.
+const KNOWN_PAYMENT_METHODS = new Set([
+  "card",
+  "sepa",
+  "sepa_debit",
+  "paypal",
+  "cash",
+  "klarna",
+  "link",
+  "bancontact",
+  "eps",
+  "pix",
+  "amazon_pay",
+  "ideal",
+  "giropay",
+  "p24",
+  "cartes_bancaires",
+]);
+
+// When the handler errored AFTER the dedup row was inserted, the row would
+// otherwise short-circuit every subsequent Stripe retry as "duplicate" and
+// freeze the order. Rolling back lets retries genuinely retry.
+async function rollbackDedup(
+  supabase: ReturnType<typeof getSupabase>,
+  eventId: string
+) {
+  await supabase.from("processed_webhooks").delete().eq("id", eventId);
+}
+
 export async function POST(request: Request) {
   const body = await request.text();
   const signature = request.headers.get("stripe-signature");
@@ -85,6 +118,7 @@ export async function POST(request: Request) {
 
     if (!orderId || !eventId) {
       console.error("Missing metadata in Stripe session:", session.id);
+      await rollbackDedup(supabase, event.id);
       return NextResponse.json({ error: "Missing metadata" }, { status: 400 });
     }
 
@@ -101,7 +135,19 @@ export async function POST(request: Request) {
         );
         const charge = pi.latest_charge as Stripe.Charge | null;
         const detailType = charge?.payment_method_details?.type ?? null;
-        if (detailType) paymentMethod = detailType;
+        if (detailType && KNOWN_PAYMENT_METHODS.has(detailType)) {
+          paymentMethod = detailType;
+        } else if (detailType) {
+          // Surface the gap so we can extend the enum + this whitelist.
+          captureServerError(
+            new Error(`Unknown Stripe payment_method.type: ${detailType}`),
+            {
+              scope: "stripe_webhook:unknown_payment_method",
+              severity: "warning",
+              data: { session_id: session.id, detail_type: detailType },
+            }
+          );
+        }
       } catch (err) {
         console.warn(
           `[webhook] could not resolve payment_method for ${session.id}:`,
@@ -130,6 +176,7 @@ export async function POST(request: Request) {
       console.error(
         `[webhook] session/order mismatch — session=${session.id} order=${orderId} stored=${orderForCheck?.stripe_checkout_session_id ?? "(null)"}`
       );
+      await rollbackDedup(supabase, event.id);
       return NextResponse.json({ error: "session mismatch" }, { status: 400 });
     }
 
@@ -155,6 +202,7 @@ export async function POST(request: Request) {
           db_amount: orderForCheck.total_cents,
         },
       });
+      await rollbackDedup(supabase, event.id);
       return NextResponse.json(
         { error: "amount mismatch" },
         { status: 400 }
@@ -207,6 +255,7 @@ export async function POST(request: Request) {
         data: { order_id: orderId, event_type: event.type, stripe_event_id: event.id },
       });
       console.error("Failed to update order:", orderError);
+      await rollbackDedup(supabase, event.id);
       return NextResponse.json(
         { error: "Failed to update order" },
         { status: 500 }
