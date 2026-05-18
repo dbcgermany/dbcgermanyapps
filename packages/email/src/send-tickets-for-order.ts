@@ -189,6 +189,17 @@ export async function sendTicketsForOrder(
         })
       : undefined;
 
+    // Google Wallet button — link points at the per-ticket redirect endpoint
+    // which short-circuits with a 503 if the env vars aren't set. We always
+    // include the URL when env is configured; rendering condition lives in
+    // the email template (`googleWalletUrl` falsy = button hidden).
+    const googleWalletUrl =
+      process.env.GOOGLE_WALLET_ISSUER_ID &&
+      process.env.GOOGLE_WALLET_SERVICE_ACCOUNT &&
+      process.env.GOOGLE_WALLET_PRIVATE_KEY
+        ? `${ticketsBaseUrl}/api/passes/${ticket.ticket_token}/google`
+        : undefined;
+
     try {
       const result = await sendTicketEmail({
         attendeeName: ticket.attendee_name,
@@ -231,6 +242,7 @@ export async function sendTicketsForOrder(
         // Confirmed sponsors snapshot for this event — empty array means
         // sendTicketEmail will suppress the Sponsors PDF attachment.
         sponsors,
+        googleWalletUrl,
       });
 
       // Stamp the per-ticket idempotency token + Resend message ID. Both

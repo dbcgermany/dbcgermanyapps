@@ -181,7 +181,8 @@
         "total": "Gesamt",
         "backToEvents": "Zurück zu Veranstaltungen",
         "downloadPdf": "PDF herunterladen",
-        "transfer": "Übertragen"
+        "transfer": "Übertragen",
+        "addToGoogleWallet": "Zu Google Wallet hinzufügen"
       }
     },
     "transfer": {

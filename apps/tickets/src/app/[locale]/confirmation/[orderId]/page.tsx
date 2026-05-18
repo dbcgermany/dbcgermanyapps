@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { createServerClient } from "@dbc/supabase/server";
+import { googleWalletConfigured } from "@dbc/passes";
 import { RecoveryPanel } from "./recovery-panel";
 
 // The confirmation URL contains an order UUID. Without strict referrer policy,
@@ -84,6 +85,7 @@ export default async function ConfirmationPage({
   ).length;
   const recoveryLocale: "en" | "de" | "fr" =
     locale === "de" || locale === "fr" ? locale : "en";
+  const walletEnabled = googleWalletConfigured();
 
   return (
     <main className="mx-auto max-w-2xl px-4 py-12">
@@ -225,6 +227,14 @@ export default async function ConfirmationPage({
                       >
                         {t("downloadPdf")}
                       </a>
+                      {walletEnabled && (
+                        <a
+                          href={`/api/passes/${ticket.ticket_token}/google`}
+                          className="rounded-md border border-border bg-background px-2.5 py-1 text-xs font-medium hover:bg-accent"
+                        >
+                          {t("addToGoogleWallet")}
+                        </a>
+                      )}
                       {!ticket.is_transferred && (
                         <Link
                           href={`/${locale}/transfer/${ticket.id}`}

@@ -31,6 +31,12 @@ interface TicketDeliveryEmailProps {
    */
   transferUrl?: string;
   transferCutoffDate?: string;
+  /**
+   * "Add to Google Wallet" deep link. Renders an inline button next to the
+   * "View order online" CTA when present; the caller drops the prop when the
+   * Google Wallet env vars aren't configured on the deployment.
+   */
+  googleWalletUrl?: string;
 }
 
 const TRANSLATIONS = {
@@ -53,6 +59,7 @@ const TRANSLATIONS = {
     transferNote:
       "Plans changed? You can transfer this ticket to someone else until {date}.",
     transferCta: "Transfer ticket",
+    googleWalletCta: "Add to Google Wallet",
   },
   de: {
     preview: "Ihr Ticket f\u00FCr {event}",
@@ -73,6 +80,7 @@ const TRANSLATIONS = {
     transferNote:
       "Pl\u00E4ne ge\u00E4ndert? Du kannst dieses Ticket bis zum {date} an jemand anderen \u00FCbertragen.",
     transferCta: "Ticket \u00FCbertragen",
+    googleWalletCta: "Zu Google Wallet hinzuf\u00FCgen",
   },
   fr: {
     preview: "Votre billet pour {event}",
@@ -93,6 +101,7 @@ const TRANSLATIONS = {
     transferNote:
       "Plans chang\u00E9s ? Tu peux transf\u00E9rer ce billet \u00E0 quelqu\u2019un d\u2019autre jusqu\u2019au {date}.",
     transferCta: "Transf\u00E9rer le billet",
+    googleWalletCta: "Ajouter \u00E0 Google Wallet",
   },
 };
 
@@ -165,10 +174,18 @@ export function TicketDeliveryEmail(props: TicketDeliveryEmailProps) {
               </Text>
               <Link
                 href={props.orderUrl}
-                className="mt-2 inline-block rounded-md bg-[#c8102e] px-5 py-2.5 text-sm font-medium text-white no-underline"
+                className="mt-2 mr-2 inline-block rounded-md bg-[#c8102e] px-5 py-2.5 text-sm font-medium text-white no-underline"
               >
                 {t.viewOrder}
               </Link>
+              {props.googleWalletUrl && (
+                <Link
+                  href={props.googleWalletUrl}
+                  className="mt-2 inline-block rounded-md border border-neutral-300 bg-white px-5 py-2.5 text-sm font-medium text-neutral-800 no-underline"
+                >
+                  {t.googleWalletCta}
+                </Link>
+              )}
             </Section>
 
             {/* Transfer notice — shown only when the 7-day cutoff is still

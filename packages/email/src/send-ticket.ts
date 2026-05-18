@@ -79,6 +79,12 @@ export interface SendTicketEmailInput {
    * passes the locale-agnostic rows; we localize inside the generator.
    */
   sponsors?: SponsorRow[];
+  /**
+   * "Add to Google Wallet" deep link. When present, renders a second CTA
+   * button next to "View order online" in the email. Caller drops the
+   * prop when GOOGLE_WALLET_ISSUER_ID is unset on the deployment.
+   */
+  googleWalletUrl?: string;
 }
 
 const SUBJECT_TRANSLATIONS = {
@@ -242,6 +248,7 @@ export async function sendTicketEmail(
         logoUrl: input.logoUrl,
         transferUrl: input.transferUrl,
         transferCutoffDate: input.transferCutoffDate,
+        googleWalletUrl: input.googleWalletUrl,
       })
     );
 
