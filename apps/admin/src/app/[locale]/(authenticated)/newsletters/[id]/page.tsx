@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
+import { getCompanyInfo, formatOfficeAddress } from "@dbc/legal";
 import {
   getNewsletter,
   getNewsletterSenderDomainStatus,
@@ -19,12 +20,19 @@ export default async function NewsletterEditPage({
   const { locale, id } = await params;
   const t = await getTranslations({ locale, namespace: "admin.newsletters.detail" });
   const tBack = await getTranslations({ locale, namespace: "admin.back" });
-  const [nl, categories, domainStatus] = await Promise.all([
+  const [nl, categories, domainStatus, info] = await Promise.all([
     getNewsletter(id),
     listContactCategories(),
     getNewsletterSenderDomainStatus(),
+    getCompanyInfo(),
   ]);
   if (!nl) notFound();
+  const companyFooter = [
+    [info?.legal_name, info?.legal_form].filter(Boolean).join(" "),
+    formatOfficeAddress(info, { oneLine: true }),
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   const stats =
     nl.status === "sent" || nl.status === "sending"
@@ -90,6 +98,7 @@ export default async function NewsletterEditPage({
         }}
         readOnly={nl.status !== "draft"}
         domainStatus={domainStatus}
+        companyFooter={companyFooter}
       />
     </div>
   );

@@ -33,7 +33,7 @@ export async function GET(
   const { data: company } = await supabase
     .from("company_info")
     .select(
-      "brand_name, legal_name, legal_form, support_email, primary_color, logo_light_url, registered_address, default_tax_rate_pct, bank_name, bank_iban, bank_bic"
+      "brand_name, legal_name, legal_form, support_email, primary_color, logo_light_url, registered_address, default_tax_rate_pct, bank_name, iban, bic"
     )
     .eq("id", 1)
     .maybeSingle();
@@ -70,8 +70,8 @@ export async function GET(
     : "DBC Germany";
 
   const bankDetails =
-    company?.bank_iban
-      ? `${company.bank_name || "Bank"} | IBAN: ${company.bank_iban}${company.bank_bic ? ` | BIC: ${company.bank_bic}` : ""}`
+    company?.iban
+      ? `${company.bank_name || "Bank"} | IBAN: ${company.iban}${company.bic ? ` | BIC: ${company.bic}` : ""}`
       : undefined;
 
   const pdfBuffer = await generateInvoicePdf({

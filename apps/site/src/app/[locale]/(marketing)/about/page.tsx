@@ -38,6 +38,7 @@ type Locale = "en" | "de" | "fr";
 type CompanyInfoRow = {
   brand_name: string | null;
   legal_name: string | null;
+  legal_form: string | null;
   brand_tagline_en: string | null;
   brand_tagline_de: string | null;
   brand_tagline_fr: string | null;
@@ -73,7 +74,7 @@ async function loadCompanyInfo(): Promise<CompanyInfoRow | null> {
   const { data } = await supabase
     .from("company_info")
     .select(
-      "brand_name, legal_name, brand_tagline_en, brand_tagline_de, brand_tagline_fr, logo_dark_url, logo_light_url, primary_email, office_line1, office_postal_code, office_city, office_country, parent_company_name, linkedin_url, instagram_url, facebook_url, youtube_url, twitter_url, about_sections_en, about_sections_de, about_sections_fr"
+      "brand_name, legal_name, legal_form, brand_tagline_en, brand_tagline_de, brand_tagline_fr, logo_dark_url, logo_light_url, primary_email, office_line1, office_postal_code, office_city, office_country, parent_company_name, linkedin_url, instagram_url, facebook_url, youtube_url, twitter_url, about_sections_en, about_sections_de, about_sections_fr"
     )
     .eq("id", 1)
     .maybeSingle();
@@ -333,10 +334,21 @@ export default async function AboutPage({
                   <li className="flex items-start gap-3">
                     <span aria-hidden className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary" />
                     <span>
-                      <strong>DBC Germany UG</strong>
+                      <strong>
+                        {[company?.legal_name, company?.legal_form]
+                          .filter(Boolean)
+                          .join(" ") || "DBC Germany UG (haftungsbeschränkt)"}
+                      </strong>
                       <br />
-                      Speditionstraße 15a, 40221 Düsseldorf,{" "}
-                      {l === "fr" ? "Allemagne" : "Deutschland"}
+                      {[
+                        company?.office_line1,
+                        [company?.office_postal_code, company?.office_city]
+                          .filter(Boolean)
+                          .join(" "),
+                      ]
+                        .filter(Boolean)
+                        .join(", ") || "Speditionstraße 15a, 40221 Düsseldorf"}
+                      , {l === "fr" ? "Allemagne" : "Deutschland"}
                     </span>
                   </li>
                   <li className="flex items-start gap-3">

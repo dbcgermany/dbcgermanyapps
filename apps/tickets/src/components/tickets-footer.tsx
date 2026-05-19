@@ -1,23 +1,28 @@
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
 import Link from "next/link";
+import { getCompanyInfo } from "@dbc/legal";
 
 // Minimal compliant footer for the tickets app. German law (TMG / §5 DDG)
 // requires the Impressum to be reachable from every page "ohne wesentliche
 // Zwischenschritte" — typically interpreted as max 2 clicks from anywhere.
 // Until 2026-05-02 the tickets app linked the Impressum from no page; this
 // footer closes that gap.
-export function TicketsFooter({ locale }: { locale: string }) {
+export async function TicketsFooter({ locale }: { locale: string }) {
   // Reads from `site.footer` so the Impressum / Privacy / Terms / Cookie
   // labels stay in sync with the marketing site. The previous `nav`
   // namespace doesn't exist in the messages tree — every link rendered
   // its dotted path verbatim.
-  const t = useTranslations("site.footer");
+  const t = await getTranslations({ locale, namespace: "site.footer" });
+  const info = await getCompanyInfo();
   const year = new Date().getFullYear();
+  const legalName = info
+    ? [info.legal_name, info.legal_form].filter(Boolean).join(" ")
+    : "DBC Germany";
 
   return (
     <footer className="mt-16 border-t border-border bg-muted/20">
       <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-8 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-        <p>© {year} DBC Germany UG</p>
+        <p>© {year} {legalName}</p>
         <nav className="flex flex-wrap gap-x-6 gap-y-2">
           <Link href={`/${locale}/imprint`} className="hover:text-foreground">
             {t("imprint")}

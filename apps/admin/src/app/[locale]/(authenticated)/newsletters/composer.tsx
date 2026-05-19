@@ -48,12 +48,14 @@ export function NewsletterComposer({
   initial,
   readOnly = false,
   domainStatus,
+  companyFooter,
 }: {
   uiLocale?: string;
   categories: Category[];
   initial?: ComposerState;
   readOnly?: boolean;
   domainStatus?: DomainCheckResult;
+  companyFooter: string;
 }) {
   const router = useRouter();
   const t = useTranslations("admin.newsletters.composer");
@@ -244,9 +246,7 @@ export function NewsletterComposer({
                   {state.body_mdx}
                 </div>
                 <hr className="my-3 border-border" />
-                <p className="text-xs text-muted-foreground">
-                  DBC Germany UG · Speditionstraße 15a, 40221 Düsseldorf
-                </p>
+                <p className="text-xs text-muted-foreground">{companyFooter}</p>
               </div>
             </Field>
           )}

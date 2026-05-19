@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import { getCompanyInfo, formatOfficeAddress } from "@dbc/legal";
 import {
   getNewsletterSenderDomainStatus,
   listContactCategories,
@@ -14,10 +15,17 @@ export default async function NewNewsletterPage({
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "admin.newsletters.new" });
   const tBack = await getTranslations({ locale, namespace: "admin.back" });
-  const [categories, domainStatus] = await Promise.all([
+  const [categories, domainStatus, info] = await Promise.all([
     listContactCategories(),
     getNewsletterSenderDomainStatus(),
+    getCompanyInfo(),
   ]);
+  const companyFooter = [
+    [info?.legal_name, info?.legal_form].filter(Boolean).join(" "),
+    formatOfficeAddress(info, { oneLine: true }),
+  ]
+    .filter(Boolean)
+    .join(" · ");
   return (
     <div>
       <PageHeader
@@ -33,6 +41,7 @@ export default async function NewNewsletterPage({
             name: c.name_en,
           }))}
           domainStatus={domainStatus}
+          companyFooter={companyFooter}
         />
       </div>
     </div>

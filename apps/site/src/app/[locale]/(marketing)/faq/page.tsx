@@ -137,9 +137,9 @@ const SECTIONS: Array<{
           fr: "DBC Germany est-elle déjà au Handelsregister ?",
         },
         a: {
-          en: "We are currently being set up as a UG (haftungsbeschränkt). The Handelsregister entry will appear in the Imprint as soon as it is issued.",
-          de: "Wir befinden uns in der Gründung als UG (haftungsbeschränkt). Der Handelsregistereintrag wird im Impressum veröffentlicht, sobald er erteilt ist.",
-          fr: "Nous sommes en cours d'immatriculation en tant qu'UG (haftungsbeschränkt). L'entrée au Handelsregister sera publiée dans les mentions légales dès son attribution.",
+          en: "DBC Germany is registered as a UG (haftungsbeschränkt). The Handelsregister number appears in the Imprint as soon as the Amtsgericht Düsseldorf issues it.",
+          de: "DBC Germany ist als UG (haftungsbeschränkt) eingetragen. Die Handelsregisternummer wird im Impressum veröffentlicht, sobald das Amtsgericht Düsseldorf sie erteilt.",
+          fr: "DBC Germany est constituée en UG (haftungsbeschränkt). Le numéro du Handelsregister sera publié dans les mentions légales dès son attribution par l'Amtsgericht Düsseldorf.",
         },
       },
     ],
