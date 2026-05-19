@@ -1,8 +1,13 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { sendContactMessage } from "@/actions/contact-messages";
+import { createBrowserClient } from "@dbc/supabase";
+import {
+  sendContactMessage,
+  createContactMessageAttachmentUploadUrl,
+  deleteContactMessageAttachment,
+} from "@/actions/contact-messages";
 import {
   getOutreachTemplateForContact,
   type OutreachTemplateSummary,
@@ -12,6 +17,32 @@ import { Button } from "@dbc/ui";
 const FREE_FORM_SLUG = "__free__";
 const LOCALES = ["en", "de", "fr"] as const;
 type Locale = (typeof LOCALES)[number];
+
+// Resend caps a single email at 40 MB total. Each file is also individually
+// capped at 40 MB; we additionally surface a soft warning above 25 MB because
+// many recipient MTAs (Outlook, corporate Gmail) silently drop messages
+// larger than that.
+const ATTACHMENT_BUCKET = "contact-mail-attachments";
+const PER_FILE_MAX_BYTES = 40 * 1024 * 1024;
+const TOTAL_MAX_BYTES = 40 * 1024 * 1024;
+const SOFT_WARN_BYTES = 25 * 1024 * 1024;
+
+type PendingAttachment = {
+  /** Stable client-side id so React can key the list during upload. */
+  clientId: string;
+  filename: string;
+  sizeBytes: number;
+  contentType: string;
+  status: "uploading" | "ready" | "error";
+  path?: string;
+  error?: string;
+};
+
+function formatBytes(n: number): string {
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(0)} KB`;
+  return `${(n / 1024 / 1024).toFixed(1)} MB`;
+}
 
 export function ComposeDialog({
   contactId,
@@ -42,6 +73,8 @@ export function ComposeDialog({
   const [replyTo, setReplyTo] = useState<string | null>(null);
   const [loadingTemplate, setLoadingTemplate] = useState(false);
   const [msg, setMsg] = useState<{ type: "err"; text: string } | null>(null);
+  const [attachments, setAttachments] = useState<PendingAttachment[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   // Persistent success state. Keeping the dialog mounted in this branch so
   // the operator can't miss the confirmation (the previous 1.2s auto-close
   // toast was easy to lose). "Send another" resets, "Close" dismisses.
@@ -89,8 +122,114 @@ export function ComposeDialog({
     };
   }, [open, templateSlug, language, contactId]);
 
+  // Reads the picked files and uploads them in parallel to the private
+  // Supabase bucket. We add a placeholder row to the list immediately so the
+  // operator can see the file is being handled, then flip its status to
+  // "ready" with the storage path once the upload returns.
+  function pickFiles(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    setMsg(null);
+
+    const currentTotal = attachments
+      .filter((a) => a.status !== "error")
+      .reduce((n, a) => n + a.sizeBytes, 0);
+
+    const fileArr = Array.from(files);
+    let runningTotal = currentTotal;
+    const toAdd: PendingAttachment[] = [];
+    for (const f of fileArr) {
+      if (f.size > PER_FILE_MAX_BYTES) {
+        toAdd.push({
+          clientId: crypto.randomUUID(),
+          filename: f.name,
+          sizeBytes: f.size,
+          contentType: f.type || "application/octet-stream",
+          status: "error",
+          error: t("attachmentTooLarge"),
+        });
+        continue;
+      }
+      if (runningTotal + f.size > TOTAL_MAX_BYTES) {
+        toAdd.push({
+          clientId: crypto.randomUUID(),
+          filename: f.name,
+          sizeBytes: f.size,
+          contentType: f.type || "application/octet-stream",
+          status: "error",
+          error: t("attachmentTotalTooLarge"),
+        });
+        continue;
+      }
+      runningTotal += f.size;
+      const clientId = crypto.randomUUID();
+      toAdd.push({
+        clientId,
+        filename: f.name,
+        sizeBytes: f.size,
+        contentType: f.type || "application/octet-stream",
+        status: "uploading",
+      });
+      void uploadOne(clientId, f);
+    }
+    setAttachments((prev) => [...prev, ...toAdd]);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  async function uploadOne(clientId: string, file: File) {
+    try {
+      const sig = await createContactMessageAttachmentUploadUrl({
+        contactId,
+        filename: file.name,
+        contentType: file.type || "application/octet-stream",
+        sizeBytes: file.size,
+      });
+      if (!("success" in sig) || !sig.success) {
+        throw new Error(("error" in sig && sig.error) || "Upload failed");
+      }
+      const supabase = createBrowserClient();
+      const { error } = await supabase.storage
+        .from(ATTACHMENT_BUCKET)
+        .uploadToSignedUrl(sig.path, sig.token, file, {
+          contentType: file.type || "application/octet-stream",
+          upsert: false,
+        });
+      if (error) throw new Error(error.message);
+      setAttachments((prev) =>
+        prev.map((a) =>
+          a.clientId === clientId
+            ? { ...a, status: "ready", path: sig.path }
+            : a
+        )
+      );
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Upload failed";
+      setAttachments((prev) =>
+        prev.map((a) =>
+          a.clientId === clientId
+            ? { ...a, status: "error", error: message }
+            : a
+        )
+      );
+    }
+  }
+
+  async function removeAttachment(clientId: string) {
+    const target = attachments.find((a) => a.clientId === clientId);
+    setAttachments((prev) => prev.filter((a) => a.clientId !== clientId));
+    if (target?.path && target.status === "ready") {
+      // Best-effort cleanup; ignore the result, the bucket isn't growing fast.
+      await deleteContactMessageAttachment(target.path);
+    }
+  }
+
   function submit() {
     setMsg(null);
+    const ready = attachments.filter((a) => a.status === "ready" && a.path);
+    const stillUploading = attachments.some((a) => a.status === "uploading");
+    if (stillUploading) {
+      setMsg({ type: "err", text: t("attachmentsStillUploading") });
+      return;
+    }
     startTransition(async () => {
       const res = await sendContactMessage({
         contactId,
@@ -99,6 +238,12 @@ export function ComposeDialog({
         locale: language,
         replyTo: replyTo ?? undefined,
         templateSlug: templateSlug === FREE_FORM_SLUG ? null : templateSlug,
+        attachments: ready.map((a) => ({
+          path: a.path!,
+          filename: a.filename,
+          contentType: a.contentType,
+          sizeBytes: a.sizeBytes,
+        })),
       });
       if ("error" in res && res.error) {
         setMsg({ type: "err", text: res.error });
@@ -112,6 +257,7 @@ export function ComposeDialog({
         setBody("");
         setReplyTo(null);
         setTemplateSlug(FREE_FORM_SLUG);
+        setAttachments([]);
       }
     });
   }
@@ -252,6 +398,72 @@ export function ComposeDialog({
             </p>
           </div>
 
+          {/* Attachments — multi-file, uploaded directly to private Supabase
+              Storage and forwarded by the server action to Resend. */}
+          <div>
+            <label className="block text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              {t("attachments")}
+            </label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              onChange={(e) => pickFiles(e.target.files)}
+              disabled={isPending || loadingTemplate}
+              className="mt-1 block w-full text-xs file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-primary file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-primary-foreground hover:file:bg-primary/90 disabled:opacity-50"
+            />
+            <p className="mt-1 text-xs text-muted-foreground">
+              {t("attachmentsHint")}
+            </p>
+            {attachments.length > 0 && (
+              <ul className="mt-2 space-y-1.5">
+                {attachments.map((a) => (
+                  <li
+                    key={a.clientId}
+                    className="flex items-center justify-between gap-3 rounded-md border border-border bg-muted/30 px-3 py-1.5 text-xs"
+                  >
+                    <span className="flex-1 truncate">
+                      <span className="font-medium">{a.filename}</span>
+                      <span className="ml-2 text-muted-foreground">
+                        {formatBytes(a.sizeBytes)}
+                      </span>
+                      {a.status === "uploading" && (
+                        <span className="ml-2 text-muted-foreground">
+                          · {t("attachmentUploading")}
+                        </span>
+                      )}
+                      {a.status === "error" && (
+                        <span className="ml-2 text-danger">· {a.error}</span>
+                      )}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => removeAttachment(a.clientId)}
+                      disabled={isPending}
+                      className="text-muted-foreground hover:text-danger"
+                      aria-label={t("attachmentRemove")}
+                    >
+                      ×
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {(() => {
+              const total = attachments
+                .filter((a) => a.status !== "error")
+                .reduce((n, a) => n + a.sizeBytes, 0);
+              if (total > SOFT_WARN_BYTES) {
+                return (
+                  <p className="mt-1 text-xs text-warning" role="alert">
+                    {t("attachmentSoftWarn", { sizeMb: (total / 1024 / 1024).toFixed(1) })}
+                  </p>
+                );
+              }
+              return null;
+            })()}
+          </div>
+
           {/* Reply-To chip — read-only badge so the operator can see where
               replies will land. Only appears when a template is active. */}
           {replyTo && (
@@ -281,7 +493,8 @@ export function ComposeDialog({
                 isPending ||
                 loadingTemplate ||
                 !subject.trim() ||
-                !body.trim()
+                !body.trim() ||
+                attachments.some((a) => a.status === "uploading")
               }
               onClick={submit}
             >

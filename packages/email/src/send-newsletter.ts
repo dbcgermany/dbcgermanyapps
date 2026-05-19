@@ -109,6 +109,13 @@ export interface SendStaffMessageInput {
    * just sees the name, which can feel ambiguous for cold outreach.
    */
   fromDepartment?: string;
+  /**
+   * File attachments forwarded to Resend. Each entry maps directly to the
+   * Resend `attachments[]` shape: filename + raw bytes. Resend caps a single
+   * message at 40 MB total — the admin compose action enforces that cap
+   * before calling here.
+   */
+  attachments?: Array<{ filename: string; content: Buffer }>;
   locale: Locale;
 }
 
@@ -145,6 +152,9 @@ export async function sendStaffMessage(input: SendStaffMessageInput) {
     subject: input.subject,
     replyTo: input.replyTo ?? input.senderEmail,
     html,
+    ...(input.attachments && input.attachments.length > 0
+      ? { attachments: input.attachments }
+      : {}),
   });
   if (res.error) throw new Error(`Resend: ${res.error.message}`);
   return { id: res.data?.id ?? "" };
