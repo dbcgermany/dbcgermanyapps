@@ -117,16 +117,30 @@ export default async function EventSpeakersPage({
         new Date(a.sales_end_at!).getTime() - new Date(b.sales_end_at!).getTime(),
     )[0];
   const scarcityThreshold = (event.scarcity_threshold as number | null) ?? 20;
-  const scarcestTier = onSaleTiers
-    .map((tier) => ({ tier, stats: triggers.tiers[tier.id] }))
-    .filter(
-      ({ stats }) =>
-        stats?.capacity != null &&
-        stats.displayRemaining != null &&
-        stats.displayRemaining > 0 &&
-        stats.displayRemaining <= scarcityThreshold,
-    )
-    .sort((a, b) => (a.stats?.displayRemaining ?? 0) - (b.stats?.displayRemaining ?? 0))[0];
+  // Pin scarcity to the tier whose price drives "From €X" so the
+  // sticky bar can never contradict the per-tier card on the event page.
+  const entryTierStats = (() => {
+    if (onSaleTiers.length === 0) return null;
+    const minOnSaleCents = Math.min(
+      ...onSaleTiers.map((tier) => tier.price_cents),
+    );
+    const candidates = onSaleTiers
+      .filter((tier) => tier.price_cents === minOnSaleCents)
+      .map((tier) => triggers.tiers[tier.id])
+      .filter((stats): stats is NonNullable<typeof stats> => !!stats);
+    if (candidates.length === 0) return null;
+    return candidates.sort(
+      (a, b) =>
+        (a.displayRemaining ?? Infinity) - (b.displayRemaining ?? Infinity),
+    )[0];
+  })();
+  const footerScarcityCount =
+    entryTierStats?.capacity != null &&
+    entryTierStats.displayRemaining != null &&
+    entryTierStats.displayRemaining > 0 &&
+    entryTierStats.displayRemaining <= scarcityThreshold
+      ? entryTierStats.displayRemaining
+      : null;
 
   return (
     <main className="pb-24">
@@ -180,7 +194,7 @@ export default async function EventSpeakersPage({
                 )
               : null
           }
-          scarcityCount={scarcestTier?.stats?.displayRemaining ?? null}
+          scarcityCount={footerScarcityCount}
           scarcityLabel={f("stickyScarcity")}
         />
       )}

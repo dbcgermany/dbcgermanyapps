@@ -143,9 +143,8 @@ export default async function EventDetailPage({
 
   // Compute the urgency signals for the sticky bottom CTA. We pick the
   // earliest-ending currently-on-sale tier as the "active deadline" and
-  // the tier with the lowest displayRemaining (under threshold) for
-  // scarcity. Both feed FOMO without ever exposing exact stock numbers
-  // beyond what the ScarcityBadge already shows.
+  // pin scarcity to the same tier whose price drives "From €X" so the
+  // bar can never contradict the per-tier card badges.
   const nowDate = new Date();
   const onSaleTiers = tiers.filter((tier) => {
     const notYet = tier.sales_start_at && new Date(tier.sales_start_at) > nowDate;
@@ -163,19 +162,31 @@ export default async function EventDetailPage({
     )[0];
 
   const scarcityThreshold = (event.scarcity_threshold as number | null) ?? 20;
-  const scarcestTier = onSaleTiers
-    .map((tier) => ({
-      tier,
-      stats: triggers.tiers[tier.id],
-    }))
-    .filter(
-      ({ stats }) =>
-        stats?.capacity != null &&
-        stats.displayRemaining != null &&
-        stats.displayRemaining > 0 &&
-        stats.displayRemaining <= scarcityThreshold,
-    )
-    .sort((a, b) => (a.stats?.displayRemaining ?? 0) - (b.stats?.displayRemaining ?? 0))[0];
+  // The footer already advertises "From €X" — read scarcity from that
+  // same tier so the bar matches the Starter card. If multiple tiers
+  // share the min price, prefer the most urgent (smallest remaining).
+  const entryTierStats = (() => {
+    if (onSaleTiers.length === 0) return null;
+    const minOnSaleCents = Math.min(
+      ...onSaleTiers.map((tier) => tier.price_cents),
+    );
+    const candidates = onSaleTiers
+      .filter((tier) => tier.price_cents === minOnSaleCents)
+      .map((tier) => triggers.tiers[tier.id])
+      .filter((stats): stats is NonNullable<typeof stats> => !!stats);
+    if (candidates.length === 0) return null;
+    return candidates.sort(
+      (a, b) =>
+        (a.displayRemaining ?? Infinity) - (b.displayRemaining ?? Infinity),
+    )[0];
+  })();
+  const footerScarcityCount =
+    entryTierStats?.capacity != null &&
+    entryTierStats.displayRemaining != null &&
+    entryTierStats.displayRemaining > 0 &&
+    entryTierStats.displayRemaining <= scarcityThreshold
+      ? entryTierStats.displayRemaining
+      : null;
 
   // Map raw speaker rows to the shape SpeakerCard expects, picking the
   // active locale up front so cards stay simple.
@@ -799,7 +810,7 @@ export default async function EventDetailPage({
                 )
               : null
           }
-          scarcityCount={scarcestTier?.stats?.displayRemaining ?? null}
+          scarcityCount={footerScarcityCount}
           scarcityLabel={f("stickyScarcity")}
         />
       )}
