@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
+import { Check } from "lucide-react";
 import { formatMoney } from "@dbc/ui";
 import {
   getEventBySlug,
@@ -254,6 +255,29 @@ export default async function EventDetailPage({
       (tier[key] as string) ||
       (tier[`${field}_en` as keyof typeof tier] as string)
     );
+  }
+
+  // Headline/perks are stored separately from description_*: headline_* is a
+  // short tagline rendered under the price; perks is a single jsonb column
+  // keyed by locale ({ en: string[], de: string[], fr: string[] }) rendered
+  // as a checked <ul>. Both fall back to en when the row hasn't been
+  // localised yet.
+  function tierHeadline(tier: (typeof tiers)[number]): string {
+    const key = `headline_${locale}` as keyof typeof tier;
+    return (
+      ((tier[key] as string | null) ??
+        (tier.headline_en as string | null) ??
+        "") || ""
+    );
+  }
+  function tierPerks(tier: (typeof tiers)[number]): string[] {
+    const raw = tier.perks as Record<string, unknown> | null;
+    if (!raw || typeof raw !== "object") return [];
+    const localised = raw[locale];
+    const fallback = raw.en;
+    const pick = Array.isArray(localised) ? localised : fallback;
+    if (!Array.isArray(pick)) return [];
+    return pick.filter((x): x is string => typeof x === "string" && x.length > 0);
   }
 
   function schedLoc(item: (typeof schedule)[number], field: string) {
@@ -572,6 +596,8 @@ export default async function EventDetailPage({
                     const unavailable =
                       soldOut || notOnSaleYet || salesEnded;
                     const description = tierLoc(tier, "description");
+                    const headline = tierHeadline(tier);
+                    const perks = tierPerks(tier);
                     const tierStats = triggers.tiers[tier.id];
                     const isFree = tier.price_cents === 0;
 
@@ -603,10 +629,32 @@ export default async function EventDetailPage({
                           )}
                         </div>
 
-                        {description && (
+                        {headline ? (
                           <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                            {description}
+                            {headline}
                           </p>
+                        ) : (
+                          description && (
+                            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                              {description}
+                            </p>
+                          )
+                        )}
+                        {perks.length > 0 && (
+                          <ul className="mt-3 space-y-1.5">
+                            {perks.map((perk, i) => (
+                              <li
+                                key={i}
+                                className="flex items-start gap-2 text-sm leading-6 text-foreground"
+                              >
+                                <Check
+                                  className="mt-0.5 h-4 w-4 shrink-0 text-primary"
+                                  aria-hidden
+                                />
+                                <span>{perk}</span>
+                              </li>
+                            ))}
+                          </ul>
                         )}
 
                         <div className="mt-3 flex flex-wrap items-center gap-2">

@@ -16,6 +16,12 @@ const TR_T = {
     originalPriceHint: "Shown struck through. Leave empty to hide the discount.",
     maxQty: "Max qty (empty=∞)", sort: "Sort",
     descEn: "Description (EN)", descDe: "Description (DE)", descFr: "Description (FR)",
+    headlineEn: "Headline (EN)", headlineDe: "Headline (DE)", headlineFr: "Headline (FR)",
+    headlineHint: "Short tagline shown under the price. Empty = falls back to description.",
+    perksEn: "What's included — EN (one bullet per line)",
+    perksDe: "Enthalten — DE (ein Punkt pro Zeile)",
+    perksFr: "Inclus — FR (un point par ligne)",
+    perksHint: "Rendered as a ✓ list under the tier in the sidebar. Max 12 bullets, 240 chars each.",
     lowStockPct: "Low-stock alert at %",
     lowStockPctHint: "Notify admins when remaining drops to this % of capacity, then again at half and a quarter.",
     saving: "Saving…", save: "Save", cancel: "Cancel",
@@ -30,6 +36,12 @@ const TR_T = {
     originalPriceHint: "Wird durchgestrichen gezeigt. Leer lassen, um den Rabatt auszublenden.",
     maxQty: "Max. Menge (leer=∞)", sort: "Sort.",
     descEn: "Beschreibung (EN)", descDe: "Beschreibung (DE)", descFr: "Beschreibung (FR)",
+    headlineEn: "Slogan (EN)", headlineDe: "Slogan (DE)", headlineFr: "Slogan (FR)",
+    headlineHint: "Kurzer Slogan unter dem Preis. Leer = greift auf Beschreibung zurück.",
+    perksEn: "Enthalten — EN (ein Punkt pro Zeile)",
+    perksDe: "Enthalten — DE (ein Punkt pro Zeile)",
+    perksFr: "Enthalten — FR (ein Punkt pro Zeile)",
+    perksHint: "Wird als ✓-Liste unter der Kategorie in der Sidebar gezeigt. Max. 12 Punkte, je 240 Zeichen.",
     lowStockPct: "Bestandsalarm bei %",
     lowStockPctHint: "Admins werden benachrichtigt, wenn der Restbestand auf diesen % der Kapazität fällt, dann erneut bei der Hälfte und einem Viertel.",
     saving: "Wird gespeichert…", save: "Speichern", cancel: "Abbrechen",
@@ -44,6 +56,12 @@ const TR_T = {
     originalPriceHint: "Affiché barré. Laisser vide pour masquer la remise.",
     maxQty: "Quantité max (vide=∞)", sort: "Ordre",
     descEn: "Description (EN)", descDe: "Description (DE)", descFr: "Description (FR)",
+    headlineEn: "Slogan (EN)", headlineDe: "Slogan (DE)", headlineFr: "Slogan (FR)",
+    headlineHint: "Court slogan affiché sous le prix. Vide = retour sur la description.",
+    perksEn: "Inclus — EN (un point par ligne)",
+    perksDe: "Inclus — DE (un point par ligne)",
+    perksFr: "Inclus — FR (un point par ligne)",
+    perksHint: "Affiché sous la catégorie sous forme de liste ✓. Max 12 points, 240 caractères chacun.",
     lowStockPct: "Alerte stock à %",
     lowStockPctHint: "Notifier les admins quand le restant tombe à ce % de la capacité, puis à la moitié et au quart.",
     saving: "Enregistrement…", save: "Enregistrer", cancel: "Annuler",
@@ -61,6 +79,10 @@ type Tier = {
   description_en: string | null;
   description_de: string | null;
   description_fr: string | null;
+  headline_en: string | null;
+  headline_de: string | null;
+  headline_fr: string | null;
+  perks: { en?: string[]; de?: string[]; fr?: string[] } | null;
   price_cents: number;
   original_price_cents: number | null;
   max_quantity: number | null;
@@ -77,6 +99,11 @@ type Tier = {
   counts_as_sold: boolean | null;
   scanner_badge_label: string | null;
 };
+
+function perksToLines(perks: Tier["perks"], locale: "en" | "de" | "fr"): string {
+  const list = perks?.[locale];
+  return Array.isArray(list) ? list.join("\n") : "";
+}
 
 function toLocal(iso: string | null) {
   return iso ? iso.slice(0, 16) : "";
@@ -245,6 +272,54 @@ export function TierRow({
             className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
           />
         </div>
+        <div className="grid gap-2 sm:grid-cols-3">
+          <input
+            name="headline_en"
+            defaultValue={tier.headline_en ?? ""}
+            placeholder={t.headlineEn}
+            maxLength={160}
+            className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
+          />
+          <input
+            name="headline_de"
+            defaultValue={tier.headline_de ?? ""}
+            placeholder={t.headlineDe}
+            maxLength={160}
+            className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
+          />
+          <input
+            name="headline_fr"
+            defaultValue={tier.headline_fr ?? ""}
+            placeholder={t.headlineFr}
+            maxLength={160}
+            className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
+          />
+        </div>
+        <p className="-mt-1 text-[11px] text-muted-foreground">{t.headlineHint}</p>
+        <div className="grid gap-2 sm:grid-cols-3">
+          <textarea
+            name="perks_en"
+            defaultValue={perksToLines(tier.perks, "en")}
+            placeholder={t.perksEn}
+            rows={5}
+            className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm font-mono"
+          />
+          <textarea
+            name="perks_de"
+            defaultValue={perksToLines(tier.perks, "de")}
+            placeholder={t.perksDe}
+            rows={5}
+            className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm font-mono"
+          />
+          <textarea
+            name="perks_fr"
+            defaultValue={perksToLines(tier.perks, "fr")}
+            placeholder={t.perksFr}
+            rows={5}
+            className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm font-mono"
+          />
+        </div>
+        <p className="-mt-1 text-[11px] text-muted-foreground">{t.perksHint}</p>
         <fieldset className="rounded-md border border-border bg-muted/20 p-3 space-y-3">
           <legend className="px-1 text-xs uppercase tracking-wide text-muted-foreground">
             Role & flags

@@ -42,7 +42,7 @@ async function persistStripeIdsForTier(
 }
 
 const TIER_COLUMNS =
-  "id, event_id, name_en, name_de, name_fr, description_en, description_de, description_fr, price_cents, original_price_cents, currency, max_quantity, quantity_sold, low_stock_threshold_pct, sales_start_at, sales_end_at, is_public, sort_order, stripe_product_id, stripe_price_id, stripe_price_archived_ids, created_at, purpose, catering_included, is_team, is_companion, counts_as_sold, scanner_badge_label" as const;
+  "id, event_id, name_en, name_de, name_fr, description_en, description_de, description_fr, headline_en, headline_de, headline_fr, perks, price_cents, original_price_cents, currency, max_quantity, quantity_sold, low_stock_threshold_pct, sales_start_at, sales_end_at, is_public, sort_order, stripe_product_id, stripe_price_id, stripe_price_archived_ids, created_at, purpose, catering_included, is_team, is_companion, counts_as_sold, scanner_badge_label" as const;
 
 const TIER_PURPOSES = [
   "public",
@@ -73,6 +73,26 @@ function parseTierFlags(formData: FormData) {
     counts_as_sold: formData.get("counts_as_sold") !== "false",
     scanner_badge_label: badge.length > 0 ? badge : null,
   };
+}
+
+// Perks come from a textarea (one bullet per line). Trim, drop blanks,
+// hard-cap each line at 240 chars and the list at 12 entries so the
+// sidebar never explodes from a paste-bomb. Returns a string[] ready
+// to JSON-encode into the `perks` jsonb column.
+function parsePerksList(raw: FormDataEntryValue | null): string[] {
+  const str = typeof raw === "string" ? raw : "";
+  return str
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0)
+    .map((line) => line.slice(0, 240))
+    .slice(0, 12);
+}
+
+function parseHeadline(raw: FormDataEntryValue | null): string | null {
+  const str = typeof raw === "string" ? raw.trim() : "";
+  if (str === "") return null;
+  return str.slice(0, 160);
 }
 
 function parseLowStockThresholdPct(
@@ -158,6 +178,14 @@ export async function createTier(formData: FormData) {
     description_en: formData.get("description_en") as string,
     description_de: formData.get("description_de") as string,
     description_fr: formData.get("description_fr") as string,
+    headline_en: parseHeadline(formData.get("headline_en")),
+    headline_de: parseHeadline(formData.get("headline_de")),
+    headline_fr: parseHeadline(formData.get("headline_fr")),
+    perks: {
+      en: parsePerksList(formData.get("perks_en")),
+      de: parsePerksList(formData.get("perks_de")),
+      fr: parsePerksList(formData.get("perks_fr")),
+    },
     price_cents: priceCents,
     original_price_cents: originalPrice.value,
     max_quantity: formData.get("max_quantity")
@@ -241,6 +269,14 @@ export async function updateTier(tierId: string, formData: FormData) {
     description_en: formData.get("description_en") as string,
     description_de: formData.get("description_de") as string,
     description_fr: formData.get("description_fr") as string,
+    headline_en: parseHeadline(formData.get("headline_en")),
+    headline_de: parseHeadline(formData.get("headline_de")),
+    headline_fr: parseHeadline(formData.get("headline_fr")),
+    perks: {
+      en: parsePerksList(formData.get("perks_en")),
+      de: parsePerksList(formData.get("perks_de")),
+      fr: parsePerksList(formData.get("perks_fr")),
+    },
     price_cents: priceCents,
     original_price_cents: originalPrice.value,
     max_quantity: formData.get("max_quantity")

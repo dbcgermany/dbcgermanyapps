@@ -3205,6 +3205,9 @@ export type Database = {
           description_en: string | null
           description_fr: string | null
           event_id: string
+          headline_de: string | null
+          headline_en: string | null
+          headline_fr: string | null
           id: string
           is_public: boolean
           low_stock_threshold_pct: number
@@ -3213,6 +3216,7 @@ export type Database = {
           name_en: string
           name_fr: string
           original_price_cents: number | null
+          perks: Json
           price_cents: number
           quantity_sold: number
           sales_end_at: string | null
@@ -3230,6 +3234,9 @@ export type Database = {
           description_en?: string | null
           description_fr?: string | null
           event_id: string
+          headline_de?: string | null
+          headline_en?: string | null
+          headline_fr?: string | null
           id?: string
           is_public?: boolean
           low_stock_threshold_pct?: number
@@ -3238,6 +3245,7 @@ export type Database = {
           name_en: string
           name_fr: string
           original_price_cents?: number | null
+          perks?: Json
           price_cents: number
           quantity_sold?: number
           sales_end_at?: string | null
@@ -3255,6 +3263,9 @@ export type Database = {
           description_en?: string | null
           description_fr?: string | null
           event_id?: string
+          headline_de?: string | null
+          headline_en?: string | null
+          headline_fr?: string | null
           id?: string
           is_public?: boolean
           low_stock_threshold_pct?: number
@@ -3263,6 +3274,7 @@ export type Database = {
           name_en?: string
           name_fr?: string
           original_price_cents?: number | null
+          perks?: Json
           price_cents?: number
           quantity_sold?: number
           sales_end_at?: string | null
