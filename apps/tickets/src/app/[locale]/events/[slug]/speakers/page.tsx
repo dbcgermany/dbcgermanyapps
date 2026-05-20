@@ -195,7 +195,7 @@ export default async function EventSpeakersPage({
               : null
           }
           scarcityCount={footerScarcityCount}
-          scarcityLabel={f("stickyScarcity")}
+          scarcityLabel={f.raw("stickyScarcity")}
         />
       )}
     </main>

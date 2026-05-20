@@ -16,10 +16,12 @@ interface Labels {
   middleKnownCity: string; // between city and tier name: "just bought a"
   middleAnon: string; // kept for symmetry, maps to prefixAnon
   ticketSuffix: string; // "ticket"
+  // Functions can't cross the RSC boundary, so the parent passes the
+  // raw next-intl templates and we interpolate {n} client-side.
   ago: {
     justNow: string;
-    minutes: (n: number) => string;
-    hours: (n: number) => string;
+    minutesTemplate: string; // e.g. "{n} min ago"
+    hoursTemplate: string; // e.g. "{n}h ago"
   };
 }
 
@@ -27,9 +29,9 @@ function relativeTime(iso: string, labels: Labels["ago"]) {
   const diff = Math.max(0, Date.now() - new Date(iso).getTime());
   const mins = Math.floor(diff / 60_000);
   if (mins < 1) return labels.justNow;
-  if (mins < 60) return labels.minutes(mins);
+  if (mins < 60) return labels.minutesTemplate.replace("{n}", String(mins));
   const hours = Math.floor(mins / 60);
-  return labels.hours(hours);
+  return labels.hoursTemplate.replace("{n}", String(hours));
 }
 
 export function RecentBuyerTicker({

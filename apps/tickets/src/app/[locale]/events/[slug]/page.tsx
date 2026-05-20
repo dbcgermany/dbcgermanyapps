@@ -311,8 +311,8 @@ export default async function EventDetailPage({
     ticketSuffix: t("tickerTicket"),
     ago: {
       justNow: t("tickerJustNow"),
-      minutes: (n: number) => t("tickerAgoMinutes", { n }),
-      hours: (n: number) => t("tickerAgoHours", { n }),
+      minutesTemplate: t.raw("tickerAgoMinutes"),
+      hoursTemplate: t.raw("tickerAgoHours"),
     },
   };
 
@@ -811,7 +811,7 @@ export default async function EventDetailPage({
               : null
           }
           scarcityCount={footerScarcityCount}
-          scarcityLabel={f("stickyScarcity")}
+          scarcityLabel={f.raw("stickyScarcity")}
         />
       )}
     </main>

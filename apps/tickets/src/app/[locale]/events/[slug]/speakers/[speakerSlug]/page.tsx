@@ -353,7 +353,7 @@ export default async function SpeakerProfilePage({
               : null
           }
           scarcityCount={footerScarcityCount}
-          scarcityLabel={f("stickyScarcity")}
+          scarcityLabel={f.raw("stickyScarcity")}
         />
       )}
     </main>
