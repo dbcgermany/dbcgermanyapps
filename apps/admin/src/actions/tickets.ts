@@ -1,7 +1,7 @@
 "use server";
 
 import { createServerClient, requireRole } from "@dbc/supabase/server";
-import { sendTicketEmail } from "@dbc/email";
+import { sendTicketEmail, computeCateringUrl } from "@dbc/email";
 import { revalidatePath } from "next/cache";
 
 export interface AttendeeSearchResult {
@@ -87,15 +87,18 @@ export async function resendTicketPdf(
   const user = await requireRole("team_member");
   const supabase = await createServerClient();
 
-  // Fetch ticket + event + tier + company_info in parallel
+  // Fetch ticket + event + tier + company_info in parallel. Event +
+  // tier carry catering metadata so the resend keeps the meal pre-order
+  // link in sync with what fresh sends include.
   const { data: ticket, error } = await supabase
     .from("tickets")
     .select(
       `id, order_id, event_id, ticket_token, attendee_name, attendee_email,
-       tier:ticket_tiers(name_en, name_de, name_fr),
+       tier:ticket_tiers(name_en, name_de, name_fr, catering_included),
        event:events(title_en, title_de, title_fr, event_type, starts_at, ends_at,
-                    venue_name, venue_address, city, timezone),
-       order:orders(locale, acquisition_type)`
+                    venue_name, venue_address, city, timezone,
+                    catering_enabled, catering_eligible_roles),
+       order:orders(locale, acquisition_type, contact_id)`
     )
     .eq("id", ticketId)
     .single();
@@ -126,6 +129,40 @@ export async function resendTicketPdf(
 
   const recipient = overrideEmail?.trim() || tAny.attendee_email;
 
+  // Catering pre-order URL — same resolver the public flow uses, so the
+  // resend matches whatever the original send would have produced today.
+  const eligibleRoles =
+    (tAny.event?.catering_eligible_roles as string[] | null) ?? [];
+  let contactRoles: string[] = [];
+  if (
+    tAny.event?.catering_enabled &&
+    !tAny.tier?.catering_included &&
+    eligibleRoles.length > 0 &&
+    tAny.order?.contact_id
+  ) {
+    const { data: involvements } = await supabase
+      .from("contact_event_involvements")
+      .select("role, status")
+      .eq("contact_id", tAny.order.contact_id as string)
+      .eq("event_id", tAny.event_id);
+    contactRoles = (
+      (involvements ?? []) as { role: string; status: string | null }[]
+    )
+      .filter((i) => i.status === "active" || i.status === null)
+      .map((i) => i.role);
+  }
+  const cateringUrl =
+    computeCateringUrl({
+      cateringEnabled: !!tAny.event?.catering_enabled,
+      tierCateringIncluded: !!tAny.tier?.catering_included,
+      eligibleRoles,
+      contactRoles,
+      ticketToken: tAny.ticket_token,
+      locale,
+      ticketsBaseUrl:
+        process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://tickets.dbc-germany.com",
+    }) ?? undefined;
+
   try {
     await sendTicketEmail({
       attendeeName: tAny.attendee_name,
@@ -152,6 +189,7 @@ export async function resendTicketPdf(
       isInvitation:
         tAny.order?.acquisition_type === "invited" ||
         tAny.order?.acquisition_type === "assigned",
+      cateringUrl,
     });
   } catch (err) {
     return { error: err instanceof Error ? err.message : String(err) };
