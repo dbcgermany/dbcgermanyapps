@@ -85,6 +85,13 @@ export interface SendTicketEmailInput {
    * prop when GOOGLE_WALLET_ISSUER_ID is unset on the deployment.
    */
   googleWalletUrl?: string;
+  /**
+   * Per-ticket catering pre-order URL. When set, the informal and formal
+   * templates both render a dedicated "choose your meal" section + CTA.
+   * Use `computeCateringUrl()` from this package to derive it from
+   * event.catering_enabled / tier.catering_included / catering_eligible_roles.
+   */
+  cateringUrl?: string;
 }
 
 const SUBJECT_TRANSLATIONS = {
@@ -190,6 +197,7 @@ export async function sendTicketEmail(
           senderName: "DBC Germany Team",
           senderTitle: "Event Management",
           logoUrl: input.logoUrl,
+          cateringUrl: input.cateringUrl,
         })
       ),
       generateInvitationLetterPdf({
@@ -249,6 +257,7 @@ export async function sendTicketEmail(
         transferUrl: input.transferUrl,
         transferCutoffDate: input.transferCutoffDate,
         googleWalletUrl: input.googleWalletUrl,
+        cateringUrl: input.cateringUrl,
       })
     );
 

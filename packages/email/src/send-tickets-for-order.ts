@@ -1,4 +1,5 @@
 import { sendTicketEmail } from "./send-ticket";
+import { computeCateringUrl } from "./catering";
 
 // Loosely-typed supabase client — both consumers already type their own
 // clients more strictly; we only need the chainable from()/select()/eq()
@@ -38,10 +39,14 @@ export async function sendTicketsForOrder(
     ) => void;
   } = {}
 ): Promise<{ sent: number; skipped: number; failed: number }> {
-  // Fetch order
+  // Fetch order — contact_id needed so we can resolve role-based catering
+  // eligibility (event.catering_eligible_roles ∩ involvement.role) on top of
+  // the tier-bundled catering_included flag.
   const { data: order, error: orderError } = await supabase
     .from("orders")
-    .select("id, event_id, locale, email_sent_at, status, acquisition_type")
+    .select(
+      "id, event_id, locale, email_sent_at, status, acquisition_type, contact_id"
+    )
     .eq("id", orderId)
     .single();
 
@@ -60,11 +65,12 @@ export async function sendTicketsForOrder(
     throw new Error(`Order ${orderId} is not paid (status: ${order.status})`);
   }
 
-  // Fetch event
+  // Fetch event — catering_enabled + catering_eligible_roles drive the
+  // per-ticket catering CTA the template renders downstream.
   const { data: event, error: eventError } = await supabase
     .from("events")
     .select(
-      "id, title_en, title_de, title_fr, event_type, starts_at, ends_at, venue_name, venue_address, city, timezone"
+      "id, title_en, title_de, title_fr, event_type, starts_at, ends_at, venue_name, venue_address, city, timezone, catering_enabled, catering_eligible_roles"
     )
     .eq("id", order.event_id)
     .single();
@@ -92,8 +98,33 @@ export async function sendTicketsForOrder(
   const tierIds = [...new Set(ticketRows.map((t) => t.tier_id as string))];
   const { data: tiers } = await supabase
     .from("ticket_tiers")
-    .select("id, name_en, name_de, name_fr")
+    .select("id, name_en, name_de, name_fr, catering_included")
     .in("id", tierIds);
+
+  // Role-based catering eligibility: when the tier itself doesn't bundle
+  // catering, the buyer may still qualify via their active involvements
+  // (e.g. VIP role, sponsor, chapter_delegate). Pull once per batch.
+  const eligibleRoles =
+    (event.catering_enabled
+      ? ((event.catering_eligible_roles as string[] | null) ?? [])
+      : []) ?? [];
+  let contactRoles: string[] = [];
+  if (
+    event.catering_enabled &&
+    eligibleRoles.length > 0 &&
+    order.contact_id
+  ) {
+    const { data: involvements } = await supabase
+      .from("contact_event_involvements")
+      .select("role, status")
+      .eq("contact_id", order.contact_id as string)
+      .eq("event_id", order.event_id);
+    contactRoles = (
+      (involvements ?? []) as { role: string; status: string | null }[]
+    )
+      .filter((i) => i.status === "active" || i.status === null)
+      .map((i) => i.role);
+  }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const tierMap = new Map(
@@ -162,6 +193,17 @@ export async function sendTicketsForOrder(
       ? ((tier[`name_${locale}` as keyof typeof tier] as string) ||
         (tier.name_en as string))
       : "Ticket";
+
+    const cateringUrl =
+      computeCateringUrl({
+        cateringEnabled: !!event.catering_enabled,
+        tierCateringIncluded: !!tier?.catering_included,
+        eligibleRoles,
+        contactRoles,
+        ticketToken: ticket.ticket_token,
+        locale,
+        ticketsBaseUrl,
+      }) ?? undefined;
 
     const legalName = companyInfo
       ? [companyInfo.legal_name, companyInfo.legal_form]
@@ -243,6 +285,7 @@ export async function sendTicketsForOrder(
         // sendTicketEmail will suppress the Sponsors PDF attachment.
         sponsors,
         googleWalletUrl,
+        cateringUrl,
       });
 
       // Stamp the per-ticket idempotency token + Resend message ID. Both

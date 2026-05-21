@@ -1,7 +1,7 @@
 "use server";
 
 import { createServerClient, requireRole } from "@dbc/supabase/server";
-import { sendTicketEmail } from "@dbc/email";
+import { sendTicketEmail, computeCateringUrl } from "@dbc/email";
 import { revalidatePath } from "next/cache";
 import { CONTACT_CATEGORY } from "@dbc/types";
 import {
@@ -241,45 +241,41 @@ export async function createInvitation(input: InvitationInput) {
     return { success: true, orderId: order.id };
   }
 
-  // Catering CTA: appended to the invitation email body when the recipient
-  // is eligible — either via tier.catering_included OR via a role in
-  // event.catering_eligible_roles. The check mirrors the resolver in
-  // packages/supabase/src/ticket-access.ts so admins and the public catering
-  // form agree on who gets the link.
-  let cateringUrl: string | null = null;
-  if (event.catering_enabled) {
-    let cateringGranted = !!tier.catering_included;
-    if (!cateringGranted && contactId) {
-      const eligibleRoles =
-        (event.catering_eligible_roles as string[] | null) ?? [];
-      if (eligibleRoles.length > 0) {
-        const { data: involvements } = await supabase
-          .from("contact_event_involvements")
-          .select("role, status")
-          .eq("contact_id", contactId as string)
-          .eq("event_id", input.eventId);
-        const activeRoles = ((involvements ?? []) as { role: string; status: string | null }[])
-          .filter((i) => i.status === "active" || i.status === null)
-          .map((i) => i.role);
-        cateringGranted = activeRoles.some((r) => eligibleRoles.includes(r));
-      }
-    }
-    if (cateringGranted) {
-      cateringUrl = `${process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://tickets.dbc-germany.com"}/${loc}/tickets/${ticket.ticket_token}/catering`;
-    }
+  // Catering eligibility resolved through the shared helper so the email and
+  // the public catering form always agree on who gets in. Tier-bundled
+  // catering wins immediately; otherwise we fall back to the role-based
+  // grant via contact_event_involvements.
+  let contactRoles: string[] = [];
+  const eligibleRoles =
+    (event.catering_eligible_roles as string[] | null) ?? [];
+  if (
+    event.catering_enabled &&
+    !tier.catering_included &&
+    eligibleRoles.length > 0 &&
+    contactId
+  ) {
+    const { data: involvements } = await supabase
+      .from("contact_event_involvements")
+      .select("role, status")
+      .eq("contact_id", contactId as string)
+      .eq("event_id", input.eventId);
+    contactRoles = (
+      (involvements ?? []) as { role: string; status: string | null }[]
+    )
+      .filter((i) => i.status === "active" || i.status === null)
+      .map((i) => i.role);
   }
-  const cateringHint =
-    cateringUrl
-      ? loc === "de"
-        ? `\n\nCatering ist in deinem Ticket enthalten. Wähle dein Menü hier vor: ${cateringUrl}`
-        : loc === "fr"
-          ? `\n\nLa restauration est incluse avec votre billet. Pré-sélectionnez votre menu : ${cateringUrl}`
-          : `\n\nCatering is included with your ticket. Pre-select your meal here: ${cateringUrl}`
-      : "";
-  const customBodyWithCatering =
-    deliveryMode === "ticket_with_letter"
-      ? ((customBody ?? "") + cateringHint).trim() || undefined
-      : undefined;
+  const cateringUrl =
+    computeCateringUrl({
+      cateringEnabled: !!event.catering_enabled,
+      tierCateringIncluded: !!tier.catering_included,
+      eligibleRoles,
+      contactRoles,
+      ticketToken: ticket.ticket_token,
+      locale: loc,
+      ticketsBaseUrl:
+        process.env.NEXT_PUBLIC_TICKETS_URL ?? "https://tickets.dbc-germany.com",
+    }) ?? undefined;
 
   try {
     const result = await sendTicketEmail({
@@ -308,7 +304,11 @@ export async function createInvitation(input: InvitationInput) {
       gender: (gender as "female" | "male" | "diverse" | null) ?? undefined,
       title: title ?? undefined,
       lastName: lastName || undefined,
-      customBody: customBodyWithCatering,
+      customBody:
+        deliveryMode === "ticket_with_letter"
+          ? customBody ?? undefined
+          : undefined,
+      cateringUrl,
     });
 
     await supabase

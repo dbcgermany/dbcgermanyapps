@@ -29,6 +29,12 @@ export interface InvitationEmailProps {
   senderName?: string;
   senderTitle?: string;
   logoUrl?: string;
+  /**
+   * Per-ticket catering pre-order URL. Renders a dedicated section between
+   * the body text and the formal closing when eligible. null/undefined hides
+   * the section.
+   */
+  cateringUrl?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -53,6 +59,10 @@ const TRANSLATIONS = {
     footer: "Sent by DBC Germany UG \u00B7 tickets.dbc-germany.com",
     questions:
       "Questions? Just reply to this email.",
+    cateringHeading: "Catering is included with your ticket",
+    cateringNote:
+      "Pre-select your meal so the kitchen can plan for dietary requirements ahead of the event.",
+    cateringCta: "Choose my meal",
   },
   de: {
     preview: "Ihre Einladung zu {event}",
@@ -65,6 +75,10 @@ const TRANSLATIONS = {
     footer: "Gesendet von DBC Germany UG \u00B7 tickets.dbc-germany.com",
     questions:
       "Fragen? Antworten Sie einfach auf diese E-Mail.",
+    cateringHeading: "Catering ist in Ihrem Ticket enthalten",
+    cateringNote:
+      "W\u00E4hlen Sie Ihr Men\u00FC im Voraus, damit die K\u00FCche Ihre Ern\u00E4hrungsw\u00FCnsche vorbereiten kann.",
+    cateringCta: "Men\u00FC w\u00E4hlen",
   },
   fr: {
     preview: "Votre invitation \u00E0 {event}",
@@ -78,6 +92,10 @@ const TRANSLATIONS = {
       "Envoy\u00E9 par DBC Germany UG \u00B7 tickets.dbc-germany.com",
     questions:
       "Des questions ? R\u00E9pondez simplement \u00E0 cet e-mail.",
+    cateringHeading: "La restauration est incluse avec votre billet",
+    cateringNote:
+      "Pr\u00E9-s\u00E9lectionnez votre menu pour que la cuisine puisse anticiper vos pr\u00E9f\u00E9rences alimentaires.",
+    cateringCta: "Choisir mon menu",
   },
 };
 
@@ -175,6 +193,25 @@ export function InvitationEmail(props: InvitationEmailProps) {
                 {t.viewOrder}
               </Link>
             </Section>
+
+            {/* Catering pre-order — eligible holders only, resolved server-side
+                via computeCateringUrl. Suppressed when the URL is absent. */}
+            {props.cateringUrl && (
+              <Section className="mt-6 rounded-lg border border-[#c8102e]/30 bg-[#fff5f6] p-5">
+                <Heading className="m-0 mb-2 text-base font-semibold text-neutral-900">
+                  {t.cateringHeading}
+                </Heading>
+                <Text className="m-0 text-sm leading-6 text-neutral-700">
+                  {t.cateringNote}
+                </Text>
+                <Link
+                  href={props.cateringUrl}
+                  className="mt-3 inline-block rounded-md bg-[#c8102e] px-5 py-2.5 text-sm font-medium text-white no-underline"
+                >
+                  {t.cateringCta}
+                </Link>
+              </Section>
+            )}
 
             {/* Formal closing */}
             <Section className="mt-8">

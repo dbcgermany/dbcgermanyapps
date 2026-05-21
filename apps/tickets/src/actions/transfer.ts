@@ -6,6 +6,7 @@ import {
   sendTicketEmail,
   sendTransferConfirmation,
   resolveRecipientLocale,
+  computeCateringUrl,
 } from "@dbc/email";
 import { revalidatePath } from "next/cache";
 import { after } from "next/server";
@@ -73,11 +74,12 @@ export async function transferTicket(input: TransferInput) {
     return { error: "You do not own this ticket." };
   }
 
-  // Fetch event to check end time
+  // Fetch event — includes catering fields so the transferred ticket email
+  // surfaces the meal pre-order link for the new holder when eligible.
   const { data: event } = await supabase
     .from("events")
     .select(
-      "id, title_en, title_de, title_fr, event_type, starts_at, ends_at, venue_name, venue_address, city, timezone"
+      "id, title_en, title_de, title_fr, event_type, starts_at, ends_at, venue_name, venue_address, city, timezone, catering_enabled, catering_eligible_roles"
     )
     .eq("id", ticket.event_id)
     .single();
@@ -90,10 +92,11 @@ export async function transferTicket(input: TransferInput) {
     return { error: "Cannot transfer a ticket for a past event." };
   }
 
-  // Fetch tier for email
+  // Fetch tier for email — catering_included keeps the new holder's meal
+  // pre-order link consistent with what the original buyer would see.
   const { data: tier } = await supabase
     .from("ticket_tiers")
-    .select("name_en, name_de, name_fr")
+    .select("name_en, name_de, name_fr, catering_included")
     .eq("id", ticket.tier_id)
     .single();
 
@@ -216,6 +219,19 @@ export async function transferTicket(input: TransferInput) {
     }
 
     // 2. Send the actual PDF ticket (fresh QR code + ticket attachment).
+    // The transferred holder inherits the same catering eligibility as any
+    // fresh buyer at this tier — surface the meal pre-order link when set.
+    const cateringUrl =
+      computeCateringUrl({
+        cateringEnabled: !!event.catering_enabled,
+        tierCateringIncluded: !!tier?.catering_included,
+        eligibleRoles:
+          (event.catering_eligible_roles as string[] | null) ?? [],
+        contactRoles: [],
+        ticketToken: newToken,
+        locale,
+        ticketsBaseUrl,
+      }) ?? undefined;
     try {
       await sendTicketEmail({
         attendeeName: input.newAttendeeName.trim(),
@@ -232,6 +248,7 @@ export async function transferTicket(input: TransferInput) {
         ticketToken: newToken,
         locale,
         orderUrl: `${ticketsBaseUrl}/${locale}/confirmation/${ticket.order_id}`,
+        cateringUrl,
       });
 
       await serviceClient

@@ -37,6 +37,12 @@ interface TicketDeliveryEmailProps {
    * Google Wallet env vars aren't configured on the deployment.
    */
   googleWalletUrl?: string;
+  /**
+   * Per-ticket catering pre-order URL. Renders a dedicated section with a
+   * CTA when the holder is eligible (see computeCateringUrl). null/undefined
+   * hides the section entirely.
+   */
+  cateringUrl?: string;
 }
 
 const TRANSLATIONS = {
@@ -60,6 +66,10 @@ const TRANSLATIONS = {
       "Plans changed? You can transfer this ticket to someone else until {date}.",
     transferCta: "Transfer ticket",
     googleWalletCta: "Add to Google Wallet",
+    cateringHeading: "Catering is included with your ticket",
+    cateringNote:
+      "Pre-select your meal so the kitchen can plan for dietary requirements ahead of the event.",
+    cateringCta: "Choose my meal",
   },
   de: {
     preview: "Ihr Ticket f\u00FCr {event}",
@@ -81,6 +91,10 @@ const TRANSLATIONS = {
       "Pl\u00E4ne ge\u00E4ndert? Du kannst dieses Ticket bis zum {date} an jemand anderen \u00FCbertragen.",
     transferCta: "Ticket \u00FCbertragen",
     googleWalletCta: "Zu Google Wallet hinzuf\u00FCgen",
+    cateringHeading: "Catering ist in Ihrem Ticket enthalten",
+    cateringNote:
+      "W\u00E4hlen Sie Ihr Men\u00FC im Voraus, damit die K\u00FCche Ihre Ern\u00E4hrungsw\u00FCnsche vorbereiten kann.",
+    cateringCta: "Men\u00FC w\u00E4hlen",
   },
   fr: {
     preview: "Votre billet pour {event}",
@@ -102,6 +116,10 @@ const TRANSLATIONS = {
       "Plans chang\u00E9s ? Tu peux transf\u00E9rer ce billet \u00E0 quelqu\u2019un d\u2019autre jusqu\u2019au {date}.",
     transferCta: "Transf\u00E9rer le billet",
     googleWalletCta: "Ajouter \u00E0 Google Wallet",
+    cateringHeading: "La restauration est incluse avec votre billet",
+    cateringNote:
+      "Pr\u00E9-s\u00E9lectionnez votre menu pour que la cuisine puisse anticiper vos pr\u00E9f\u00E9rences alimentaires.",
+    cateringCta: "Choisir mon menu",
   },
 };
 
@@ -187,6 +205,25 @@ export function TicketDeliveryEmail(props: TicketDeliveryEmailProps) {
                 </Link>
               )}
             </Section>
+
+            {/* Catering pre-order — eligible holders only (resolved server-side
+                via computeCateringUrl). Suppressed when the URL is absent. */}
+            {props.cateringUrl && (
+              <Section className="mt-6 rounded-lg border border-[#c8102e]/30 bg-[#fff5f6] p-5">
+                <Heading className="m-0 mb-2 text-base font-semibold text-neutral-900">
+                  {t.cateringHeading}
+                </Heading>
+                <Text className="m-0 text-sm leading-6 text-neutral-700">
+                  {t.cateringNote}
+                </Text>
+                <Link
+                  href={props.cateringUrl}
+                  className="mt-3 inline-block rounded-md bg-[#c8102e] px-5 py-2.5 text-sm font-medium text-white no-underline"
+                >
+                  {t.cateringCta}
+                </Link>
+              </Section>
+            )}
 
             {/* Transfer notice — shown only when the 7-day cutoff is still
                 in the future (caller drops the props after that). */}
