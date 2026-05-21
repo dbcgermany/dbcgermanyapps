@@ -64,6 +64,11 @@ export async function renderEmailPreview(
     minute: "2-digit",
   })}`;
 
+  // Synthetic preview catering URL so the dedicated "choose my meal"
+  // section renders in the inline preview surface (in-prod, the URL is
+  // resolved per ticket by computeCateringUrl).
+  const previewCateringUrl = `https://tickets.dbc-germany.com/${locale}/tickets/preview-ticket-token-0000/catering`;
+
   // Render ticket delivery email
   const ticketHtml = await render(
     React.createElement(TicketDeliveryEmail, {
@@ -78,6 +83,7 @@ export async function renderEmailPreview(
       orderUrl: "https://tickets.dbc-germany.com",
       locale,
       logoUrl: company?.logo_light_url ?? undefined,
+      cateringUrl: previewCateringUrl,
     })
   );
 
@@ -106,6 +112,7 @@ export async function renderEmailPreview(
       senderName: "DBC Germany Team",
       senderTitle: "Event Management",
       logoUrl: company?.logo_light_url ?? undefined,
+      cateringUrl: previewCateringUrl,
     })
   );
 

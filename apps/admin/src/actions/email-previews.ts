@@ -175,6 +175,12 @@ export async function sendAllTemplatePreviews(input: {
     }
   }
 
+  // Synthetic preview catering URL so the dedicated "choose my meal" section
+  // renders in both the informal and formal previews. In production the URL
+  // is resolved per ticket by computeCateringUrl; here we just hand the
+  // template a fake URL so operators see the section.
+  const previewCateringUrl = `${fx.urls.ticketsBase.replace(/\/$/, "")}/${locale}/tickets/${PREVIEW_TICKET.token}/catering`;
+
   // 1. ticket-delivery
   await run("ticket-delivery", () =>
     sendTicketEmail({
@@ -198,6 +204,7 @@ export async function sendAllTemplatePreviews(input: {
       supportEmail: PREVIEW_BRAND.supportEmail,
       primaryColor: PREVIEW_BRAND.primaryColor,
       logoUrl: PREVIEW_BRAND.logoUrl,
+      cateringUrl: previewCateringUrl,
     })
   );
 
@@ -232,6 +239,7 @@ export async function sendAllTemplatePreviews(input: {
       isInvitation: true,
       gender: "female",
       lastName: PREVIEW_CONTACT.lastName,
+      cateringUrl: previewCateringUrl,
     })
   );
 
