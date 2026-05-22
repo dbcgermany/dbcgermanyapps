@@ -26,6 +26,58 @@ function getServiceClient() {
   );
 }
 
+// The on_auth_user_created trigger inserts profiles with role='buyer'. A naked
+// .update() right after generateLink() / createUser() sometimes returns 0 rows
+// affected (no error) — likely a PostgREST consistency window against the
+// auth trigger's commit. When that happens the staff member is invisible to
+// /staff (filtered out by role) and to Pending Invitations (filtered out by
+// last_sign_in_at), so the admin has no way to recover them.
+//
+// This helper guarantees the profile ends up with the requested role by:
+//   1. update().select() — fast path, common case
+//   2. brief retry if 0 rows came back
+//   3. final upsert fallback so the row exists no matter what
+// Returns the resulting role (or an error string).
+async function ensureStaffProfile(
+  service: ReturnType<typeof getServiceClient>,
+  userId: string,
+  fields: { role: UserRole; locale?: string } & Record<string, unknown>
+): Promise<{ error?: string }> {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const { data, error } = await service
+      .from("profiles")
+      .update(fields)
+      .eq("id", userId)
+      .select("id, role")
+      .maybeSingle();
+    if (error) return { error: error.message };
+    if (data && data.role === fields.role) return {};
+    if (attempt === 0) {
+      await new Promise((r) => setTimeout(r, 150));
+    }
+  }
+  // Fallback: row not visible yet OR role didn't stick. Upsert by primary key.
+  const { data, error } = await service
+    .from("profiles")
+    .upsert(
+      {
+        id: userId,
+        ...fields,
+        locale: fields.locale ?? "en",
+      },
+      { onConflict: "id" }
+    )
+    .select("id, role")
+    .single();
+  if (error) return { error: error.message };
+  if (data.role !== fields.role) {
+    return {
+      error: `Profile role write failed: expected ${fields.role}, got ${data.role}`,
+    };
+  }
+  return {};
+}
+
 export async function getStaff() {
   await requireRole("admin");
   const supabase = await createServerClient();
@@ -197,11 +249,27 @@ export async function inviteStaff(formData: FormData) {
     return { error: linkError?.message ?? "Failed to generate invite link" };
   }
 
-  // The auth trigger auto-creates the profile with role=buyer. Upgrade it.
-  await service
-    .from("profiles")
-    .update({ role, display_name: resolvedName })
-    .eq("id", linkData.user.id);
+  // generateLink reuses an existing auth user if the email already exists.
+  // If they've already signed in, "invite" is the wrong flow — they're a
+  // real user. Send the admin to updateStaffRole / Pending Invitations.
+  if (linkData.user.last_sign_in_at) {
+    return {
+      error:
+        "A user with this email already exists and has signed in. Promote them via Update Role on their staff row instead of re-inviting.",
+    };
+  }
+
+  // The auth trigger auto-creates the profile with role=buyer. Upgrade it
+  // and verify the write actually stuck — a silent failure here leaves
+  // the user invisible to both /staff and Pending Invitations.
+  const ensureRes = await ensureStaffProfile(service, linkData.user.id, {
+    role,
+    display_name: resolvedName,
+    locale: inviteLocale,
+  });
+  if (ensureRes.error) {
+    return { error: `Invite created but role assignment failed: ${ensureRes.error}` };
+  }
 
   try {
     const { sendStaffInvite } = await import("@dbc/email");
@@ -501,56 +569,87 @@ export async function getEventsForAssignment() {
 }
 
 /**
- * Lists Supabase auth users who were invited (invited_at NOT NULL) but
- * never signed in (last_sign_in_at IS NULL) AND aren't already in the
- * staff list. Catches the common gap where an invite was issued via the
- * Supabase dashboard or some external flow that didn't promote
- * profiles.role above 'buyer' — those users are otherwise invisible to
- * the admin and the resend button has nowhere to live.
+ * Lists users whose invite is "stuck" — they have a profile with a non-staff
+ * role despite either (a) Supabase auth marking them as invited / never signed
+ * in, or (b) an explicit invite_staff audit log entry on their id. Case (b)
+ * is what catches the race-condition bug where inviteStaff's role write
+ * silently dropped — the user is invited *and* signed in, but profile.role
+ * is still 'buyer'. Without this they'd be invisible to /staff entirely.
  */
 export async function getPendingInvitations() {
   await requireRole("admin");
   const service = getServiceClient();
+  const supabase = await createServerClient();
 
-  // listUsers paginates at 50 per page by default; bump to 200 to cover
-  // the full set without paging on a small project.
-  const { data, error } = await service.auth.admin.listUsers({
+  // 1. Auth-side candidates: invited (invited_at set) but never signed in.
+  // listUsers paginates at 50 per page by default; bump to 200.
+  const { data: authUsers, error: authErr } = await service.auth.admin.listUsers({
     page: 1,
     perPage: 200,
   });
-  if (error) return [];
+  if (authErr) return [];
 
-  // Collect candidates: invited but never signed in.
-  const candidates = (data?.users ?? []).filter(
+  const invitedNotSignedIn = (authUsers?.users ?? []).filter(
     (u) => u.invited_at && !u.last_sign_in_at
   );
-  if (candidates.length === 0) return [];
 
-  // Filter out anyone already with a staff role (they show in the main
-  // staff list — duplicating them here would just be noise).
-  const candidateIds = candidates.map((u) => u.id);
-  const supabase = await createServerClient();
+  // 2. Audit-side candidates: anyone we explicitly invited via inviteStaff.
+  // Catches the silent-role-write failure where the user is now signed in
+  // but still has role='buyer' — invited_at IS NULL filter would miss them.
+  const { data: invitedAudit } = await supabase
+    .from("audit_log")
+    .select("entity_id")
+    .eq("action", "invite_staff")
+    .eq("entity_type", "profiles");
+  const auditIds = new Set(
+    (invitedAudit ?? []).map((r) => r.entity_id as string).filter(Boolean)
+  );
+
+  // Union of candidate ids.
+  const candidateIds = new Set<string>([
+    ...invitedNotSignedIn.map((u) => u.id),
+    ...auditIds,
+  ]);
+  if (candidateIds.size === 0) return [];
+
+  // Look up the auth row for any audit-only candidate that wasn't in page 1
+  // of listUsers (>200 users). For small projects this is rarely hit.
+  const authById = new Map(
+    (authUsers?.users ?? []).map((u) => [u.id, u] as const)
+  );
+  for (const id of candidateIds) {
+    if (!authById.has(id)) {
+      const { data } = await service.auth.admin.getUserById(id);
+      if (data?.user) authById.set(id, data.user);
+    }
+  }
+
+  // Filter to those whose profile.role is NOT a staff role (still stuck).
   const { data: profiles } = await supabase
     .from("profiles")
     .select("id, role, display_name")
-    .in("id", candidateIds);
-
+    .in("id", Array.from(candidateIds));
   const profileById = new Map((profiles ?? []).map((p) => [p.id, p]));
 
-  return candidates
-    .filter((u) => {
-      const role = profileById.get(u.id)?.role ?? "buyer";
+  return Array.from(candidateIds)
+    .filter((id) => {
+      const role = profileById.get(id)?.role ?? "buyer";
       return !STAFF_ROLES.includes(role as UserRole);
     })
-    .map((u) => ({
-      id: u.id,
-      email: u.email ?? "",
-      displayName:
-        profileById.get(u.id)?.display_name ??
-        ((u.user_metadata?.display_name as string | undefined) ?? ""),
-      invitedAt: u.invited_at ?? null,
-      currentRole: (profileById.get(u.id)?.role ?? "buyer") as UserRole,
-    }))
+    .map((id) => {
+      const u = authById.get(id);
+      const profile = profileById.get(id);
+      return {
+        id,
+        email: u?.email ?? "",
+        displayName:
+          profile?.display_name ??
+          ((u?.user_metadata?.display_name as string | undefined) ?? ""),
+        invitedAt: u?.invited_at ?? null,
+        currentRole: (profile?.role ?? "buyer") as UserRole,
+        alreadySignedIn: Boolean(u?.last_sign_in_at),
+      };
+    })
     .sort((a, b) => {
       const aDate = a.invitedAt ? new Date(a.invitedAt).getTime() : 0;
       const bDate = b.invitedAt ? new Date(b.invitedAt).getTime() : 0;
@@ -590,14 +689,11 @@ export async function assignRoleAndResendInvite(
     await service.auth.admin.getUserById(userId);
   if (authErr || !authData.user) return { error: "User not found" };
 
-  // Promote profile (auth trigger created it as buyer).
-  const { error: roleErr } = await service
-    .from("profiles")
-    .update({ role: newRole })
-    .eq("id", userId);
-  if (roleErr) return { error: roleErr.message };
+  // Promote profile (auth trigger created it as buyer). Verify the write —
+  // same silent-failure mode that bit inviteStaff().
+  const ensureRes = await ensureStaffProfile(service, userId, { role: newRole });
+  if (ensureRes.error) return { error: ensureRes.error };
 
-  // Generate fresh invite link.
   const adminUrl =
     process.env.NEXT_PUBLIC_ADMIN_URL ?? "https://admin.dbc-germany.com";
   const inviteLocale = (locale === "de" || locale === "fr" ? locale : "en") as
@@ -606,6 +702,21 @@ export async function assignRoleAndResendInvite(
     | "fr";
   const email = authData.user.email ?? "";
 
+  // If they've already signed in, sending an invite link would be confusing
+  // (they're a real user). Just record the promotion and stop.
+  if (authData.user.last_sign_in_at) {
+    await service.from("audit_log").insert({
+      user_id: actor.userId,
+      action: "assign_role_and_resend_invite",
+      entity_type: "profiles",
+      entity_id: userId,
+      details: { email, role: newRole, note: "already_signed_in_no_email_sent" },
+    });
+    revalidatePath(`/${locale}/staff`);
+    return { success: true };
+  }
+
+  // Generate fresh invite link.
   const { data: linkData, error: linkError } =
     await service.auth.admin.generateLink({
       type: "invite",
@@ -819,15 +930,17 @@ export async function createStaffWithoutInvite(formData: FormData) {
   }
 
   // on_auth_user_created creates the profile with role=buyer; upgrade + names.
-  await service
-    .from("profiles")
-    .update({
-      role,
-      first_name: firstName || null,
-      last_name: lastName || null,
-      locale: userLocale,
-    })
-    .eq("id", created.user.id);
+  // Verify the write stuck — silent .update() failures here used to leave the
+  // user invisible to /staff. See ensureStaffProfile() comment.
+  const ensureRes = await ensureStaffProfile(service, created.user.id, {
+    role,
+    first_name: firstName || null,
+    last_name: lastName || null,
+    locale: userLocale,
+  });
+  if (ensureRes.error) {
+    return { error: `User created but role assignment failed: ${ensureRes.error}` };
+  }
 
   const loginUrl = `${adminUrl()}/${userLocale}/login`;
 

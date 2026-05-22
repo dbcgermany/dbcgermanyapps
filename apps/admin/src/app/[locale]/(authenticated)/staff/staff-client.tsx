@@ -44,6 +44,7 @@ interface PendingInvitation {
   displayName: string;
   invitedAt: string | null;
   currentRole: UserRole;
+  alreadySignedIn: boolean;
 }
 
 const ROLE_OPTIONS: UserRole[] = [
@@ -469,8 +470,9 @@ export function StaffClient({
             Pending invitations · {pendingInvitations.length}
           </h2>
           <p className="mt-1 text-xs text-muted-foreground">
-            Invited but never signed in. Pick a role and click Resend to
-            promote them and send a fresh invite link in one go.
+            Invited via the admin but stuck on the buyer role. Pick a role
+            and click the action to promote them — a fresh invite link is
+            sent if they haven&apos;t signed in yet.
           </p>
           <div className="mt-3 overflow-x-auto rounded-lg border border-warning-border">
             <table className="w-full min-w-160 text-sm">
@@ -496,14 +498,21 @@ export function StaffClient({
                       )}
                     </td>
                     <td className="px-4 py-3 text-xs text-muted-foreground">
-                      {p.invitedAt
-                        ? new Date(p.invitedAt).toLocaleDateString(locale, {
-                            month: "short",
-                            day: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })
-                        : "—"}
+                      <span>
+                        {p.invitedAt
+                          ? new Date(p.invitedAt).toLocaleDateString(locale, {
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })
+                          : "—"}
+                      </span>
+                      {p.alreadySignedIn && (
+                        <span className="ml-2 inline-flex items-center rounded bg-warning-soft px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-warning-foreground">
+                          Signed in
+                        </span>
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       <select
@@ -531,7 +540,9 @@ export function StaffClient({
                         disabled={isPending}
                         className="text-xs font-medium text-primary hover:text-primary/80 disabled:opacity-50"
                       >
-                        Set role &amp; resend invite
+                        {p.alreadySignedIn
+                          ? "Set role"
+                          : "Set role & resend invite"}
                       </button>
                     </td>
                   </tr>
