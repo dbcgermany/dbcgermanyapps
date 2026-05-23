@@ -159,9 +159,17 @@ export async function createSpeaker(formData: FormData) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const slug = await uniqueSlug(supabase as any, "speakers", base);
 
+  // fullName is a derived helper for slug + audit; not a column on speakers.
+  const record: Record<string, unknown> = {
+    ...fields,
+    slug,
+    updated_by: user.userId,
+  };
+  delete record.fullName;
+
   const { data, error } = await supabase
     .from("speakers")
-    .insert({ ...fields, slug, updated_by: user.userId })
+    .insert(record)
     .select("id, slug")
     .single();
   if (error) return { error: error.message };
