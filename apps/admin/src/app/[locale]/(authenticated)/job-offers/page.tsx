@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { Badge, LinkButton } from "@dbc/ui";
+import { Badge } from "@dbc/ui";
 import { getJobOffers, toggleJobOfferPublished } from "@/actions/job-offers";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
 import { DataTable } from "@/components/data-table";
+import { MobileList } from "@/components/mobile-list";
 import { ActionForm } from "@/components/action-form";
+import { AddButton } from "@/components/add-button";
 
 export default async function JobOffersPage({
   params,
@@ -24,28 +26,55 @@ export default async function JobOffersPage({
       <PageHeader
         title={t("title")}
         cta={
-          <LinkButton href={`/${locale}/job-offers/new`}>
-            {t("newJob")}
-          </LinkButton>
+          <AddButton href={`/${locale}/job-offers/new`} label={t("newJob")} />
         }
       />
 
-      <div className="mt-8">
-        <DataTable
-          columns={[
-            t("colTitle"),
-            t("location"),
-            t("type"),
-            t("status"),
-            { label: t("actions"), align: "right" },
-          ]}
-          empty={
-            <EmptyState
-              message={t("empty")}
-              cta={{ label: t("create"), href: `/${locale}/job-offers/new` }}
-            />
-          }
-        >
+      {jobs.length === 0 ? (
+        <div className="mt-8">
+          <EmptyState
+            message={t("empty")}
+            cta={{ label: t("create"), href: `/${locale}/job-offers/new` }}
+          />
+        </div>
+      ) : (
+        <>
+          {/* Mobile: shared MobileList */}
+          <MobileList
+            className="mt-8 md:hidden"
+            items={jobs}
+            renderCell={(job) => ({
+              id: job.id,
+              title: job.title_en,
+              meta: (
+                <span>
+                  {job.location && <span>{job.location}</span>}
+                  {job.location && job.employment_type && " · "}
+                  {job.employment_type && (
+                    <span>{t(`types.${job.employment_type}`)}</span>
+                  )}
+                </span>
+              ),
+              trailing: (
+                <Badge variant={job.is_published ? "success" : "warning"}>
+                  {job.is_published ? t("published") : t("draft")}
+                </Badge>
+              ),
+              href: `/${locale}/job-offers/${job.id}`,
+            })}
+          />
+
+          {/* Desktop: shared DataTable */}
+          <div className="mt-8 hidden md:block">
+            <DataTable
+              columns={[
+                t("colTitle"),
+                t("location"),
+                t("type"),
+                t("status"),
+                { label: t("actions"), align: "right" },
+              ]}
+            >
           {jobs.map((job) => (
             <DataTable.Row key={job.id}>
               <DataTable.Cell>
@@ -96,8 +125,10 @@ export default async function JobOffersPage({
               </DataTable.Cell>
             </DataTable.Row>
           ))}
-        </DataTable>
-      </div>
+            </DataTable>
+          </div>
+        </>
+      )}
     </div>
   );
 }
