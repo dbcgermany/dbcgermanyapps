@@ -71,31 +71,43 @@ export function ExpenseForm({
       ? (expense.amount_cents / 100).toFixed(2)
       : "";
 
+  // Primary name = active locale's description. Required. Other two
+  // locales drop into the "Translations" section below as optional.
+  const primaryDescField =
+    locale === "fr"
+      ? { name: "description_fr", value: expense?.description_fr ?? "" }
+      : locale === "de"
+        ? { name: "description_de", value: expense?.description_de ?? "" }
+        : { name: "description_en", value: expense?.description_en ?? "" };
+  const secondaryDescFields =
+    locale === "fr"
+      ? ([
+          { name: "description_en", value: expense?.description_en ?? "", label: t.nameEn },
+          { name: "description_de", value: expense?.description_de ?? "", label: t.nameDe },
+        ] as const)
+      : locale === "de"
+        ? ([
+            { name: "description_en", value: expense?.description_en ?? "", label: t.nameEn },
+            { name: "description_fr", value: expense?.description_fr ?? "", label: t.nameFr },
+          ] as const)
+        : ([
+            { name: "description_de", value: expense?.description_de ?? "", label: t.nameDe },
+            { name: "description_fr", value: expense?.description_fr ?? "", label: t.nameFr },
+          ] as const);
+
   return (
     <form action={handleSubmit} className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-3">
-        <FormField label={t.descriptionEn}>
-          <Input
-            name="description_en"
-            defaultValue={expense?.description_en ?? ""}
-          />
-        </FormField>
-        <FormField label={t.descriptionDe}>
-          <Input
-            name="description_de"
-            defaultValue={expense?.description_de ?? ""}
-          />
-        </FormField>
-        <FormField label={t.descriptionFr}>
-          <Input
-            name="description_fr"
-            defaultValue={expense?.description_fr ?? ""}
-          />
-        </FormField>
-      </div>
-      <p className="-mt-3 text-xs text-muted-foreground">
-        {t.descriptionHint}
-      </p>
+      {/* Primary name — active locale, required. Matches the single-name
+          pattern used by sponsors (company_name), team members, news posts,
+          etc. so every "add / edit" page across the admin has the same
+          "type the name here" affordance at the top. */}
+      <FormField label={t.nameLabel} required hint={t.nameHint}>
+        <Input
+          name={primaryDescField.name}
+          defaultValue={primaryDescField.value}
+          required
+        />
+      </FormField>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <FormField label={t.amount} required>
@@ -179,6 +191,26 @@ export function ExpenseForm({
           rows={3}
         />
       </FormField>
+
+      {/* Optional translations — pre-fill names in the other two locales
+          so a German operator reading a French PDF (or vice versa) sees
+          the right wording. Stays at the bottom because it's optional and
+          the primary name above is the field every operator must fill. */}
+      <details className="rounded-md border border-border bg-muted/20 p-4">
+        <summary className="cursor-pointer text-sm font-medium">
+          {t.translationsTitle}
+        </summary>
+        <p className="mt-1 text-xs text-muted-foreground">
+          {t.translationsHint}
+        </p>
+        <div className="mt-3 grid gap-4 sm:grid-cols-2">
+          {secondaryDescFields.map((f) => (
+            <FormField key={f.name} label={f.label}>
+              <Input name={f.name} defaultValue={f.value} />
+            </FormField>
+          ))}
+        </div>
+      </details>
 
       <div className="flex gap-2">
         <Button type="submit" disabled={isPending}>
