@@ -47,7 +47,7 @@ export function localeFromCountry(
 ): Locale | null {
   if (!iso2) return null;
   const code = iso2.trim().toUpperCase();
-  if (code === "DE" || code === "AT") return "de";
+  if (code === "DE" || code === "AT" || code === "LI") return "de";
   // Francophone audience: France + Belgium + selected African chapters where
   // French is the working language for DBC events + Luxembourg/Monaco.
   if (
@@ -68,6 +68,10 @@ export function localeFromCountry(
       "BJ", // Benin
       "CG", // Republic of Congo
       "MG", // Madagascar
+      "GN", // Guinea
+      "DJ", // Djibouti
+      "RW", // Rwanda (FR + EN — leans FR for DBC)
+      "BI", // Burundi
     ].includes(code)
   ) {
     return "fr";

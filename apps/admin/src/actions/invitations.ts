@@ -11,6 +11,7 @@ import {
   type Gender,
   type Title,
 } from "@dbc/ui";
+import { resolveRecipientLocale } from "@dbc/email";
 
 export type DeliveryMode = "ticket_only" | "ticket_with_letter";
 export type AcquisitionType = "invited" | "assigned";
@@ -48,8 +49,29 @@ export async function createInvitation(input: InvitationInput) {
   const firstName = input.firstName.trim();
   const lastName = input.lastName.trim();
   const fullName = [firstName, lastName].filter(Boolean).join(" ");
-  const locale = input.locale || "en";
   const country = input.country?.trim().toUpperCase() || null;
+
+  // Recipient-language: explicit override (from the form) wins; otherwise
+  // we look up the contact (if it exists) and derive via the shared
+  // resolveRecipientLocale chain (contact.locale → country → fallback).
+  // Brand-new contacts fall back to the country supplied by the form.
+  // Gisèle's case (FR contact, operator in /de/) used to default to
+  // "en" → "de" via the URL — now it lands on "fr" automatically.
+  let locale: "en" | "de" | "fr";
+  if (input.locale === "en" || input.locale === "de" || input.locale === "fr") {
+    locale = input.locale;
+  } else {
+    const { data: existing } = await supabase
+      .from("contacts")
+      .select("locale, country")
+      .eq("email", email)
+      .maybeSingle();
+    locale = resolveRecipientLocale({
+      contactLocale: existing?.locale ?? null,
+      country: existing?.country ?? country,
+      fallback: "en",
+    });
+  }
   const occupation = input.occupation?.trim() || null;
   const extraTags = (input.extraCategoryTags ?? [])
     .map((t) => t.trim())
@@ -113,7 +135,10 @@ export async function createInvitation(input: InvitationInput) {
     p_extra_category_slugs: extraTags,
   });
 
-  // Update contact title / birthday if provided (columns exist but RPC doesn't accept them)
+  // Update contact title / birthday if provided (columns exist but RPC doesn't accept them).
+  // Also persist the resolved locale back if the contact had none — next
+  // invitation to the same person will short-circuit on the stored value
+  // without re-deriving.
   if (contactId && (title || birthday)) {
     const contactPatch: Record<string, unknown> = {};
     if (title) contactPatch.title = title;
@@ -122,6 +147,13 @@ export async function createInvitation(input: InvitationInput) {
       .from("contacts")
       .update(contactPatch)
       .eq("id", contactId as string);
+  }
+  if (contactId) {
+    await supabase
+      .from("contacts")
+      .update({ locale })
+      .eq("id", contactId as string)
+      .is("locale", null);
   }
 
   // Create comped order

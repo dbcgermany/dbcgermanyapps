@@ -300,9 +300,31 @@ export async function approveChapterDelegate(
   // because:
   //   1. createInvitation appends the catering URL to customBody only in that mode
   //   2. external-chapter delegates are honored guests — a branded letter fits
+  //
+  // Locale resolution: don't pass the operator's URL locale. Let
+  // createInvitation derive it from the delegate's stored locale (and
+  // chapter_country as fallback). For Gisèle (chapter_country='FR')
+  // that now yields 'fr'. The customBody is then translated to match.
   const chapterLabel = inv.chapter_country
     ? ` (Chapter: ${inv.chapter_country})`
     : "";
+  const delegateBody: Record<"en" | "de" | "fr", string> = {
+    en: `You are registered as a team member${chapterLabel}. Please bring your ticket to the entrance.`,
+    de: `Du bist als Team-Mitglied${chapterLabel} registriert. Bitte bringe dein Ticket zum Einlass mit.`,
+    fr: `Vous êtes enregistré·e comme membre de l’équipe${chapterLabel}. Merci de présenter votre billet à l’entrée.`,
+  };
+  // Look up the delegate's stored locale so we can pick the right body
+  // even though we don't pass an explicit locale to createInvitation.
+  const { data: delegateLocaleRow } = await service
+    .from("contacts")
+    .select("locale, country")
+    .eq("email", contact.email.toLowerCase())
+    .maybeSingle();
+  const delegateLocale = resolveRecipientLocale({
+    contactLocale: delegateLocaleRow?.locale ?? null,
+    country: delegateLocaleRow?.country ?? inv.chapter_country ?? null,
+    fallback: "en",
+  });
   const delegateResult = await createInvitation({
     eventId: inv.event_id,
     tierId: event.chapter_delegate_tier_id,
@@ -310,11 +332,10 @@ export async function approveChapterDelegate(
     lastName: contact.last_name ?? "",
     email: contact.email,
     country: inv.chapter_country ?? undefined,
-    locale,
     sendEmail: true,
     deliveryMode: "ticket_with_letter",
     acquisitionType: "invited",
-    customBody: `Du bist als Team-Mitglied${chapterLabel} registriert. Bitte bringe dein Ticket zum Einlass mit.`,
+    customBody: delegateBody[delegateLocale],
   });
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if ((delegateResult as any).error) {
@@ -339,7 +360,9 @@ export async function approveChapterDelegate(
         lastName: companion.last_name ?? "",
         email: companion.email,
         country: inv.chapter_country ?? undefined,
-        locale,
+        // Same locale-derivation rule as the delegate path — let
+        // createInvitation pick up the companion's stored/country locale
+        // instead of forcing the operator's UI locale.
         sendEmail: true,
         deliveryMode: "ticket_only",
         acquisitionType: "invited",

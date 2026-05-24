@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { BirthdayField, Button, CountrySelect, TITLE_VALUES, TitleGenderFields, type Gender, type Title } from "@dbc/ui";
 import { createInvitation } from "@/actions/invitations";
+import { localeFromCountry } from "@dbc/email";
 
 const DEFAULT_INVITATION_BODY: Record<string, string> = {
   en: "We are pleased to invite you to {event} on {date} at {venue}.\n\nYour complimentary ticket is attached to this email as a PDF. Please present the QR code at the entrance for check-in.\n\nWe look forward to welcoming you.",
@@ -32,6 +33,7 @@ const T = {
     customTitle: "Custom title", customTitlePh: "e.g. HRH, Amb., etc.",
     firstName: "First name", lastName: "Last name", email: "Email",
     inviteLang: "Invitation language",
+    inviteLangHint: "Defaults to the recipient's preferred language (from their country). Override if needed.",
     internalNote: "Internal note (optional)",
     notePh: "Why this person is invited — for the audit log",
     customize: "Customize invitation text", bodyLabel: "Email body text",
@@ -57,6 +59,7 @@ const T = {
     customTitle: "Individueller Titel", customTitlePh: "z. B. HRH, Botschafter usw.",
     firstName: "Vorname", lastName: "Nachname", email: "E-Mail",
     inviteLang: "Sprache der Einladung",
+    inviteLangHint: "Standardmäßig die bevorzugte Sprache des Empfängers (anhand des Landes). Bei Bedarf überschreiben.",
     internalNote: "Interne Notiz (optional)",
     notePh: "Warum diese Person eingeladen wird — fürs Audit-Log",
     customize: "Einladungstext anpassen", bodyLabel: "E-Mail-Text",
@@ -82,6 +85,7 @@ const T = {
     customTitle: "Titre personnalisé", customTitlePh: "ex. HRH, Amb., etc.",
     firstName: "Prénom", lastName: "Nom", email: "E-mail",
     inviteLang: "Langue de l’invitation",
+    inviteLangHint: "Par défaut, la langue préférée du destinataire (déduite du pays). Modifiez si besoin.",
     internalNote: "Note interne (optionnelle)",
     notePh: "Pourquoi cette personne est invitée — pour le journal d’audit",
     customize: "Personnaliser le texte", bodyLabel: "Corps de l’e-mail",
@@ -132,9 +136,16 @@ export function InviteForm({
     non_binary: tPerson("genderNonBinary"),
     prefer_not_to_say: tPerson("genderPreferNotToSay"),
   };
-  const [inviteLocale, setInviteLocale] = useState(
+  const adminLocale = (
     locale === "de" || locale === "fr" ? locale : "en"
+  ) as "en" | "de" | "fr";
+  const [inviteLocale, setInviteLocale] = useState<"en" | "de" | "fr">(
+    adminLocale
   );
+  // Tracks whether the operator manually changed the language dropdown.
+  // When false, the form keeps deriving locale from the recipient's
+  // country so the operator's URL locale doesn't bleed into every send.
+  const [localeManuallySet, setLocaleManuallySet] = useState(false);
   const [deliveryMode, setDeliveryMode] = useState<
     "ticket_only" | "ticket_with_letter"
   >("ticket_with_letter");
@@ -146,7 +157,7 @@ export function InviteForm({
     DEFAULT_INVITATION_BODY[inviteLocale] ?? DEFAULT_INVITATION_BODY.en
   );
   const [isPending, startTransition] = useTransition();
-  const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
+  const t = T[adminLocale];
 
   // Update default body text when locale changes (only if user hasn't customised)
   useEffect(() => {
@@ -156,6 +167,18 @@ export function InviteForm({
       );
     }
   }, [inviteLocale, showCustomBody]);
+
+  // Auto-pick language from country so a French recipient defaults to FR
+  // regardless of the admin's URL locale. Operator override (via the
+  // dropdown) wins and stays sticky once toggled.
+  useEffect(() => {
+    if (localeManuallySet) return;
+    if (!country) return;
+    const derived = localeFromCountry(country) ?? adminLocale;
+    if (derived !== inviteLocale) {
+      setInviteLocale(derived); // eslint-disable-line react-hooks/set-state-in-effect
+    }
+  }, [country, localeManuallySet, adminLocale, inviteLocale]);
 
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -355,20 +378,28 @@ export function InviteForm({
         />
       </label>
 
-      {/* Locale selector */}
+      {/* Locale selector — defaults to the recipient's stored preference or
+          a country-derived guess. Operator override is sticky after one
+          manual change. */}
       <label className="block">
         <span className="mb-1 block text-sm font-medium">
           {t.inviteLang}
         </span>
         <select
           value={inviteLocale}
-          onChange={(e) => setInviteLocale(e.target.value)}
+          onChange={(e) => {
+            setInviteLocale(e.target.value as "en" | "de" | "fr");
+            setLocaleManuallySet(true);
+          }}
           className={input}
         >
           <option value="en">English</option>
           <option value="de">Deutsch</option>
           <option value="fr">Français</option>
         </select>
+        <span className="mt-1 block text-xs text-muted-foreground">
+          {t.inviteLangHint}
+        </span>
       </label>
 
       <label className="block">

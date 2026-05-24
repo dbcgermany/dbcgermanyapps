@@ -211,7 +211,11 @@ export async function bulkCreateInvitations(
       occupation: row.occupation,
       extraCategoryTags: row.categoryTags,
       note: row.note ?? undefined,
-      locale: row.locale ?? input.defaultLocale,
+      // Per-row override wins. Otherwise let createInvitation derive from
+      // the contact's stored locale or row.country — we deliberately do
+      // NOT fall back to input.defaultLocale (the operator's URL) since
+      // that's what caused Gisèle to get her invitation in German.
+      locale: row.locale ?? undefined,
       sendEmail: input.sendEmails,
       gender: row.gender ?? undefined,
       title: row.title ?? undefined,

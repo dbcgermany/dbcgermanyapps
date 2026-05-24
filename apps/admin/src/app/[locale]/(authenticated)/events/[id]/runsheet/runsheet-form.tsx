@@ -30,6 +30,17 @@ export function RunsheetForm({
       formData: FormData
     ) => {
       formData.set("locale", locale);
+      // Same UTC normalization as the edit form — datetime-local submits a
+      // tz-less string, but the timestamptz column needs an actual instant.
+      for (const field of ["starts_at", "ends_at"] as const) {
+        const raw = formData.get(field);
+        if (typeof raw === "string" && raw) {
+          const d = new Date(raw);
+          if (!Number.isNaN(d.getTime())) {
+            formData.set(field, d.toISOString());
+          }
+        }
+      }
       const result = await createRunsheetItem(eventId, formData);
       return result;
     },

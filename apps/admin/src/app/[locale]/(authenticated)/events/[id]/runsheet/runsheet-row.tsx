@@ -47,8 +47,31 @@ const RR_T = {
   },
 } as const;
 
+/**
+ * Convert a stored UTC ISO timestamp to a `datetime-local`-shaped string
+ * in the browser's local timezone. The previous version sliced the raw
+ * ISO (which is UTC) and handed it to a `datetime-local` input — the
+ * browser treats that value as LOCAL, so the displayed time was offset
+ * by the user's UTC offset before they even touched the form.
+ */
 function toLocal(iso: string | null) {
-  return iso ? iso.slice(0, 16) : "";
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const offsetMs = d.getTimezoneOffset() * 60_000;
+  return new Date(d.getTime() - offsetMs).toISOString().slice(0, 16);
+}
+
+/**
+ * Convert a `datetime-local` value (no timezone, interpreted by the
+ * browser as local) back to a UTC ISO string for the server. Empty in =
+ * null out, so optional fields stay null.
+ */
+function fromLocal(value: string | null): string | null {
+  if (!value) return null;
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toISOString();
 }
 
 export function RunsheetRow({
@@ -75,6 +98,15 @@ export function RunsheetRow({
     ) => {
       formData.set("event_id", eventId);
       formData.set("locale", locale);
+      // datetime-local inputs submit a tz-less string ("2026-06-13T18:30").
+      // Convert to UTC ISO so the timestamptz column stores the actual
+      // wall-clock instant the operator picked, not 18:30 UTC.
+      for (const field of ["starts_at", "ends_at"] as const) {
+        const raw = formData.get(field);
+        if (typeof raw === "string") {
+          formData.set(field, fromLocal(raw) ?? "");
+        }
+      }
       const result = await updateRunsheetItem(item.id, formData);
       if (result.success) {
         setMode("view");
