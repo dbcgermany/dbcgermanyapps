@@ -69,7 +69,10 @@ export default async function EditNewsPage({
               offToast={tCommon("publishedToast")}
             />
             <DeleteButton
-              action={async () => deleteNewsPost(id, locale)}
+              action={async () => {
+                "use server";
+                return deleteNewsPost(id, locale);
+              }}
               confirmTitle={t.deleteConfirm}
               confirmDescription={t.deleteConfirmHint}
               confirmLabel={t.delete}

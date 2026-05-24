@@ -58,7 +58,10 @@ export default async function ExpenseDetailPage({
               <Badge variant="default">{t.unpaidBadge}</Badge>
             )}
             <DeleteButton
-              action={async () => deleteExpense(expense.id, eventId, locale)}
+              action={async () => {
+                "use server";
+                return deleteExpense(expense.id, eventId, locale);
+              }}
               confirmTitle={t.deleteConfirm}
               confirmDescription={titleDescription}
               confirmLabel={t.delete}

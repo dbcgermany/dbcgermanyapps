@@ -16,14 +16,26 @@ type ActionResult = void | null | undefined | { error?: string; success?: boolea
  * Use `compact` when sitting inside a list row — renders a ghost icon button
  * instead of a labeled secondary button.
  *
- * Usage:
- *   <DeleteButton
- *     action={() => deleteSponsor(id, eventId, locale)}
- *     confirmTitle="Delete sponsor?"
- *     confirmDescription="This cannot be undone."
- *     label="Delete"
- *     successToast="Sponsor deleted"
- *   />
+ * IMPORTANT — server vs. client component boundary:
+ *   This component is "use client". When you pass an inline `async () => …`
+ *   to `action` from a SERVER component, Next.js cannot serialise the
+ *   closure across the boundary unless it's marked as a server action.
+ *   Always include the "use server" directive INSIDE the inline async:
+ *
+ *     // ✅ from a server component
+ *     <DeleteButton
+ *       action={async () => { "use server"; return deleteX(id, locale); }}
+ *       …
+ *     />
+ *
+ *     // ✅ from a client component (the closure stays client-side and
+ *     //    calls the server action itself — no marker needed)
+ *     <DeleteButton action={async () => deleteX(id, locale)} … />
+ *
+ *   Omitting the directive in a server component triggers a server-side
+ *   render error with a generic "Server Components render" message — the
+ *   page works in dev but crashes in production. Caught the hard way on
+ *   /events/[id]/budget/[expenseId] in 2026-05.
  */
 export function DeleteButton({
   action,

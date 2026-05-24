@@ -67,7 +67,10 @@ export default async function SponsorDetailPage({
               {t.statuses[sponsor.status] ?? sponsor.status}
             </Badge>
             <DeleteButton
-              action={async () => deleteSponsor(sponsor.id, eventId, locale)}
+              action={async () => {
+                "use server";
+                return deleteSponsor(sponsor.id, eventId, locale);
+              }}
               confirmTitle={t.deleteConfirm}
               confirmDescription={sponsor.company_name}
               confirmLabel={t.delete}
