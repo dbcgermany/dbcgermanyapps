@@ -9,6 +9,9 @@ import { toast } from "sonner";
 import { ORDER_STATUS_VALUES } from "@dbc/types";
 import { refundOrder } from "@/actions/orders";
 import { CsvExportButton } from "@/components/csv-export-button";
+import { DataTable } from "@/components/data-table";
+import { MobileList } from "@/components/mobile-list";
+import { EmptyState } from "@/components/empty-state";
 
 interface Order {
   id: string;
@@ -194,39 +197,35 @@ export function OrdersClient({
         </div>
       )}
 
-      {/* Table (desktop) + iOS-style cell list (mobile) */}
+      {/* Empty / Mobile / Desktop — all now driven by shared SSOT primitives */}
       {orders.length === 0 ? (
-        <p className="mt-8 text-center text-sm text-muted-foreground">
-          {t("noOrders")}
-        </p>
+        <div className="mt-8">
+          <EmptyState message={t("noOrders")} />
+        </div>
       ) : (
         <>
-        {/* Mobile: grouped-list cells, each a tap target to the order detail */}
-        <ul className="mt-6 divide-y divide-border overflow-hidden rounded-xl border border-border bg-card md:hidden">
-          {orders.map((o) => {
-            const statusLabel = t.has(o.status) ? t(o.status) : o.status;
-            return (
-              <li key={o.id}>
-                <Link
-                  href={`/${locale}/orders/${o.id}`}
-                  className="flex items-start gap-3 px-4 py-3 transition-colors active:bg-muted"
-                >
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-baseline gap-2">
-                      <p className="truncate font-medium">{o.recipientName}</p>
-                      <span className="ml-auto shrink-0 text-sm font-semibold">
-                        {o.totalCents === 0
-                          ? "\u2014"
-                          : `\u20AC${(o.totalCents / 100).toFixed(2)}`}
-                      </span>
-                    </div>
-                    <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                      {o.recipientEmail}
-                    </p>
-                    <p className="mt-1 truncate text-xs text-muted-foreground">
-                      {o.eventTitle}
-                    </p>
-                    <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+          <MobileList
+            className="mt-6 md:hidden"
+            items={orders}
+            renderCell={(o) => {
+              const statusLabel = t.has(o.status) ? t(o.status) : o.status;
+              return {
+                id: o.id,
+                title: (
+                  <span className="flex items-baseline gap-2">
+                    <span className="truncate">{o.recipientName}</span>
+                    <span className="ml-auto shrink-0 text-sm font-semibold">
+                      {o.totalCents === 0
+                        ? "—"
+                        : `€${(o.totalCents / 100).toFixed(2)}`}
+                    </span>
+                  </span>
+                ),
+                meta: (
+                  <>
+                    <span className="block truncate">{o.recipientEmail}</span>
+                    <span className="mt-1 block truncate">{o.eventTitle}</span>
+                    <span className="mt-2 flex flex-wrap items-center gap-2">
                       <Badge
                         variant={
                           o.status === "paid" || o.status === "comped"
@@ -246,56 +245,45 @@ export function OrdersClient({
                           minute: "2-digit",
                         })}
                       </span>
-                    </div>
-                  </div>
-                  <span aria-hidden className="mt-1 text-muted-foreground">
-                    ›
-                  </span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+                    </span>
+                  </>
+                ),
+                href: `/${locale}/orders/${o.id}`,
+              };
+            }}
+          />
 
-        {/* Desktop: the table */}
-        <div className="mt-6 hidden overflow-hidden rounded-lg border border-border md:block">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border bg-muted/50">
-                <th className="px-4 py-3 text-left font-medium">{t("event")}</th>
-                <th className="px-4 py-3 text-left font-medium">
-                  {t("customer")}
-                </th>
-                <th className="px-4 py-3 text-left font-medium">{t("status")}</th>
-                <th className="px-4 py-3 text-right font-medium">{t("total")}</th>
-                <th className="px-4 py-3 text-left font-medium">{t("date")}</th>
-                <th className="px-4 py-3 text-right font-medium">
-                  {t("actions")}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
+          <div className="mt-6 hidden md:block">
+            <DataTable
+              columns={[
+                t("event"),
+                t("customer"),
+                t("status"),
+                { label: t("total"), align: "right" },
+                t("date"),
+                { label: t("actions"), align: "right" },
+              ]}
+            >
               {orders.map((o) => {
                 const canRefund =
                   (o.status === "paid" || o.status === "comped") &&
                   o.status !== ("refunded" as string);
                 const statusLabel = t.has(o.status) ? t(o.status) : o.status;
-                const acqLabel = t.has(o.acquisitionType) ? t(o.acquisitionType) : o.acquisitionType;
+                const acqLabel = t.has(o.acquisitionType)
+                  ? t(o.acquisitionType)
+                  : o.acquisitionType;
 
                 return (
-                  <tr
-                    key={o.id}
-                    className="border-b border-border last:border-0 hover:bg-muted/30"
-                  >
-                    <td className="px-4 py-3">
+                  <DataTable.Row key={o.id}>
+                    <DataTable.Cell>
                       <p className="font-medium">{o.eventTitle}</p>
                       <p className="text-xs text-muted-foreground">
                         {acqLabel}
-                        {o.paymentMethod && ` \u00B7 ${o.paymentMethod}`}
-                        {o.sellerName && ` \u00B7 ${o.sellerName}`}
+                        {o.paymentMethod && ` · ${o.paymentMethod}`}
+                        {o.sellerName && ` · ${o.sellerName}`}
                       </p>
-                    </td>
-                    <td className="px-4 py-3">
+                    </DataTable.Cell>
+                    <DataTable.Cell>
                       <Link
                         href={`/${locale}/orders/${o.id}`}
                         className="font-medium hover:text-primary"
@@ -305,8 +293,8 @@ export function OrdersClient({
                       <p className="text-xs text-muted-foreground">
                         {o.recipientEmail}
                       </p>
-                    </td>
-                    <td className="px-4 py-3">
+                    </DataTable.Cell>
+                    <DataTable.Cell>
                       <Badge
                         variant={
                           o.status === "paid" || o.status === "comped"
@@ -318,21 +306,21 @@ export function OrdersClient({
                       >
                         {statusLabel}
                       </Badge>
-                    </td>
-                    <td className="px-4 py-3 text-right font-medium">
+                    </DataTable.Cell>
+                    <DataTable.Cell align="right" className="font-medium">
                       {o.totalCents === 0
-                        ? "\u2014"
-                        : `\u20AC${(o.totalCents / 100).toFixed(2)}`}
-                    </td>
-                    <td className="px-4 py-3 text-muted-foreground">
+                        ? "—"
+                        : `€${(o.totalCents / 100).toFixed(2)}`}
+                    </DataTable.Cell>
+                    <DataTable.Cell className="text-muted-foreground">
                       {new Date(o.createdAt).toLocaleDateString(locale, {
                         month: "short",
                         day: "numeric",
                         hour: "2-digit",
                         minute: "2-digit",
                       })}
-                    </td>
-                    <td className="px-4 py-3 text-right">
+                    </DataTable.Cell>
+                    <DataTable.Cell align="right">
                       <div className="flex flex-col items-end gap-1">
                         {o.stripePaymentIntentId && (
                           <a
@@ -361,57 +349,59 @@ export function OrdersClient({
                             description={t("refundConfirm")}
                             variant="danger"
                             confirmLabel={t("refund")}
-                            onConfirm={() => startTransition(() => runRefund(o.id))}
+                            onConfirm={() =>
+                              startTransition(() => runRefund(o.id))
+                            }
                           />
                         )}
                       </div>
-                    </td>
-                  </tr>
+                    </DataTable.Cell>
+                  </DataTable.Row>
                 );
               })}
-            </tbody>
-          </table>
-        </div>
-        {totalPages > 1 && (
-          <nav
-            className="mt-4 flex items-center justify-between text-sm"
-            aria-label="Pagination"
-          >
-            <p className="text-muted-foreground">
-              {locale === "de"
-                ? `Seite ${page} von ${totalPages} · ${total} Bestellungen`
-                : locale === "fr"
-                  ? `Page ${page} sur ${totalPages} · ${total} commandes`
-                  : `Page ${page} of ${totalPages} · ${total} orders`}
-            </p>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => goToPage(page - 1)}
-                disabled={page <= 1 || isPending}
-                className="rounded-md border border-border px-3 py-1.5 hover:bg-muted disabled:opacity-50"
-              >
+            </DataTable>
+          </div>
+
+          {totalPages > 1 && (
+            <nav
+              className="mt-4 flex items-center justify-between text-sm"
+              aria-label="Pagination"
+            >
+              <p className="text-muted-foreground">
                 {locale === "de"
-                  ? "Zurück"
+                  ? `Seite ${page} von ${totalPages} · ${total} Bestellungen`
                   : locale === "fr"
-                    ? "Précédent"
-                    : "Previous"}
-              </button>
-              <button
-                type="button"
-                onClick={() => goToPage(page + 1)}
-                disabled={page >= totalPages || isPending}
-                className="rounded-md border border-border px-3 py-1.5 hover:bg-muted disabled:opacity-50"
-              >
-                {locale === "de"
-                  ? "Weiter"
-                  : locale === "fr"
-                    ? "Suivant"
-                    : "Next"}
-              </button>
-            </div>
-          </nav>
-        )}
+                    ? `Page ${page} sur ${totalPages} · ${total} commandes`
+                    : `Page ${page} of ${totalPages} · ${total} orders`}
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => goToPage(page - 1)}
+                  disabled={page <= 1 || isPending}
+                  className="rounded-md border border-border px-3 py-1.5 hover:bg-muted disabled:opacity-50"
+                >
+                  {locale === "de"
+                    ? "Zurück"
+                    : locale === "fr"
+                      ? "Précédent"
+                      : "Previous"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => goToPage(page + 1)}
+                  disabled={page >= totalPages || isPending}
+                  className="rounded-md border border-border px-3 py-1.5 hover:bg-muted disabled:opacity-50"
+                >
+                  {locale === "de"
+                    ? "Weiter"
+                    : locale === "fr"
+                      ? "Suivant"
+                      : "Next"}
+                </button>
+              </div>
+            </nav>
+          )}
         </>
       )}
     </div>
