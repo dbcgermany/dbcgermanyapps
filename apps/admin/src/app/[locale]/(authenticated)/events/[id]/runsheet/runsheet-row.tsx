@@ -1,15 +1,17 @@
 "use client";
 
-import { useActionState, useState, useTransition } from "react";
+import { useActionState, useTransition, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { Badge, Button, ConfirmDialog } from "@dbc/ui";
+import { Badge, Button } from "@dbc/ui";
 import {
   updateRunsheetItem,
   deleteRunsheetItem,
   type RunsheetItem,
 } from "@/actions/runsheet";
+import { InlineEditRow } from "@/components/inline-edit-row";
+import { DeleteButton } from "@/components/delete-button";
 
 const STATUS_CYCLE: Record<string, "pending" | "in_progress" | "done"> = {
   pending: "in_progress",
@@ -17,10 +19,7 @@ const STATUS_CYCLE: Record<string, "pending" | "in_progress" | "done"> = {
   done: "pending",
 };
 
-const STATUS_VARIANT: Record<
-  string,
-  "default" | "warning" | "success"
-> = {
+const STATUS_VARIANT: Record<string, "default" | "warning" | "success"> = {
   pending: "default",
   in_progress: "warning",
   done: "success",
@@ -33,7 +32,8 @@ const RR_T = {
     privateNotesHint: "Internal-only. Won't appear on the run-sheet PDF or in any attendee email.",
     privateNotesDisplay: "Team note",
     saving: "Saving…", save: "Save", cancel: "Cancel",
-    advance: "Advance", edit: "Edit", delete: "Delete", deleteConfirm: 'Delete "{title}"?',
+    advance: "Advance", delete: "Delete", deleteConfirm: 'Delete "{title}"?',
+    deletedToast: "Item deleted",
     statuses: { pending: "Pending", in_progress: "In progress", done: "Done" } as Record<string, string>,
   },
   de: {
@@ -42,7 +42,8 @@ const RR_T = {
     privateNotesHint: "Nur intern. Erscheint weder im Ablaufplan-PDF noch in E-Mails an Teilnehmende.",
     privateNotesDisplay: "Team-Notiz",
     saving: "Wird gespeichert…", save: "Speichern", cancel: "Abbrechen",
-    advance: "Weiter", edit: "Bearbeiten", delete: "Löschen", deleteConfirm: "„{title}“ löschen?",
+    advance: "Weiter", delete: "Löschen", deleteConfirm: "„{title}“ löschen?",
+    deletedToast: "Eintrag gelöscht",
     statuses: { pending: "Offen", in_progress: "Läuft", done: "Erledigt" } as Record<string, string>,
   },
   fr: {
@@ -51,18 +52,12 @@ const RR_T = {
     privateNotesHint: "Visible uniquement par l’équipe. N’apparaît ni dans la feuille de route PDF ni dans les e-mails aux participants.",
     privateNotesDisplay: "Note équipe",
     saving: "Enregistrement…", save: "Enregistrer", cancel: "Annuler",
-    advance: "Avancer", edit: "Modifier", delete: "Supprimer", deleteConfirm: "Supprimer « {title} » ?",
+    advance: "Avancer", delete: "Supprimer", deleteConfirm: "Supprimer « {title} » ?",
+    deletedToast: "Élément supprimé",
     statuses: { pending: "En attente", in_progress: "En cours", done: "Terminé" } as Record<string, string>,
   },
 } as const;
 
-/**
- * Convert a stored UTC ISO timestamp to a `datetime-local`-shaped string
- * in the browser's local timezone. The previous version sliced the raw
- * ISO (which is UTC) and handed it to a `datetime-local` input — the
- * browser treats that value as LOCAL, so the displayed time was offset
- * by the user's UTC offset before they even touched the form.
- */
 function toLocal(iso: string | null) {
   if (!iso) return "";
   const d = new Date(iso);
@@ -71,11 +66,6 @@ function toLocal(iso: string | null) {
   return new Date(d.getTime() - offsetMs).toISOString().slice(0, 16);
 }
 
-/**
- * Convert a `datetime-local` value (no timezone, interpreted by the
- * browser as local) back to a UTC ISO string for the server. Empty in =
- * null out, so optional fields stay null.
- */
 function fromLocal(value: string | null): string | null {
   if (!value) return null;
   const d = new Date(value);
@@ -88,43 +78,18 @@ export function RunsheetRow({
   eventId,
   locale,
   staff,
+  dragHandle,
 }: {
   item: RunsheetItem;
   eventId: string;
   locale: string;
   staff: { id: string; name: string }[];
+  dragHandle?: ReactNode;
 }) {
   const router = useRouter();
   const tCommon = useTranslations("admin.common");
-  const [mode, setMode] = useState<"view" | "edit">("view");
   const [isPending, startTransition] = useTransition();
   const t = RR_T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof RR_T];
-
-  const [state, formAction, isSaving] = useActionState(
-    async (
-      _prev: { error?: string; success?: boolean } | null,
-      formData: FormData
-    ) => {
-      formData.set("event_id", eventId);
-      formData.set("locale", locale);
-      // datetime-local inputs submit a tz-less string ("2026-06-13T18:30").
-      // Convert to UTC ISO so the timestamptz column stores the actual
-      // wall-clock instant the operator picked, not 18:30 UTC.
-      for (const field of ["starts_at", "ends_at"] as const) {
-        const raw = formData.get(field);
-        if (typeof raw === "string") {
-          formData.set(field, fromLocal(raw) ?? "");
-        }
-      }
-      const result = await updateRunsheetItem(item.id, formData);
-      if (result.success) {
-        setMode("view");
-        router.refresh();
-      }
-      return result;
-    },
-    null
-  );
 
   function handleStatusAdvance() {
     const next = STATUS_CYCLE[item.status] ?? "pending";
@@ -143,194 +108,219 @@ export function RunsheetRow({
     });
   }
 
-  function handleDelete() {
-    startTransition(async () => {
-      const res = await deleteRunsheetItem(item.id, eventId, locale);
-      if (res?.error) {
-        toast.error(tCommon("actionFailedToast", { error: res.error }));
-        return;
-      }
-      toast.success(tCommon("deletedToast"));
-      router.refresh();
-    });
-  }
-
   const assigneeName =
     item.assignee?.display_name || item.responsible_person || null;
 
-  if (mode === "edit") {
-    return (
-      <form
-        action={formAction}
-        className="rounded-lg border border-primary/50 bg-muted/30 p-4 space-y-3"
-      >
-        {state?.error && (
-          <div className="rounded-md bg-danger-soft p-2 text-xs text-danger">
-            {state.error}
+  const timeRange = (() => {
+    const start = new Date(item.starts_at).toLocaleTimeString(locale, {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    if (!item.ends_at) return start;
+    const end = new Date(item.ends_at).toLocaleTimeString(locale, {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    return `${start} – ${end}`;
+  })();
+
+  return (
+    <InlineEditRow
+      dragHandle={dragHandle}
+      title={item.title}
+      badges={
+        <Badge variant={STATUS_VARIANT[item.status] ?? "default"}>
+          {t.statuses[item.status] ?? item.status.replace("_", " ")}
+        </Badge>
+      }
+      meta={
+        <>
+          <div>
+            <span>{timeRange}</span>
+            {(assigneeName || item.location_note) && (
+              <span>
+                {" · "}
+                {assigneeName}
+                {assigneeName && item.location_note && " · "}
+                {item.location_note}
+              </span>
+            )}
           </div>
-        )}
+          {item.description && (
+            <div className="mt-1">{item.description}</div>
+          )}
+          {item.notes && (
+            <div className="mt-2 rounded-md border-l-2 border-warning-strong bg-warning-soft px-2 py-1 text-xs">
+              <span className="font-medium text-warning-strong">
+                {t.privateNotesDisplay}:
+              </span>{" "}
+              <span className="whitespace-pre-wrap text-foreground/80">
+                {item.notes}
+              </span>
+            </div>
+          )}
+        </>
+      }
+      actions={
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={handleStatusAdvance}
+          disabled={isPending}
+        >
+          {t.advance}
+        </Button>
+      }
+      deleteAction={
+        <DeleteButton
+          action={async () => deleteRunsheetItem(item.id, eventId, locale)}
+          confirmTitle={t.deleteConfirm.replace("{title}", item.title)}
+          confirmLabel={t.delete}
+          cancelLabel={t.cancel}
+          label={t.delete}
+          successToast={t.deletedToast}
+          compact
+        />
+      }
+      renderEdit={({ close }) => (
+        <RunsheetEditForm
+          item={item}
+          eventId={eventId}
+          locale={locale}
+          staff={staff}
+          t={t}
+          onSaved={close}
+        />
+      )}
+    />
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+
+type RunsheetT = (typeof RR_T)[keyof typeof RR_T];
+
+function RunsheetEditForm({
+  item,
+  eventId,
+  locale,
+  staff,
+  t,
+  onSaved,
+}: {
+  item: RunsheetItem;
+  eventId: string;
+  locale: string;
+  staff: { id: string; name: string }[];
+  t: RunsheetT;
+  onSaved: () => void;
+}) {
+  const router = useRouter();
+  const [state, formAction, isSaving] = useActionState(
+    async (
+      _prev: { error?: string; success?: boolean } | null,
+      formData: FormData
+    ) => {
+      formData.set("event_id", eventId);
+      formData.set("locale", locale);
+      // datetime-local inputs submit a tz-less string ("2026-06-13T18:30").
+      // Convert to UTC ISO so the timestamptz column stores the actual
+      // wall-clock instant the operator picked, not 18:30 UTC.
+      for (const field of ["starts_at", "ends_at"] as const) {
+        const raw = formData.get(field);
+        if (typeof raw === "string") {
+          formData.set(field, fromLocal(raw) ?? "");
+        }
+      }
+      const result = await updateRunsheetItem(item.id, formData);
+      if (result.success) {
+        onSaved();
+        router.refresh();
+      }
+      return result;
+    },
+    null
+  );
+
+  return (
+    <form action={formAction} className="space-y-3">
+      {state?.error && (
+        <div className="rounded-md bg-danger-soft p-2 text-xs text-danger">
+          {state.error}
+        </div>
+      )}
+      <input
+        name="title"
+        defaultValue={item.title}
+        required
+        placeholder={t.title}
+        className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
+      />
+      <div className="grid gap-2 sm:grid-cols-2">
         <input
-          name="title"
-          defaultValue={item.title}
+          name="starts_at"
+          type="datetime-local"
+          defaultValue={toLocal(item.starts_at)}
           required
-          placeholder={t.title}
           className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
         />
-        <div className="grid gap-2 sm:grid-cols-2">
-          <input
-            name="starts_at"
-            type="datetime-local"
-            defaultValue={toLocal(item.starts_at)}
-            required
-            className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-          />
-          <input
-            name="ends_at"
-            type="datetime-local"
-            defaultValue={toLocal(item.ends_at)}
-            className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-          />
-        </div>
-        <div className="grid gap-2 sm:grid-cols-2">
-          <select
-            name="assigned_to"
-            defaultValue={item.assigned_to ?? ""}
-            className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-          >
-            <option value="">{t.unassigned}</option>
-            {staff.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
-          </select>
-          <input
-            name="location_note"
-            defaultValue={item.location_note ?? ""}
-            placeholder={t.location}
-            className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-          />
-        </div>
+        <input
+          name="ends_at"
+          type="datetime-local"
+          defaultValue={toLocal(item.ends_at)}
+          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
+        />
+      </div>
+      <div className="grid gap-2 sm:grid-cols-2">
+        <select
+          name="assigned_to"
+          defaultValue={item.assigned_to ?? ""}
+          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
+        >
+          <option value="">{t.unassigned}</option>
+          {staff.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.name}
+            </option>
+          ))}
+        </select>
+        <input
+          name="location_note"
+          defaultValue={item.location_note ?? ""}
+          placeholder={t.location}
+          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
+        />
+      </div>
+      <textarea
+        name="description"
+        defaultValue={item.description ?? ""}
+        placeholder={t.notes}
+        rows={2}
+        className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
+      />
+      <label className="block">
+        <span className="mb-1 block text-xs font-medium text-muted-foreground">
+          {t.privateNotes}
+        </span>
         <textarea
-          name="description"
-          defaultValue={item.description ?? ""}
-          placeholder={t.notes}
+          name="notes"
+          defaultValue={item.notes ?? ""}
           rows={2}
           className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
         />
-        <label className="block">
-          <span className="mb-1 block text-xs font-medium text-muted-foreground">
-            {t.privateNotes}
-          </span>
-          <textarea
-            name="notes"
-            defaultValue={item.notes ?? ""}
-            rows={2}
-            className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-          />
-          <span className="mt-1 block text-[11px] text-muted-foreground">
-            {t.privateNotesHint}
-          </span>
-        </label>
-        <div className="flex gap-2">
-          <Button type="submit"
-            disabled={isSaving}>
-            {isSaving ? t.saving : t.save}
-          </Button>
-          <button
-            type="button"
-            onClick={() => setMode("view")}
-            className="rounded-md border border-input px-4 py-1.5 text-xs font-medium hover:bg-accent"
-          >
-            {t.cancel}
-          </button>
-        </div>
-      </form>
-    );
-  }
-
-  return (
-    <div className="flex items-start justify-between gap-3 rounded-lg border border-border p-4">
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-3">
-          <p className="font-medium">{item.title}</p>
-          <Badge variant={STATUS_VARIANT[item.status] ?? "default"}>
-            {t.statuses[item.status] ?? item.status.replace("_", " ")}
-          </Badge>
-        </div>
-        <p className="mt-0.5 text-sm text-muted-foreground">
-          {new Date(item.starts_at).toLocaleTimeString(locale, {
-            hour: "2-digit",
-            minute: "2-digit",
-          })}
-          {item.ends_at && (
-            <>
-              {" \u2013 "}
-              {new Date(item.ends_at).toLocaleTimeString(locale, {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </>
-          )}
-        </p>
-        {(assigneeName || item.location_note) && (
-          <p className="mt-1 text-xs text-muted-foreground">
-            {assigneeName && <span>{assigneeName}</span>}
-            {assigneeName && item.location_note && (
-              <span className="mx-1.5">&middot;</span>
-            )}
-            {item.location_note && <span>{item.location_note}</span>}
-          </p>
-        )}
-        {item.description && (
-          <p className="mt-1 text-xs text-muted-foreground">
-            {item.description}
-          </p>
-        )}
-        {item.notes && (
-          <div className="mt-2 rounded-md border-l-2 border-warning-strong bg-warning-soft px-2 py-1 text-xs">
-            <span className="font-medium text-warning-strong">
-              {t.privateNotesDisplay}:
-            </span>{" "}
-            <span className="text-foreground/80 whitespace-pre-wrap">
-              {item.notes}
-            </span>
-          </div>
-        )}
+        <span className="mt-1 block text-[11px] text-muted-foreground">
+          {t.privateNotesHint}
+        </span>
+      </label>
+      <div className="flex gap-2">
+        <Button type="submit" disabled={isSaving}>
+          {isSaving ? t.saving : t.save}
+        </Button>
+        <Button type="button" variant="secondary" onClick={onSaved}>
+          {t.cancel}
+        </Button>
       </div>
-      <div className="flex shrink-0 flex-col items-end gap-1">
-        <button
-          type="button"
-          onClick={handleStatusAdvance}
-          disabled={isPending}
-          className="text-xs text-primary hover:text-primary/80 disabled:opacity-50"
-        >
-          {t.advance}
-        </button>
-        <button
-          type="button"
-          onClick={() => setMode("edit")}
-          className="text-xs text-primary hover:text-primary/80"
-        >
-          {t.edit}
-        </button>
-        <ConfirmDialog
-          trigger={
-            <button
-              type="button"
-              disabled={isPending}
-              className="text-xs text-danger hover:opacity-80 disabled:opacity-50"
-            >
-              {t.delete}
-            </button>
-          }
-          title={t.deleteConfirm.replace("{title}", item.title)}
-          confirmLabel={t.delete}
-          cancelLabel={t.cancel}
-          variant="danger"
-          onConfirm={handleDelete}
-        />
-      </div>
-    </div>
+    </form>
   );
 }
