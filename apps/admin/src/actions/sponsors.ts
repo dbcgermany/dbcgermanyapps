@@ -21,6 +21,25 @@ export async function getEventSponsors(eventId: string) {
   return data ?? [];
 }
 
+/**
+ * Single-row fetch for the dedicated `/events/[id]/sponsors/[sponsorId]`
+ * detail page. Same columns + RLS gate as the list query — never
+ * leaks fields the list doesn't already expose.
+ */
+export async function getSponsor(sponsorId: string) {
+  await requireRole("manager");
+  const supabase = await createServerClient();
+
+  const { data, error } = await supabase
+    .from("event_sponsors")
+    .select(SPONSOR_COLUMNS)
+    .eq("id", sponsorId)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  return data;
+}
+
 async function upsertSponsorContact(
   supabase: Awaited<ReturnType<typeof createServerClient>>,
   firstName: string | null,

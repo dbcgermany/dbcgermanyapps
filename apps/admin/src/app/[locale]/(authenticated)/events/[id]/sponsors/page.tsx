@@ -3,7 +3,9 @@ import { getTranslations } from "next-intl/server";
 import { getEvent } from "@/actions/events";
 import { getEventSponsors } from "@/actions/sponsors";
 import { PageHeader } from "@/components/page-header";
+import { AddButton } from "@/components/add-button";
 import { SponsorsClient } from "./sponsors-client";
+import { pickSponsorT } from "./copy";
 
 export default async function EventSponsorsPage({
   params,
@@ -17,34 +19,20 @@ export default async function EventSponsorsPage({
 
   const sponsors = await getEventSponsors(eventId);
   const tBack = await getTranslations({ locale, namespace: "admin.back" });
-
-  const t = {
-    en: {
-      title: "Sponsors",
-      description:
-        "Manage sponsorship deals and partners for this event. Track status, deal value, contact info, and deliverables.",
-    },
-    de: {
-      title: "Sponsoren",
-      description:
-        "Sponsoring-Deals und Partner f\u00FCr diese Veranstaltung verwalten.",
-    },
-    fr: {
-      title: "Sponsors",
-      description:
-        "G\u00E9rer les accords de parrainage et les partenaires de cet \u00E9v\u00E9nement.",
-    },
-  }[locale] ?? {
-    title: "Sponsors",
-    description: "Manage sponsorship deals and partners.",
-  };
+  const t = pickSponsorT(locale);
 
   return (
     <div>
       <PageHeader
-        title={t.title}
-        description={t.description}
+        title={t.listTitle}
+        description={t.listDescription}
         back={{ href: `/${locale}/events/${eventId}`, label: tBack("event") }}
+        cta={
+          <AddButton
+            href={`/${locale}/events/${eventId}/sponsors/new`}
+            label={t.addSponsor}
+          />
+        }
       />
 
       <div className="mt-6">
