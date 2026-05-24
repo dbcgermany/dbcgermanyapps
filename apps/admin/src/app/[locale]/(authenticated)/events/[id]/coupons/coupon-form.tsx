@@ -1,56 +1,66 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { Button, FormField, Input, Select } from "@dbc/ui";
 import { createCoupon } from "@/actions/coupons";
-import { Button } from "@dbc/ui";
 
 const CP_T = {
   en: {
-    success: "Coupon created successfully.",
-    codeLabel: "Code",
-    typeLabel: "Type",
+    success: "Coupon created successfully",
+    codeLabel: "Coupon code *",
+    codeHint: "Required. Buyers type this at checkout.",
+    typeLabel: "Discount type",
     percentage: "Percentage (%)",
     fixed: "Fixed amount (€)",
-    valueLabel: "Value",
-    maxUses: "Max uses (empty = unlimited)",
+    valueLabel: "Value *",
+    maxUses: "Max uses",
+    maxUsesHint: "Leave empty for unlimited.",
     validFrom: "Valid from (optional)",
     validUntil: "Valid until (optional)",
     appliesTo: "Applies to tiers",
-    appliesAll: "(leave empty = all tiers)",
+    appliesAll: "Leave all unchecked = applies to every tier.",
     creating: "Creating…",
-    create: "Create Coupon",
+    create: "Create coupon",
   },
   de: {
-    success: "Rabattcode erfolgreich erstellt.",
-    codeLabel: "Code",
-    typeLabel: "Typ",
+    success: "Rabattcode erfolgreich erstellt",
+    codeLabel: "Coupon-Code *",
+    codeHint: "Erforderlich. Käufer geben diesen beim Checkout ein.",
+    typeLabel: "Rabattart",
     percentage: "Prozentual (%)",
     fixed: "Festbetrag (€)",
-    valueLabel: "Wert",
-    maxUses: "Max. Nutzungen (leer = unbegrenzt)",
+    valueLabel: "Wert *",
+    maxUses: "Max. Nutzungen",
+    maxUsesHint: "Leer lassen für unbegrenzt.",
     validFrom: "Gültig ab (optional)",
     validUntil: "Gültig bis (optional)",
     appliesTo: "Gilt für Kategorien",
-    appliesAll: "(leer lassen = alle Kategorien)",
+    appliesAll: "Nichts ankreuzen = gilt für alle Kategorien.",
     creating: "Wird erstellt…",
     create: "Rabattcode erstellen",
   },
   fr: {
-    success: "Code promo créé avec succès.",
-    codeLabel: "Code",
-    typeLabel: "Type",
+    success: "Code promo créé avec succès",
+    codeLabel: "Code promo *",
+    codeHint: "Obligatoire. Les acheteurs le saisissent au paiement.",
+    typeLabel: "Type de remise",
     percentage: "Pourcentage (%)",
     fixed: "Montant fixe (€)",
-    valueLabel: "Valeur",
-    maxUses: "Nombre max (vide = illimité)",
+    valueLabel: "Valeur *",
+    maxUses: "Nombre max",
+    maxUsesHint: "Laisser vide pour illimité.",
     validFrom: "Valide à partir de (optionnel)",
     validUntil: "Valide jusqu’à (optionnel)",
     appliesTo: "S’applique aux catégories",
-    appliesAll: "(vide = toutes les catégories)",
+    appliesAll: "Aucune cochée = s’applique à toutes les catégories.",
     creating: "Création…",
     create: "Créer le code",
   },
 } as const;
+
+type ActionResult = { error?: string; success?: boolean } | null;
 
 export function CouponForm({
   eventId,
@@ -61,9 +71,11 @@ export function CouponForm({
   locale: string;
   tiers: { id: string; name: string }[];
 }) {
+  const router = useRouter();
   const t = CP_T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof CP_T];
-  const [state, formAction, isPending] = useActionState(
-    async (_prev: { error?: string; success?: boolean } | null, formData: FormData) => {
+
+  const [state, formAction, isPending] = useActionState<ActionResult, FormData>(
+    async (_prev, formData) => {
       formData.set("event_id", eventId);
       formData.set("locale", locale);
       return createCoupon(formData);
@@ -71,130 +83,83 @@ export function CouponForm({
     null
   );
 
-  return (
-    <form action={formAction} className="mt-4 space-y-4">
-      {state?.error && (
-        <div className="rounded-md bg-danger-soft p-3 text-sm text-danger">
-          {state.error}
-        </div>
-      )}
-      {state?.success && (
-        <div className="rounded-md bg-success-soft p-3 text-sm text-success">
-          {t.success}
-        </div>
-      )}
+  const lastHandledRef = useRef<ActionResult>(null);
+  useEffect(() => {
+    if (state === lastHandledRef.current) return;
+    lastHandledRef.current = state;
+    if (state?.error) {
+      toast.error(state.error);
+      return;
+    }
+    if (state?.success) {
+      toast.success(t.success);
+      router.refresh();
+    }
+  }, [state, router, t.success]);
 
-      <div className="grid gap-3 sm:grid-cols-3">
-        <div>
-          <label htmlFor="code" className="block text-xs text-muted-foreground mb-1">
-            {t.codeLabel}
-          </label>
-          <input
-            id="code"
+  return (
+    <form action={formAction} className="mt-4 space-y-6">
+      <div className="grid gap-4 sm:grid-cols-3">
+        <FormField label={t.codeLabel} required hint={t.codeHint}>
+          <Input
             name="code"
-            type="text"
             required
             placeholder="EARLYBIRD20"
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono uppercase focus:outline-none focus:ring-2 focus:ring-ring"
+            className="font-mono uppercase"
           />
-        </div>
-        <div>
-          <label htmlFor="discount_type" className="block text-xs text-muted-foreground mb-1">
-            {t.typeLabel}
-          </label>
-          <select
-            id="discount_type"
-            name="discount_type"
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          >
+        </FormField>
+        <FormField label={t.typeLabel}>
+          <Select name="discount_type" defaultValue="percentage">
             <option value="percentage">{t.percentage}</option>
             <option value="fixed_amount">{t.fixed}</option>
-          </select>
-        </div>
-        <div>
-          <label htmlFor="discount_value" className="block text-xs text-muted-foreground mb-1">
-            {t.valueLabel}
-          </label>
-          <input
-            id="discount_value"
+          </Select>
+        </FormField>
+        <FormField label={t.valueLabel} required>
+          <Input
             name="discount_value"
             type="number"
             step="0.01"
             min="0"
             required
             placeholder="20"
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           />
-        </div>
+        </FormField>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-3">
-        <div>
-          <label htmlFor="max_uses" className="block text-xs text-muted-foreground mb-1">
-            {t.maxUses}
-          </label>
-          <input
-            id="max_uses"
-            name="max_uses"
-            type="number"
-            min="1"
-            placeholder="100"
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        </div>
-        <div>
-          <label htmlFor="valid_from" className="block text-xs text-muted-foreground mb-1">
-            {t.validFrom}
-          </label>
-          <input
-            id="valid_from"
-            name="valid_from"
-            type="datetime-local"
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        </div>
-        <div>
-          <label htmlFor="valid_until" className="block text-xs text-muted-foreground mb-1">
-            {t.validUntil}
-          </label>
-          <input
-            id="valid_until"
-            name="valid_until"
-            type="datetime-local"
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        </div>
+      <div className="grid gap-4 sm:grid-cols-3">
+        <FormField label={t.maxUses} hint={t.maxUsesHint}>
+          <Input name="max_uses" type="number" min="1" placeholder="100" />
+        </FormField>
+        <FormField label={t.validFrom}>
+          <Input name="valid_from" type="datetime-local" />
+        </FormField>
+        <FormField label={t.validUntil}>
+          <Input name="valid_until" type="datetime-local" />
+        </FormField>
       </div>
 
       {tiers.length > 0 && (
-        <div>
-          <label className="mb-1.5 block text-xs text-muted-foreground">
-            {t.appliesTo}
-            <span className="ml-1 text-muted-foreground/70">
-              {t.appliesAll}
-            </span>
-          </label>
+        <FormField label={t.appliesTo} hint={t.appliesAll}>
           <div className="grid gap-2 rounded-md border border-input bg-background p-3 sm:grid-cols-2">
-            {tiers.map((t) => (
+            {tiers.map((tier) => (
               <label
-                key={t.id}
+                key={tier.id}
                 className="flex cursor-pointer items-center gap-2 text-sm"
               >
                 <input
                   type="checkbox"
                   name="applicable_tier_ids"
-                  value={t.id}
+                  value={tier.id}
                   className="accent-primary"
                 />
-                {t.name}
+                {tier.name}
               </label>
             ))}
           </div>
-        </div>
+        </FormField>
       )}
 
-      <Button type="submit"
-        disabled={isPending}>
+      <Button type="submit" disabled={isPending}>
         {isPending ? t.creating : t.create}
       </Button>
     </form>

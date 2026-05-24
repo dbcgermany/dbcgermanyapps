@@ -1,34 +1,42 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { Button, FormField, Input } from "@dbc/ui";
 import { createScheduleItem } from "@/actions/schedule";
-import { Button } from "@dbc/ui";
 
 const T = {
   en: {
-    success: "Schedule item added.",
-    titleEn: "Title (EN)",
-    titleDe: "Title (DE)",
-    titleFr: "Title (FR)",
-    titlePh: "e.g., Opening Keynote",
-    startTime: "Start time",
-    endTime: "End time",
+    success: "Schedule item added",
+    titleLabel: "Title *",
+    titleHint: "Required. Shown on the public event page schedule.",
+    translationsTitle: "Other languages (optional)",
+    titleEn: "English",
+    titleDe: "German",
+    titleFr: "French",
+    titlePh: "e.g. Opening Keynote",
+    startTime: "Start time *",
+    endTime: "End time *",
     sortOrder: "Sort order",
     speakerFirstName: "Speaker first name (optional)",
     speakerLastName: "Speaker last name (optional)",
     speakerTitle: "Speaker title (optional)",
     speakerTitlePh: "Founder & CEO, DBC",
     adding: "Adding…",
-    add: "Add to Schedule",
+    add: "Add to schedule",
   },
   de: {
-    success: "Programmpunkt hinzugefügt.",
-    titleEn: "Titel (EN)",
-    titleDe: "Titel (DE)",
-    titleFr: "Titel (FR)",
+    success: "Programmpunkt hinzugefügt",
+    titleLabel: "Titel *",
+    titleHint: "Erforderlich. Auf der öffentlichen Event-Seite im Programm sichtbar.",
+    translationsTitle: "Andere Sprachen (optional)",
+    titleEn: "Englisch",
+    titleDe: "Deutsch",
+    titleFr: "Französisch",
     titlePh: "z. B. Eröffnungs-Keynote",
-    startTime: "Startzeit",
-    endTime: "Endzeit",
+    startTime: "Startzeit *",
+    endTime: "Endzeit *",
     sortOrder: "Sortierung",
     speakerFirstName: "Vorname Speaker (optional)",
     speakerLastName: "Nachname Speaker (optional)",
@@ -38,13 +46,16 @@ const T = {
     add: "Zum Programm hinzufügen",
   },
   fr: {
-    success: "Élément ajouté au programme.",
-    titleEn: "Titre (EN)",
-    titleDe: "Titre (DE)",
-    titleFr: "Titre (FR)",
+    success: "Élément ajouté au programme",
+    titleLabel: "Titre *",
+    titleHint: "Obligatoire. Affiché dans le programme sur la page publique.",
+    translationsTitle: "Autres langues (facultatif)",
+    titleEn: "Anglais",
+    titleDe: "Allemand",
+    titleFr: "Français",
     titlePh: "ex. Keynote d’ouverture",
-    startTime: "Heure de début",
-    endTime: "Heure de fin",
+    startTime: "Heure de début *",
+    endTime: "Heure de fin *",
     sortOrder: "Ordre",
     speakerFirstName: "Prénom de l’intervenant (optionnel)",
     speakerLastName: "Nom de l’intervenant (optionnel)",
@@ -55,6 +66,8 @@ const T = {
   },
 } as const;
 
+type ActionResult = { error?: string; success?: boolean } | null;
+
 export function ScheduleForm({
   eventId,
   locale,
@@ -62,9 +75,11 @@ export function ScheduleForm({
   eventId: string;
   locale: string;
 }) {
+  const router = useRouter();
   const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
-  const [state, formAction, isPending] = useActionState(
-    async (_prev: { error?: string; success?: boolean } | null, formData: FormData) => {
+
+  const [state, formAction, isPending] = useActionState<ActionResult, FormData>(
+    async (_prev, formData) => {
       formData.set("event_id", eventId);
       formData.set("locale", locale);
       return createScheduleItem(formData);
@@ -72,142 +87,97 @@ export function ScheduleForm({
     null
   );
 
+  const lastHandledRef = useRef<ActionResult>(null);
+  useEffect(() => {
+    if (state === lastHandledRef.current) return;
+    lastHandledRef.current = state;
+    if (state?.error) {
+      toast.error(state.error);
+      return;
+    }
+    if (state?.success) {
+      toast.success(t.success);
+      router.refresh();
+    }
+  }, [state, router, t.success]);
+
+  // Active-locale title is primary required; other two locales go into the
+  // optional translations panel at the bottom (same pattern as expense + tier).
+  const primaryTitle =
+    locale === "fr"
+      ? { name: "title_fr", label: t.titleLabel }
+      : locale === "de"
+        ? { name: "title_de", label: t.titleLabel }
+        : { name: "title_en", label: t.titleLabel };
+  const secondaryTitles =
+    locale === "fr"
+      ? ([
+          { name: "title_en", label: t.titleEn },
+          { name: "title_de", label: t.titleDe },
+        ] as const)
+      : locale === "de"
+        ? ([
+            { name: "title_en", label: t.titleEn },
+            { name: "title_fr", label: t.titleFr },
+          ] as const)
+        : ([
+            { name: "title_de", label: t.titleDe },
+            { name: "title_fr", label: t.titleFr },
+          ] as const);
+
   return (
-    <form action={formAction} className="mt-4 space-y-4">
-      {state?.error && (
-        <div className="rounded-md bg-danger-soft p-3 text-sm text-danger">
-          {state.error}
-        </div>
-      )}
-      {state?.success && (
-        <div className="rounded-md bg-success-soft p-3 text-sm text-success">
-          {t.success}
-        </div>
-      )}
+    <form action={formAction} className="mt-4 space-y-6">
+      <FormField label={primaryTitle.label} required hint={t.titleHint}>
+        <Input name={primaryTitle.name} required placeholder={t.titlePh} />
+      </FormField>
 
-      {/* Title (trilingual) */}
-      <div className="grid gap-3 sm:grid-cols-3">
-        <div>
-          <label htmlFor="title_en" className="block text-xs text-muted-foreground mb-1">
-            {t.titleEn}
-          </label>
-          <input
-            id="title_en"
-            name="title_en"
-            type="text"
-            required
-            placeholder={t.titlePh}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        </div>
-        <div>
-          <label htmlFor="title_de" className="block text-xs text-muted-foreground mb-1">
-            {t.titleDe}
-          </label>
-          <input
-            id="title_de"
-            name="title_de"
-            type="text"
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        </div>
-        <div>
-          <label htmlFor="title_fr" className="block text-xs text-muted-foreground mb-1">
-            {t.titleFr}
-          </label>
-          <input
-            id="title_fr"
-            name="title_fr"
-            type="text"
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        </div>
+      <div className="grid gap-4 sm:grid-cols-3">
+        <FormField label={t.startTime} required>
+          <Input name="starts_at" type="datetime-local" required />
+        </FormField>
+        <FormField label={t.endTime} required>
+          <Input name="ends_at" type="datetime-local" required />
+        </FormField>
+        <FormField label={t.sortOrder}>
+          <Input name="sort_order" type="number" defaultValue="0" />
+        </FormField>
       </div>
 
-      {/* Time */}
-      <div className="grid gap-3 sm:grid-cols-3">
-        <div>
-          <label htmlFor="starts_at" className="block text-xs text-muted-foreground mb-1">
-            {t.startTime}
-          </label>
-          <input
-            id="starts_at"
-            name="starts_at"
-            type="datetime-local"
-            required
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        </div>
-        <div>
-          <label htmlFor="ends_at" className="block text-xs text-muted-foreground mb-1">
-            {t.endTime}
-          </label>
-          <input
-            id="ends_at"
-            name="ends_at"
-            type="datetime-local"
-            required
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        </div>
-        <div>
-          <label htmlFor="sort_order" className="block text-xs text-muted-foreground mb-1">
-            {t.sortOrder}
-          </label>
-          <input
-            id="sort_order"
-            name="sort_order"
-            type="number"
-            defaultValue="0"
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        </div>
-      </div>
-
-      {/* Speaker */}
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div>
-          <label htmlFor="speaker_first_name" className="block text-xs text-muted-foreground mb-1">
-            {t.speakerFirstName}
-          </label>
-          <input
-            id="speaker_first_name"
+      <div className="grid gap-4 sm:grid-cols-2">
+        <FormField label={t.speakerFirstName}>
+          <Input
             name="speaker_first_name"
-            type="text"
             placeholder="Jean-Clément"
             autoComplete="given-name"
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           />
-        </div>
-        <div>
-          <label htmlFor="speaker_last_name" className="block text-xs text-muted-foreground mb-1">
-            {t.speakerLastName}
-          </label>
-          <input
-            id="speaker_last_name"
+        </FormField>
+        <FormField label={t.speakerLastName}>
+          <Input
             name="speaker_last_name"
-            type="text"
             placeholder="Diambilay"
             autoComplete="family-name"
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           />
-        </div>
-      </div>
-      <div>
-        <label htmlFor="speaker_title" className="block text-xs text-muted-foreground mb-1">
-          {t.speakerTitle}
-        </label>
-        <input
-          id="speaker_title"
-          name="speaker_title"
-          type="text"
-          placeholder={t.speakerTitlePh}
-          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-        />
+        </FormField>
       </div>
 
-      <Button type="submit"
-        disabled={isPending}>
+      <FormField label={t.speakerTitle}>
+        <Input name="speaker_title" placeholder={t.speakerTitlePh} />
+      </FormField>
+
+      <details className="rounded-md border border-border bg-muted/20 p-4">
+        <summary className="cursor-pointer text-sm font-medium">
+          {t.translationsTitle}
+        </summary>
+        <div className="mt-3 grid gap-4 sm:grid-cols-2">
+          {secondaryTitles.map((f) => (
+            <FormField key={f.name} label={f.label}>
+              <Input name={f.name} />
+            </FormField>
+          ))}
+        </div>
+      </details>
+
+      <Button type="submit" disabled={isPending}>
         {isPending ? t.adding : t.add}
       </Button>
     </form>

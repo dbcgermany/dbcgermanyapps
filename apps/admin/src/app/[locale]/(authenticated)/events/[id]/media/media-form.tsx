@@ -1,51 +1,75 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { AssetUpload, Button } from "@dbc/ui";
+import { AssetUpload, Button, FormField, Input, Select } from "@dbc/ui";
 import { addEventMedia, uploadEventMediaFile } from "@/actions/media";
 
 const MF_T = {
   en: {
-    added: "Media added.",
-    uploadToast: "File uploaded — click Add Media to save.",
+    added: "Media added",
+    uploadToast: "File uploaded — click Add media to save",
     typeLabel: "Type",
-    photo: "Photo", video: "Video", link: "Link",
-    titleLabel: "Title (optional)", titlePh: "e.g., Keynote photos",
+    photo: "Photo",
+    video: "Video",
+    link: "Link",
+    titleLabel: "Title",
+    titleHint: "Optional. Shown as the caption on the public event page.",
+    titlePh: "e.g. Keynote photos",
     sort: "Sort order",
     uploadLabel: "Upload a file (optional)",
-    uploadDesc: "Upload to Supabase Storage. Or skip and paste any public URL below.",
-    urlLabel: "URL",
-    urlHint: "Paste a URL from Supabase Storage, Google Drive, YouTube, Vimeo, or any public link.",
-    adding: "Adding…", add: "Add Media",
+    uploadDesc:
+      "Upload to Supabase Storage. Or skip and paste any public URL below.",
+    urlLabel: "URL *",
+    urlHint:
+      "Required. Paste a URL from Supabase Storage, Google Drive, YouTube, Vimeo, or any public link.",
+    adding: "Adding…",
+    add: "Add media",
   },
   de: {
-    added: "Medium hinzugefügt.",
-    uploadToast: "Datei hochgeladen — klicken Sie auf „Medium hinzufügen“ zum Speichern.",
+    added: "Medium hinzugefügt",
+    uploadToast: "Datei hochgeladen — klicken Sie auf „Medium hinzufügen“ zum Speichern",
     typeLabel: "Typ",
-    photo: "Foto", video: "Video", link: "Link",
-    titleLabel: "Titel (optional)", titlePh: "z. B. Keynote-Fotos",
+    photo: "Foto",
+    video: "Video",
+    link: "Link",
+    titleLabel: "Titel",
+    titleHint: "Optional. Wird als Bildunterschrift auf der öffentlichen Event-Seite gezeigt.",
+    titlePh: "z. B. Keynote-Fotos",
     sort: "Sortierung",
     uploadLabel: "Datei hochladen (optional)",
-    uploadDesc: "Zu Supabase Storage hochladen. Oder überspringen und unten eine öffentliche URL einfügen.",
-    urlLabel: "URL",
-    urlHint: "URL aus Supabase Storage, Google Drive, YouTube, Vimeo oder jedem öffentlichen Link einfügen.",
-    adding: "Wird hinzugefügt…", add: "Medium hinzufügen",
+    uploadDesc:
+      "Zu Supabase Storage hochladen. Oder überspringen und unten eine öffentliche URL einfügen.",
+    urlLabel: "URL *",
+    urlHint:
+      "Erforderlich. URL aus Supabase Storage, Google Drive, YouTube, Vimeo oder jedem öffentlichen Link einfügen.",
+    adding: "Wird hinzugefügt…",
+    add: "Medium hinzufügen",
   },
   fr: {
-    added: "Média ajouté.",
-    uploadToast: "Fichier téléversé — cliquez sur Ajouter pour enregistrer.",
+    added: "Média ajouté",
+    uploadToast: "Fichier téléversé — cliquez sur Ajouter pour enregistrer",
     typeLabel: "Type",
-    photo: "Photo", video: "Vidéo", link: "Lien",
-    titleLabel: "Titre (optionnel)", titlePh: "ex. Photos keynote",
+    photo: "Photo",
+    video: "Vidéo",
+    link: "Lien",
+    titleLabel: "Titre",
+    titleHint: "Optionnel. Affiché comme légende sur la page publique.",
+    titlePh: "ex. Photos keynote",
     sort: "Ordre",
     uploadLabel: "Téléverser un fichier (optionnel)",
-    uploadDesc: "Téléverser vers Supabase Storage. Ou ignorer et coller une URL publique ci-dessous.",
-    urlLabel: "URL",
-    urlHint: "Collez une URL depuis Supabase Storage, Google Drive, YouTube, Vimeo ou tout lien public.",
-    adding: "Ajout…", add: "Ajouter un média",
+    uploadDesc:
+      "Téléverser vers Supabase Storage. Ou ignorer et coller une URL publique ci-dessous.",
+    urlLabel: "URL *",
+    urlHint:
+      "Obligatoire. Collez une URL depuis Supabase Storage, Google Drive, YouTube, Vimeo ou tout lien public.",
+    adding: "Ajout…",
+    add: "Ajouter un média",
   },
 } as const;
+
+type ActionResult = { error?: string; success?: boolean } | null;
 
 export function MediaForm({
   eventId,
@@ -54,14 +78,13 @@ export function MediaForm({
   eventId: string;
   locale: string;
 }) {
+  const router = useRouter();
   const [url, setUrl] = useState("");
   const [type, setType] = useState<"photo" | "video" | "link">("photo");
   const t = MF_T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof MF_T];
-  const [state, formAction, isPending] = useActionState(
-    async (
-      _prev: { error?: string; success?: boolean } | null,
-      formData: FormData
-    ) => {
+
+  const [state, formAction, isPending] = useActionState<ActionResult, FormData>(
+    async (_prev, formData) => {
       formData.set("event_id", eventId);
       formData.set("locale", locale);
       formData.set("url", url);
@@ -74,6 +97,20 @@ export function MediaForm({
     },
     null
   );
+
+  const lastHandledRef = useRef<ActionResult>(null);
+  useEffect(() => {
+    if (state === lastHandledRef.current) return;
+    lastHandledRef.current = state;
+    if (state?.error) {
+      toast.error(state.error);
+      return;
+    }
+    if (state?.success) {
+      toast.success(t.added);
+      router.refresh();
+    }
+  }, [state, router, t.added]);
 
   async function handleUpload(file: File): Promise<string> {
     const result = await uploadEventMediaFile(eventId, file);
@@ -89,55 +126,28 @@ export function MediaForm({
   }
 
   return (
-    <form action={formAction} className="mt-4 space-y-4">
-      {state?.error && (
-        <div className="rounded-md bg-danger-soft p-3 text-sm text-danger">
-          {state.error}
-        </div>
-      )}
-      {state?.success && (
-        <div className="rounded-md bg-success-soft p-3 text-sm text-success">
-          {t.added}
-        </div>
-      )}
-
-      <div className="grid gap-3 sm:grid-cols-4">
-        <div>
-          <label className="block text-xs text-muted-foreground mb-1">
-            {t.typeLabel}
-          </label>
-          <select
+    <form action={formAction} className="mt-4 space-y-6">
+      <div className="grid gap-4 sm:grid-cols-4">
+        <FormField label={t.typeLabel}>
+          <Select
             value={type}
-            onChange={(e) => setType(e.target.value as typeof type)}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            onChange={(e) =>
+              setType(e.target.value as "photo" | "video" | "link")
+            }
           >
             <option value="photo">{t.photo}</option>
             <option value="video">{t.video}</option>
             <option value="link">{t.link}</option>
-          </select>
-        </div>
+          </Select>
+        </FormField>
         <div className="sm:col-span-2">
-          <label className="block text-xs text-muted-foreground mb-1">
-            {t.titleLabel}
-          </label>
-          <input
-            name="title"
-            type="text"
-            placeholder={t.titlePh}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          />
+          <FormField label={t.titleLabel} hint={t.titleHint}>
+            <Input name="title" placeholder={t.titlePh} />
+          </FormField>
         </div>
-        <div>
-          <label className="block text-xs text-muted-foreground mb-1">
-            {t.sort}
-          </label>
-          <input
-            name="sort_order"
-            type="number"
-            defaultValue="0"
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        </div>
+        <FormField label={t.sort}>
+          <Input name="sort_order" type="number" defaultValue="0" />
+        </FormField>
       </div>
 
       {type !== "link" && (
@@ -156,23 +166,18 @@ export function MediaForm({
         />
       )}
 
-      <div>
-        <label className="block text-xs text-muted-foreground mb-1">{t.urlLabel}</label>
-        <input
+      <FormField label={t.urlLabel} required hint={t.urlHint}>
+        <Input
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           type="url"
           required
           placeholder="https://…"
-          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ring"
+          className="font-mono"
         />
-        <p className="mt-1 text-xs text-muted-foreground">
-          {t.urlHint}
-        </p>
-      </div>
+      </FormField>
 
-      <Button type="submit"
-        disabled={isPending || !url}>
+      <Button type="submit" disabled={isPending || !url}>
         {isPending ? t.adding : t.add}
       </Button>
     </form>
