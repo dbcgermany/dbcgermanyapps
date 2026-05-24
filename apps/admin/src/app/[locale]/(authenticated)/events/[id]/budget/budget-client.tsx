@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { Fragment, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -165,11 +165,8 @@ export function BudgetClient({
                 const desc = pickDescription(e, l);
                 const isEditing = editingId === e.id;
                 return (
-                  <>
-                    <tr
-                      key={e.id}
-                      className="border-b border-border last:border-0 hover:bg-muted/30"
-                    >
+                  <Fragment key={e.id}>
+                    <tr className="border-b border-border last:border-0 hover:bg-muted/30">
                       <td className="px-4 py-3 font-medium">{desc}</td>
                       <td className="px-4 py-3">
                         <Badge variant="default">{e.category}</Badge>
@@ -249,7 +246,7 @@ export function BudgetClient({
                       </td>
                     </tr>
                     {isEditing && (
-                      <tr key={`${e.id}-edit`} className="bg-muted/20">
+                      <tr className="bg-muted/20">
                         <td colSpan={6} className="px-4 py-4">
                           <ExpenseForm
                             mode="edit"
@@ -263,7 +260,7 @@ export function BudgetClient({
                         </td>
                       </tr>
                     )}
-                  </>
+                  </Fragment>
                 );
               })}
             </tbody>
