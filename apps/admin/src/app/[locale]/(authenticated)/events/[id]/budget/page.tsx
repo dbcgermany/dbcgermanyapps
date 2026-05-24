@@ -4,46 +4,9 @@ import { getEvent } from "@/actions/events";
 import { getEventExpenses } from "@/actions/expenses";
 import { PageHeader } from "@/components/page-header";
 import { PdfButton } from "@/components/pdf-button";
+import { AddButton } from "@/components/add-button";
 import { BudgetClient } from "./budget-client";
-
-// Mirrors the proven shape used by checklist/page.tsx: inline strings for the
-// page-level chrome, single getTranslations call for the back-button label,
-// minimal Promise chain. Charts, KPI rows, provider picker, financial
-// summary all moved down into BudgetClient (or a follow-up) so a failure in
-// any of them can't take down the whole page server-render.
-
-const PAGE_T = {
-  en: {
-    title: "Budget & Expenses",
-    desc: "Track event costs and vendor payments.",
-    total: "Total",
-    paid: "paid",
-    unpaid: "unpaid",
-    overdue: "overdue",
-    lineItems: "line items",
-    exportPdf: "Export PDF",
-  },
-  de: {
-    title: "Budget & Ausgaben",
-    desc: "Veranstaltungskosten und Lieferantenzahlungen verfolgen.",
-    total: "Gesamt",
-    paid: "bezahlt",
-    unpaid: "offen",
-    overdue: "überfällig",
-    lineItems: "Positionen",
-    exportPdf: "PDF exportieren",
-  },
-  fr: {
-    title: "Budget & Dépenses",
-    desc: "Suivre les coûts et paiements fournisseurs.",
-    total: "Total",
-    paid: "payé",
-    unpaid: "à payer",
-    overdue: "en retard",
-    lineItems: "lignes",
-    exportPdf: "Exporter en PDF",
-  },
-} as const;
+import { pickBudgetT } from "./copy";
 
 export default async function BudgetPage({
   params,
@@ -51,15 +14,10 @@ export default async function BudgetPage({
   params: Promise<{ locale: string; id: string }>;
 }) {
   const { locale, id: eventId } = await params;
-  const l = (locale === "de" || locale === "fr" ? locale : "en") as
-    | "en"
-    | "de"
-    | "fr";
-  const pt = PAGE_T[l];
+  const pt = pickBudgetT(locale);
   const tBack = await getTranslations({ locale, namespace: "admin.back" });
 
-  // Same notFound() pattern as checklist/page.tsx — guards against
-  // missing/deleted event IDs.
+  // notFound() guard for missing/deleted event IDs (same pattern as checklist).
   try {
     await getEvent(eventId);
   } catch {
@@ -76,20 +34,31 @@ export default async function BudgetPage({
       maximumFractionDigits: 0,
     });
 
+  const description =
+    `${count} ${pt.lineItems} · ${pt.total} ${fmt(totalCents)}` +
+    ` · ${fmt(paidCents)} ${pt.paid} · ${fmt(unpaidCents)} ${pt.unpaid}` +
+    (overdueCents > 0 ? ` · ${fmt(overdueCents)} ${pt.overdue}` : "");
+
   return (
     <div>
       <PageHeader
-        title={pt.title}
-        description={`${count} ${pt.lineItems} · ${pt.total} ${fmt(totalCents)} · ${fmt(paidCents)} ${pt.paid} · ${fmt(unpaidCents)} ${pt.unpaid}${overdueCents > 0 ? ` · ${fmt(overdueCents)} ${pt.overdue}` : ""}`}
+        title={pt.listTitle}
+        description={description}
         back={{
           href: `/${locale}/events/${eventId}`,
           label: tBack("event"),
         }}
         cta={
-          <PdfButton
-            href={`/api/budget/${eventId}?locale=${locale}`}
-            label={pt.exportPdf}
-          />
+          <div className="flex flex-wrap items-center gap-2">
+            <AddButton
+              href={`/${locale}/events/${eventId}/budget/new`}
+              label={pt.addExpense}
+            />
+            <PdfButton
+              href={`/api/budget/${eventId}?locale=${locale}`}
+              label={pt.exportPdf}
+            />
+          </div>
         }
       />
 

@@ -51,6 +51,53 @@ export interface ExpenseRow {
   created_at: string;
 }
 
+/**
+ * Single-row fetch for the dedicated `/events/[id]/budget/[expenseId]`
+ * detail page. Same columns + RLS gate as the list query.
+ */
+export async function getExpense(
+  expenseId: string
+): Promise<ExpenseRow | null> {
+  await requireRole("manager");
+  const supabase = await createServerClient();
+
+  const { data, error } = await supabase
+    .from("event_expenses")
+    .select(EXPENSE_COLUMNS)
+    .eq("id", expenseId)
+    .maybeSingle();
+
+  if (error) {
+    captureServerError(new Error(error.message), {
+      scope: "expenses:getExpense",
+      data: { id: expenseId, code: error.code },
+    });
+    return null;
+  }
+  if (!data) return null;
+
+  return {
+    id: data.id,
+    event_id: data.event_id,
+    category: data.category,
+    description: data.description,
+    description_en: data.description_en,
+    description_de: data.description_de,
+    description_fr: data.description_fr,
+    amount_cents: data.amount_cents,
+    currency: data.currency,
+    vendor_name: data.vendor_name,
+    vendor_contact: data.vendor_contact,
+    provider_contact_id: data.provider_contact_id,
+    provider_name: null, // detail page joins separately if needed
+    due_date: data.due_date,
+    paid_at: data.paid_at,
+    receipt_url: data.receipt_url,
+    notes: data.notes,
+    created_at: data.created_at,
+  };
+}
+
 export async function getEventExpenses(eventId: string) {
   await requireRole("manager");
   const supabase = await createServerClient();
