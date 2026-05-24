@@ -38,6 +38,16 @@ export interface GenerateInvitationLetterInput {
   ticketShortId: string;
   // Meta
   locale: "en" | "de" | "fr";
+  /** Tier flagged `is_team` — swaps copy to a host/team variant. */
+  tierIsTeam?: boolean;
+  /** Tier purpose slug — used for finer-grained variants (team_germany etc). */
+  tierPurpose?: string | null;
+  /**
+   * `true` when the underlying order has total_cents === 0. Renders an
+   * explicit "no payment required" line so the IBAN footer (legal norm
+   * for German business letters) isn't read as a payment demand.
+   */
+  noPaymentRequired?: boolean;
 }
 
 export async function generateInvitationLetterPdf(
@@ -93,6 +103,9 @@ export async function generateInvitationLetterPdf(
       ticketShortId: input.ticketShortId,
       locale: input.locale,
       letterDate,
+      tierIsTeam: input.tierIsTeam,
+      tierPurpose: input.tierPurpose,
+      noPaymentRequired: input.noPaymentRequired,
     }) as any // eslint-disable-line @typescript-eslint/no-explicit-any
   );
 

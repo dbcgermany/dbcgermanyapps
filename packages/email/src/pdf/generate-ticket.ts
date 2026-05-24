@@ -24,6 +24,10 @@ export interface GenerateTicketInput {
   primaryColor?: string;
   logoUrl?: string;
   isInvitation?: boolean;
+  /** Tier flagged `is_team` (DBC Team Germany / Team International). */
+  tierIsTeam?: boolean;
+  /** Tier purpose slug, e.g. "team_germany", "team_external", "companion". */
+  tierPurpose?: string | null;
 }
 
 /**

@@ -61,6 +61,25 @@ export interface SendTicketEmailInput {
   lastName?: string | null;
   customBody?: string | null;
   /**
+   * True when this ticket is on a tier flagged `is_team` (DBC Team Germany
+   * or Team International). Drives a distinct badge on the ticket PDF and
+   * a team-aware wording variant in the invitation letter — DBC team
+   * members aren't "guests", they're the host side of the room.
+   */
+  tierIsTeam?: boolean;
+  /**
+   * Tier purpose slug (e.g. "team_germany", "team_external", "companion",
+   * "vip", "public"). Used for fine-grained PDF copy where `tierIsTeam`
+   * alone isn't enough — for instance, Team Germany vs Team International.
+   */
+  tierPurpose?: string | null;
+  /**
+   * True when the order's `total_cents === 0`. Renders a "no payment
+   * required" line on the invitation letter so the recipient doesn't
+   * misread the bank-details footer as a payment demand.
+   */
+  noPaymentRequired?: boolean;
+  /**
    * Optional transfer surface. When both fields are set AND the cutoff is
    * still in the future, the informal ticket-delivery email renders a small
    * "Plans changed? Transfer this ticket…" notice with a link to /transfer.
@@ -134,6 +153,8 @@ export async function sendTicketEmail(
     primaryColor: input.primaryColor,
     logoUrl: input.logoUrl,
     isInvitation: input.isInvitation,
+    tierIsTeam: input.tierIsTeam,
+    tierPurpose: input.tierPurpose,
   });
 
   // 2. Render React Email template to HTML
@@ -229,6 +250,9 @@ export async function sendTicketEmail(
         logoUrl: input.logoUrl,
         recipientName: input.attendeeName,
         recipientEmail: input.attendeeEmail,
+        tierIsTeam: input.tierIsTeam,
+        tierPurpose: input.tierPurpose,
+        noPaymentRequired: input.noPaymentRequired,
       }),
     ]);
 

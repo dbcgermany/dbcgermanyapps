@@ -190,6 +190,8 @@ interface TicketPdfProps {
   primaryColor?: string;
   logoUrl?: string;
   isInvitation?: boolean;
+  tierIsTeam?: boolean;
+  tierPurpose?: string | null;
 }
 
 const TRANSLATIONS = {
@@ -203,6 +205,10 @@ const TRANSLATIONS = {
     scanText:
       "Show this QR code at the entrance for fast check-in. One scan only — ticket cannot be reused.",
     invitation: "Invited guest",
+    teamMember: "DBC team",
+    teamGermany: "DBC Germany team",
+    teamInternational: "DBC team — international",
+    companion: "Companion",
     support: "Support",
   },
   de: {
@@ -215,6 +221,10 @@ const TRANSLATIONS = {
     scanText:
       "Zeigen Sie diesen QR-Code am Eingang. Einmalige Verwendung — Ticket kann nicht wiederverwendet werden.",
     invitation: "Eingeladener Gast",
+    teamMember: "DBC-Team",
+    teamGermany: "DBC Germany Team",
+    teamInternational: "DBC-Team – international",
+    companion: "Begleitung",
     support: "Support",
   },
   fr: {
@@ -227,9 +237,33 @@ const TRANSLATIONS = {
     scanText:
       "Montrez ce code QR à l'entrée. Usage unique — le billet ne peut pas être réutilisé.",
     invitation: "Invité",
+    teamMember: "Équipe DBC",
+    teamGermany: "Équipe DBC Germany",
+    teamInternational: "Équipe DBC — international",
+    companion: "Accompagnant",
     support: "Assistance",
   },
 };
+
+/**
+ * Picks the most specific badge for the ticket. Team Germany / International
+ * gets a team-specific label so a DBC operator and a comped guest never look
+ * identical at the door. Companions get their own label so the front-of-house
+ * knows it's a +1 rather than an invited stakeholder.
+ */
+function badgeLabel(
+  t: (typeof TRANSLATIONS)[keyof typeof TRANSLATIONS],
+  props: { isInvitation?: boolean; tierIsTeam?: boolean; tierPurpose?: string | null }
+): string | null {
+  if (props.tierIsTeam) {
+    if (props.tierPurpose === "team_germany") return t.teamGermany;
+    if (props.tierPurpose === "team_external") return t.teamInternational;
+    return t.teamMember;
+  }
+  if (props.tierPurpose === "companion") return t.companion;
+  if (props.isInvitation) return t.invitation;
+  return null;
+}
 
 export function TicketPdf(props: TicketPdfProps) {
   const t = TRANSLATIONS[props.locale];
@@ -282,16 +316,20 @@ export function TicketPdf(props: TicketPdfProps) {
             <Text style={styles.ticketNumber}>
               {props.ticketToken.slice(0, 8).toUpperCase()}
             </Text>
-            {props.isInvitation && (
-              <Text
-                style={[
-                  styles.invitationBadge,
-                  { backgroundColor: primary, color: "#ffffff" },
-                ]}
-              >
-                {t.invitation}
-              </Text>
-            )}
+            {(() => {
+              const label = badgeLabel(t, props);
+              if (!label) return null;
+              return (
+                <Text
+                  style={[
+                    styles.invitationBadge,
+                    { backgroundColor: primary, color: "#ffffff" },
+                  ]}
+                >
+                  {label}
+                </Text>
+              );
+            })()}
           </View>
         </View>
 

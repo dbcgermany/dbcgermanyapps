@@ -153,7 +153,30 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
     fontStyle: "italic",
     marginTop: 12,
-    marginBottom: 28,
+    marginBottom: 12,
+  },
+  teamNote: {
+    fontSize: 10,
+    color: COLORS.text,
+    backgroundColor: "#fff7e0",
+    borderLeftWidth: 3,
+    borderLeftColor: "#d4a017",
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    marginBottom: 12,
+  },
+  noPaymentNote: {
+    fontSize: 9.5,
+    color: COLORS.textMuted,
+    fontStyle: "italic",
+    marginBottom: 18,
+  },
+  bankLabel: {
+    fontSize: 7,
+    color: COLORS.textMuted,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    marginBottom: 2,
   },
   closing: {
     fontSize: 11,
@@ -204,6 +227,7 @@ const TRANSLATIONS = {
     senderPrefix: "From",
     subjectLabel: "Subject",
     subjectPrefix: "Invitation",
+    subjectPrefixTeam: "Team confirmation",
     detailsTitle: "Event details",
     dateLabel: "Date",
     timeLabel: "Time",
@@ -212,12 +236,18 @@ const TRANSLATIONS = {
     refLabel: "Reference",
     ticketNote:
       "Your personal admission ticket with QR code is attached as a separate PDF. Please bring it printed or on your phone.",
+    teamNote:
+      "You are confirmed as a DBC team member for this event. This letter and the attached ticket are your access credentials.",
+    noPaymentNote:
+      "No payment is required from you for this event. The bank details printed in the footer are shown for legal/compliance reasons only.",
     tagline: "AFRICA’S TOP BUSINESS GROUP",
+    bankLabel: "Bank details (no payment required)",
   },
   de: {
     senderPrefix: "Absender",
     subjectLabel: "Betreff",
     subjectPrefix: "Einladung",
+    subjectPrefixTeam: "Team-Bestätigung",
     detailsTitle: "Veranstaltungsdetails",
     dateLabel: "Datum",
     timeLabel: "Uhrzeit",
@@ -226,12 +256,18 @@ const TRANSLATIONS = {
     refLabel: "Referenz",
     ticketNote:
       "Ihr persönliches Eintrittsticket mit QR-Code ist als separate PDF beigefügt. Bitte bringen Sie es ausgedruckt oder auf Ihrem Smartphone mit.",
+    teamNote:
+      "Sie sind als DBC-Teammitglied für diese Veranstaltung bestätigt. Dieses Schreiben und das beigefügte Ticket sind Ihre Zugangsberechtigungen.",
+    noPaymentNote:
+      "Für diese Veranstaltung ist von Ihnen keine Zahlung erforderlich. Die Bankverbindung in der Fußzeile dient ausschließlich rechtlichen bzw. Compliance-Zwecken.",
     tagline: "AFRIKAS FÜHRENDE BUSINESS-GRUPPE",
+    bankLabel: "Bankverbindung (keine Zahlung erforderlich)",
   },
   fr: {
     senderPrefix: "Expéditeur",
     subjectLabel: "Objet",
     subjectPrefix: "Invitation",
+    subjectPrefixTeam: "Confirmation équipe",
     detailsTitle: "Détails de l’événement",
     dateLabel: "Date",
     timeLabel: "Heure",
@@ -240,7 +276,12 @@ const TRANSLATIONS = {
     refLabel: "Référence",
     ticketNote:
       "Votre billet personnel avec code QR est joint à cette invitation en pièce séparée. Veuillez le présenter imprimé ou sur votre téléphone.",
+    teamNote:
+      "Vous êtes confirmé·e comme membre de l’équipe DBC pour cet événement. Ce courrier et le billet joint constituent vos justificatifs d’accès.",
+    noPaymentNote:
+      "Aucun paiement n’est attendu de votre part pour cet événement. Les coordonnées bancaires en pied de page sont indiquées uniquement à des fins légales/de conformité.",
     tagline: "PREMIER GROUPE D’AFFAIRES AFRICAIN",
+    bankLabel: "Coordonnées bancaires (aucun paiement requis)",
   },
 };
 
@@ -283,6 +324,11 @@ export interface InvitationLetterPdfProps {
   // Meta
   locale: "en" | "de" | "fr";
   letterDate: string;
+  // Tier-aware framing
+  tierIsTeam?: boolean;
+  tierPurpose?: string | null;
+  /** True when the order has total_cents=0 — render the no-payment notice. */
+  noPaymentRequired?: boolean;
 }
 
 function formatSenderLine(props: InvitationLetterPdfProps): string | null {
@@ -309,7 +355,10 @@ export function InvitationLetterPdf(props: InvitationLetterPdfProps) {
   const primary = props.primaryColor || COLORS.primary;
   const senderLine = formatSenderLine(props);
   const locationDate = formatLocationDate(props);
-  const subject = `${t.subjectPrefix}: ${props.eventTitle}`;
+  const subjectPrefix = props.tierIsTeam
+    ? t.subjectPrefixTeam
+    : t.subjectPrefix;
+  const subject = `${subjectPrefix}: ${props.eventTitle}`;
 
   const legalLineParts = [
     [props.legalName, props.legalForm].filter(Boolean).join(" "),
@@ -396,6 +445,20 @@ export function InvitationLetterPdf(props: InvitationLetterPdfProps) {
         {/* Ticket attachment note */}
         <Text style={styles.ticketNote}>{t.ticketNote}</Text>
 
+        {/* Team-member confirmation block (DBC Team Germany / International).
+            Tells the recipient — and anyone they forward the letter to — that
+            they're host-side, not a guest. */}
+        {props.tierIsTeam && (
+          <Text style={styles.teamNote}>{t.teamNote}</Text>
+        )}
+
+        {/* No-payment notice for €0 invitations. The IBAN/BIC footer is a
+            German business-letter norm and could otherwise read as a payment
+            demand. */}
+        {props.noPaymentRequired && (
+          <Text style={styles.noPaymentNote}>{t.noPaymentNote}</Text>
+        )}
+
         {/* Closing + signature */}
         <Text style={styles.closing}>{props.closing}</Text>
         <View style={styles.signatureSpace} />
@@ -413,13 +476,18 @@ export function InvitationLetterPdf(props: InvitationLetterPdfProps) {
               {props.senderPhone ? ` · ${props.senderPhone}` : ""}
             </Text>
             {(props.iban || props.bic) && (
-              <Text style={styles.footerText}>
-                {props.accountHolder ? `${props.accountHolder} · ` : ""}
-                {props.bankName ? `${props.bankName} · ` : ""}
-                {props.iban ? `IBAN: ${props.iban}` : ""}
-                {props.iban && props.bic ? " · " : ""}
-                {props.bic ? `BIC: ${props.bic}` : ""}
-              </Text>
+              <>
+                {props.noPaymentRequired && (
+                  <Text style={styles.bankLabel}>{t.bankLabel}</Text>
+                )}
+                <Text style={styles.footerText}>
+                  {props.accountHolder ? `${props.accountHolder} · ` : ""}
+                  {props.bankName ? `${props.bankName} · ` : ""}
+                  {props.iban ? `IBAN: ${props.iban}` : ""}
+                  {props.iban && props.bic ? " · " : ""}
+                  {props.bic ? `BIC: ${props.bic}` : ""}
+                </Text>
+              </>
             )}
           </View>
           <View style={styles.footerRight}>

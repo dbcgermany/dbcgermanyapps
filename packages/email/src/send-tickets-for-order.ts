@@ -41,11 +41,12 @@ export async function sendTicketsForOrder(
 ): Promise<{ sent: number; skipped: number; failed: number }> {
   // Fetch order — contact_id needed so we can resolve role-based catering
   // eligibility (event.catering_eligible_roles ∩ involvement.role) on top of
-  // the tier-bundled catering_included flag.
+  // the tier-bundled catering_included flag. total_cents drives the
+  // no-payment-required notice on the invitation letter.
   const { data: order, error: orderError } = await supabase
     .from("orders")
     .select(
-      "id, event_id, locale, email_sent_at, status, acquisition_type, contact_id"
+      "id, event_id, locale, email_sent_at, status, acquisition_type, contact_id, total_cents"
     )
     .eq("id", orderId)
     .single();
@@ -92,13 +93,17 @@ export async function sendTicketsForOrder(
     throw new Error(`No tickets found for order ${orderId}`);
   }
 
-  // Fetch all tiers in one query
+  // Fetch all tiers in one query — includes is_team / purpose so the PDF
+  // can render a team-specific badge and the letter can switch to the
+  // team-confirmation copy variant.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const ticketRows = tickets as any[];
   const tierIds = [...new Set(ticketRows.map((t) => t.tier_id as string))];
   const { data: tiers } = await supabase
     .from("ticket_tiers")
-    .select("id, name_en, name_de, name_fr, catering_included")
+    .select(
+      "id, name_en, name_de, name_fr, catering_included, is_team, purpose"
+    )
     .in("id", tierIds);
 
   // Role-based catering eligibility: when the tier itself doesn't bundle
@@ -161,6 +166,29 @@ export async function sendTicketsForOrder(
     )
     .eq("id", 1)
     .maybeSingle();
+
+  // Contact identity — gender / title / last_name — drives the formal
+  // salutation when an invitation letter fires (door-sale comps land here
+  // too via acquisition_type='assigned'). Without this the letter falls
+  // back to a name-only greeting which is fine but less formal.
+  type ContactRow = {
+    gender: string | null;
+    title: string | null;
+    last_name: string | null;
+  };
+  let contactIdentity: ContactRow | null = null;
+  if (order.contact_id) {
+    const { data } = await supabase
+      .from("contacts")
+      .select("gender, title, last_name")
+      .eq("id", order.contact_id as string)
+      .maybeSingle();
+    contactIdentity = (data ?? null) as ContactRow | null;
+  }
+  const orderIsInvitation =
+    order.acquisition_type === "invited" ||
+    order.acquisition_type === "assigned";
+  const orderTotalCents = (order.total_cents ?? 0) as number;
 
   const locale = (order.locale as "en" | "de" | "fr") ?? "en";
   const eventTitle =
@@ -273,9 +301,18 @@ export async function sendTicketsForOrder(
         iban: companyInfo?.iban ?? undefined,
         bic: companyInfo?.bic ?? undefined,
         bankName: companyInfo?.bank_name ?? undefined,
-        isInvitation:
-          order.acquisition_type === "invited" ||
-          order.acquisition_type === "assigned",
+        isInvitation: orderIsInvitation,
+        gender: (contactIdentity?.gender as
+          | "female"
+          | "male"
+          | "diverse"
+          | null
+          | undefined) ?? null,
+        title: contactIdentity?.title ?? null,
+        lastName: contactIdentity?.last_name ?? null,
+        tierIsTeam: !!tier?.is_team,
+        tierPurpose: (tier?.purpose as string | null | undefined) ?? null,
+        noPaymentRequired: orderIsInvitation && orderTotalCents === 0,
         transferUrl,
         transferCutoffDate,
         // Every paid public-tier ticket also gets the Briefing Pack.

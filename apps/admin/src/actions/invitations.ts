@@ -79,7 +79,7 @@ export async function createInvitation(input: InvitationInput) {
   const { data: tier } = await supabase
     .from("ticket_tiers")
     .select(
-      "id, event_id, price_cents, max_quantity, quantity_sold, name_en, name_de, name_fr, catering_included, purpose"
+      "id, event_id, price_cents, max_quantity, quantity_sold, name_en, name_de, name_fr, catering_included, purpose, is_team"
     )
     .eq("id", input.tierId)
     .single();
@@ -304,6 +304,12 @@ export async function createInvitation(input: InvitationInput) {
       gender: (gender as "female" | "male" | "diverse" | null) ?? undefined,
       title: title ?? undefined,
       lastName: lastName || undefined,
+      tierIsTeam: !!tier.is_team,
+      tierPurpose: tier.purpose ?? null,
+      // Every invitation is comped (total_cents=0) — surface the
+      // no-payment notice on the formal letter so the IBAN footer
+      // doesn't read as a payment demand.
+      noPaymentRequired: deliveryMode === "ticket_with_letter",
       customBody:
         deliveryMode === "ticket_with_letter"
           ? customBody ?? undefined
