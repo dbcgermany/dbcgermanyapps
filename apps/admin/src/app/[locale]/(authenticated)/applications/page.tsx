@@ -5,9 +5,9 @@ import { getJobApplications } from "@/actions/job-applications";
 import { CsvExportButton } from "@/components/csv-export-button";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
+import { Tabs } from "@/components/tabs";
 import { StatusSelect } from "./status-select";
 import { JobApplicationStatusSelect } from "./job-application-status-select";
-import { ApplicationTabs } from "./application-tabs";
 
 export default async function ApplicationsPage({
   params,
@@ -23,6 +23,14 @@ export default async function ApplicationsPage({
 
   const apps = await getIncubationApplications();
   const jobApps = await getJobApplications();
+
+  const TAB_LABELS = {
+    en: { incubation: "Incubation", jobs: "Job applications" },
+    de: { incubation: "Inkubation", jobs: "Stellenbewerbungen" },
+    fr: { incubation: "Incubation", jobs: "Candidatures d’emploi" },
+  } as const;
+  const tabLabels =
+    TAB_LABELS[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof TAB_LABELS];
 
   const csvRows = apps.map((a) => ({
     id: a.id,
@@ -75,7 +83,33 @@ export default async function ApplicationsPage({
         }
       />
 
-      <ApplicationTabs locale={locale} activeTab={activeTab} />
+      <Tabs
+        className="mt-6"
+        items={[
+          {
+            href: `/${locale}/applications`,
+            label: tabLabels.incubation,
+            active: activeTab === "incubation",
+            trailing:
+              apps.length > 0 ? (
+                <span className="rounded-full bg-muted px-1.5 py-0.5 text-xs">
+                  {apps.length}
+                </span>
+              ) : undefined,
+          },
+          {
+            href: `/${locale}/applications?tab=jobs`,
+            label: tabLabels.jobs,
+            active: activeTab === "jobs",
+            trailing:
+              jobApps.length > 0 ? (
+                <span className="rounded-full bg-muted px-1.5 py-0.5 text-xs">
+                  {jobApps.length}
+                </span>
+              ) : undefined,
+          },
+        ]}
+      />
 
       {activeTab === "incubation" ? (
         <>

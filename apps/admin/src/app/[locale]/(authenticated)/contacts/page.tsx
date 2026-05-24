@@ -17,6 +17,7 @@ import {
 import type { InvolvementRole } from "@/lib/involvements";
 import { PageHeader } from "@/components/page-header";
 import { PipelineBadge } from "@/components/pipeline-badge";
+import { Tabs } from "@/components/tabs";
 import { AttendeesTab } from "./attendees-tab";
 import { ContactsFilterBar } from "./contacts-filter-bar";
 
@@ -50,13 +51,6 @@ export default async function ContactsListPage({
     listContactCategoriesForFilter(),
   ]);
 
-  const tabClass = (active: boolean) =>
-    `border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
-      active
-        ? "border-primary text-foreground"
-        : "border-transparent text-muted-foreground hover:text-foreground"
-    }`;
-
   return (
     <div>
       <PageHeader
@@ -71,20 +65,21 @@ export default async function ContactsListPage({
         }
       />
 
-      <div className="mt-6 flex gap-1 border-b border-border">
-        <Link
-          href={`/${locale}/contacts`}
-          className={tabClass(tab === "contacts")}
-        >
-          {tTabs("contacts")}
-        </Link>
-        <Link
-          href={`/${locale}/contacts?tab=attendees${sp.event ? `&event=${sp.event}` : ""}`}
-          className={tabClass(tab === "attendees")}
-        >
-          {tTabs("attendees")}
-        </Link>
-      </div>
+      <Tabs
+        className="mt-6"
+        items={[
+          {
+            href: `/${locale}/contacts`,
+            label: tTabs("contacts"),
+            active: tab === "contacts",
+          },
+          {
+            href: `/${locale}/contacts?tab=attendees${sp.event ? `&event=${sp.event}` : ""}`,
+            label: tTabs("attendees"),
+            active: tab === "attendees",
+          },
+        ]}
+      />
 
       {tab === "contacts" ? (
         <ContactsTabContent
