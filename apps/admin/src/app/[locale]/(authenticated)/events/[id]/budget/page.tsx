@@ -3,6 +3,8 @@ import { getTranslations } from "next-intl/server";
 import { getEvent } from "@/actions/events";
 import { getEventExpenses } from "@/actions/expenses";
 import { PageHeader } from "@/components/page-header";
+import { PdfButton } from "@/components/pdf-button";
+import { BudgetClient } from "./budget-client";
 
 // Mirrors the proven shape used by checklist/page.tsx: inline strings for the
 // page-level chrome, single getTranslations call for the back-button label,
@@ -84,63 +86,15 @@ export default async function BudgetPage({
           label: tBack("event"),
         }}
         cta={
-          <a
+          <PdfButton
             href={`/api/budget/${eventId}?locale=${locale}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex h-9 items-center rounded-md border border-input bg-background px-4 text-sm font-medium hover:bg-muted"
-          >
-            {pt.exportPdf}
-          </a>
+            label={pt.exportPdf}
+          />
         }
       />
 
-      {/* Dumb server-rendered table — temporary diagnostic. If THIS
-          renders, BudgetClient is the culprit; if not, the bug is in
-          getEvent / getEventExpenses / PageHeader / the layout chain. */}
-      <div className="mt-8 overflow-x-auto rounded-lg border border-border">
-        <table className="w-full text-sm">
-          <thead className="border-b border-border bg-muted/50">
-            <tr>
-              <th className="px-4 py-3 text-left font-medium">Description</th>
-              <th className="px-4 py-3 text-left font-medium">Category</th>
-              <th className="px-4 py-3 text-left font-medium">Due</th>
-              <th className="px-4 py-3 text-right font-medium">Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            {expenses.map((e) => (
-              <tr key={e.id} className="border-b border-border last:border-0">
-                <td className="px-4 py-3 font-medium">
-                  {(l === "fr"
-                    ? e.description_fr
-                    : l === "de"
-                      ? e.description_de
-                      : e.description_en) ||
-                    e.description ||
-                    "—"}
-                </td>
-                <td className="px-4 py-3">{e.category}</td>
-                <td className="px-4 py-3 text-muted-foreground">
-                  {e.due_date ?? "—"}
-                </td>
-                <td className="px-4 py-3 text-right font-mono">
-                  {fmt(e.amount_cents)}
-                </td>
-              </tr>
-            ))}
-            {expenses.length === 0 && (
-              <tr>
-                <td
-                  colSpan={4}
-                  className="px-4 py-6 text-center text-muted-foreground"
-                >
-                  No expenses recorded for this event.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+      <div className="mt-8">
+        <BudgetClient eventId={eventId} locale={locale} expenses={expenses} />
       </div>
     </div>
   );
