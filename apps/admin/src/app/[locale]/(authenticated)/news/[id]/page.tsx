@@ -1,13 +1,40 @@
 import { getTranslations } from "next-intl/server";
 import { getNewsPost, toggleNewsPublish, deleteNewsPost } from "@/actions/news";
 import { PageHeader } from "@/components/page-header";
-import { ActionForm } from "@/components/action-form";
+import { ToggleButton } from "@/components/toggle-button";
+import { DeleteButton } from "@/components/delete-button";
 import { EditNewsForm } from "./edit-form";
 
 const T = {
-  en: { title: "Edit post", publish: "Publish", unpublish: "Unpublish", delete: "Delete" },
-  de: { title: "Beitrag bearbeiten", publish: "Veröffentlichen", unpublish: "Zurückziehen", delete: "Löschen" },
-  fr: { title: "Modifier le billet", publish: "Publier", unpublish: "Dépublier", delete: "Supprimer" },
+  en: {
+    title: "Edit post",
+    publish: "Publish",
+    unpublish: "Unpublish",
+    delete: "Delete",
+    deleteConfirm: "Delete this post?",
+    deleteConfirmHint: "This permanently removes the post and its translations.",
+    deletedToast: "Post deleted",
+  },
+  de: {
+    title: "Beitrag bearbeiten",
+    publish: "Veröffentlichen",
+    unpublish: "Zurückziehen",
+    delete: "Löschen",
+    deleteConfirm: "Diesen Beitrag löschen?",
+    deleteConfirmHint:
+      "Der Beitrag und alle Übersetzungen werden dauerhaft entfernt.",
+    deletedToast: "Beitrag gelöscht",
+  },
+  fr: {
+    title: "Modifier le billet",
+    publish: "Publier",
+    unpublish: "Dépublier",
+    delete: "Supprimer",
+    deleteConfirm: "Supprimer ce billet ?",
+    deleteConfirmHint:
+      "Le billet et toutes ses traductions seront définitivement supprimés.",
+    deletedToast: "Billet supprimé",
+  },
 } as const;
 
 export default async function EditNewsPage({
@@ -29,41 +56,26 @@ export default async function EditNewsPage({
         title={t.title}
         back={{ href: `/${locale}/news`, label: tBack("news") }}
         cta={
-          <div className="flex items-center gap-3">
-            <ActionForm
+          <div className="flex items-center gap-2">
+            <ToggleButton
+              isOn={post.is_published}
+              onLabel={t.unpublish}
+              offLabel={t.publish}
               action={async () => {
                 "use server";
                 return toggleNewsPublish(id, locale);
               }}
-              successToast={
-                post.is_published
-                  ? tCommon("unpublishedToast")
-                  : tCommon("publishedToast")
-              }
-              errorToastTemplate={tCommon("actionFailedToast", { error: "{error}" })}
-            >
-              <button
-                type="submit"
-                className="rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
-              >
-                {post.is_published ? t.unpublish : t.publish}
-              </button>
-            </ActionForm>
-            <ActionForm
-              action={async () => {
-                "use server";
-                return deleteNewsPost(id, locale);
-              }}
-              successToast={tCommon("deletedToast")}
-              errorToastTemplate={tCommon("actionFailedToast", { error: "{error}" })}
-            >
-              <button
-                type="submit"
-                className="rounded-md border border-danger-border px-4 py-2 text-sm font-medium text-danger hover:bg-danger-soft"
-              >
-                {t.delete}
-              </button>
-            </ActionForm>
+              onToast={tCommon("unpublishedToast")}
+              offToast={tCommon("publishedToast")}
+            />
+            <DeleteButton
+              action={async () => deleteNewsPost(id, locale)}
+              confirmTitle={t.deleteConfirm}
+              confirmDescription={t.deleteConfirmHint}
+              confirmLabel={t.delete}
+              label={t.delete}
+              successToast={t.deletedToast}
+            />
           </div>
         }
       />
