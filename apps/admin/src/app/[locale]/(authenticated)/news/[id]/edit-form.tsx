@@ -1,14 +1,15 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { Button, FormField, Input, Textarea } from "@dbc/ui";
 import { updateNewsPost } from "@/actions/news";
 import { CoverImageUpload } from "@/components/cover-image-upload";
-import { Button } from "@dbc/ui";
 
 const T = {
   en: {
-    saved: "Saved.",
+    saved: "Saved",
     slug: "Slug", slugHelp: "URL-safe identifier. Leave unchanged to keep the current one.",
     titleEn: "Title (EN)", titleDe: "Title (DE)", titleFr: "Title (FR)",
     excerptEn: "Excerpt (EN)", excerptDe: "Excerpt (DE)", excerptFr: "Excerpt (FR)",
@@ -16,7 +17,7 @@ const T = {
     author: "Author", saving: "Saving…", save: "Save",
   },
   de: {
-    saved: "Gespeichert.",
+    saved: "Gespeichert",
     slug: "Slug", slugHelp: "URL-Kennung. Unverändert lassen, um die aktuelle beizubehalten.",
     titleEn: "Titel (EN)", titleDe: "Titel (DE)", titleFr: "Titel (FR)",
     excerptEn: "Kurzfassung (EN)", excerptDe: "Kurzfassung (DE)", excerptFr: "Kurzfassung (FR)",
@@ -24,7 +25,7 @@ const T = {
     author: "Autor", saving: "Wird gespeichert…", save: "Speichern",
   },
   fr: {
-    saved: "Enregistré.",
+    saved: "Enregistré",
     slug: "Slug", slugHelp: "Identifiant d’URL. Laissez inchangé pour conserver l’actuel.",
     titleEn: "Titre (EN)", titleDe: "Titre (DE)", titleFr: "Titre (FR)",
     excerptEn: "Extrait (EN)", excerptDe: "Extrait (DE)", excerptFr: "Extrait (FR)",
@@ -49,119 +50,83 @@ type Post = {
   author_name: string | null;
 };
 
+type ActionResult = { error?: string; success?: boolean } | null;
+
 export function EditNewsForm({ locale, post }: { locale: string; post: Post }) {
   const router = useRouter();
   const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
 
-  const [state, formAction, isPending] = useActionState(
-    async (
-      _prev: { error?: string; success?: boolean } | null,
-      formData: FormData
-    ) => {
+  const [state, formAction, isPending] = useActionState<ActionResult, FormData>(
+    async (_prev, formData) => {
       formData.set("locale", locale);
       return updateNewsPost(post.id, formData);
     },
     null
   );
 
+  const lastHandledRef = useRef<ActionResult>(null);
   useEffect(() => {
+    if (state === lastHandledRef.current) return;
+    lastHandledRef.current = state;
+    if (state?.error) {
+      toast.error(state.error);
+      return;
+    }
     if (state?.success) {
+      toast.success(t.saved);
       router.refresh();
     }
-  }, [state, router]);
+  }, [state, router, t.saved]);
 
   return (
     <form action={formAction} className="mt-8 max-w-3xl space-y-6">
-      {state?.error && (
-        <div className="rounded-md bg-danger-soft p-4 text-sm text-danger">
-          {state.error}
-        </div>
-      )}
-      {state?.success && (
-        <div className="rounded-md bg-success-soft p-4 text-sm text-success">
-          {t.saved}
-        </div>
-      )}
-
-      <div>
-        <label htmlFor="slug" className="mb-1 block text-sm font-medium">
-          {t.slug}
-        </label>
-        <input
-          id="slug"
+      <FormField label={t.slug} hint={t.slugHelp}>
+        <Input
           name="slug"
-          type="text"
           defaultValue={post.slug}
-          className="w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          className="font-mono"
         />
-        <p className="mt-1 text-xs text-muted-foreground">{t.slugHelp}</p>
-      </div>
+      </FormField>
 
-      <F name="title_en" label={t.titleEn} defaultValue={post.title_en} required />
-      <F name="title_de" label={t.titleDe} defaultValue={post.title_de} />
-      <F name="title_fr" label={t.titleFr} defaultValue={post.title_fr} />
+      <FormField label={t.titleEn} required>
+        <Input name="title_en" defaultValue={post.title_en} required />
+      </FormField>
+      <FormField label={t.titleDe}>
+        <Input name="title_de" defaultValue={post.title_de} />
+      </FormField>
+      <FormField label={t.titleFr}>
+        <Input name="title_fr" defaultValue={post.title_fr} />
+      </FormField>
 
-      <F name="excerpt_en" label={t.excerptEn} defaultValue={post.excerpt_en ?? ""} textarea rows={2} />
-      <F name="excerpt_de" label={t.excerptDe} defaultValue={post.excerpt_de ?? ""} textarea rows={2} />
-      <F name="excerpt_fr" label={t.excerptFr} defaultValue={post.excerpt_fr ?? ""} textarea rows={2} />
+      <FormField label={t.excerptEn}>
+        <Textarea name="excerpt_en" defaultValue={post.excerpt_en ?? ""} rows={2} />
+      </FormField>
+      <FormField label={t.excerptDe}>
+        <Textarea name="excerpt_de" defaultValue={post.excerpt_de ?? ""} rows={2} />
+      </FormField>
+      <FormField label={t.excerptFr}>
+        <Textarea name="excerpt_fr" defaultValue={post.excerpt_fr ?? ""} rows={2} />
+      </FormField>
 
-      <F name="body_en" label={t.bodyEn} defaultValue={post.body_en} textarea rows={12} required />
-      <F name="body_de" label={t.bodyDe} defaultValue={post.body_de} textarea rows={12} />
-      <F name="body_fr" label={t.bodyFr} defaultValue={post.body_fr} textarea rows={12} />
+      <FormField label={t.bodyEn} required>
+        <Textarea name="body_en" defaultValue={post.body_en} rows={12} required />
+      </FormField>
+      <FormField label={t.bodyDe}>
+        <Textarea name="body_de" defaultValue={post.body_de} rows={12} />
+      </FormField>
+      <FormField label={t.bodyFr}>
+        <Textarea name="body_fr" defaultValue={post.body_fr} rows={12} />
+      </FormField>
 
-      <F name="author_name" label={t.author} defaultValue={post.author_name ?? ""} />
+      <FormField label={t.author}>
+        <Input name="author_name" defaultValue={post.author_name ?? ""} />
+      </FormField>
 
       <CoverImageUpload initialUrl={post.cover_image_url} />
 
-      <Button type="submit"
-        disabled={isPending}>
+      <Button type="submit" disabled={isPending}>
         {isPending ? t.saving : t.save}
       </Button>
     </form>
-  );
-}
-
-function F({
-  name,
-  label,
-  defaultValue,
-  required,
-  textarea,
-  rows,
-}: {
-  name: string;
-  label: string;
-  defaultValue?: string;
-  required?: boolean;
-  textarea?: boolean;
-  rows?: number;
-}) {
-  const className =
-    "w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring";
-  return (
-    <div>
-      <label htmlFor={name} className="mb-1 block text-sm font-medium">
-        {label}
-      </label>
-      {textarea ? (
-        <textarea
-          id={name}
-          name={name}
-          defaultValue={defaultValue}
-          required={required}
-          rows={rows ?? 4}
-          className={className}
-        />
-      ) : (
-        <input
-          id={name}
-          name={name}
-          type="text"
-          defaultValue={defaultValue}
-          required={required}
-          className={className}
-        />
-      )}
-    </div>
   );
 }

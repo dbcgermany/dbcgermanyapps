@@ -1,18 +1,26 @@
 "use client";
 
-import { use, useActionState } from "react";
+import { use, useActionState, useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 import { EMPLOYMENT_TYPE_VALUES, type EmploymentType } from "@dbc/types";
-import { Button } from "@dbc/ui";
+import { Button, FormField, Input, Select, Textarea } from "@dbc/ui";
 import { createJobOffer } from "@/actions/job-offers";
 import { PageHeader } from "@/components/page-header";
 
-const EMPLOYMENT_TYPE_LABEL_KEY: Record<EmploymentType, "fullTime" | "partTime" | "freelance" | "internship"> = {
+const EMPLOYMENT_TYPE_LABEL_KEY: Record<
+  EmploymentType,
+  "fullTime" | "partTime" | "freelance" | "internship"
+> = {
   full_time: "fullTime",
   part_time: "partTime",
   freelance: "freelance",
   internship: "internship",
 };
+
+// createJobOffer ends with redirect() on success — never returns a
+// success payload. Only the error branch surfaces here.
+type ActionResult = { error?: string } | null;
 
 export default function NewJobOfferPage({
   params,
@@ -28,13 +36,22 @@ export default function NewJobOfferPage({
     label: t(EMPLOYMENT_TYPE_LABEL_KEY[value]),
   }));
 
-  const [state, formAction, isPending] = useActionState(
-    async (_prev: { error: string } | null, formData: FormData) => {
+  const [state, formAction, isPending] = useActionState<ActionResult, FormData>(
+    async (_prev, formData) => {
       formData.set("locale", locale);
       return createJobOffer(formData);
     },
     null
   );
+
+  const lastHandledRef = useRef<ActionResult>(null);
+  useEffect(() => {
+    if (state === lastHandledRef.current) return;
+    lastHandledRef.current = state;
+    if (state?.error) {
+      toast.error(state.error);
+    }
+  }, [state]);
 
   return (
     <div>
@@ -44,95 +61,59 @@ export default function NewJobOfferPage({
       />
 
       <form action={formAction} className="mt-8 max-w-3xl space-y-6">
-        {state?.error && (
-          <div className="rounded-md bg-danger-soft p-4 text-sm text-danger">
-            {state.error}
-          </div>
-        )}
+        <FormField label={t("titleEn")} required>
+          <Input name="title_en" required />
+        </FormField>
+        <FormField label={t("titleDe")}>
+          <Input name="title_de" />
+        </FormField>
+        <FormField label={t("titleFr")}>
+          <Input name="title_fr" />
+        </FormField>
 
-        <Field name="title_en" label={t("titleEn")} required />
-        <Field name="title_de" label={t("titleDe")} />
-        <Field name="title_fr" label={t("titleFr")} />
+        <FormField label={t("descEn")} required>
+          <Textarea name="description_en" rows={8} required />
+        </FormField>
+        <FormField label={t("descDe")}>
+          <Textarea name="description_de" rows={8} />
+        </FormField>
+        <FormField label={t("descFr")}>
+          <Textarea name="description_fr" rows={8} />
+        </FormField>
 
-        <Field name="description_en" label={t("descEn")} textarea rows={8} required />
-        <Field name="description_de" label={t("descDe")} textarea rows={8} />
-        <Field name="description_fr" label={t("descFr")} textarea rows={8} />
+        <FormField label={t("reqEn")}>
+          <Textarea name="requirements_en" rows={6} />
+        </FormField>
+        <FormField label={t("reqDe")}>
+          <Textarea name="requirements_de" rows={6} />
+        </FormField>
+        <FormField label={t("reqFr")}>
+          <Textarea name="requirements_fr" rows={6} />
+        </FormField>
 
-        <Field name="requirements_en" label={t("reqEn")} textarea rows={6} />
-        <Field name="requirements_de" label={t("reqDe")} textarea rows={6} />
-        <Field name="requirements_fr" label={t("reqFr")} textarea rows={6} />
+        <FormField label={t("location")}>
+          <Input name="location" />
+        </FormField>
 
-        <Field name="location" label={t("location")} />
-
-        <div>
-          <label htmlFor="employment_type" className="mb-1 block text-sm font-medium">
-            {t("employmentType")}
-          </label>
-          <select
-            id="employment_type"
-            name="employment_type"
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
-          >
+        <FormField label={t("employmentType")}>
+          <Select name="employment_type" defaultValue="">
             <option value="">{t("selectType")}</option>
             {employmentTypes.map((et) => (
               <option key={et.value} value={et.value}>
                 {et.label}
               </option>
             ))}
-          </select>
-        </div>
+          </Select>
+        </FormField>
 
-        <Field name="department" label={t("department")} />
+        <FormField label={t("department")}>
+          <Input name="department" />
+        </FormField>
 
         <Button type="submit" disabled={isPending}>
           {isPending ? t("saving") : t("saveDraft")}
         </Button>
       </form>
-    </div>
-  );
-}
-
-function Field({
-  name,
-  label,
-  defaultValue,
-  required,
-  textarea,
-  rows,
-}: {
-  name: string;
-  label: string;
-  defaultValue?: string;
-  required?: boolean;
-  textarea?: boolean;
-  rows?: number;
-}) {
-  const className =
-    "w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring";
-  return (
-    <div>
-      <label htmlFor={name} className="mb-1 block text-sm font-medium">
-        {label}
-      </label>
-      {textarea ? (
-        <textarea
-          id={name}
-          name={name}
-          defaultValue={defaultValue}
-          required={required}
-          rows={rows ?? 4}
-          className={className}
-        />
-      ) : (
-        <input
-          id={name}
-          name={name}
-          type="text"
-          defaultValue={defaultValue}
-          required={required}
-          className={className}
-        />
-      )}
     </div>
   );
 }

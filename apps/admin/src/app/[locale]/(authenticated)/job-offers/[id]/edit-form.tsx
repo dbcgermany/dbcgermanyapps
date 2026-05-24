@@ -1,12 +1,16 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { EMPLOYMENT_TYPE_VALUES, type EmploymentType } from "@dbc/types";
+import { Button, FormField, Input, Select, Textarea } from "@dbc/ui";
 import { updateJobOffer } from "@/actions/job-offers";
-import { Button } from "@dbc/ui";
 
-const EMPLOYMENT_TYPE_LABEL_KEY: Record<EmploymentType, "fullTime" | "partTime" | "freelance" | "internship"> = {
+const EMPLOYMENT_TYPE_LABEL_KEY: Record<
+  EmploymentType,
+  "fullTime" | "partTime" | "freelance" | "internship"
+> = {
   full_time: "fullTime",
   part_time: "partTime",
   freelance: "freelance",
@@ -15,7 +19,7 @@ const EMPLOYMENT_TYPE_LABEL_KEY: Record<EmploymentType, "fullTime" | "partTime" 
 
 const T = {
   en: {
-    saved: "Saved.",
+    saved: "Saved",
     titleEn: "Title (EN)", titleDe: "Title (DE)", titleFr: "Title (FR)",
     descEn: "Description (EN)", descDe: "Description (DE)", descFr: "Description (FR)",
     reqEn: "Requirements (EN)", reqDe: "Requirements (DE)", reqFr: "Requirements (FR)",
@@ -25,7 +29,7 @@ const T = {
     department: "Department", saving: "Saving…", save: "Save",
   },
   de: {
-    saved: "Gespeichert.",
+    saved: "Gespeichert",
     titleEn: "Titel (EN)", titleDe: "Titel (DE)", titleFr: "Titel (FR)",
     descEn: "Beschreibung (EN)", descDe: "Beschreibung (DE)", descFr: "Beschreibung (FR)",
     reqEn: "Anforderungen (EN)", reqDe: "Anforderungen (DE)", reqFr: "Anforderungen (FR)",
@@ -35,7 +39,7 @@ const T = {
     department: "Abteilung", saving: "Wird gespeichert…", save: "Speichern",
   },
   fr: {
-    saved: "Enregistré.",
+    saved: "Enregistré",
     titleEn: "Titre (EN)", titleDe: "Titre (DE)", titleFr: "Titre (FR)",
     descEn: "Description (EN)", descDe: "Description (DE)", descFr: "Description (FR)",
     reqEn: "Exigences (EN)", reqDe: "Exigences (DE)", reqFr: "Exigences (FR)",
@@ -62,6 +66,8 @@ type Job = {
   department: string | null;
 };
 
+type ActionResult = { error?: string; success?: boolean } | null;
+
 export function EditJobOfferForm({ locale, job }: { locale: string; job: Job }) {
   const router = useRouter();
   const t = T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof T];
@@ -70,59 +76,85 @@ export function EditJobOfferForm({ locale, job }: { locale: string; job: Job }) 
     label: t[EMPLOYMENT_TYPE_LABEL_KEY[value]],
   }));
 
-  const [state, formAction, isPending] = useActionState(
-    async (
-      _prev: { error?: string; success?: boolean } | null,
-      formData: FormData
-    ) => {
+  const [state, formAction, isPending] = useActionState<ActionResult, FormData>(
+    async (_prev, formData) => {
       formData.set("locale", locale);
       return updateJobOffer(job.id, formData);
     },
     null
   );
 
+  const lastHandledRef = useRef<ActionResult>(null);
   useEffect(() => {
+    if (state === lastHandledRef.current) return;
+    lastHandledRef.current = state;
+    if (state?.error) {
+      toast.error(state.error);
+      return;
+    }
     if (state?.success) {
+      toast.success(t.saved);
       router.refresh();
     }
-  }, [state, router]);
+  }, [state, router, t.saved]);
 
   return (
     <form action={formAction} className="mt-8 max-w-3xl space-y-6">
-      {state?.error && (
-        <div className="rounded-md bg-danger-soft p-4 text-sm text-danger">
-          {state.error}
-        </div>
-      )}
-      {state?.success && (
-        <div className="rounded-md bg-success-soft p-4 text-sm text-success">
-          {t.saved}
-        </div>
-      )}
+      <FormField label={t.titleEn} required>
+        <Input name="title_en" defaultValue={job.title_en} required />
+      </FormField>
+      <FormField label={t.titleDe}>
+        <Input name="title_de" defaultValue={job.title_de} />
+      </FormField>
+      <FormField label={t.titleFr}>
+        <Input name="title_fr" defaultValue={job.title_fr} />
+      </FormField>
 
-      <F name="title_en" label={t.titleEn} defaultValue={job.title_en} required />
-      <F name="title_de" label={t.titleDe} defaultValue={job.title_de} />
-      <F name="title_fr" label={t.titleFr} defaultValue={job.title_fr} />
+      <FormField label={t.descEn} required>
+        <Textarea
+          name="description_en"
+          defaultValue={job.description_en}
+          rows={8}
+          required
+        />
+      </FormField>
+      <FormField label={t.descDe}>
+        <Textarea name="description_de" defaultValue={job.description_de} rows={8} />
+      </FormField>
+      <FormField label={t.descFr}>
+        <Textarea name="description_fr" defaultValue={job.description_fr} rows={8} />
+      </FormField>
 
-      <F name="description_en" label={t.descEn} defaultValue={job.description_en} textarea rows={8} required />
-      <F name="description_de" label={t.descDe} defaultValue={job.description_de} textarea rows={8} />
-      <F name="description_fr" label={t.descFr} defaultValue={job.description_fr} textarea rows={8} />
+      <FormField label={t.reqEn}>
+        <Textarea
+          name="requirements_en"
+          defaultValue={job.requirements_en ?? ""}
+          rows={6}
+        />
+      </FormField>
+      <FormField label={t.reqDe}>
+        <Textarea
+          name="requirements_de"
+          defaultValue={job.requirements_de ?? ""}
+          rows={6}
+        />
+      </FormField>
+      <FormField label={t.reqFr}>
+        <Textarea
+          name="requirements_fr"
+          defaultValue={job.requirements_fr ?? ""}
+          rows={6}
+        />
+      </FormField>
 
-      <F name="requirements_en" label={t.reqEn} defaultValue={job.requirements_en ?? ""} textarea rows={6} />
-      <F name="requirements_de" label={t.reqDe} defaultValue={job.requirements_de ?? ""} textarea rows={6} />
-      <F name="requirements_fr" label={t.reqFr} defaultValue={job.requirements_fr ?? ""} textarea rows={6} />
+      <FormField label={t.location}>
+        <Input name="location" defaultValue={job.location ?? ""} />
+      </FormField>
 
-      <F name="location" label={t.location} defaultValue={job.location ?? ""} />
-
-      <div>
-        <label htmlFor="employment_type" className="mb-1 block text-sm font-medium">
-          {t.employmentType}
-        </label>
-        <select
-          id="employment_type"
+      <FormField label={t.employmentType}>
+        <Select
           name="employment_type"
           defaultValue={job.employment_type ?? ""}
-          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
         >
           <option value="">{t.selectType}</option>
           {employmentTypes.map((et) => (
@@ -130,60 +162,16 @@ export function EditJobOfferForm({ locale, job }: { locale: string; job: Job }) 
               {et.label}
             </option>
           ))}
-        </select>
-      </div>
+        </Select>
+      </FormField>
 
-      <F name="department" label={t.department} defaultValue={job.department ?? ""} />
+      <FormField label={t.department}>
+        <Input name="department" defaultValue={job.department ?? ""} />
+      </FormField>
 
-      <Button type="submit"
-        disabled={isPending}>
+      <Button type="submit" disabled={isPending}>
         {isPending ? t.saving : t.save}
       </Button>
     </form>
-  );
-}
-
-function F({
-  name,
-  label,
-  defaultValue,
-  required,
-  textarea,
-  rows,
-}: {
-  name: string;
-  label: string;
-  defaultValue?: string;
-  required?: boolean;
-  textarea?: boolean;
-  rows?: number;
-}) {
-  const className =
-    "w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring";
-  return (
-    <div>
-      <label htmlFor={name} className="mb-1 block text-sm font-medium">
-        {label}
-      </label>
-      {textarea ? (
-        <textarea
-          id={name}
-          name={name}
-          defaultValue={defaultValue}
-          required={required}
-          rows={rows ?? 4}
-          className={className}
-        />
-      ) : (
-        <input
-          id={name}
-          name={name}
-          type="text"
-          defaultValue={defaultValue}
-          required={required}
-          className={className}
-        />
-      )}
-    </div>
   );
 }
