@@ -1,5 +1,8 @@
 import { getTranslations } from "next-intl/server";
-import { getEventExpenses } from "@/actions/expenses";
+import {
+  getEventExpenses,
+  getProviderContactOptions,
+} from "@/actions/expenses";
 import { getEventFinancialSummary } from "@/actions/reports";
 import { BudgetClient } from "./budget-client";
 import { PageHeader } from "@/components/page-header";
@@ -25,10 +28,12 @@ export default async function BudgetPage({
   const t = await getTranslations({ locale, namespace: "admin.events.budget" });
   const tBack = await getTranslations({ locale, namespace: "admin.back" });
 
-  const [{ expenses, totalCents, count }, financial] = await Promise.all([
-    getEventExpenses(eventId),
-    getEventFinancialSummary(eventId),
-  ]);
+  const [{ expenses, totalCents, paidCents, unpaidCents, overdueCents, count }, financial, providers] =
+    await Promise.all([
+      getEventExpenses(eventId),
+      getEventFinancialSummary(eventId),
+      getProviderContactOptions(),
+    ]);
 
   const fmt = (cents: number) =>
     new Intl.NumberFormat(locale, {
@@ -56,22 +61,53 @@ export default async function BudgetPage({
         title={t("title")}
         description={t("desc")}
         back={{ href: `/${locale}/events/${eventId}`, label: tBack("event") }}
+        cta={
+          <a
+            href={`/api/budget/${eventId}?locale=${locale}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex h-9 items-center rounded-md border border-input bg-background px-4 text-sm font-medium hover:bg-muted"
+          >
+            {t("exportPdf")}
+          </a>
+        }
       />
 
-      {/* Summary cards — 4 KPIs */}
+      {/* Top KPI row — 4 cards: budget total / paid / unpaid / overdue */}
       <div className="mt-6">
         <StatGrid cols={4}>
-          <StatCard label={t("revenue")} value={fmt(financial.revenueCents)} dense />
           <StatCard
             label={t("totalExpenses")}
             value={fmt(totalCents)}
+            sub={t("lineItemsSub", { n: count })}
             dense
           />
+          <StatCard label={t("paid")} value={fmt(paidCents)} dense />
+          <StatCard label={t("unpaid")} value={fmt(unpaidCents)} dense />
+          <StatCard
+            label={t("overdue")}
+            value={fmt(overdueCents)}
+            dense
+            sub={overdueCents > 0 ? t("overdueSub") : undefined}
+          />
+        </StatGrid>
+      </div>
+
+      {/* P&L row — revenue / expenses / net profit / allocations sidecar */}
+      <div className="mt-4">
+        <StatGrid cols={4}>
+          <StatCard label={t("revenue")} value={fmt(financial.revenueCents)} dense />
           <StatCard
             label={t("netProfit")}
             value={fmt(financial.profitCents)}
             dense
-            sub={financial.profitCents < 0 ? "Operating at a loss" : undefined}
+            sub={financial.profitCents < 0 ? t("loss") : undefined}
+          />
+          <StatCard
+            label={t("allocations")}
+            value={String(financial.allocationsCount)}
+            sub={t("allocationsSub")}
+            dense
           />
           <StatCard label={t("lineItems")} value={String(count)} dense />
         </StatGrid>
@@ -107,6 +143,7 @@ export default async function BudgetPage({
           eventId={eventId}
           locale={locale}
           l={l}
+          providers={providers}
         />
       </div>
     </div>
