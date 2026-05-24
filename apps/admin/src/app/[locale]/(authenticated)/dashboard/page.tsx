@@ -4,6 +4,7 @@ import { getDashboardKpis } from "@/actions/dashboard";
 import { getActiveDashboardAds } from "@/actions/dashboard-ads";
 import { DashboardAdCarousel } from "@/components/dashboard-ad-carousel";
 import { EventCountdown } from "@/components/event-countdown";
+import { PageHeader } from "@/components/page-header";
 import { DashboardClient } from "./dashboard-client";
 
 // Pull the next upcoming event (published or not — operators need to
@@ -78,10 +79,10 @@ export default async function DashboardPage({
         />
       )}
       <DashboardAdCarousel ads={ads} locale={locale} />
-      <h1 className="font-heading text-2xl font-bold">
-        {t("welcome")}, {firstName}
-      </h1>
-      <DashboardClient locale={locale} kpis={kpis} />
+      <PageHeader title={`${t("welcome")}, ${firstName}`} />
+      <div className="mt-6">
+        <DashboardClient locale={locale} kpis={kpis} />
+      </div>
     </div>
   );
 }

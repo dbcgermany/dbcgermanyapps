@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { createServerClient } from "@dbc/supabase/server";
 import {
   getEventFunnelCopy,
@@ -15,6 +16,7 @@ export default async function EventFunnelAdminPage({
   params: Promise<{ locale: string; id: string }>;
 }) {
   const { locale, id } = await params;
+  const tBack = await getTranslations({ locale, namespace: "admin.back" });
   const supabase = await createServerClient();
   const { data: event } = await supabase
     .from("events")
@@ -33,6 +35,7 @@ export default async function EventFunnelAdminPage({
   return (
     <div>
       <PageHeader
+        back={{ href: `/${locale}/events/${id}`, label: tBack("event") }}
         title={`Funnel content · ${event.title_en}`}
         description="Edit hero video, tagline, intro, pillars, testimonials, FAQs, closing pitch and the scarcity threshold for this event."
       />

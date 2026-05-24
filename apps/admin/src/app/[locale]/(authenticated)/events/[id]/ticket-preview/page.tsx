@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { getEvent } from "@/actions/events";
 import { getEventTiers } from "@/actions/door-sale";
 import { renderEmailPreview } from "@/actions/email-preview";
@@ -24,6 +24,7 @@ export default async function TicketPreviewPage({
 }) {
   const { locale, id } = await params;
   await requireRole("manager");
+  const tBack = await getTranslations({ locale, namespace: "admin.back" });
 
   let event;
   try {
@@ -123,22 +124,18 @@ export default async function TicketPreviewPage({
   return (
     <div>
       <PageHeader
+        back={{ href: `/${locale}/events/${id}`, label: tBack("event") }}
         title="Ticket design preview"
         description="Visual mock of the PDF ticket using real event data. No ticket is created."
         cta={
-          <div className="flex gap-2">
-            <LinkButton href={`/api/ticket-preview/${id}?locale=${locale}`}
-              target="_blank"
-              rel="noopener noreferrer">
-              Download sample PDF
-            </LinkButton>
-            <Link
-              href={`/${locale}/events/${id}`}
-              className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-2 text-sm font-medium hover:bg-muted"
-            >
-              Back to event
-            </Link>
-          </div>
+          <LinkButton
+            href={`/api/ticket-preview/${id}?locale=${locale}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            variant="secondary"
+          >
+            Download sample PDF
+          </LinkButton>
         }
       />
 

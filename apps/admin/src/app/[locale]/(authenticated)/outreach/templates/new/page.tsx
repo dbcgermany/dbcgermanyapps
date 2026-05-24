@@ -1,9 +1,9 @@
 import { getTranslations } from "next-intl/server";
-import { PageBack } from "@dbc/ui";
 import {
   getOutreachTemplate,
   type OutreachTemplateRow,
 } from "@/actions/outreach-templates";
+import { PageHeader } from "@/components/page-header";
 import { OutreachTemplateEditor } from "../[slug]/editor";
 
 /**
@@ -59,10 +59,14 @@ export default async function NewOutreachTemplatePage({
 
   return (
     <div>
-      <PageBack href={`/${locale}/outreach/templates`} label={t("back")} />
-      <h1 className="mt-2 font-heading text-2xl font-bold">{t("newTitle")}</h1>
-      <p className="mt-1 text-sm text-muted-foreground">{t("newSubtitle")}</p>
-      <OutreachTemplateEditor template={seed} locale={locale} mode="create" />
+      <PageHeader
+        back={{ href: `/${locale}/outreach/templates`, label: t("back") }}
+        title={t("newTitle")}
+        description={t("newSubtitle")}
+      />
+      <div className="mt-6">
+        <OutreachTemplateEditor template={seed} locale={locale} mode="create" />
+      </div>
     </div>
   );
 }

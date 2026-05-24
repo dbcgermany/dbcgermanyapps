@@ -1,11 +1,12 @@
 import { notFound } from "next/navigation";
 import QRCode from "qrcode";
 import { getTranslations } from "next-intl/server";
-import { PageBack, BRAND_HEX } from "@dbc/ui";
+import { BRAND_HEX } from "@dbc/ui";
 import { getEvent } from "@/actions/events";
 import { getEventTiers } from "@/actions/door-sale";
 import { getPosterConfig } from "@/actions/poster";
 import { createServerClient } from "@dbc/supabase/server";
+import { PageHeader } from "@/components/page-header";
 import { PosterPrintControls } from "./print-controls";
 import { PosterConfigEditor } from "./poster-config-editor";
 
@@ -129,7 +130,12 @@ export default async function EventPosterPage({
     <>
       {/* Admin toolbar — hidden on print */}
       <div className="no-print space-y-6 p-6 print:hidden">
-        <PageBack href={`/${locale}/events/${id}`} label={tBack("event")} />
+        <PageHeader
+          back={{ href: `/${locale}/events/${id}`, label: tBack("event") }}
+          title="Poster"
+          description={`A4 door poster · ${title}`}
+          cta={<PosterPrintControls autoPrint={print === "1"} />}
+        />
 
         <PosterConfigEditor
           eventId={id}
@@ -137,8 +143,6 @@ export default async function EventPosterPage({
           initial={config}
           defaults={DEFAULTS}
         />
-
-        <PosterPrintControls autoPrint={print === "1"} />
       </div>
 
       {/* A4 poster — print-ready */}

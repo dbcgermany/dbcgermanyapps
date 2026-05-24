@@ -1,9 +1,10 @@
 import { getTranslations } from "next-intl/server";
-import { Badge, PageBack } from "@dbc/ui";
+import { Badge } from "@dbc/ui";
 import { Mail } from "lucide-react";
 import { getContact } from "@/actions/contacts";
 import { listContactMessages } from "@/actions/contact-messages";
 import { listOutreachTemplates } from "@/actions/outreach-templates";
+import { PageHeader } from "@/components/page-header";
 import { ContactProfileTabs } from "./profile-tabs";
 import { ComposeDialog } from "./compose-dialog";
 import { DeleteContactButton } from "./delete-contact-button";
@@ -46,39 +47,37 @@ export default async function ContactDetailPage({
 
   return (
     <div>
-      <PageBack href={`/${locale}/contacts`} label={tBack("contacts")} />
-
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="font-heading text-2xl font-bold">{displayName}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {data.contact.email}
-          </p>
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            {[...acquisitionBadges].map((b) => (
-              <Badge key={b} variant="accent">
-                {b}
-              </Badge>
-            ))}
-            <PipelineSelect
+      <PageHeader
+        back={{ href: `/${locale}/contacts`, label: tBack("contacts") }}
+        title={displayName}
+        description={data.contact.email}
+        cta={
+          <div className="flex items-center gap-2">
+            <ComposeDialog
               contactId={data.contact.id}
-              initialStatus={data.userState?.pipeline_status ?? null}
+              contactEmail={data.contact.email}
+              defaultLocale={locale}
+              templates={outreachTemplates}
+            />
+            <DeleteContactButton
+              contactId={data.contact.id}
+              contactEmail={data.contact.email}
+              locale={locale}
             />
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <ComposeDialog
-            contactId={data.contact.id}
-            contactEmail={data.contact.email}
-            defaultLocale={locale}
-            templates={outreachTemplates}
-          />
-          <DeleteContactButton
-            contactId={data.contact.id}
-            contactEmail={data.contact.email}
-            locale={locale}
-          />
-        </div>
+        }
+      />
+
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        {[...acquisitionBadges].map((b) => (
+          <Badge key={b} variant="accent">
+            {b}
+          </Badge>
+        ))}
+        <PipelineSelect
+          contactId={data.contact.id}
+          initialStatus={data.userState?.pipeline_status ?? null}
+        />
       </div>
 
       {/* Email history surfaces the contact_messages SSOT. Rendered above the

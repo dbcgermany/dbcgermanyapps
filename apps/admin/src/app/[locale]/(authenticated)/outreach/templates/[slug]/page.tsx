@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { PageBack } from "@dbc/ui";
 import { getOutreachTemplate } from "@/actions/outreach-templates";
+import { PageHeader } from "@/components/page-header";
 import { OutreachTemplateEditor } from "./editor";
 
 export default async function OutreachTemplateEditPage({
@@ -19,10 +19,14 @@ export default async function OutreachTemplateEditPage({
 
   return (
     <div>
-      <PageBack href={`/${locale}/outreach/templates`} label={t("back")} />
-      <h1 className="mt-2 font-heading text-2xl font-bold">{t("editTitle")}</h1>
-      <p className="mt-1 text-sm text-muted-foreground">{template.slug}</p>
-      <OutreachTemplateEditor template={template} locale={locale} />
+      <PageHeader
+        back={{ href: `/${locale}/outreach/templates`, label: t("back") }}
+        title={t("editTitle")}
+        description={template.slug}
+      />
+      <div className="mt-6">
+        <OutreachTemplateEditor template={template} locale={locale} />
+      </div>
     </div>
   );
 }

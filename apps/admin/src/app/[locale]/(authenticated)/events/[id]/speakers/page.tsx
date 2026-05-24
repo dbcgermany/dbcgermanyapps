@@ -1,5 +1,6 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
+import { LinkButton } from "@dbc/ui";
 import { createServerClient } from "@dbc/supabase/server";
 import { getEventSpeakersForAdmin, getSpeakers } from "@/actions/speakers";
 import { PageHeader } from "@/components/page-header";
@@ -11,6 +12,7 @@ export default async function EventSpeakersAdminPage({
   params: Promise<{ locale: string; id: string }>;
 }) {
   const { locale, id } = await params;
+  const tBack = await getTranslations({ locale, namespace: "admin.back" });
   const supabase = await createServerClient();
   const { data: event } = await supabase
     .from("events")
@@ -31,18 +33,15 @@ export default async function EventSpeakersAdminPage({
   return (
     <div>
       <PageHeader
+        back={{ href: `/${locale}/events/${id}`, label: tBack("event") }}
         title={`Speakers · ${event.title_en}`}
         description="Attach speakers from the global library and set role labels per event."
+        cta={
+          <LinkButton href={`/${locale}/speakers/new`} variant="primary">
+            New speaker
+          </LinkButton>
+        }
       />
-      <p className="mt-2 text-sm text-muted-foreground">
-        Need a speaker who isn&apos;t in the library yet?{" "}
-        <Link
-          href={`/${locale}/speakers/new`}
-          className="font-semibold text-primary hover:text-primary/80"
-        >
-          Create one →
-        </Link>
-      </p>
 
       <div className="mt-8">
         <EventSpeakersClient
