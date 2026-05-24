@@ -3,7 +3,6 @@ import { getTranslations } from "next-intl/server";
 import { getEvent } from "@/actions/events";
 import { getEventExpenses } from "@/actions/expenses";
 import { PageHeader } from "@/components/page-header";
-import { BudgetClient } from "./budget-client";
 
 // Mirrors the proven shape used by checklist/page.tsx: inline strings for the
 // page-level chrome, single getTranslations call for the back-button label,
@@ -96,14 +95,52 @@ export default async function BudgetPage({
         }
       />
 
-      <div className="mt-8">
-        <BudgetClient
-          expenses={expenses}
-          eventId={eventId}
-          locale={locale}
-          l={l}
-          providers={[]}
-        />
+      {/* Dumb server-rendered table — temporary diagnostic. If THIS
+          renders, BudgetClient is the culprit; if not, the bug is in
+          getEvent / getEventExpenses / PageHeader / the layout chain. */}
+      <div className="mt-8 overflow-x-auto rounded-lg border border-border">
+        <table className="w-full text-sm">
+          <thead className="border-b border-border bg-muted/50">
+            <tr>
+              <th className="px-4 py-3 text-left font-medium">Description</th>
+              <th className="px-4 py-3 text-left font-medium">Category</th>
+              <th className="px-4 py-3 text-left font-medium">Due</th>
+              <th className="px-4 py-3 text-right font-medium">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            {expenses.map((e) => (
+              <tr key={e.id} className="border-b border-border last:border-0">
+                <td className="px-4 py-3 font-medium">
+                  {(l === "fr"
+                    ? e.description_fr
+                    : l === "de"
+                      ? e.description_de
+                      : e.description_en) ||
+                    e.description ||
+                    "—"}
+                </td>
+                <td className="px-4 py-3">{e.category}</td>
+                <td className="px-4 py-3 text-muted-foreground">
+                  {e.due_date ?? "—"}
+                </td>
+                <td className="px-4 py-3 text-right font-mono">
+                  {fmt(e.amount_cents)}
+                </td>
+              </tr>
+            ))}
+            {expenses.length === 0 && (
+              <tr>
+                <td
+                  colSpan={4}
+                  className="px-4 py-6 text-center text-muted-foreground"
+                >
+                  No expenses recorded for this event.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );
