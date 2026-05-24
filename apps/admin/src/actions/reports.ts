@@ -5,6 +5,7 @@ import {
   REAL_ORDER_ACQUISITION_TYPES,
   ALLOCATION_ACQUISITION_TYPES,
 } from "@/lib/order-kinds";
+import { captureServerError } from "@/lib/observe";
 
 export interface OrdersReportRow {
   id: string;
@@ -343,56 +344,94 @@ export interface EventFinancialSummary {
   allocationsCount: number;
 }
 
+const EMPTY_FINANCIAL_SUMMARY = (eventId: string): EventFinancialSummary => ({
+  eventId,
+  eventTitle: "Event",
+  revenueCents: 0,
+  expensesCents: 0,
+  profitCents: 0,
+  taxEstimateCents: 0,
+  allocationsCount: 0,
+});
+
 export async function getEventFinancialSummary(
   eventId: string,
   taxRatePct: number = 19
 ): Promise<EventFinancialSummary> {
-  await requireRole("manager");
-  const supabase = await createServerClient();
+  try {
+    await requireRole("manager");
+    const supabase = await createServerClient();
 
-  const [eventRes, revenueRes, expensesRes, allocationsRes] = await Promise.all([
-    supabase.from("events").select("title_en").eq("id", eventId).single(),
-    // Revenue: real orders only. The comped status survives the filter so
-    // a comped purchased order (free promo on a public tier) still counts
-    // as a real order with €0 revenue.
-    supabase
-      .from("orders")
-      .select("total_cents")
-      .eq("event_id", eventId)
-      .in("status", ["paid", "comped"])
-      .in("acquisition_type", [...REAL_ORDER_ACQUISITION_TYPES]),
-    supabase
-      .from("event_expenses")
-      .select("amount_cents")
-      .eq("event_id", eventId),
-    supabase
-      .from("orders")
-      .select("id", { count: "exact", head: true })
-      .eq("event_id", eventId)
-      .in("acquisition_type", [...ALLOCATION_ACQUISITION_TYPES]),
-  ]);
+    // maybeSingle so a missing event doesn't blow up the whole summary.
+    const [eventRes, revenueRes, expensesRes, allocationsRes] = await Promise.all([
+      supabase
+        .from("events")
+        .select("title_en")
+        .eq("id", eventId)
+        .maybeSingle(),
+      // Revenue: real orders only. The comped status survives the filter so
+      // a comped purchased order (free promo on a public tier) still counts
+      // as a real order with €0 revenue.
+      supabase
+        .from("orders")
+        .select("total_cents")
+        .eq("event_id", eventId)
+        .in("status", ["paid", "comped"])
+        .in("acquisition_type", [...REAL_ORDER_ACQUISITION_TYPES]),
+      supabase
+        .from("event_expenses")
+        .select("amount_cents")
+        .eq("event_id", eventId),
+      supabase
+        .from("orders")
+        .select("id", { count: "exact", head: true })
+        .eq("event_id", eventId)
+        .in("acquisition_type", [...ALLOCATION_ACQUISITION_TYPES]),
+    ]);
 
-  const revenueCents = (revenueRes.data ?? []).reduce(
-    (s, o) => s + (o.total_cents ?? 0),
-    0
-  );
-  const expensesCents = (expensesRes.data ?? []).reduce(
-    (s, e) => s + (e.amount_cents ?? 0),
-    0
-  );
-  const taxEstimateCents = Math.round(
-    revenueCents - revenueCents / (1 + taxRatePct / 100)
-  );
+    // Log any individual query failure but keep going with zeros.
+    for (const [name, res] of Object.entries({
+      eventRes,
+      revenueRes,
+      expensesRes,
+      allocationsRes,
+    })) {
+      if (res.error) {
+        captureServerError(new Error(res.error.message), {
+          scope: "reports:getEventFinancialSummary",
+          data: { event_id: eventId, sub_query: name, code: res.error.code },
+        });
+      }
+    }
 
-  return {
-    eventId,
-    eventTitle: eventRes.data?.title_en ?? "Event",
-    revenueCents,
-    expensesCents,
-    profitCents: revenueCents - expensesCents,
-    taxEstimateCents,
-    allocationsCount: allocationsRes.count ?? 0,
-  };
+    const revenueCents = (revenueRes.data ?? []).reduce(
+      (s, o) => s + (o.total_cents ?? 0),
+      0
+    );
+    const expensesCents = (expensesRes.data ?? []).reduce(
+      (s, e) => s + (e.amount_cents ?? 0),
+      0
+    );
+    const taxEstimateCents = Math.round(
+      revenueCents - revenueCents / (1 + taxRatePct / 100)
+    );
+
+    return {
+      eventId,
+      eventTitle: eventRes.data?.title_en ?? "Event",
+      revenueCents,
+      expensesCents,
+      profitCents: revenueCents - expensesCents,
+      taxEstimateCents,
+      allocationsCount: allocationsRes.count ?? 0,
+    };
+  } catch (err) {
+    captureServerError(err, {
+      scope: "reports:getEventFinancialSummary:catch",
+      data: { event_id: eventId },
+    });
+    return EMPTY_FINANCIAL_SUMMARY(eventId);
+  }
 }
 
 export async function getReportsEvents() {

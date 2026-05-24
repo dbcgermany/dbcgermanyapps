@@ -2,6 +2,7 @@
 
 import { createServerClient, requireRole } from "@dbc/supabase/server";
 import { revalidatePath } from "next/cache";
+import { captureServerError } from "@/lib/observe";
 
 // The active-locale description is mirrored into the legacy `description`
 // column so other code paths that read it (CSV export, audit log details,
@@ -54,7 +55,13 @@ export async function getEventExpenses(eventId: string) {
   await requireRole("manager");
   const supabase = await createServerClient();
 
-  const { data, error } = await supabase
+  // First try the join. If it fails (e.g. PostgREST can't resolve the
+  // embedded FK name in the current schema cache), fall back to the
+  // un-joined query so the page still renders — provider names just
+  // come back null. The original exception still goes to Sentry.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let data: any[] | null = null;
+  const joined = await supabase
     .from("event_expenses")
     .select(
       `${EXPENSE_COLUMNS}, provider:contacts!event_expenses_provider_contact_id_fkey(first_name, last_name, email)`
@@ -63,7 +70,35 @@ export async function getEventExpenses(eventId: string) {
     .order("due_date", { ascending: true, nullsFirst: false })
     .order("created_at", { ascending: false });
 
-  if (error) throw new Error(error.message);
+  if (joined.error) {
+    captureServerError(new Error(joined.error.message), {
+      scope: "expenses:getEventExpenses:join",
+      data: { event_id: eventId, code: joined.error.code },
+    });
+    const plain = await supabase
+      .from("event_expenses")
+      .select(EXPENSE_COLUMNS)
+      .eq("event_id", eventId)
+      .order("due_date", { ascending: true, nullsFirst: false })
+      .order("created_at", { ascending: false });
+    if (plain.error) {
+      captureServerError(new Error(plain.error.message), {
+        scope: "expenses:getEventExpenses:plain",
+        data: { event_id: eventId, code: plain.error.code },
+      });
+      return {
+        expenses: [] as ExpenseRow[],
+        totalCents: 0,
+        paidCents: 0,
+        unpaidCents: 0,
+        overdueCents: 0,
+        count: 0,
+      };
+    }
+    data = plain.data;
+  } else {
+    data = joined.data;
+  }
 
   const expenses: ExpenseRow[] = (data ?? []).map((row) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -119,47 +154,69 @@ export async function getEventExpenses(eventId: string) {
 }
 
 export async function getProviderContactOptions() {
-  await requireRole("manager");
-  const supabase = await createServerClient();
+  try {
+    await requireRole("manager");
+    const supabase = await createServerClient();
 
-  // Contacts tagged "service_providers". Fetch only the IDs and names we
-  // need for the typeahead — no email volume here, this is just a picker.
-  const { data: catRow } = await supabase
-    .from("contact_categories")
-    .select("id")
-    .eq("slug", "service_providers")
-    .single();
+    // Contacts tagged "service_providers". Fetch only the IDs and names we
+    // need for the typeahead — no email volume here, this is just a picker.
+    // maybeSingle (not single) so a missing category returns null instead
+    // of throwing — the picker simply has no options.
+    const catRes = await supabase
+      .from("contact_categories")
+      .select("id")
+      .eq("slug", "service_providers")
+      .maybeSingle();
+    if (catRes.error) {
+      captureServerError(new Error(catRes.error.message), {
+        scope: "expenses:getProviderContactOptions:category",
+        data: { code: catRes.error.code },
+      });
+      return [];
+    }
+    if (!catRes.data) return [];
 
-  if (!catRow) return [];
+    type ContactPickerRow = {
+      id: string;
+      first_name: string | null;
+      last_name: string | null;
+      email: string | null;
+    };
+    type LinkRow = {
+      contact: ContactPickerRow | ContactPickerRow[] | null;
+    };
 
-  type ContactPickerRow = {
-    id: string;
-    first_name: string | null;
-    last_name: string | null;
-    email: string | null;
-  };
-  type LinkRow = {
-    contact: ContactPickerRow | ContactPickerRow[] | null;
-  };
+    const linkRes = await supabase
+      .from("contact_category_links")
+      .select("contact:contacts(id, first_name, last_name, email)")
+      .eq("category_id", catRes.data.id)
+      .limit(500);
+    if (linkRes.error) {
+      captureServerError(new Error(linkRes.error.message), {
+        scope: "expenses:getProviderContactOptions:links",
+        data: { code: linkRes.error.code },
+      });
+      return [];
+    }
 
-  const { data } = await supabase
-    .from("contact_category_links")
-    .select("contact:contacts(id, first_name, last_name, email)")
-    .eq("category_id", catRow.id)
-    .limit(500);
-
-  return ((data ?? []) as unknown as LinkRow[])
-    .map((row): { id: string; label: string } | null => {
-      const c = Array.isArray(row.contact) ? row.contact[0] : row.contact;
-      if (!c) return null;
-      const personName =
-        [c.first_name, c.last_name].filter(Boolean).join(" ") ||
-        c.email ||
-        c.id;
-      return { id: c.id, label: personName };
-    })
-    .filter((r): r is { id: string; label: string } => r !== null)
-    .sort((a, b) => a.label.localeCompare(b.label));
+    return ((linkRes.data ?? []) as unknown as LinkRow[])
+      .map((row): { id: string; label: string } | null => {
+        const c = Array.isArray(row.contact) ? row.contact[0] : row.contact;
+        if (!c) return null;
+        const personName =
+          [c.first_name, c.last_name].filter(Boolean).join(" ") ||
+          c.email ||
+          c.id;
+        return { id: c.id, label: personName };
+      })
+      .filter((r): r is { id: string; label: string } => r !== null)
+      .sort((a, b) => a.label.localeCompare(b.label));
+  } catch (err) {
+    captureServerError(err, {
+      scope: "expenses:getProviderContactOptions:catch",
+    });
+    return [];
+  }
 }
 
 export async function createExpense(eventId: string, formData: FormData) {

@@ -14,6 +14,7 @@ import {
   ChartLegend,
   CHART_COLORS,
 } from "@/components/charts";
+import { captureServerError } from "@/lib/observe";
 
 export default async function BudgetPage({
   params,
@@ -28,12 +29,48 @@ export default async function BudgetPage({
   const t = await getTranslations({ locale, namespace: "admin.events.budget" });
   const tBack = await getTranslations({ locale, namespace: "admin.back" });
 
-  const [{ expenses, totalCents, paidCents, unpaidCents, overdueCents, count }, financial, providers] =
-    await Promise.all([
-      getEventExpenses(eventId),
-      getEventFinancialSummary(eventId),
-      getProviderContactOptions(),
-    ]);
+  // Each fetch is independently caught so a single failure can't blow up the
+  // whole page. The actual error reaches Sentry via captureServerError, and
+  // the page renders with safe defaults for the failing slice. Without this
+  // wrap the bare Promise.all rethrows and Next.js shows the masked
+  // "Server Components render" error wall.
+  const expensesResult = await getEventExpenses(eventId).catch((err) => {
+    captureServerError(err, {
+      scope: "budget/page:getEventExpenses",
+      data: { event_id: eventId },
+    });
+    return {
+      expenses: [] as Awaited<
+        ReturnType<typeof getEventExpenses>
+      >["expenses"],
+      totalCents: 0,
+      paidCents: 0,
+      unpaidCents: 0,
+      overdueCents: 0,
+      count: 0,
+    };
+  });
+  const { expenses, totalCents, paidCents, unpaidCents, overdueCents, count } =
+    expensesResult;
+  const financial = await getEventFinancialSummary(eventId).catch((err) => {
+    captureServerError(err, {
+      scope: "budget/page:getEventFinancialSummary",
+      data: { event_id: eventId },
+    });
+    return {
+      eventId,
+      eventTitle: "Event",
+      revenueCents: 0,
+      expensesCents: 0,
+      profitCents: 0,
+      taxEstimateCents: 0,
+      allocationsCount: 0,
+    };
+  });
+  const providers = await getProviderContactOptions().catch((err) => {
+    captureServerError(err, { scope: "budget/page:getProviderContactOptions" });
+    return [] as Awaited<ReturnType<typeof getProviderContactOptions>>;
+  });
 
   const fmt = (cents: number) =>
     new Intl.NumberFormat(locale, {
