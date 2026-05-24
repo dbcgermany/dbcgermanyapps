@@ -1,9 +1,9 @@
 "use client";
 
-import { useTransition, type ReactNode } from "react";
+import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Button } from "@dbc/ui";
+import { Button, FormField, Input, Select, Textarea } from "@dbc/ui";
 import {
   SPONSOR_STATUS_VALUES,
   SPONSOR_TIER_VALUES,
@@ -81,93 +81,104 @@ export function SponsorForm({
   return (
     <form action={handleSubmit} className="space-y-6">
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field
-          label={t.companyName}
-          name="company_name"
-          defaultValue={sponsor?.company_name ?? ""}
-          required
-        />
+        <FormField label={t.companyName} required>
+          <Input
+            name="company_name"
+            defaultValue={sponsor?.company_name ?? ""}
+            required
+          />
+        </FormField>
         <div className="grid grid-cols-2 gap-2">
-          <SelectField
-            label={t.tier}
-            name="tier"
-            defaultValue={sponsor?.tier ?? "partner"}
-            options={SPONSOR_TIER_VALUES.map((v) => ({
-              value: v,
-              label: t.tiers[v] ?? v,
-            }))}
-          />
-          <SelectField
-            label={t.status}
-            name="status"
-            defaultValue={sponsor?.status ?? "lead"}
-            options={SPONSOR_STATUS_VALUES.map((v) => ({
-              value: v,
-              label: t.statuses[v] ?? v,
-            }))}
-          />
+          <FormField label={t.tier}>
+            <Select name="tier" defaultValue={sponsor?.tier ?? "partner"}>
+              {SPONSOR_TIER_VALUES.map((v) => (
+                <option key={v} value={v}>
+                  {t.tiers[v] ?? v}
+                </option>
+              ))}
+            </Select>
+          </FormField>
+          <FormField label={t.status}>
+            <Select name="status" defaultValue={sponsor?.status ?? "lead"}>
+              {SPONSOR_STATUS_VALUES.map((v) => (
+                <option key={v} value={v}>
+                  {t.statuses[v] ?? v}
+                </option>
+              ))}
+            </Select>
+          </FormField>
         </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field
-          label={t.contactFirstName}
-          name="contact_first_name"
-          defaultValue={sponsor?.contact_first_name ?? ""}
-        />
-        <Field
-          label={t.contactLastName}
-          name="contact_last_name"
-          defaultValue={sponsor?.contact_last_name ?? ""}
-        />
+        <FormField label={t.contactFirstName}>
+          <Input
+            name="contact_first_name"
+            defaultValue={sponsor?.contact_first_name ?? ""}
+          />
+        </FormField>
+        <FormField label={t.contactLastName}>
+          <Input
+            name="contact_last_name"
+            defaultValue={sponsor?.contact_last_name ?? ""}
+          />
+        </FormField>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field
-          label={t.contactEmail}
-          name="contact_email"
-          type="email"
-          defaultValue={sponsor?.contact_email ?? ""}
-        />
-        <Field
-          label={t.phone}
-          name="contact_phone"
-          defaultValue={sponsor?.contact_phone ?? ""}
-        />
+        <FormField label={t.contactEmail}>
+          <Input
+            name="contact_email"
+            type="email"
+            defaultValue={sponsor?.contact_email ?? ""}
+          />
+        </FormField>
+        <FormField label={t.phone}>
+          <Input
+            name="contact_phone"
+            defaultValue={sponsor?.contact_phone ?? ""}
+          />
+        </FormField>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field
-          label={t.dealValue}
-          name="deal_value_cents"
-          type="number"
-          step="0.01"
-          defaultValue={
-            sponsor?.deal_value_cents != null
-              ? (sponsor.deal_value_cents / 100).toFixed(2)
-              : ""
-          }
-        />
-        <Field
-          label={t.websiteUrl}
-          name="website_url"
-          type="url"
-          defaultValue={sponsor?.website_url ?? ""}
-        />
+        <FormField label={t.dealValue}>
+          <Input
+            name="deal_value_cents"
+            type="number"
+            step="0.01"
+            defaultValue={
+              sponsor?.deal_value_cents != null
+                ? (sponsor.deal_value_cents / 100).toFixed(2)
+                : ""
+            }
+          />
+        </FormField>
+        <FormField label={t.websiteUrl}>
+          <Input
+            name="website_url"
+            type="url"
+            defaultValue={sponsor?.website_url ?? ""}
+          />
+        </FormField>
       </div>
 
-      <TextareaField
-        label={t.deliverables}
-        name="deliverables"
-        placeholder={t.deliverablesPh}
-        defaultValue={sponsor?.deliverables ?? ""}
-      />
-      <TextareaField
-        label={t.notesLabel}
-        name="notes"
-        placeholder={t.notesPh}
-        defaultValue={sponsor?.notes ?? ""}
-      />
+      <FormField label={t.deliverables}>
+        <Textarea
+          name="deliverables"
+          placeholder={t.deliverablesPh}
+          defaultValue={sponsor?.deliverables ?? ""}
+          rows={3}
+        />
+      </FormField>
+      <FormField label={t.notesLabel}>
+        <Textarea
+          name="notes"
+          placeholder={t.notesPh}
+          defaultValue={sponsor?.notes ?? ""}
+          rows={3}
+        />
+      </FormField>
 
       <div className="flex gap-2">
         <Button type="submit" disabled={isPending}>
@@ -188,91 +199,5 @@ export function SponsorForm({
         </Button>
       </div>
     </form>
-  );
-}
-
-/* tiny field helpers — Phase 5 will swap these for FormField across every admin form */
-
-function Field({
-  label,
-  name,
-  type = "text",
-  defaultValue,
-  required,
-  step,
-}: {
-  label: ReactNode;
-  name: string;
-  type?: string;
-  defaultValue?: string;
-  required?: boolean;
-  step?: string;
-}) {
-  return (
-    <label className="block text-sm">
-      <span className="mb-1 block font-medium text-foreground">{label}</span>
-      <input
-        name={name}
-        type={type}
-        defaultValue={defaultValue}
-        required={required}
-        step={step}
-        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-      />
-    </label>
-  );
-}
-
-function SelectField({
-  label,
-  name,
-  defaultValue,
-  options,
-}: {
-  label: ReactNode;
-  name: string;
-  defaultValue: string;
-  options: ReadonlyArray<{ value: string; label: string }>;
-}) {
-  return (
-    <label className="block text-sm">
-      <span className="mb-1 block font-medium text-foreground">{label}</span>
-      <select
-        name={name}
-        defaultValue={defaultValue}
-        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-      >
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.label}
-          </option>
-        ))}
-      </select>
-    </label>
-  );
-}
-
-function TextareaField({
-  label,
-  name,
-  defaultValue,
-  placeholder,
-}: {
-  label: ReactNode;
-  name: string;
-  defaultValue?: string;
-  placeholder?: string;
-}) {
-  return (
-    <label className="block text-sm">
-      <span className="mb-1 block font-medium text-foreground">{label}</span>
-      <textarea
-        name={name}
-        defaultValue={defaultValue}
-        placeholder={placeholder}
-        rows={3}
-        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-      />
-    </label>
   );
 }
