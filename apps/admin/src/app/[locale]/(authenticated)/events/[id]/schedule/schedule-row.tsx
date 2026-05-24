@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState, type ReactNode } from "react";
-import { Button } from "@dbc/ui";
+import { useActionState, useEffect, useRef, type ReactNode } from "react";
+import { toast } from "sonner";
+import { Button, FormField, Input, Textarea } from "@dbc/ui";
 import {
   updateScheduleItem,
   deleteScheduleItem,
@@ -15,6 +16,7 @@ const SR_T = {
     speakerName: "Speaker name", speakerTitle: "Speaker title", sort: "Sort",
     descEn: "Description (EN)", descDe: "Description (DE)", descFr: "Description (FR)",
     saving: "Saving…", save: "Save", cancel: "Cancel",
+    savedToast: "Saved",
     delete: "Delete", deleteConfirm: 'Delete "{title}"?',
     deletedToast: "Item deleted",
   },
@@ -23,6 +25,7 @@ const SR_T = {
     speakerName: "Name Speaker", speakerTitle: "Titel Speaker", sort: "Sort.",
     descEn: "Beschreibung (EN)", descDe: "Beschreibung (DE)", descFr: "Beschreibung (FR)",
     saving: "Wird gespeichert…", save: "Speichern", cancel: "Abbrechen",
+    savedToast: "Gespeichert",
     delete: "Löschen", deleteConfirm: "„{title}“ löschen?",
     deletedToast: "Eintrag gelöscht",
   },
@@ -31,6 +34,7 @@ const SR_T = {
     speakerName: "Nom de l’intervenant", speakerTitle: "Titre de l’intervenant", sort: "Ordre",
     descEn: "Description (EN)", descDe: "Description (DE)", descFr: "Description (FR)",
     saving: "Enregistrement…", save: "Enregistrer", cancel: "Annuler",
+    savedToast: "Enregistré",
     delete: "Supprimer", deleteConfirm: "Supprimer « {title} » ?",
     deletedToast: "Élément supprimé",
   },
@@ -124,6 +128,7 @@ export function ScheduleRow({
 /* -------------------------------------------------------------------------- */
 
 type ScheduleT = (typeof SR_T)[keyof typeof SR_T];
+type ActionResult = { error?: string; success?: boolean } | null;
 
 function ScheduleEditForm({
   item,
@@ -138,107 +143,93 @@ function ScheduleEditForm({
   t: ScheduleT;
   onSaved: () => void;
 }) {
-  const [state, formAction, isPending] = useActionState(
-    async (
-      _prev: { error?: string; success?: boolean } | null,
-      formData: FormData
-    ) => {
+  const [state, formAction, isPending] = useActionState<ActionResult, FormData>(
+    async (_prev, formData) => {
       formData.set("event_id", eventId);
       formData.set("locale", locale);
-      const result = await updateScheduleItem(item.id, formData);
-      if (result.success) onSaved();
-      return result;
+      return updateScheduleItem(item.id, formData);
     },
     null
   );
 
+  const lastHandledRef = useRef<ActionResult>(null);
+  useEffect(() => {
+    if (state === lastHandledRef.current) return;
+    lastHandledRef.current = state;
+    if (state?.error) {
+      toast.error(state.error);
+      return;
+    }
+    if (state?.success) {
+      toast.success(t.savedToast);
+      onSaved();
+    }
+  }, [state, t.savedToast, onSaved]);
+
   return (
-    <form action={formAction} className="space-y-3">
-      {state?.error && (
-        <div className="rounded-md bg-danger-soft p-2 text-xs text-danger">
-          {state.error}
-        </div>
-      )}
-      <div className="grid gap-2 sm:grid-cols-3">
-        <input
-          name="title_en"
-          defaultValue={item.title_en}
-          required
-          placeholder={t.titleEn}
-          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-        />
-        <input
-          name="title_de"
-          defaultValue={item.title_de ?? ""}
-          placeholder={t.titleDe}
-          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-        />
-        <input
-          name="title_fr"
-          defaultValue={item.title_fr ?? ""}
-          placeholder={t.titleFr}
-          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-        />
+    <form action={formAction} className="space-y-4">
+      <div className="grid gap-4 sm:grid-cols-3">
+        <FormField label={t.titleEn} required>
+          <Input name="title_en" defaultValue={item.title_en} required />
+        </FormField>
+        <FormField label={t.titleDe}>
+          <Input name="title_de" defaultValue={item.title_de ?? ""} />
+        </FormField>
+        <FormField label={t.titleFr}>
+          <Input name="title_fr" defaultValue={item.title_fr ?? ""} />
+        </FormField>
       </div>
-      <div className="grid gap-2 sm:grid-cols-2">
-        <input
-          name="starts_at"
-          type="datetime-local"
-          defaultValue={toLocal(item.starts_at)}
-          required
-          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-        />
-        <input
-          name="ends_at"
-          type="datetime-local"
-          defaultValue={toLocal(item.ends_at)}
-          required
-          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-        />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <FormField label="Start" required>
+          <Input
+            name="starts_at"
+            type="datetime-local"
+            defaultValue={toLocal(item.starts_at)}
+            required
+          />
+        </FormField>
+        <FormField label="End" required>
+          <Input
+            name="ends_at"
+            type="datetime-local"
+            defaultValue={toLocal(item.ends_at)}
+            required
+          />
+        </FormField>
       </div>
-      <div className="grid gap-2 sm:grid-cols-3">
-        <input
-          name="speaker_name"
-          defaultValue={item.speaker_name ?? ""}
-          placeholder={t.speakerName}
-          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-        />
-        <input
-          name="speaker_title"
-          defaultValue={item.speaker_title ?? ""}
-          placeholder={t.speakerTitle}
-          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-        />
-        <input
-          name="sort_order"
-          type="number"
-          defaultValue={item.sort_order}
-          placeholder={t.sort}
-          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-        />
+      <div className="grid gap-4 sm:grid-cols-3">
+        <FormField label={t.speakerName}>
+          <Input name="speaker_name" defaultValue={item.speaker_name ?? ""} />
+        </FormField>
+        <FormField label={t.speakerTitle}>
+          <Input name="speaker_title" defaultValue={item.speaker_title ?? ""} />
+        </FormField>
+        <FormField label={t.sort}>
+          <Input name="sort_order" type="number" defaultValue={item.sort_order} />
+        </FormField>
       </div>
-      <div className="grid gap-2 sm:grid-cols-3">
-        <textarea
-          name="description_en"
-          defaultValue={item.description_en ?? ""}
-          placeholder={t.descEn}
-          rows={2}
-          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-        />
-        <textarea
-          name="description_de"
-          defaultValue={item.description_de ?? ""}
-          placeholder={t.descDe}
-          rows={2}
-          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-        />
-        <textarea
-          name="description_fr"
-          defaultValue={item.description_fr ?? ""}
-          placeholder={t.descFr}
-          rows={2}
-          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-        />
+      <div className="grid gap-4 sm:grid-cols-3">
+        <FormField label={t.descEn}>
+          <Textarea
+            name="description_en"
+            defaultValue={item.description_en ?? ""}
+            rows={2}
+          />
+        </FormField>
+        <FormField label={t.descDe}>
+          <Textarea
+            name="description_de"
+            defaultValue={item.description_de ?? ""}
+            rows={2}
+          />
+        </FormField>
+        <FormField label={t.descFr}>
+          <Textarea
+            name="description_fr"
+            defaultValue={item.description_fr ?? ""}
+            rows={2}
+          />
+        </FormField>
       </div>
       <div className="flex gap-2">
         <Button type="submit" disabled={isPending}>

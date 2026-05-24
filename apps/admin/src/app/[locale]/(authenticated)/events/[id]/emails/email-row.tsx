@@ -1,10 +1,10 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { Badge, Button, ConfirmDialog } from "@dbc/ui";
+import { Badge, Button, ConfirmDialog, FormField, Input, Textarea } from "@dbc/ui";
 import {
   updateEmailSequence,
   deleteEmailSequence,
@@ -18,6 +18,7 @@ const ER_T = {
     delayPh: "Delay (days after event)", sort: "Sort",
     subject: "Subject", body: "Body (use {name} and {event} tokens)",
     saving: "Saving…", save: "Save", cancel: "Cancel",
+    savedToast: "Saved",
     sent: "Sent",
     sendNow: "Send now",
     sendConfirm: "Send this sequence to all attendees now?",
@@ -28,6 +29,7 @@ const ER_T = {
     delayPh: "Verzögerung (Tage nach Event)", sort: "Sort.",
     subject: "Betreff", body: "Inhalt (Platzhalter {name} und {event})",
     saving: "Wird gespeichert…", save: "Speichern", cancel: "Abbrechen",
+    savedToast: "Gespeichert",
     sent: "Gesendet",
     sendNow: "Jetzt senden",
     sendConfirm: "Diese Sequenz jetzt an alle Teilnehmenden senden?",
@@ -38,6 +40,7 @@ const ER_T = {
     delayPh: "Délai (jours après l’événement)", sort: "Ordre",
     subject: "Objet", body: "Corps (utilisez {name} et {event})",
     saving: "Enregistrement…", save: "Enregistrer", cancel: "Annuler",
+    savedToast: "Enregistré",
     sent: "Envoyé",
     sendNow: "Envoyer maintenant",
     sendConfirm: "Envoyer cette séquence à tous les participants maintenant ?",
@@ -144,6 +147,7 @@ export function EmailRow({
 /* -------------------------------------------------------------------------- */
 
 type EmailT = (typeof ER_T)[keyof typeof ER_T];
+type ActionResult = { error?: string; success?: boolean } | null;
 
 function EmailEditForm({
   seq,
@@ -158,96 +162,86 @@ function EmailEditForm({
   t: EmailT;
   onSaved: () => void;
 }) {
-  const [state, formAction, isPending] = useActionState(
-    async (
-      _prev: { error?: string; success?: boolean } | null,
-      formData: FormData
-    ) => {
+  const [state, formAction, isPending] = useActionState<ActionResult, FormData>(
+    async (_prev, formData) => {
       formData.set("event_id", eventId);
       formData.set("locale", locale);
-      const result = await updateEmailSequence(seq.id, formData);
-      if (result.success) onSaved();
-      return result;
+      return updateEmailSequence(seq.id, formData);
     },
     null
   );
 
+  const lastHandledRef = useRef<ActionResult>(null);
+  useEffect(() => {
+    if (state === lastHandledRef.current) return;
+    lastHandledRef.current = state;
+    if (state?.error) {
+      toast.error(state.error);
+      return;
+    }
+    if (state?.success) {
+      toast.success(t.savedToast);
+      onSaved();
+    }
+  }, [state, t.savedToast, onSaved]);
+
   return (
-    <form action={formAction} className="space-y-3">
-      {state?.error && (
-        <div className="rounded-md bg-danger-soft p-2 text-xs text-danger">
-          {state.error}
-        </div>
-      )}
-      <div className="grid gap-2 sm:grid-cols-2">
-        <input
-          name="delay_days"
-          type="number"
-          min="0"
-          defaultValue={seq.delay_days}
-          required
-          placeholder={t.delayPh}
-          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-        />
-        <input
-          name="sort_order"
-          type="number"
-          defaultValue={seq.sort_order}
-          placeholder={t.sort}
-          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-        />
+    <form action={formAction} className="space-y-4">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <FormField label={t.delayPh} required>
+          <Input
+            name="delay_days"
+            type="number"
+            min="0"
+            defaultValue={seq.delay_days}
+            required
+          />
+        </FormField>
+        <FormField label={t.sort}>
+          <Input name="sort_order" type="number" defaultValue={seq.sort_order} />
+        </FormField>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-3">
         <p className="text-xs font-medium text-muted-foreground">{t.subject}</p>
-        <div className="grid gap-2 sm:grid-cols-3">
-          <input
-            name="subject_en"
-            defaultValue={seq.subject_en}
-            required
-            placeholder="EN"
-            className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-          />
-          <input
-            name="subject_de"
-            defaultValue={seq.subject_de ?? ""}
-            placeholder="DE"
-            className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-          />
-          <input
-            name="subject_fr"
-            defaultValue={seq.subject_fr ?? ""}
-            placeholder="FR"
-            className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-          />
+        <div className="grid gap-4 sm:grid-cols-3">
+          <FormField label="English" required>
+            <Input name="subject_en" defaultValue={seq.subject_en} required />
+          </FormField>
+          <FormField label="Deutsch">
+            <Input name="subject_de" defaultValue={seq.subject_de ?? ""} />
+          </FormField>
+          <FormField label="Français">
+            <Input name="subject_fr" defaultValue={seq.subject_fr ?? ""} />
+          </FormField>
         </div>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-3">
         <p className="text-xs font-medium text-muted-foreground">{t.body}</p>
-        <div className="grid gap-2 sm:grid-cols-3">
-          <textarea
-            name="body_en"
-            defaultValue={seq.body_en}
-            rows={6}
-            required
-            placeholder="EN"
-            className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-          />
-          <textarea
-            name="body_de"
-            defaultValue={seq.body_de ?? ""}
-            rows={6}
-            placeholder="DE"
-            className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-          />
-          <textarea
-            name="body_fr"
-            defaultValue={seq.body_fr ?? ""}
-            rows={6}
-            placeholder="FR"
-            className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-          />
+        <div className="grid gap-4 sm:grid-cols-3">
+          <FormField label="English" required>
+            <Textarea
+              name="body_en"
+              defaultValue={seq.body_en}
+              rows={6}
+              required
+            />
+          </FormField>
+          <FormField label="Deutsch">
+            <Textarea
+              name="body_de"
+              defaultValue={seq.body_de ?? ""}
+              rows={6}
+            />
+          </FormField>
+          <FormField label="Français">
+            <Textarea
+              name="body_fr"
+              defaultValue={seq.body_fr ?? ""}
+              rows={6}
+            />
+          </FormField>
         </div>
       </div>
 

@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState, type ReactNode } from "react";
+import { useActionState, useEffect, useRef, type ReactNode } from "react";
+import { toast } from "sonner";
 import { Camera, Film, Link2, type LucideIcon } from "lucide-react";
-import { Button } from "@dbc/ui";
+import { Button, FormField, Input } from "@dbc/ui";
 import { updateEventMedia, deleteEventMedia } from "@/actions/media";
 import { InlineEditRow } from "@/components/inline-edit-row";
 import { DeleteButton } from "@/components/delete-button";
@@ -25,18 +26,21 @@ const MR_T = {
   en: {
     titleCaption: "Title / caption", url: "URL", sort: "Sort order",
     saving: "Saving…", save: "Save", cancel: "Cancel",
+    savedToast: "Saved",
     delete: "Delete", deleteConfirm: "Delete this media item?",
     deletedToast: "Item deleted",
   },
   de: {
     titleCaption: "Titel / Bildunterschrift", url: "URL", sort: "Sortierung",
     saving: "Wird gespeichert…", save: "Speichern", cancel: "Abbrechen",
+    savedToast: "Gespeichert",
     delete: "Löschen", deleteConfirm: "Dieses Medium löschen?",
     deletedToast: "Element gelöscht",
   },
   fr: {
     titleCaption: "Titre / légende", url: "URL", sort: "Ordre",
     saving: "Enregistrement…", save: "Enregistrer", cancel: "Annuler",
+    savedToast: "Enregistré",
     delete: "Supprimer", deleteConfirm: "Supprimer ce média ?",
     deletedToast: "Élément supprimé",
   },
@@ -103,6 +107,8 @@ export function MediaRow({
 
 type MediaT = (typeof MR_T)[keyof typeof MR_T];
 
+type ActionResult = { error?: string; success?: boolean } | null;
+
 function MediaEditForm({
   item,
   eventId,
@@ -116,47 +122,40 @@ function MediaEditForm({
   t: MediaT;
   onSaved: () => void;
 }) {
-  const [state, formAction, isPending] = useActionState(
-    async (
-      _prev: { error?: string; success?: boolean } | null,
-      formData: FormData
-    ) => {
+  const [state, formAction, isPending] = useActionState<ActionResult, FormData>(
+    async (_prev, formData) => {
       formData.set("event_id", eventId);
       formData.set("locale", locale);
-      const result = await updateEventMedia(item.id, formData);
-      if (result.success) onSaved();
-      return result;
+      return updateEventMedia(item.id, formData);
     },
     null
   );
 
+  const lastHandledRef = useRef<ActionResult>(null);
+  useEffect(() => {
+    if (state === lastHandledRef.current) return;
+    lastHandledRef.current = state;
+    if (state?.error) {
+      toast.error(state.error);
+      return;
+    }
+    if (state?.success) {
+      toast.success(t.savedToast);
+      onSaved();
+    }
+  }, [state, t.savedToast, onSaved]);
+
   return (
-    <form action={formAction} className="space-y-3">
-      {state?.error && (
-        <div className="rounded-md bg-danger-soft p-2 text-xs text-danger">
-          {state.error}
-        </div>
-      )}
-      <input
-        name="title"
-        defaultValue={item.title ?? ""}
-        placeholder={t.titleCaption}
-        className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-      />
-      <input
-        name="url"
-        type="url"
-        defaultValue={item.url}
-        placeholder={t.url}
-        className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-      />
-      <input
-        name="sort_order"
-        type="number"
-        defaultValue={item.sort_order}
-        placeholder={t.sort}
-        className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-      />
+    <form action={formAction} className="space-y-4">
+      <FormField label={t.titleCaption}>
+        <Input name="title" defaultValue={item.title ?? ""} />
+      </FormField>
+      <FormField label={t.url}>
+        <Input name="url" type="url" defaultValue={item.url} />
+      </FormField>
+      <FormField label={t.sort}>
+        <Input name="sort_order" type="number" defaultValue={item.sort_order} />
+      </FormField>
       <div className="flex gap-2">
         <Button type="submit" disabled={isPending}>
           {isPending ? t.saving : t.save}
