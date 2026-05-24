@@ -1,10 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { useTranslations } from "next-intl";
-import { Badge, Button, ConfirmDialog } from "@dbc/ui";
+import { Badge, Button } from "@dbc/ui";
 import {
   SPONSOR_STATUS_VALUES,
   SPONSOR_TIER_VALUES,
@@ -12,6 +10,9 @@ import {
   type SponsorTier,
 } from "@dbc/types";
 import { createSponsor, deleteSponsor, updateSponsor } from "@/actions/sponsors";
+import { InlineEditRow } from "@/components/inline-edit-row";
+import { EditableList } from "@/components/editable-list";
+import { DeleteButton } from "@/components/delete-button";
 
 interface Sponsor {
   id: string;
@@ -58,8 +59,12 @@ const SP_T = {
     deliverables: "Deliverables",
     delete: "Delete",
     deleteConfirm: "Delete this sponsor?",
+    deleteToast: "Sponsor deleted",
     addSponsor: "Add sponsor",
+    newSponsor: "New sponsor",
     companyName: "Company name *",
+    tier: "Tier",
+    status: "Status",
     contactFirstName: "Contact first name",
     contactLastName: "Contact last name",
     contactEmail: "Contact email",
@@ -73,7 +78,6 @@ const SP_T = {
     saving: "Saving…",
     save: "Save",
     add: "Add",
-    edit: "Edit",
     cancel: "Cancel",
     tiers: {
       title: "Title",
@@ -97,8 +101,12 @@ const SP_T = {
     deliverables: "Leistungen",
     delete: "Löschen",
     deleteConfirm: "Diesen Sponsor löschen?",
+    deleteToast: "Sponsor gelöscht",
     addSponsor: "Sponsor hinzufügen",
+    newSponsor: "Neuer Sponsor",
     companyName: "Firmenname *",
+    tier: "Stufe",
+    status: "Status",
     contactFirstName: "Vorname",
     contactLastName: "Nachname",
     contactEmail: "Kontakt-E-Mail",
@@ -112,7 +120,6 @@ const SP_T = {
     saving: "Wird gespeichert…",
     save: "Speichern",
     add: "Hinzufügen",
-    edit: "Bearbeiten",
     cancel: "Abbrechen",
     tiers: {
       title: "Hauptsponsor",
@@ -136,8 +143,12 @@ const SP_T = {
     deliverables: "Livrables",
     delete: "Supprimer",
     deleteConfirm: "Supprimer ce sponsor ?",
+    deleteToast: "Sponsor supprimé",
     addSponsor: "Ajouter un sponsor",
+    newSponsor: "Nouveau sponsor",
     companyName: "Nom de la société *",
+    tier: "Niveau",
+    status: "Statut",
     contactFirstName: "Prénom du contact",
     contactLastName: "Nom du contact",
     contactEmail: "E-mail de contact",
@@ -151,7 +162,6 @@ const SP_T = {
     saving: "Enregistrement…",
     save: "Enregistrer",
     add: "Ajouter",
-    edit: "Modifier",
     cancel: "Annuler",
     tiers: {
       title: "Sponsor principal",
@@ -181,11 +191,6 @@ export function SponsorsClient({
   locale: string;
   sponsors: Sponsor[];
 }) {
-  const router = useRouter();
-  const tCommon = useTranslations("admin.common");
-  const [isPending, startTransition] = useTransition();
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [editing, setEditing] = useState<Sponsor | null>(null);
   const t = SP_T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof SP_T];
 
   function fmtMoney(cents: number | null, currency: string) {
@@ -197,268 +202,328 @@ export function SponsorsClient({
     });
   }
 
+  return (
+    <div className="space-y-8">
+      <EditableList
+        isEmpty={sponsors.length === 0}
+        emptyMessage={t.empty}
+      >
+        {sponsors.map((s) => (
+          <InlineEditRow
+            key={s.id}
+            title={s.company_name}
+            badges={
+              <>
+                <Badge variant={TIER_VARIANT[s.tier] ?? "default"}>
+                  {t.tiers[s.tier] ?? s.tier}
+                </Badge>
+                <Badge variant={STATUS_VARIANT[s.status] ?? "default"}>
+                  {t.statuses[s.status] ?? s.status}
+                </Badge>
+              </>
+            }
+            meta={
+              <SponsorMeta sponsor={s} deliverablesLabel={t.deliverables} value={fmtMoney(s.deal_value_cents, s.currency)} />
+            }
+            deleteAction={
+              <DeleteButton
+                action={async () => deleteSponsor(s.id, eventId, locale)}
+                confirmTitle={t.deleteConfirm}
+                confirmDescription={s.company_name}
+                confirmLabel={t.delete}
+                cancelLabel={t.cancel}
+                label={t.delete}
+                successToast={t.deleteToast}
+                compact
+              />
+            }
+            renderEdit={({ close }) => (
+              <SponsorForm
+                key={s.id}
+                eventId={eventId}
+                locale={locale}
+                t={t}
+                editing={s}
+                onDone={close}
+              />
+            )}
+          />
+        ))}
+      </EditableList>
+
+      <CreateSponsorPanel eventId={eventId} locale={locale} t={t} />
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+
+function SponsorMeta({
+  sponsor,
+  deliverablesLabel,
+  value,
+}: {
+  sponsor: Sponsor;
+  deliverablesLabel: string;
+  value: string;
+}) {
+  return (
+    <>
+      <div className="flex flex-wrap gap-3 text-xs">
+        <span className="font-medium text-foreground">{value}</span>
+        {sponsor.contact_name && <span>{sponsor.contact_name}</span>}
+        {sponsor.contact_email && (
+          <a
+            href={`mailto:${sponsor.contact_email}`}
+            className="text-primary hover:text-primary/80"
+          >
+            {sponsor.contact_email}
+          </a>
+        )}
+        {sponsor.contact_phone && <span>{sponsor.contact_phone}</span>}
+        {sponsor.website_url && (
+          <a
+            href={sponsor.website_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:text-primary/80"
+          >
+            {sponsor.website_url.replace(/^https?:\/\//, "")}
+          </a>
+        )}
+      </div>
+      {sponsor.deliverables && (
+        <p className="mt-1 text-xs text-muted-foreground">
+          <span className="font-medium">{deliverablesLabel}:</span>{" "}
+          {sponsor.deliverables}
+        </p>
+      )}
+      {sponsor.notes && (
+        <p className="mt-1 text-xs text-muted-foreground">{sponsor.notes}</p>
+      )}
+    </>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+
+type SponsorT = (typeof SP_T)[keyof typeof SP_T];
+
+function CreateSponsorPanel({
+  eventId,
+  locale,
+  t,
+}: {
+  eventId: string;
+  locale: string;
+  t: SponsorT;
+}) {
+  const [open, setOpen] = useState(false);
+  if (!open) {
+    return (
+      <div>
+        <Button type="button" onClick={() => setOpen(true)}>
+          + {t.addSponsor}
+        </Button>
+      </div>
+    );
+  }
+  return (
+    <div className="rounded-lg border border-primary/40 bg-muted/30 p-4">
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="font-heading text-base font-semibold">{t.newSponsor}</h2>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => setOpen(false)}
+        >
+          {t.cancel}
+        </Button>
+      </div>
+      <SponsorForm
+        eventId={eventId}
+        locale={locale}
+        t={t}
+        editing={null}
+        onDone={() => setOpen(false)}
+      />
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+
+function SponsorForm({
+  eventId,
+  locale,
+  t,
+  editing,
+  onDone,
+}: {
+  eventId: string;
+  locale: string;
+  t: SponsorT;
+  editing: Sponsor | null;
+  onDone: () => void;
+}) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
   function handleSubmit(formData: FormData) {
     formData.set("locale", locale);
-    // updateSponsor reads event_id from formData; without this, the
-    // contact_event_involvements upsert receives undefined and silently
-    // fails, and revalidatePath uses an undefined path.
+    // updateSponsor reads event_id from formData; required for the
+    // contact_event_involvements upsert + revalidatePath.
     formData.set("event_id", eventId);
     startTransition(async () => {
       const res = editing
         ? await updateSponsor(editing.id, formData)
         : await createSponsor(eventId, formData);
       if (!res.error) {
-        setShowAddForm(false);
-        setEditing(null);
+        onDone();
         router.refresh();
       }
     });
   }
 
-  function handleDelete(id: string) {
-    startTransition(async () => {
-      const res = await deleteSponsor(id, eventId, locale);
-      if (res?.error) {
-        toast.error(tCommon("actionFailedToast", { error: res.error }));
-        return;
-      }
-      toast.success(tCommon("deletedToast"));
-      router.refresh();
-    });
-  }
-
-  function handleEdit(sponsor: Sponsor) {
-    setEditing(sponsor);
-    setShowAddForm(true);
-  }
-
   return (
-    <div className="space-y-6">
-      {/* Sponsors list */}
-      {sponsors.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-          {t.empty}
-        </p>
-      ) : (
-        <div className="space-y-3">
-          {sponsors.map((s) => (
-            <div
-              key={s.id}
-              className="flex items-start justify-between gap-4 rounded-lg border border-border p-4"
-            >
-              <div className="flex-1 min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="font-medium">{s.company_name}</p>
-                  <Badge variant={TIER_VARIANT[s.tier] ?? "default"}>
-                    {t.tiers[s.tier] ?? s.tier}
-                  </Badge>
-                  <Badge variant={STATUS_VARIANT[s.status] ?? "default"}>
-                    {t.statuses[s.status] ?? s.status}
-                  </Badge>
-                </div>
-                <div className="mt-1 flex flex-wrap gap-3 text-xs text-muted-foreground">
-                  <span className="font-medium text-foreground">
-                    {fmtMoney(s.deal_value_cents, s.currency)}
-                  </span>
-                  {s.contact_name && <span>{s.contact_name}</span>}
-                  {s.contact_email && (
-                    <a
-                      href={`mailto:${s.contact_email}`}
-                      className="text-primary hover:text-primary/80"
-                    >
-                      {s.contact_email}
-                    </a>
-                  )}
-                  {s.contact_phone && <span>{s.contact_phone}</span>}
-                  {s.website_url && (
-                    <a
-                      href={s.website_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:text-primary/80"
-                    >
-                      {s.website_url.replace(/^https?:\/\//, "")}
-                    </a>
-                  )}
-                </div>
-                {s.deliverables && (
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    <span className="font-medium">{t.deliverables}:</span>{" "}
-                    {s.deliverables}
-                  </p>
-                )}
-                {s.notes && (
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {s.notes}
-                  </p>
-                )}
-              </div>
-              <div className="flex shrink-0 flex-col items-end gap-1 text-xs">
-                <button
-                  onClick={() => handleEdit(s)}
-                  disabled={isPending}
-                  className="text-primary hover:text-primary/80 disabled:opacity-50"
-                >
-                  {t.edit}
-                </button>
-                <ConfirmDialog
-                  trigger={
-                    <button
-                      type="button"
-                      disabled={isPending}
-                      className="text-danger hover:opacity-80 disabled:opacity-50"
-                    >
-                      {t.delete}
-                    </button>
-                  }
-                  title={t.deleteConfirm}
-                  description={s.company_name}
-                  confirmLabel={t.delete}
-                  cancelLabel={t.cancel}
-                  variant="danger"
-                  onConfirm={() => handleDelete(s.id)}
-                />
-              </div>
-            </div>
-          ))}
+    <form action={handleSubmit} className="space-y-3">
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Field label={t.companyName} name="company_name" defaultValue={editing?.company_name ?? ""} required />
+        <div className="grid grid-cols-2 gap-2">
+          <SelectField
+            label={t.tier}
+            name="tier"
+            defaultValue={editing?.tier ?? "partner"}
+            options={SPONSOR_TIER_VALUES.map((v) => ({ value: v, label: t.tiers[v] ?? v }))}
+          />
+          <SelectField
+            label={t.status}
+            name="status"
+            defaultValue={editing?.status ?? "lead"}
+            options={SPONSOR_STATUS_VALUES.map((v) => ({ value: v, label: t.statuses[v] ?? v }))}
+          />
         </div>
-      )}
-
-      {/* Add button / form */}
-      {!showAddForm ? (
-        <Button type="button" onClick={() => setShowAddForm(true)}>
-          {t.addSponsor}
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Field label={t.contactFirstName} name="contact_first_name" defaultValue={editing?.contact_first_name ?? ""} />
+        <Field label={t.contactLastName} name="contact_last_name" defaultValue={editing?.contact_last_name ?? ""} />
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Field label={t.contactEmail} name="contact_email" type="email" defaultValue={editing?.contact_email ?? ""} />
+        <Field label={t.phone} name="contact_phone" defaultValue={editing?.contact_phone ?? ""} />
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Field
+          label={t.dealValue}
+          name="deal_value_cents"
+          type="number"
+          step="0.01"
+          defaultValue={
+            editing?.deal_value_cents != null
+              ? (editing.deal_value_cents / 100).toFixed(2)
+              : ""
+          }
+        />
+        <Field label={t.websiteUrl} name="website_url" type="url" defaultValue={editing?.website_url ?? ""} />
+      </div>
+      <TextareaField label={t.deliverables} name="deliverables" placeholder={t.deliverablesPh} defaultValue={editing?.deliverables ?? ""} />
+      <TextareaField label="Notes" name="notes" placeholder={t.notesPh} defaultValue={editing?.notes ?? ""} />
+      <div className="flex gap-2">
+        <Button type="submit" disabled={isPending}>
+          {isPending ? (editing ? t.saving : t.adding) : editing ? t.save : t.add}
         </Button>
-      ) : (
-        <form
-          // Re-key on `editing.id` so React fully resets the form when the
-          // operator clicks Edit on a different sponsor (or switches between
-          // edit + create modes). Without this, `defaultValue` on a controlled
-          // form is sticky to the first render.
-          key={editing?.id ?? "new"}
-          action={handleSubmit}
-          className="rounded-lg border border-primary/50 bg-muted/30 p-4 space-y-3"
-        >
-          <div className="grid gap-3 sm:grid-cols-2">
-            <input
-              name="company_name"
-              placeholder={t.companyName}
-              defaultValue={editing?.company_name ?? ""}
-              required
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-            />
-            <div className="grid grid-cols-2 gap-2">
-              <select
-                name="tier"
-                defaultValue={editing?.tier ?? "partner"}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              >
-                {SPONSOR_TIER_VALUES.map((tier) => (
-                  <option key={tier} value={tier}>
-                    {t.tiers[tier] ?? tier}
-                  </option>
-                ))}
-              </select>
-              <select
-                name="status"
-                defaultValue={editing?.status ?? "lead"}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-              >
-                {SPONSOR_STATUS_VALUES.map((status) => (
-                  <option key={status} value={status}>
-                    {t.statuses[status] ?? status}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <input
-              name="contact_first_name"
-              placeholder={t.contactFirstName}
-              defaultValue={editing?.contact_first_name ?? ""}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-            />
-            <input
-              name="contact_last_name"
-              placeholder={t.contactLastName}
-              defaultValue={editing?.contact_last_name ?? ""}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-            />
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <input
-              name="contact_email"
-              type="email"
-              placeholder={t.contactEmail}
-              defaultValue={editing?.contact_email ?? ""}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-            />
-            <input
-              name="contact_phone"
-              placeholder={t.phone}
-              defaultValue={editing?.contact_phone ?? ""}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-            />
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <input
-              name="deal_value_cents"
-              type="number"
-              step="0.01"
-              placeholder={t.dealValue}
-              defaultValue={
-                editing?.deal_value_cents != null
-                  ? (editing.deal_value_cents / 100).toFixed(2)
-                  : ""
-              }
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-            />
-            <input
-              name="website_url"
-              type="url"
-              placeholder={t.websiteUrl}
-              defaultValue={editing?.website_url ?? ""}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-            />
-          </div>
-          <textarea
-            name="deliverables"
-            placeholder={t.deliverablesPh}
-            defaultValue={editing?.deliverables ?? ""}
-            rows={2}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-          />
-          <textarea
-            name="notes"
-            placeholder={t.notesPh}
-            defaultValue={editing?.notes ?? ""}
-            rows={2}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-          />
-          <div className="flex gap-2">
-            <Button type="submit" disabled={isPending}>
-              {isPending
-                ? editing
-                  ? t.saving
-                  : t.adding
-                : editing
-                  ? t.save
-                  : t.add}
-            </Button>
-            <button
-              type="button"
-              onClick={() => {
-                setShowAddForm(false);
-                setEditing(null);
-              }}
-              className="rounded-md border border-input px-4 py-1.5 text-sm font-medium hover:bg-muted"
-            >
-              {t.cancel}
-            </button>
-          </div>
-        </form>
-      )}
-    </div>
+        <Button type="button" variant="secondary" onClick={onDone}>
+          {t.cancel}
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+/* -- tiny field helpers — these stay local until Phase 5 replaces them with
+      FormField across the whole admin app. Same shape, same paddings. ----- */
+
+function Field({
+  label,
+  name,
+  type = "text",
+  defaultValue,
+  required,
+  step,
+}: {
+  label: ReactNode;
+  name: string;
+  type?: string;
+  defaultValue?: string;
+  required?: boolean;
+  step?: string;
+}) {
+  return (
+    <label className="block text-sm">
+      <span className="mb-1 block font-medium text-foreground">{label}</span>
+      <input
+        name={name}
+        type={type}
+        defaultValue={defaultValue}
+        required={required}
+        step={step}
+        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+      />
+    </label>
+  );
+}
+
+function SelectField({
+  label,
+  name,
+  defaultValue,
+  options,
+}: {
+  label: ReactNode;
+  name: string;
+  defaultValue: string;
+  options: ReadonlyArray<{ value: string; label: string }>;
+}) {
+  return (
+    <label className="block text-sm">
+      <span className="mb-1 block font-medium text-foreground">{label}</span>
+      <select
+        name={name}
+        defaultValue={defaultValue}
+        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+      >
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+function TextareaField({
+  label,
+  name,
+  defaultValue,
+  placeholder,
+}: {
+  label: ReactNode;
+  name: string;
+  defaultValue?: string;
+  placeholder?: string;
+}) {
+  return (
+    <label className="block text-sm">
+      <span className="mb-1 block font-medium text-foreground">{label}</span>
+      <textarea
+        name={name}
+        defaultValue={defaultValue}
+        placeholder={placeholder}
+        rows={2}
+        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+      />
+    </label>
   );
 }
