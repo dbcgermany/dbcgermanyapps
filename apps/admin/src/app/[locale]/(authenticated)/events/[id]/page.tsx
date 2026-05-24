@@ -486,6 +486,12 @@ export default async function EventDetailPage({
             <HubLink href={`/${locale}/events/${id}/runsheet`} icon={ClipboardList} title={t("runSheet")} desc={t("runSheetDesc")} />
             <HubLink href={`/${locale}/events/${id}/sponsors`} icon={Handshake} title={t("sponsors")} desc={t("sponsorsDesc")} />
             <HubLink href={`/${locale}/events/${id}/budget`} icon={Wallet} title={t("budgetExpenses")} desc={t("budgetExpensesDesc")} />
+            <HubLink
+              href={`/${locale}/events/${id}/staff`}
+              icon={Users}
+              title="Event staff"
+              desc="DBC team members on duty for this event (scanners, managers, on-site admins)."
+            />
             <HubLink href={`/${locale}/events/${id}/live`} icon={Radio} title={t("liveDashboard")} desc={t("liveDashboardDesc")} />
           </div>
         </section>
@@ -497,6 +503,12 @@ export default async function EventDetailPage({
           </h2>
           <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <HubLink href={`/${locale}/events/${id}/attendees`} icon={Users} title={t("attendeesHub")} desc={t("attendeesHubDesc")} />
+            <HubLink
+              href={`/${locale}/events/${id}/orders`}
+              icon={Wallet}
+              title="Orders"
+              desc="Online purchases + manual door sales for this event."
+            />
             <HubLink href={`/${locale}/events/${id}/media`} icon={ImageIcon} title={t("media")} desc={t("mediaDesc")} />
             <HubLink href={`/${locale}/events/${id}/poster`} icon={QrCode} title={t("posterDoor")} desc={t("posterDoorDesc")} />
           </div>
