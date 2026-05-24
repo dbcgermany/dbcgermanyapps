@@ -422,13 +422,18 @@ function ExpenseForm({
       </div>
 
       <label className="block">
-        <span className="block text-xs text-muted-foreground mb-1">{t("notes")}</span>
+        <span className="block text-xs text-muted-foreground mb-1">
+          {t("notes")}
+        </span>
         <textarea
           name="notes"
           defaultValue={row?.notes ?? ""}
           rows={2}
           className={inputCls}
         />
+        <span className="mt-1 block text-[11px] text-muted-foreground">
+          {t("notesHint")}
+        </span>
       </label>
 
       <div className="flex gap-2">

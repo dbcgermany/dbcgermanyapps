@@ -6,9 +6,24 @@ import { createRunsheetItem } from "@/actions/runsheet";
 import { Button } from "@dbc/ui";
 
 const RF_T = {
-  en: { title: "Task title", unassigned: "Unassigned", location: "Location", notes: "Notes / description", adding: "Adding…", addItem: "Add item" },
-  de: { title: "Titel der Aufgabe", unassigned: "Nicht zugewiesen", location: "Ort", notes: "Notizen / Beschreibung", adding: "Wird hinzugefügt…", addItem: "Eintrag hinzufügen" },
-  fr: { title: "Intitulé", unassigned: "Non assigné", location: "Lieu", notes: "Notes / description", adding: "Ajout…", addItem: "Ajouter" },
+  en: {
+    title: "Task title", unassigned: "Unassigned", location: "Location",
+    notes: "Notes / description",
+    privateNotes: "Private notes (team only — not on PDF or in emails)",
+    adding: "Adding…", addItem: "Add item",
+  },
+  de: {
+    title: "Titel der Aufgabe", unassigned: "Nicht zugewiesen", location: "Ort",
+    notes: "Notizen / Beschreibung",
+    privateNotes: "Interne Notizen (nur fürs Team — nicht im PDF oder in E-Mails)",
+    adding: "Wird hinzugefügt…", addItem: "Eintrag hinzufügen",
+  },
+  fr: {
+    title: "Intitulé", unassigned: "Non assigné", location: "Lieu",
+    notes: "Notes / description",
+    privateNotes: "Notes internes (équipe uniquement — pas dans le PDF ni les e-mails)",
+    adding: "Ajout…", addItem: "Ajouter",
+  },
 } as const;
 
 export function RunsheetForm({
@@ -106,6 +121,12 @@ export function RunsheetForm({
       <textarea
         name="description"
         placeholder={t.notes}
+        rows={2}
+        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+      />
+      <textarea
+        name="notes"
+        placeholder={t.privateNotes}
         rows={2}
         className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
       />

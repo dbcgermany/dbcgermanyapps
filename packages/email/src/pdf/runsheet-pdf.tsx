@@ -145,6 +145,9 @@ const T = {
   },
 };
 
+// NEVER add `notes` (internal staff-only) to this shape or render it
+// below. The notes column on event_runsheet_items is for team-internal
+// follow-ups and is deliberately excluded from the exported PDF.
 export interface RunsheetPdfItem {
   startsAt: string;
   endsAt: string | null;

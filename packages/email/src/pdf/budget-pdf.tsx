@@ -241,6 +241,9 @@ const T = {
   },
 } as const;
 
+// NEVER add `notes` (internal staff-only) to this shape or render it
+// below. event_expenses.notes is for team-internal follow-ups and is
+// deliberately excluded from the exported PDF.
 export interface BudgetPdfItem {
   description: string;
   category: string;

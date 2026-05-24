@@ -8,6 +8,12 @@ export interface RunsheetItem {
   event_id: string;
   title: string;
   description: string | null;
+  /**
+   * Internal staff-only notes. Never rendered in the runsheet PDF and
+   * never reaches ticket-buyer emails. Distinct from `description`,
+   * which is the public-facing detail string.
+   */
+  notes: string | null;
   starts_at: string;
   ends_at: string | null;
   responsible_person: string | null;
@@ -22,7 +28,7 @@ export interface RunsheetItem {
 }
 
 const ITEM_COLUMNS =
-  "id, event_id, title, description, starts_at, ends_at, responsible_person, location_note, status, sort_order, assigned_to, default_duration_minutes, created_at, updated_at" as const;
+  "id, event_id, title, description, notes, starts_at, ends_at, responsible_person, location_note, status, sort_order, assigned_to, default_duration_minutes, created_at, updated_at" as const;
 
 export async function getRunsheetItems(eventId: string): Promise<RunsheetItem[]> {
   await requireRole("team_member");
@@ -68,6 +74,7 @@ export async function createRunsheetItem(
       starts_at: (formData.get("starts_at") as string) || null,
       ends_at: (formData.get("ends_at") as string) || null,
       description: ((formData.get("description") as string) || "").trim() || null,
+      notes: ((formData.get("notes") as string) || "").trim() || null,
       responsible_person:
         ((formData.get("responsible_person") as string) || "").trim() || null,
       location_note:
@@ -102,6 +109,7 @@ export async function updateRunsheetItem(id: string, formData: FormData) {
   const fields = [
     "title",
     "description",
+    "notes",
     "responsible_person",
     "location_note",
     "starts_at",

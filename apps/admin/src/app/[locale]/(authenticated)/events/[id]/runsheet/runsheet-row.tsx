@@ -29,18 +29,27 @@ const STATUS_VARIANT: Record<
 const RR_T = {
   en: {
     title: "Title", unassigned: "Unassigned", location: "Location", notes: "Notes / description",
+    privateNotes: "Private notes (team only — not on PDF or in emails)",
+    privateNotesHint: "Internal-only. Won't appear on the run-sheet PDF or in any attendee email.",
+    privateNotesDisplay: "Team note",
     saving: "Saving…", save: "Save", cancel: "Cancel",
     advance: "Advance", edit: "Edit", delete: "Delete", deleteConfirm: 'Delete "{title}"?',
     statuses: { pending: "Pending", in_progress: "In progress", done: "Done" } as Record<string, string>,
   },
   de: {
     title: "Titel", unassigned: "Nicht zugewiesen", location: "Ort", notes: "Notizen / Beschreibung",
+    privateNotes: "Interne Notizen (nur fürs Team — nicht im PDF oder in E-Mails)",
+    privateNotesHint: "Nur intern. Erscheint weder im Ablaufplan-PDF noch in E-Mails an Teilnehmende.",
+    privateNotesDisplay: "Team-Notiz",
     saving: "Wird gespeichert…", save: "Speichern", cancel: "Abbrechen",
     advance: "Weiter", edit: "Bearbeiten", delete: "Löschen", deleteConfirm: "„{title}“ löschen?",
     statuses: { pending: "Offen", in_progress: "Läuft", done: "Erledigt" } as Record<string, string>,
   },
   fr: {
     title: "Titre", unassigned: "Non assigné", location: "Lieu", notes: "Notes / description",
+    privateNotes: "Notes internes (équipe uniquement — pas dans le PDF ni les e-mails)",
+    privateNotesHint: "Visible uniquement par l’équipe. N’apparaît ni dans la feuille de route PDF ni dans les e-mails aux participants.",
+    privateNotesDisplay: "Note équipe",
     saving: "Enregistrement…", save: "Enregistrer", cancel: "Annuler",
     advance: "Avancer", edit: "Modifier", delete: "Supprimer", deleteConfirm: "Supprimer « {title} » ?",
     statuses: { pending: "En attente", in_progress: "En cours", done: "Terminé" } as Record<string, string>,
@@ -209,6 +218,20 @@ export function RunsheetRow({
           rows={2}
           className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
         />
+        <label className="block">
+          <span className="mb-1 block text-xs font-medium text-muted-foreground">
+            {t.privateNotes}
+          </span>
+          <textarea
+            name="notes"
+            defaultValue={item.notes ?? ""}
+            rows={2}
+            className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
+          />
+          <span className="mt-1 block text-[11px] text-muted-foreground">
+            {t.privateNotesHint}
+          </span>
+        </label>
         <div className="flex gap-2">
           <Button type="submit"
             disabled={isSaving}>
@@ -263,6 +286,16 @@ export function RunsheetRow({
           <p className="mt-1 text-xs text-muted-foreground">
             {item.description}
           </p>
+        )}
+        {item.notes && (
+          <div className="mt-2 rounded-md border-l-2 border-warning-strong bg-warning-soft px-2 py-1 text-xs">
+            <span className="font-medium text-warning-strong">
+              {t.privateNotesDisplay}:
+            </span>{" "}
+            <span className="text-foreground/80 whitespace-pre-wrap">
+              {item.notes}
+            </span>
+          </div>
         )}
       </div>
       <div className="flex shrink-0 flex-col items-end gap-1">
