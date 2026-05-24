@@ -18,6 +18,9 @@ import type { InvolvementRole } from "@/lib/involvements";
 import { PageHeader } from "@/components/page-header";
 import { PipelineBadge } from "@/components/pipeline-badge";
 import { Tabs } from "@/components/tabs";
+import { DataTable } from "@/components/data-table";
+import { MobileList } from "@/components/mobile-list";
+import { EmptyState } from "@/components/empty-state";
 import { AttendeesTab } from "./attendees-tab";
 import { ContactsFilterBar } from "./contacts-filter-bar";
 
@@ -154,6 +157,21 @@ async function ContactsTabContent({
     excludePureAttendees: true,
   });
 
+  if (contacts.length === 0) {
+    return (
+      <>
+        <ContactsFilterBar
+          locale={locale}
+          events={events}
+          categories={categories}
+        />
+        <div className="mt-8">
+          <EmptyState message={t("empty")} />
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <ContactsFilterBar
@@ -162,139 +180,146 @@ async function ContactsTabContent({
         categories={categories}
       />
 
-      <div className="mt-6 overflow-x-auto rounded-lg border border-border">
-        <table className="min-w-full text-sm">
-          <thead className="bg-muted/30 text-xs uppercase tracking-wider text-muted-foreground">
-            <tr>
-              <th className="px-4 py-3 text-left">{t("name")}</th>
-              <th className="px-4 py-3 text-left">{t("email")}</th>
-              <th className="px-4 py-3 text-left">{t("country")}</th>
-              <th className="px-4 py-3 text-left">{t("categories")}</th>
-              <th className="px-4 py-3 text-left">{t("list.columns.pipeline")}</th>
-              <th className="px-4 py-3 text-left">{t("marketing")}</th>
-              <th className="px-4 py-3 text-left">{t("list.columns.lastContacted")}</th>
-              <th className="px-4 py-3 text-right">{t("orders")}</th>
-              <th className="px-4 py-3 text-right">{t("tickets")}</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {contacts.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={9}
-                  className="px-4 py-10 text-center text-muted-foreground"
-                >
-                  {t("empty")}
-                </td>
-              </tr>
-            ) : (
-              contacts.map((c) => {
-                const profileHref = `/${locale}/contacts/${c.id}`;
-                // Each cell wraps its content in a Link to the same target.
-                // Multiple anchors per <tr> is valid HTML (vs. a nested-link
-                // antipattern), and it gives every column a click target —
-                // the user can hit any pixel of the row to open the profile.
-                const cell =
-                  "block px-4 py-3 hover:bg-muted/30 focus:bg-muted/40 focus:outline-none";
-                return (
-                  <tr
-                    key={c.id}
-                    className="group transition-colors hover:bg-muted/10"
+      {/* Mobile: shared MobileList — condensed cell (name + email + pipeline badge) */}
+      <MobileList
+        className="mt-6 md:hidden"
+        items={contacts}
+        renderCell={(c) => {
+          const displayName =
+            [c.first_name, c.last_name].filter(Boolean).join(" ") || c.email;
+          return {
+            id: c.id,
+            title: displayName,
+            meta: (
+              <>
+                <span className="block truncate">{c.email}</span>
+                {c.country && (
+                  <span className="mt-1 block text-[11px]">{c.country}</span>
+                )}
+              </>
+            ),
+            trailing: <PipelineBadge status={c.pipeline_status} />,
+            href: `/${locale}/contacts/${c.id}`,
+          };
+        }}
+      />
+
+      {/* Desktop: shared DataTable — every cell links to the detail page so
+          any pixel in the row is a tap target */}
+      <div className="mt-6 hidden md:block">
+        <DataTable
+          columns={[
+            t("name"),
+            t("email"),
+            t("country"),
+            t("categories"),
+            t("list.columns.pipeline"),
+            t("marketing"),
+            t("list.columns.lastContacted"),
+            { label: t("orders"), align: "right" },
+            { label: t("tickets"), align: "right" },
+          ]}
+        >
+          {contacts.map((c) => {
+            const profileHref = `/${locale}/contacts/${c.id}`;
+            const cellLink = "-mx-4 -my-3 block px-4 py-3 hover:bg-muted/30";
+            return (
+              <DataTable.Row key={c.id} className="group">
+                <DataTable.Cell className="p-0">
+                  <Link
+                    href={profileHref}
+                    className={`${cellLink} font-medium text-foreground group-hover:text-primary`}
                   >
-                    <td className="p-0">
-                      <Link
-                        href={profileHref}
-                        className={`${cell} font-medium text-foreground group-hover:text-primary`}
+                    {[c.first_name, c.last_name].filter(Boolean).join(" ") || "—"}
+                  </Link>
+                </DataTable.Cell>
+                <DataTable.Cell className="p-0">
+                  <Link
+                    href={profileHref}
+                    className={`${cellLink} text-muted-foreground`}
+                  >
+                    {c.email}
+                  </Link>
+                </DataTable.Cell>
+                <DataTable.Cell className="p-0">
+                  <Link href={profileHref} className={cellLink}>
+                    {c.country ?? "—"}
+                  </Link>
+                </DataTable.Cell>
+                <DataTable.Cell className="p-0">
+                  <Link href={profileHref} className={cellLink}>
+                    <span className="flex flex-wrap gap-1">
+                      {c.categories.map((cat) => (
+                        <span
+                          key={cat.slug}
+                          className="rounded-full px-2 py-0.5 text-xs font-medium"
+                          style={{
+                            backgroundColor:
+                              (cat.color ?? BRAND_HEX.inkMuted) + "22",
+                            color: cat.color ?? undefined,
+                          }}
+                        >
+                          {cat.name_en}
+                        </span>
+                      ))}
+                    </span>
+                  </Link>
+                </DataTable.Cell>
+                <DataTable.Cell className="p-0">
+                  <Link href={profileHref} className={cellLink}>
+                    <PipelineBadge status={c.pipeline_status} />
+                  </Link>
+                </DataTable.Cell>
+                <DataTable.Cell className="p-0">
+                  <Link href={profileHref} className={cellLink}>
+                    {c.unsubscribed_at ? (
+                      <span className="text-xs text-muted-foreground">
+                        {t("unsubscribed")}
+                      </span>
+                    ) : c.marketing_consent ? (
+                      <span className="text-xs font-medium text-success">
+                        {t("subscribed")}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">—</span>
+                    )}
+                  </Link>
+                </DataTable.Cell>
+                <DataTable.Cell className="p-0">
+                  <Link href={profileHref} className={cellLink}>
+                    {c.last_contacted_at ? (
+                      <time
+                        dateTime={c.last_contacted_at}
+                        title={new Date(c.last_contacted_at).toLocaleString()}
+                        className="text-xs text-muted-foreground"
                       >
-                        {[c.first_name, c.last_name]
-                          .filter(Boolean)
-                          .join(" ") || "—"}
-                      </Link>
-                    </td>
-                    <td className="p-0">
-                      <Link
-                        href={profileHref}
-                        className={`${cell} text-muted-foreground`}
-                      >
-                        {c.email}
-                      </Link>
-                    </td>
-                    <td className="p-0">
-                      <Link href={profileHref} className={cell}>
-                        {c.country ?? "—"}
-                      </Link>
-                    </td>
-                    <td className="p-0">
-                      <Link href={profileHref} className={cell}>
-                        <div className="flex flex-wrap gap-1">
-                          {c.categories.map((cat) => (
-                            <span
-                              key={cat.slug}
-                              className="rounded-full px-2 py-0.5 text-xs font-medium"
-                              style={{
-                                backgroundColor: (cat.color ?? BRAND_HEX.inkMuted) + "22",
-                                color: cat.color ?? undefined,
-                              }}
-                            >
-                              {cat.name_en}
-                            </span>
-                          ))}
-                        </div>
-                      </Link>
-                    </td>
-                    <td className="p-0">
-                      <Link href={profileHref} className={cell}>
-                        <PipelineBadge status={c.pipeline_status} />
-                      </Link>
-                    </td>
-                    <td className="p-0">
-                      <Link href={profileHref} className={cell}>
-                        {c.unsubscribed_at ? (
-                          <span className="text-xs text-muted-foreground">
-                            {t("unsubscribed")}
-                          </span>
-                        ) : c.marketing_consent ? (
-                          <span className="text-xs font-medium text-success">
-                            {t("subscribed")}
-                          </span>
-                        ) : (
-                          <span className="text-xs text-muted-foreground">
-                            —
-                          </span>
-                        )}
-                      </Link>
-                    </td>
-                    <td className="p-0">
-                      <Link href={profileHref} className={cell}>
-                        {c.last_contacted_at ? (
-                          <time
-                            dateTime={c.last_contacted_at}
-                            title={new Date(c.last_contacted_at).toLocaleString()}
-                            className="text-xs text-muted-foreground"
-                          >
-                            {formatRelative(c.last_contacted_at, locale)}
-                          </time>
-                        ) : (
-                          <span className="text-xs text-muted-foreground">—</span>
-                        )}
-                      </Link>
-                    </td>
-                    <td className="p-0 text-right">
-                      <Link href={profileHref} className={`${cell} text-right`}>
-                        {c.orders_count}
-                      </Link>
-                    </td>
-                    <td className="p-0 text-right">
-                      <Link href={profileHref} className={`${cell} text-right`}>
-                        {c.tickets_count}
-                      </Link>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+                        {formatRelative(c.last_contacted_at, locale)}
+                      </time>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">—</span>
+                    )}
+                  </Link>
+                </DataTable.Cell>
+                <DataTable.Cell align="right" className="p-0">
+                  <Link
+                    href={profileHref}
+                    className={`${cellLink} text-right`}
+                  >
+                    {c.orders_count}
+                  </Link>
+                </DataTable.Cell>
+                <DataTable.Cell align="right" className="p-0">
+                  <Link
+                    href={profileHref}
+                    className={`${cellLink} text-right`}
+                  >
+                    {c.tickets_count}
+                  </Link>
+                </DataTable.Cell>
+              </DataTable.Row>
+            );
+          })}
+        </DataTable>
       </div>
     </>
   );
