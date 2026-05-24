@@ -2,6 +2,7 @@ import { Button, Card } from "@dbc/ui";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { PageHeader } from "@/components/page-header";
+import { PdfButton } from "@/components/pdf-button";
 import { ActionForm } from "@/components/action-form";
 import { getEvent } from "@/actions/events";
 import { getRunsheetItems, populateRunsheetFromTemplate } from "@/actions/runsheet";
@@ -48,14 +49,10 @@ export default async function RunsheetPage({
         description={t("description")}
         back={{ href: `/${locale}/events/${eventId}`, label: tBack("event") }}
         cta={
-          <a
+          <PdfButton
             href={`/api/runsheet/${eventId}?locale=${locale}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
-          >
-            {t("downloadPdf")}
-          </a>
+            label={t("downloadPdf")}
+          />
         }
         className="mt-2"
       />

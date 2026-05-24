@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { LinkButton } from "@dbc/ui";
 import { PageHeader } from "@/components/page-header";
+import { PdfButton } from "@/components/pdf-button";
 import { getEvent } from "@/actions/events";
 import { listCateringMenu } from "@/actions/catering";
 import { CateringMenuClient } from "./catering-menu-client";
@@ -27,12 +27,10 @@ export default async function EventCateringPage({
         description={event.title_en}
         back={{ href: `/${locale}/events/${id}`, label: tBack("event") }}
         cta={
-          <LinkButton
+          <PdfButton
             href={`/${locale}/events/${id}/catering/print`}
-            variant="secondary"
-          >
-            {t("printReport")}
-          </LinkButton>
+            label={t("printReport")}
+          />
         }
       />
 

@@ -1,7 +1,8 @@
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 import { getEventSpeakerQuestions } from "@/actions/speaker-questions";
 import { QuestionsList } from "./questions-list";
 import { PageHeader } from "@/components/page-header";
+import { PdfButton } from "@/components/pdf-button";
 
 export default async function EventQuestionsPage({
   params,
@@ -9,6 +10,7 @@ export default async function EventQuestionsPage({
   params: Promise<{ locale: string; id: string }>;
 }) {
   const { locale, id: eventId } = await params;
+  const tBack = await getTranslations({ locale, namespace: "admin.back" });
   const questions = await getEventSpeakerQuestions(eventId);
 
   const newCount = questions.filter((q) => q.status === "new").length;
@@ -18,16 +20,12 @@ export default async function EventQuestionsPage({
       <PageHeader
         title="Speaker questions"
         description={`${newCount} new · ${questions.length} total`}
-        back={{ href: `/${locale}/events/${eventId}`, label: "Event" }}
+        back={{ href: `/${locale}/events/${eventId}`, label: tBack("event") }}
         cta={
-          <Link
+          <PdfButton
             href={`/api/events/${eventId}/speaker-questions-pdf?locale=${locale}`}
-            target="_blank"
-            rel="noopener"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
-          >
-            Download PDF
-          </Link>
+            label="Download PDF"
+          />
         }
       />
 

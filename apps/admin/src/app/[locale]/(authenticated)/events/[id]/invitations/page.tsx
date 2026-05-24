@@ -1,10 +1,9 @@
-import Link from "next/link";
 import { Check } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { listInvitationsForEvent } from "@/actions/invitations";
 import { getEventTiers } from "@/actions/door-sale";
 import { InviteForm } from "./invite-form";
-import { Card, Badge } from "@dbc/ui";
+import { Card, Badge, LinkButton } from "@dbc/ui";
 import { PageHeader } from "@/components/page-header";
 
 export default async function EventInvitationsPage({
@@ -27,12 +26,12 @@ export default async function EventInvitationsPage({
         description={t("description")}
         back={{ href: `/${locale}/events/${id}`, label: tBack("event") }}
         cta={
-          <Link
+          <LinkButton
             href={`/${locale}/events/${id}/invitations/bulk`}
-            className="rounded-md border border-border px-3 py-1.5 text-sm font-medium hover:bg-muted"
+            variant="secondary"
           >
             {t("bulkImport")}
-          </Link>
+          </LinkButton>
         }
       />
       <p className="mt-1 text-sm text-muted-foreground">
