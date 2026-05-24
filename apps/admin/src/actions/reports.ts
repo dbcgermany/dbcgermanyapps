@@ -1,6 +1,10 @@
 "use server";
 
 import { createServerClient, requireRole } from "@dbc/supabase/server";
+import {
+  REAL_ORDER_ACQUISITION_TYPES,
+  ALLOCATION_ACQUISITION_TYPES,
+} from "@/lib/order-kinds";
 
 export interface OrdersReportRow {
   id: string;
@@ -188,11 +192,12 @@ export async function getRevenueByEventReport(opts: {
   await requireRole("admin");
   const supabase = await createServerClient();
 
-  // Paid orders only — matches dashboard.ts revenue logic.
+  // Paid orders only, restricted to real orders (no internal allocations).
   let ordersQuery = supabase
     .from("orders")
     .select("event_id, total_cents, currency, created_at")
-    .eq("status", "paid");
+    .eq("status", "paid")
+    .in("acquisition_type", [...REAL_ORDER_ACQUISITION_TYPES]);
 
   if (opts.fromDate) ordersQuery = ordersQuery.gte("created_at", opts.fromDate);
   if (opts.toDate) ordersQuery = ordersQuery.lte("created_at", opts.toDate);
@@ -200,8 +205,17 @@ export async function getRevenueByEventReport(opts: {
   const { data: paidOrders, error: ordersError } = await ordersQuery;
   if (ordersError) throw new Error(ordersError.message);
 
-  // Tickets sold per event — count rows in tickets table within the same date window.
-  let ticketsQuery = supabase.from("tickets").select("event_id, created_at");
+  // Tickets sold per event — only count tickets attached to real,
+  // paid/comped orders. The previous version counted every row in the
+  // tickets table within the window, which silently included tickets
+  // from abandoned carts (orders that never paid) and allocations.
+  let ticketsQuery = supabase
+    .from("tickets")
+    .select(
+      "event_id, created_at, orders!inner(status, acquisition_type)"
+    )
+    .in("orders.status", ["paid", "comped"])
+    .in("orders.acquisition_type", [...REAL_ORDER_ACQUISITION_TYPES]);
   if (opts.fromDate) ticketsQuery = ticketsQuery.gte("created_at", opts.fromDate);
   if (opts.toDate) ticketsQuery = ticketsQuery.lte("created_at", opts.toDate);
 
@@ -322,6 +336,11 @@ export interface EventFinancialSummary {
   expensesCents: number;
   profitCents: number;
   taxEstimateCents: number;
+  // Sidecar: count of orders we deliberately excluded from the revenue
+  // line because they're internal allocations (invitations + assignments).
+  // Surfaced on the budget page so operators can see the allocations exist
+  // without confusing them with sales.
+  allocationsCount: number;
 }
 
 export async function getEventFinancialSummary(
@@ -331,17 +350,26 @@ export async function getEventFinancialSummary(
   await requireRole("manager");
   const supabase = await createServerClient();
 
-  const [eventRes, revenueRes, expensesRes] = await Promise.all([
+  const [eventRes, revenueRes, expensesRes, allocationsRes] = await Promise.all([
     supabase.from("events").select("title_en").eq("id", eventId).single(),
+    // Revenue: real orders only. The comped status survives the filter so
+    // a comped purchased order (free promo on a public tier) still counts
+    // as a real order with €0 revenue.
     supabase
       .from("orders")
       .select("total_cents")
       .eq("event_id", eventId)
-      .in("status", ["paid", "comped"]),
+      .in("status", ["paid", "comped"])
+      .in("acquisition_type", [...REAL_ORDER_ACQUISITION_TYPES]),
     supabase
       .from("event_expenses")
       .select("amount_cents")
       .eq("event_id", eventId),
+    supabase
+      .from("orders")
+      .select("id", { count: "exact", head: true })
+      .eq("event_id", eventId)
+      .in("acquisition_type", [...ALLOCATION_ACQUISITION_TYPES]),
   ]);
 
   const revenueCents = (revenueRes.data ?? []).reduce(
@@ -363,6 +391,7 @@ export async function getEventFinancialSummary(
     expensesCents,
     profitCents: revenueCents - expensesCents,
     taxEstimateCents,
+    allocationsCount: allocationsRes.count ?? 0,
   };
 }
 
@@ -380,12 +409,17 @@ export async function getReportsEvents() {
 
 // ---------------------------------------------------------------------------
 // Finance — accountant-grade reporting with three-bucket channel taxonomy
-// (Online / Door / Comped). Every finance action is admin+ gated. Shares a
-// single fetch+aggregate pipeline so the summary and three CSVs stay
-// consistent with each other and with the dashboard channel split.
+// (Online / Door / Allocations). Every finance action is admin+ gated.
+// Shares a single fetch+aggregate pipeline so the summary and three CSVs
+// stay consistent with each other and with the dashboard channel split.
+//
+// Channel discriminator is `acquisition_type`, NOT `status`. A comped
+// `purchased` order (free promo on a public tier) is still an Online order
+// with €0 gross — it came through Stripe checkout. Only acquisition_type
+// IN ('invited', 'assigned') falls into the Allocations bucket.
 // ---------------------------------------------------------------------------
 
-export type FinanceChannel = "online" | "door" | "comped";
+export type FinanceChannel = "online" | "door" | "allocations";
 
 export interface FinanceFilter {
   /** Inclusive ISO datetime. */
@@ -410,7 +444,7 @@ export interface FinanceChannelSummary {
 }
 
 export interface FinancePaymentMethodRow {
-  /** Display key: "card" | "sepa" | "paypal" | "cash" | "door_card" | "door_cash" | "comped". */
+  /** Display key: "card" | "sepa" | "paypal" | "cash" | "door_card" | "door_cash" | "allocation". */
   method: string;
   channel: FinanceChannel;
   orders: number;
@@ -427,7 +461,7 @@ export interface FinanceEventRow {
   startsAt: string;
   online: FinanceChannelSummary;
   door: FinanceChannelSummary;
-  comped: FinanceChannelSummary;
+  allocations: FinanceChannelSummary;
   totalGrossCents: number;
   totalRefundCents: number;
   totalNetCents: number;
@@ -436,7 +470,7 @@ export interface FinanceEventRow {
 export interface FinanceSummary {
   online: FinanceChannelSummary;
   door: FinanceChannelSummary;
-  comped: FinanceChannelSummary;
+  allocations: FinanceChannelSummary;
   paymentMethods: FinancePaymentMethodRow[];
   perEvent: FinanceEventRow[];
   /** Paid-order value for events whose ends_at is still in the future. */
@@ -468,14 +502,19 @@ type FinanceOrderRow = {
 };
 
 function channelOf(o: FinanceOrderRow): FinanceChannel {
-  if (o.status === "comped") return "comped";
+  if (
+    o.acquisition_type === "invited" ||
+    o.acquisition_type === "assigned"
+  ) {
+    return "allocations";
+  }
   if (o.acquisition_type === "door_sale") return "door";
-  return "online";
+  return "online"; // purchased — even a comped purchased is an online order
 }
 
 function methodKey(o: FinanceOrderRow): string {
   const ch = channelOf(o);
-  if (ch === "comped") return "comped";
+  if (ch === "allocations") return "allocation";
   if (ch === "door") {
     return o.payment_method === "card" ? "door_card" : "door_cash";
   }
@@ -533,12 +572,12 @@ export async function getFinanceSummary(
 
   const online = emptyChannel();
   const door = emptyChannel();
-  const comped = emptyChannel();
+  const allocations = emptyChannel();
 
   const methodMap = new Map<string, FinancePaymentMethodRow>();
   const eventMap = new Map<
     string,
-    { online: FinanceChannelSummary; door: FinanceChannelSummary; comped: FinanceChannelSummary }
+    { online: FinanceChannelSummary; door: FinanceChannelSummary; allocations: FinanceChannelSummary }
   >();
 
   let currency = "EUR";
@@ -547,7 +586,8 @@ export async function getFinanceSummary(
   for (const o of orders) {
     currency = o.currency || currency;
     const ch = channelOf(o);
-    const bucket = ch === "online" ? online : ch === "door" ? door : comped;
+    const bucket =
+      ch === "online" ? online : ch === "door" ? door : allocations;
     accumulate(bucket, o);
     if (ch === "online") onlineOrderCount += 1;
 
@@ -571,10 +611,14 @@ export async function getFinanceSummary(
     const evBuckets = eventMap.get(o.event_id) ?? {
       online: emptyChannel(),
       door: emptyChannel(),
-      comped: emptyChannel(),
+      allocations: emptyChannel(),
     };
     accumulate(
-      ch === "online" ? evBuckets.online : ch === "door" ? evBuckets.door : evBuckets.comped,
+      ch === "online"
+        ? evBuckets.online
+        : ch === "door"
+          ? evBuckets.door
+          : evBuckets.allocations,
       o
     );
     eventMap.set(o.event_id, evBuckets);
@@ -619,7 +663,7 @@ export async function getFinanceSummary(
         startsAt: meta?.startsAt ?? "",
         online: buckets.online,
         door: buckets.door,
-        comped: buckets.comped,
+        allocations: buckets.allocations,
         totalGrossCents: totalGross,
         totalRefundCents: totalRefund,
         totalNetCents: totalGross - totalRefund,
@@ -641,7 +685,7 @@ export async function getFinanceSummary(
   return {
     online,
     door,
-    comped,
+    allocations,
     paymentMethods: Array.from(methodMap.values()).sort(
       (a, b) => b.grossCents - a.grossCents
     ),

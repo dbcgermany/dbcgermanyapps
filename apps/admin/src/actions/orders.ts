@@ -5,6 +5,10 @@ import { sendRefundConfirmation } from "@dbc/email";
 import { revalidatePath } from "next/cache";
 import Stripe from "stripe";
 import { captureServerError } from "@/lib/observe";
+import {
+  REAL_ORDER_ACQUISITION_TYPES,
+  ALLOCATION_ACQUISITION_TYPES,
+} from "@/lib/order-kinds";
 
 // Lazy-initialised so the module can be imported during `next build`
 // (page-data collection) without STRIPE_SECRET_KEY being set in the env.
@@ -21,10 +25,18 @@ function getStripe(): Stripe {
 // Default page size kept inline (server actions can only export async fns).
 const ORDERS_PAGE_SIZE = 50;
 
+/**
+ * `kind` controls which acquisition types are visible:
+ *   - "real"        (default) → purchased + door_sale. The orders list defaults
+ *                                to this so headline counts match real sales.
+ *   - "allocations" → invited + assigned. Internal grants only.
+ *   - "all"         → no filter. Reserved for CSV export and audit views.
+ */
 export async function getOrders(filter?: {
   eventId?: string;
   status?: string;
   page?: number;
+  kind?: "real" | "allocations" | "all";
 }) {
   await requireRole("team_member");
   const supabase = await createServerClient();
@@ -32,6 +44,7 @@ export async function getOrders(filter?: {
   const page = Math.max(1, filter?.page ?? 1);
   const from = (page - 1) * ORDERS_PAGE_SIZE;
   const to = from + ORDERS_PAGE_SIZE - 1;
+  const kind = filter?.kind ?? "real";
 
   let query = supabase
     .from("orders")
@@ -42,6 +55,11 @@ export async function getOrders(filter?: {
     .order("created_at", { ascending: false })
     .range(from, to);
 
+  if (kind === "real") {
+    query = query.in("acquisition_type", [...REAL_ORDER_ACQUISITION_TYPES]);
+  } else if (kind === "allocations") {
+    query = query.in("acquisition_type", [...ALLOCATION_ACQUISITION_TYPES]);
+  }
   if (filter?.eventId) query = query.eq("event_id", filter.eventId);
   if (filter?.status) query = query.eq("status", filter.status);
 
@@ -65,6 +83,7 @@ export async function getOrders(filter?: {
     total: count ?? 0,
     page,
     pageSize: ORDERS_PAGE_SIZE,
+    kind,
   };
 }
 

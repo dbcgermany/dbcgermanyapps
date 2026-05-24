@@ -1,6 +1,10 @@
 "use server";
 
 import { createServerClient, requireRole } from "@dbc/supabase/server";
+import {
+  REAL_ORDER_ACQUISITION_TYPES,
+  ALLOCATION_ACQUISITION_TYPES,
+} from "@/lib/order-kinds";
 
 export interface RevenueByTier {
   tier_id: string;
@@ -10,8 +14,18 @@ export interface RevenueByTier {
 }
 
 export interface LiveEventStats {
+  // Tickets sold via checkout or door-sale. Real orders only.
+  ticketsSold: number;
+  // Tickets allocated via invitation or team/companion assignment.
+  // These never count as "sold" but they do show up on the door (they scan
+  // in like everyone else), so they're included in the check-in denominator.
+  ticketsAllocated: number;
+  // Sold + allocated. Replaces the old `totalTickets` semantic — what's the
+  // total number of physical tickets that can walk through the door.
   totalTickets: number;
   checkedIn: number;
+  // Percentage = checkedIn / totalTickets. Includes allocations in the
+  // denominator since allocated guests do attend.
   checkedInPct: number;
   revenueCents: number;
   ordersByMethod: { payment_method: string; count: number }[];
@@ -25,36 +39,65 @@ export async function getLiveEventStats(
   await requireRole("team_member");
   const supabase = await createServerClient();
 
-  const [totalRes, checkedInRes, revenueRes, methodRawRes, recentRes, perTierRes] =
-    await Promise.all([
-      // Total tickets (paid/comped only — abandoned carts shouldn't
-      // show up on the live event operator screen as "capacity used").
+  const [
+    soldRes,
+    allocatedRes,
+    checkedInRes,
+    revenueRes,
+    methodRawRes,
+    recentRes,
+    perTierRes,
+  ] = await Promise.all([
+      // Tickets SOLD — only counts real orders (purchased + door_sale).
       supabase
         .from("tickets")
-        .select("id, orders!inner(status)", { count: "exact", head: true })
+        .select(
+          "id, orders!inner(status, acquisition_type)",
+          { count: "exact", head: true }
+        )
         .in("orders.status", ["paid", "comped"])
+        .in("orders.acquisition_type", [...REAL_ORDER_ACQUISITION_TYPES])
         .eq("event_id", eventId),
 
-      // Checked in
+      // Tickets ALLOCATED — invitations + team/companion assignments.
+      // Always counted, regardless of order status (these are always comped
+      // in practice but we don't depend on it).
+      supabase
+        .from("tickets")
+        .select(
+          "id, orders!inner(acquisition_type)",
+          { count: "exact", head: true }
+        )
+        .in("orders.acquisition_type", [...ALLOCATION_ACQUISITION_TYPES])
+        .eq("event_id", eventId),
+
+      // Checked in (regardless of acquisition type — allocated guests
+      // do check in).
       supabase
         .from("tickets")
         .select("id", { count: "exact", head: true })
         .eq("event_id", eventId)
         .not("checked_in_at", "is", null),
 
-      // Revenue
+      // Revenue — restricted to real orders. Allocations contribute €0
+      // anyway, so this is mostly cosmetic, but it makes the KPI robust
+      // against a future paid-but-allocated edge case.
       supabase
         .from("orders")
         .select("total_cents")
         .eq("event_id", eventId)
-        .in("status", ["paid", "comped"]),
+        .in("status", ["paid", "comped"])
+        .in("acquisition_type", [...REAL_ORDER_ACQUISITION_TYPES]),
 
-      // Orders by payment method (raw rows, aggregated below)
+      // Orders by payment method — real orders only. Allocations have
+      // payment_method=null and would dilute the "how are people paying?"
+      // breakdown.
       supabase
         .from("orders")
         .select("payment_method")
         .eq("event_id", eventId)
-        .in("status", ["paid", "comped"]),
+        .in("status", ["paid", "comped"])
+        .in("acquisition_type", [...REAL_ORDER_ACQUISITION_TYPES]),
 
       // Last 10 check-ins
       supabase
@@ -71,14 +114,22 @@ export async function getLiveEventStats(
       // tier price comes from ticket_tiers.price_cents — using order
       // discount_cents would double-count when the same coupon spans
       // multiple tiers in one order.
+      //
+      // Real orders only — per-tier "tickets_sold" must match the
+      // headline KPI definition.
       supabase
         .from("tickets")
-        .select("tier_id, orders!inner(status), ticket_tiers!inner(name_en, name_de, name_fr, price_cents)")
+        .select(
+          "tier_id, orders!inner(status, acquisition_type), ticket_tiers!inner(name_en, name_de, name_fr, price_cents)"
+        )
         .in("orders.status", ["paid", "comped"])
+        .in("orders.acquisition_type", [...REAL_ORDER_ACQUISITION_TYPES])
         .eq("event_id", eventId),
     ]);
 
-  const totalTickets = totalRes.count ?? 0;
+  const ticketsSold = soldRes.count ?? 0;
+  const ticketsAllocated = allocatedRes.count ?? 0;
+  const totalTickets = ticketsSold + ticketsAllocated;
   const checkedIn = checkedInRes.count ?? 0;
   const revenueCents = (revenueRes.data ?? []).reduce(
     (sum, o) => sum + (o.total_cents ?? 0),
@@ -140,6 +191,8 @@ export async function getLiveEventStats(
     .sort((a, b) => b.revenue_cents - a.revenue_cents);
 
   return {
+    ticketsSold,
+    ticketsAllocated,
     totalTickets,
     checkedIn,
     checkedInPct: totalTickets > 0 ? Math.round((checkedIn / totalTickets) * 100) : 0,

@@ -1,14 +1,20 @@
 "use server";
 
 import { createServerClient, requireRole } from "@dbc/supabase/server";
+import {
+  REAL_ORDER_ACQUISITION_TYPES,
+  ALLOCATION_ACQUISITION_TYPES,
+} from "@/lib/order-kinds";
 
 /**
- * Per-channel aggregate. Three channels get aggregated today:
- *   - online: self-serve Stripe (acquisition_type='purchased')
- *   - door:   operator-assisted paid sales (acquisition_type='door_sale')
- *   - comped: zero-revenue invitations/assignments (status='comped')
+ * Per-channel aggregate. Channels:
+ *   - online:      self-serve Stripe (acquisition_type='purchased')
+ *   - door:        operator-assisted paid sales (acquisition_type='door_sale')
+ *   - allocations: invitations and team/companion assignments
+ *                  (acquisition_type IN ('invited','assigned')) — never real
+ *                  revenue and explicitly NOT counted as orders in KPIs.
  *
- * `revenueCents` / `refundCents` are always 0 for comped (no money moves).
+ * `revenueCents` / `refundCents` are 0 for allocations (no money moves).
  */
 export interface ChannelStats {
   orders: number;
@@ -18,11 +24,11 @@ export interface ChannelStats {
 }
 
 export interface PeriodStats {
-  revenueCents: number;       // gross ticket revenue (paid + comped)
+  revenueCents: number;       // gross ticket revenue (paid + comped real orders)
   netRevenueCents: number;    // gross − refunds
   refundCents: number;        // sum of refunded orders
-  paidOrderCount: number;
-  ticketsSold: number;
+  paidOrderCount: number;     // real orders only (purchased + door_sale)
+  ticketsSold: number;        // tickets attached to real orders only
   checkIns: number;
   aovCents: number;           // gross / paid order count
   arpaCents: number;          // gross / tickets sold
@@ -34,7 +40,8 @@ export interface PeriodStats {
   // Per-channel split — same window as the aggregates above.
   online: ChannelStats;
   door: ChannelStats;
-  comped: ChannelStats;
+  // Separate from sales — invitations + assignments.
+  allocations: ChannelStats;
 }
 
 export interface DashboardKpis {
@@ -109,27 +116,35 @@ async function computePeriodStats(
     abandonedRes,
     onlineRes,
     doorRes,
-    compedRes,
+    allocationsRes,
   ] = await Promise.all([
+      // Real orders only — never count invitations/assignments here.
+      // A comped order on a `purchased` acquisition (free promo code) still
+      // counts as a real order; it just contributes €0 revenue.
       supabase
         .from("orders")
         .select("total_cents", { count: "exact" })
         .in("status", ["paid", "comped"])
+        .in("acquisition_type", [...REAL_ORDER_ACQUISITION_TYPES])
         .gte("created_at", fromTs)
         .lt("created_at", toTs),
       supabase
         .from("orders")
         .select("total_cents")
         .eq("status", "refunded")
+        .in("acquisition_type", [...REAL_ORDER_ACQUISITION_TYPES])
         .gte("created_at", fromTs)
         .lt("created_at", toTs),
-      // Only count tickets whose parent order actually sold (paid or
-      // comped). Without the inner-join filter, every reservation — even
-      // ones the buyer abandoned on Stripe — gets counted.
+      // Tickets sold = attached to real orders only. Allocations get counted
+      // separately further down.
       supabase
         .from("tickets")
-        .select("id, orders!inner(status)", { count: "exact", head: true })
+        .select(
+          "id, orders!inner(status, acquisition_type)",
+          { count: "exact", head: true }
+        )
         .in("orders.status", ["paid", "comped"])
+        .in("orders.acquisition_type", [...REAL_ORDER_ACQUISITION_TYPES])
         .gte("created_at", fromTs)
         .lt("created_at", toTs),
       supabase
@@ -150,8 +165,8 @@ async function computePeriodStats(
         .not("stripe_checkout_session_id", "is", null)
         .gte("created_at", fromTs)
         .lt("created_at", toTs),
-      // Channel split — three queries, mutually exclusive so nothing is
-      // double-counted. Embedded tickets(id) gives us the ticket count
+      // Channel split — mutually exclusive by acquisition_type so nothing
+      // is double-counted. Embedded tickets(id) gives us the ticket count
       // per order without a second round-trip.
       supabase
         .from("orders")
@@ -167,10 +182,12 @@ async function computePeriodStats(
         .in("status", ["paid", "refunded"])
         .gte("created_at", fromTs)
         .lt("created_at", toTs),
+      // Allocations bucket — invited + assigned, regardless of status
+      // (these are always comped in practice but we don't depend on it).
       supabase
         .from("orders")
         .select("status, total_cents, tickets(id)")
-        .eq("status", "comped")
+        .in("acquisition_type", [...ALLOCATION_ACQUISITION_TYPES])
         .gte("created_at", fromTs)
         .lt("created_at", toTs),
     ]);
@@ -195,7 +212,9 @@ async function computePeriodStats(
 
   const online = aggregateChannel((onlineRes.data ?? []) as ChannelOrderRow[]);
   const door = aggregateChannel((doorRes.data ?? []) as ChannelOrderRow[]);
-  const comped = aggregateChannel((compedRes.data ?? []) as ChannelOrderRow[]);
+  const allocations = aggregateChannel(
+    (allocationsRes.data ?? []) as ChannelOrderRow[]
+  );
 
   return {
     revenueCents,
@@ -210,7 +229,7 @@ async function computePeriodStats(
     abandonedRevenueCents,
     online,
     door,
-    comped,
+    allocations,
   };
 }
 
@@ -244,11 +263,14 @@ export async function getDashboardKpis(
     computePeriodStats(supabase, priorFromTs, priorToTs),
   ]);
 
-  // Paid orders in window (for chart + top events)
+  // Paid orders in window (for chart + top events) — real orders only,
+  // so the chart and top-events ranking aren't skewed by zero-revenue
+  // allocations.
   const { data: paidOrders } = await supabase
     .from("orders")
     .select("total_cents, created_at, event_id")
     .in("status", ["paid", "comped"])
+    .in("acquisition_type", [...REAL_ORDER_ACQUISITION_TYPES])
     .gte("created_at", fromTs)
     .lte("created_at", toTs);
 
@@ -259,8 +281,13 @@ export async function getDashboardKpis(
     .eq("is_published", true)
     .gte("ends_at", new Date().toISOString());
 
-  const checkInRate = current.ticketsSold
-    ? Math.round((current.checkIns / current.ticketsSold) * 100)
+  // Check-in rate = checkIns / (sold + allocated). Allocated guests scan in
+  // at the door too, so they belong in the denominator — otherwise the rate
+  // can exceed 100% for events with significant invitation contingents.
+  const checkInDenom =
+    current.ticketsSold + current.allocations.tickets;
+  const checkInRate = checkInDenom
+    ? Math.round((current.checkIns / checkInDenom) * 100)
     : 0;
 
   // Revenue-by-day (zero-filled across window)
@@ -310,12 +337,14 @@ export async function getDashboardKpis(
     existing.revenue += o.total_cents ?? 0;
     eventRevenue.set(o.event_id, existing);
   }
-  // Same paid/comped filter as the dashboard ticketsSold KPI — otherwise
-  // the Top-Events "sold" column includes tickets from abandoned carts.
+  // Same filter as the dashboard ticketsSold KPI: real orders only and
+  // paid/comped status. Without this, Top-Events "sold" inflates with
+  // abandoned-cart reservations and internal allocations.
   const { data: ticketsByEvent } = await supabase
     .from("tickets")
-    .select("event_id, orders!inner(status)")
+    .select("event_id, orders!inner(status, acquisition_type)")
     .in("orders.status", ["paid", "comped"])
+    .in("orders.acquisition_type", [...REAL_ORDER_ACQUISITION_TYPES])
     .gte("created_at", fromTs)
     .lte("created_at", toTs);
   for (const t of (ticketsByEvent ?? []) as Array<{ event_id: string }>) {

@@ -27,12 +27,15 @@ interface Order {
 
 const STATUS_OPTIONS = ["", ...ORDER_STATUS_VALUES] as const;
 
+export type OrderKindFilter = "real" | "allocations" | "all";
+
 export function OrdersClient({
   locale,
   orders,
   events,
   currentEventFilter,
   currentStatusFilter,
+  currentKind,
   page,
   pageSize,
   total,
@@ -42,6 +45,7 @@ export function OrdersClient({
   events: { id: string; title: string }[];
   currentEventFilter: string;
   currentStatusFilter: string;
+  currentKind: OrderKindFilter;
   page: number;
   pageSize: number;
   total: number;
@@ -54,22 +58,36 @@ export function OrdersClient({
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
-  function updateFilters(event?: string, status?: string) {
+  function buildParams(overrides: {
+    event?: string;
+    status?: string;
+    kind?: OrderKindFilter;
+    page?: number;
+  }) {
     const params = new URLSearchParams();
-    const ev = event ?? currentEventFilter;
-    const st = status ?? currentStatusFilter;
+    const ev = overrides.event ?? currentEventFilter;
+    const st = overrides.status ?? currentStatusFilter;
+    const kn = overrides.kind ?? currentKind;
     if (ev) params.set("event", ev);
     if (st) params.set("status", st);
+    if (kn !== "real") params.set("kind", kn);
+    if (overrides.page && overrides.page > 1) {
+      params.set("page", String(overrides.page));
+    }
+    return params;
+  }
+
+  function updateFilters(event?: string, status?: string) {
     // Reset to page 1 when filters change.
-    router.push(`?${params.toString()}`);
+    router.push(`?${buildParams({ event, status }).toString()}`);
+  }
+
+  function setKind(kind: OrderKindFilter) {
+    router.push(`?${buildParams({ kind }).toString()}`);
   }
 
   function goToPage(p: number) {
-    const params = new URLSearchParams();
-    if (currentEventFilter) params.set("event", currentEventFilter);
-    if (currentStatusFilter) params.set("status", currentStatusFilter);
-    if (p > 1) params.set("page", String(p));
-    router.push(`?${params.toString()}`);
+    router.push(`?${buildParams({ page: p }).toString()}`);
   }
 
   async function runRefund(orderId: string) {
@@ -89,7 +107,7 @@ export function OrdersClient({
     <div className="mt-6">
       {/* Filters + export */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <select
             value={currentEventFilter}
             onChange={(e) => updateFilters(e.target.value, undefined)}
@@ -113,6 +131,31 @@ export function OrdersClient({
               </option>
             ))}
           </select>
+          {/* Real-vs-allocations tabs. Default ("real") hides internal
+              invitations and team assignments so headline counts match
+              actual sales. Toggling "allocations" or "all" surfaces them. */}
+          <div
+            role="tablist"
+            aria-label={t("kindFilterLabel")}
+            className="inline-flex overflow-hidden rounded-md border border-input bg-background text-sm"
+          >
+            {(["real", "allocations", "all"] as const).map((k) => (
+              <button
+                key={k}
+                type="button"
+                role="tab"
+                aria-selected={currentKind === k}
+                onClick={() => setKind(k)}
+                className={`px-3 py-2 transition-colors ${
+                  currentKind === k
+                    ? "bg-primary text-primary-foreground"
+                    : "hover:bg-muted"
+                }`}
+              >
+                {t(`kind_${k}`)}
+              </button>
+            ))}
+          </div>
         </div>
         <CsvExportButton
           filename={`orders-${new Date().toISOString().slice(0, 10)}.csv`}

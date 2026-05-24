@@ -61,6 +61,8 @@ export default async function EventDetailPage({
     ? [
         { progress: { done: 0, total: 0, overdue: 0 } },
         {
+          ticketsSold: 0,
+          ticketsAllocated: 0,
           totalTickets: 0,
           revenueCents: 0,
           checkedIn: 0,
@@ -78,10 +80,10 @@ export default async function EventDetailPage({
     ? Math.round((checklist.progress.done / checklist.progress.total) * 100)
     : 0;
 
-  // Sales target progress
+  // Sales target progress — counts real sales only, not allocations.
   const ticketTarget = event.sales_target_tickets;
   const revenueTarget = event.sales_target_revenue_cents;
-  const ticketsSoldForTarget = liveStats.totalTickets;
+  const ticketsSoldForTarget = liveStats.ticketsSold;
   const revenueForTarget = liveStats.revenueCents;
 
   // Days-until computation (server component — Date.now is fine here)
@@ -206,7 +208,7 @@ export default async function EventDetailPage({
         <StatGrid cols={4}>
           <StatCard
             label={t("ticketsSold")}
-            value={liveStats.totalTickets.toLocaleString(locale)}
+            value={liveStats.ticketsSold.toLocaleString(locale)}
             sub={
               event.capacity
                 ? t("ofCapacity", { n: event.capacity.toLocaleString(locale) })
@@ -214,12 +216,13 @@ export default async function EventDetailPage({
             }
           />
           <StatCard
-            label={t("revenue")}
-            value={`\u20AC${(liveStats.revenueCents / 100).toLocaleString(locale, { maximumFractionDigits: 0 })}`}
+            label={t("allocations")}
+            value={liveStats.ticketsAllocated.toLocaleString(locale)}
+            sub={t("allocationsSub")}
           />
           <StatCard
-            label={t("checkedIn")}
-            value={`${liveStats.checkedIn.toLocaleString(locale)} (${liveStats.checkedInPct}%)`}
+            label={t("revenue")}
+            value={`\u20AC${(liveStats.revenueCents / 100).toLocaleString(locale, { maximumFractionDigits: 0 })}`}
           />
           <StatCard
             label={daysUntil >= 0 ? t("startsIn") : t("ended")}

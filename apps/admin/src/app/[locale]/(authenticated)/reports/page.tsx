@@ -125,7 +125,7 @@ async function FinanceTabContent({
   events: { id: string; title: string }[];
 }) {
   const channel = (
-    ["online", "door", "comped"].includes(sp.channel ?? "")
+    ["online", "door", "allocations"].includes(sp.channel ?? "")
       ? sp.channel
       : ""
   ) as FinanceChannel | "";

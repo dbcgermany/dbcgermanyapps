@@ -58,7 +58,7 @@ const METHOD_LABELS: Record<string, string> = {
   cash: "Cash",
   door_card: "Card (door)",
   door_cash: "Cash (door)",
-  comped: "Comped",
+  allocation: "Allocation",
 };
 
 export function FinanceTab({ locale, summary, events, filters }: FinanceTabProps) {
@@ -206,7 +206,7 @@ export function FinanceTab({ locale, summary, events, filters }: FinanceTabProps
             <option value="">{t("allChannels")}</option>
             <option value="online">{t("online")}</option>
             <option value="door">{t("door")}</option>
-            <option value="comped">{t("comped")}</option>
+            <option value="allocations">{t("allocations")}</option>
           </select>
           <select
             value={filters.eventId}
@@ -253,13 +253,13 @@ export function FinanceTab({ locale, summary, events, filters }: FinanceTabProps
             sub={`${summary.door.orders} ${t("orders")} · ${summary.door.tickets} ${t("tickets")} · ${t("doorSub")}`}
           />
           <StatCard
-            label={t("comped")}
-            value={`${summary.comped.tickets.toLocaleString(locale)} ${t("tickets")}`}
-            sub={`${summary.comped.orders} ${t("orders")} · ${t("compedSub")}`}
+            label={t("allocations")}
+            value={`${summary.allocations.tickets.toLocaleString(locale)} ${t("tickets")}`}
+            sub={`${summary.allocations.orders} ${t("orders")} · ${t("allocationsSub")}`}
           />
           {(() => {
             const paid = summary.online.tickets + summary.door.tickets;
-            const free = summary.comped.tickets;
+            const free = summary.allocations.tickets;
             const total = paid + free;
             const paidPct = total === 0 ? 0 : (paid / total) * 100;
             const freePct = total === 0 ? 0 : 100 - paidPct;
@@ -322,7 +322,7 @@ export function FinanceTab({ locale, summary, events, filters }: FinanceTabProps
                     <td className="px-4 py-3 text-right">{m.orders}</td>
                     <td className="px-4 py-3 text-right">{m.tickets}</td>
                     <td className="px-4 py-3 text-right">
-                      {m.channel === "comped"
+                      {m.channel === "allocations"
                         ? "—"
                         : fmt(m.grossCents, currency, locale)}
                     </td>
@@ -332,7 +332,7 @@ export function FinanceTab({ locale, summary, events, filters }: FinanceTabProps
                         : `-${fmt(m.refundCents, currency, locale)}`}
                     </td>
                     <td className="px-4 py-3 text-right font-medium">
-                      {m.channel === "comped"
+                      {m.channel === "allocations"
                         ? "—"
                         : fmt(m.netCents, currency, locale)}
                     </td>
@@ -383,7 +383,7 @@ export function FinanceTab({ locale, summary, events, filters }: FinanceTabProps
                   </th>
                   <th className="px-4 py-3 text-right font-medium">{t("door")}</th>
                   <th className="px-4 py-3 text-right font-medium">
-                    {t("comped")}
+                    {t("allocations")}
                   </th>
                   <th className="px-4 py-3 text-right font-medium">
                     {t("gross")}
@@ -423,7 +423,7 @@ export function FinanceTab({ locale, summary, events, filters }: FinanceTabProps
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      {r.comped.tickets} {t("tickets")}
+                      {r.allocations.tickets} {t("tickets")}
                     </td>
                     <td className="px-4 py-3 text-right">
                       {fmt(r.totalGrossCents, currency, locale)}

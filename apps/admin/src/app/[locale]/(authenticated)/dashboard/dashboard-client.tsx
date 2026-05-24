@@ -163,12 +163,12 @@ export function DashboardClient({
               dense
             />
             <StatCard
-              label={t("comped")}
-              sub={t("compedSub")}
-              value={`${kpis.current.comped.tickets.toLocaleString(locale)} ${t("tickets")}`}
+              label={t("allocations")}
+              sub={t("allocationsSub")}
+              value={`${kpis.current.allocations.tickets.toLocaleString(locale)} ${t("tickets")}`}
               delta={pctChange(
-                kpis.current.comped.tickets,
-                kpis.prior.comped.tickets
+                kpis.current.allocations.tickets,
+                kpis.prior.allocations.tickets
               )}
               deltaLabel={t("vsPrior")}
               dense
@@ -176,7 +176,7 @@ export function DashboardClient({
             {(() => {
               const paidTickets =
                 kpis.current.online.tickets + kpis.current.door.tickets;
-              const freeTickets = kpis.current.comped.tickets;
+              const freeTickets = kpis.current.allocations.tickets;
               const total = paidTickets + freeTickets;
               const paidPct = total === 0 ? 0 : (paidTickets / total) * 100;
               const freePct = total === 0 ? 0 : 100 - paidPct;
