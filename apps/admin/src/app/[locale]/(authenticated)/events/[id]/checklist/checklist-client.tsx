@@ -1,17 +1,40 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import {
+  useActionState,
+  useEffect,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { Badge, Button, ConfirmDialog } from "@dbc/ui";
+import {
+  Badge,
+  Button,
+  ConfirmDialog,
+  FormField,
+  Input,
+  Select,
+  Textarea,
+} from "@dbc/ui";
 import {
   createChecklistItem,
+  updateChecklistItem,
   toggleChecklistStatus,
   deleteChecklistItem,
   populateChecklistFromTemplate,
   type ChecklistItem,
+  type RunsheetPickerOption,
 } from "@/actions/checklist";
+import { InlineEditRow } from "@/components/inline-edit-row";
+import { DeleteButton } from "@/components/delete-button";
+import {
+  RunsheetItemPicker,
+  runsheetItemPickerHint,
+  runsheetItemPickerLabel,
+} from "@/components/runsheet-item-picker";
 
 const CATEGORIES = [
   "all",
@@ -31,11 +54,10 @@ const STATUS_CYCLE: Record<string, "pending" | "in_progress" | "done"> = {
   done: "pending",
 };
 
-const STATUS_COLORS: Record<string, string> = {
-  pending: "border-border",
-  in_progress: "border-warning-border bg-warning-soft",
-  done: "border-success-border bg-success-soft",
-  skipped: "border-muted opacity-50",
+const STATUS_VARIANT: Record<string, "default" | "warning" | "success"> = {
+  pending: "default",
+  in_progress: "warning",
+  done: "success",
 };
 
 interface Props {
@@ -50,6 +72,7 @@ interface Props {
     actualCostCents: number;
   };
   staff: { id: string; name: string }[];
+  runsheetOptions: RunsheetPickerOption[];
   locale: string;
   eventStartsAt: string;
 }
@@ -58,7 +81,6 @@ const CL_T = {
   en: {
     budget: "Budget",
     actual: "Actual",
-    all: "All",
     overdue: "Overdue",
     todo: "To do",
     done: "Done",
@@ -69,12 +91,26 @@ const CL_T = {
     deleteConfirm: "Delete this checklist item?",
     deleteLabel: "Delete",
     taskTitle: "Task title",
+    description: "Description (optional)",
+    privateNotes: "Internal notes (optional)",
+    estCost: "Est. cost (€)",
+    actualCost: "Actual cost (€)",
+    dueDate: "Due date",
+    assignedTo: "Assigned to",
     unassigned: "Unassigned",
     adding: "Adding…",
+    saving: "Saving…",
+    save: "Save",
     add: "Add",
     cancel: "Cancel",
-    statusTitle: "Status",
-    clickToCycle: "click to cycle",
+    savedToast: "Saved",
+    statuses: {
+      pending: "Pending",
+      in_progress: "In progress",
+      done: "Done",
+      skipped: "Skipped",
+    } as Record<string, string>,
+    statusLabel: "Status",
     categories: {
       all: "All",
       venue: "Venue",
@@ -86,11 +122,12 @@ const CL_T = {
       content: "Content",
       other: "Other",
     } as Record<string, string>,
+    notesIndicator: "Internal note",
+    linkedRunsheet: "Run-sheet:",
   },
   de: {
     budget: "Budget",
     actual: "Tatsächlich",
-    all: "Alle",
     overdue: "Überfällig",
     todo: "Zu erledigen",
     done: "Erledigt",
@@ -101,12 +138,26 @@ const CL_T = {
     deleteConfirm: "Diesen Eintrag löschen?",
     deleteLabel: "Löschen",
     taskTitle: "Titel der Aufgabe",
+    description: "Beschreibung (optional)",
+    privateNotes: "Interne Notizen (optional)",
+    estCost: "Geschätzte Kosten (€)",
+    actualCost: "Tatsächliche Kosten (€)",
+    dueDate: "Fällig am",
+    assignedTo: "Zugewiesen an",
     unassigned: "Nicht zugewiesen",
     adding: "Wird hinzugefügt…",
+    saving: "Wird gespeichert…",
+    save: "Speichern",
     add: "Hinzufügen",
     cancel: "Abbrechen",
-    statusTitle: "Status",
-    clickToCycle: "klicken zum Wechseln",
+    savedToast: "Gespeichert",
+    statuses: {
+      pending: "Offen",
+      in_progress: "Läuft",
+      done: "Erledigt",
+      skipped: "Übersprungen",
+    } as Record<string, string>,
+    statusLabel: "Status",
     categories: {
       all: "Alle",
       venue: "Location",
@@ -118,11 +169,12 @@ const CL_T = {
       content: "Inhalt",
       other: "Sonstiges",
     } as Record<string, string>,
+    notesIndicator: "Interne Notiz",
+    linkedRunsheet: "Ablaufplan:",
   },
   fr: {
     budget: "Budget",
     actual: "Réel",
-    all: "Tous",
     overdue: "En retard",
     todo: "À faire",
     done: "Fait",
@@ -133,12 +185,26 @@ const CL_T = {
     deleteConfirm: "Supprimer cet élément ?",
     deleteLabel: "Supprimer",
     taskTitle: "Intitulé",
+    description: "Description (facultatif)",
+    privateNotes: "Notes internes (facultatif)",
+    estCost: "Coût estimé (€)",
+    actualCost: "Coût réel (€)",
+    dueDate: "Échéance",
+    assignedTo: "Assigné à",
     unassigned: "Non assigné",
     adding: "Ajout…",
+    saving: "Enregistrement…",
+    save: "Enregistrer",
     add: "Ajouter",
     cancel: "Annuler",
-    statusTitle: "Statut",
-    clickToCycle: "cliquer pour passer à l’état suivant",
+    savedToast: "Enregistré",
+    statuses: {
+      pending: "En attente",
+      in_progress: "En cours",
+      done: "Terminé",
+      skipped: "Ignoré",
+    } as Record<string, string>,
+    statusLabel: "Statut",
     categories: {
       all: "Tous",
       venue: "Lieu",
@@ -150,14 +216,22 @@ const CL_T = {
       content: "Contenu",
       other: "Autre",
     } as Record<string, string>,
+    notesIndicator: "Note interne",
+    linkedRunsheet: "Feuille de route :",
   },
 } as const;
+
+type Locale = keyof typeof CL_T;
+function pickLocale(l: string): Locale {
+  return (l === "de" || l === "fr" ? l : "en") as Locale;
+}
 
 export function ChecklistClient({
   eventId,
   items,
   progress,
   staff,
+  runsheetOptions,
   locale,
   eventStartsAt,
 }: Props) {
@@ -166,7 +240,7 @@ export function ChecklistClient({
   const [isPending, startTransition] = useTransition();
   const [activeCategory, setActiveCategory] = useState("all");
   const [showAddForm, setShowAddForm] = useState(false);
-  const t = CL_T[(locale === "de" || locale === "fr" ? locale : "en") as keyof typeof CL_T];
+  const t = CL_T[pickLocale(locale)];
 
   const today = new Date().toISOString().slice(0, 10);
 
@@ -218,17 +292,6 @@ export function ChecklistClient({
     });
   }
 
-  function handleAdd(formData: FormData) {
-    formData.set("locale", locale);
-    startTransition(async () => {
-      const res = await createChecklistItem(eventId, formData);
-      if (res.success) {
-        setShowAddForm(false);
-        router.refresh();
-      }
-    });
-  }
-
   function handlePopulate() {
     startTransition(async () => {
       await populateChecklistFromTemplate(eventId, eventStartsAt, locale);
@@ -237,7 +300,7 @@ export function ChecklistClient({
   }
 
   function fmtCost(cents: number) {
-    return `\u20AC${(cents / 100).toLocaleString(locale, { maximumFractionDigits: 0 })}`;
+    return `€${(cents / 100).toLocaleString(locale, { maximumFractionDigits: 0 })}`;
   }
 
   return (
@@ -299,23 +362,25 @@ export function ChecklistClient({
         })}
       </div>
 
-      {/* Overdue items */}
+      {/* Overdue */}
       {overdue.length > 0 && (
         <section>
           <h3 className="text-xs font-semibold uppercase tracking-wider text-danger">
             {t.overdue} ({overdue.length})
           </h3>
-          <div className="mt-2 space-y-1">
+          <div className="mt-2 space-y-2">
             {overdue.map((item) => (
-              <ItemRow
+              <ChecklistRow
                 key={item.id}
                 item={item}
+                eventId={eventId}
+                staff={staff}
+                runsheetOptions={runsheetOptions}
+                locale={locale}
                 today={today}
                 onToggle={handleToggle}
                 onDelete={handleDelete}
-                deleteConfirmText={t.deleteConfirm}
-                deleteLabel={t.deleteLabel}
-                cancelLabel={t.cancel}
+                t={t}
                 isPending={isPending}
               />
             ))}
@@ -323,23 +388,25 @@ export function ChecklistClient({
         </section>
       )}
 
-      {/* Upcoming / in progress */}
+      {/* Upcoming */}
       {upcoming.length > 0 && (
         <section>
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             {t.todo} ({upcoming.length})
           </h3>
-          <div className="mt-2 space-y-1">
+          <div className="mt-2 space-y-2">
             {upcoming.map((item) => (
-              <ItemRow
+              <ChecklistRow
                 key={item.id}
                 item={item}
+                eventId={eventId}
+                staff={staff}
+                runsheetOptions={runsheetOptions}
+                locale={locale}
                 today={today}
                 onToggle={handleToggle}
                 onDelete={handleDelete}
-                deleteConfirmText={t.deleteConfirm}
-                deleteLabel={t.deleteLabel}
-                cancelLabel={t.cancel}
+                t={t}
                 isPending={isPending}
               />
             ))}
@@ -353,17 +420,19 @@ export function ChecklistClient({
           <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             {t.done} ({completed.length})
           </h3>
-          <div className="mt-2 space-y-1">
+          <div className="mt-2 space-y-2">
             {completed.map((item) => (
-              <ItemRow
+              <ChecklistRow
                 key={item.id}
                 item={item}
+                eventId={eventId}
+                staff={staff}
+                runsheetOptions={runsheetOptions}
+                locale={locale}
                 today={today}
                 onToggle={handleToggle}
                 onDelete={handleDelete}
-                deleteConfirmText={t.deleteConfirm}
-                deleteLabel={t.deleteLabel}
-                cancelLabel={t.cancel}
+                t={t}
                 isPending={isPending}
               />
             ))}
@@ -398,187 +467,382 @@ export function ChecklistClient({
 
       {/* Add form */}
       {showAddForm && (
-        <form
-          action={handleAdd}
-          className="rounded-lg border border-primary/50 bg-muted/30 p-4 space-y-3"
-        >
-          <div className="grid gap-3 sm:grid-cols-2">
-            <input
-              name="title"
-              placeholder={t.taskTitle}
-              required
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-            />
-            <select
-              name="category"
-              defaultValue="other"
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-            >
-              {CATEGORIES.filter((c) => c !== "all").map((c) => (
-                <option key={c} value={c}>
-                  {t.categories[c] ?? c}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-3">
-            <input
-              name="due_date"
-              type="date"
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-            />
-            <input
-              name="estimated_cost_eur"
-              type="number"
-              step="0.01"
-              min="0"
-              placeholder="Est. cost (\u20AC)"
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-            />
-            <select
-              name="assigned_to"
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-            >
-              <option value="">{t.unassigned}</option>
-              {staff.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="flex gap-2">
-            <Button type="submit"
-              disabled={isPending}>
-              {isPending ? t.adding : t.add}
-            </Button>
-            <button
-              type="button"
-              onClick={() => setShowAddForm(false)}
-              className="rounded-md border border-input px-4 py-1.5 text-xs font-medium hover:bg-muted"
-            >
-              {t.cancel}
-            </button>
-          </div>
-        </form>
+        <ChecklistAddForm
+          eventId={eventId}
+          staff={staff}
+          runsheetOptions={runsheetOptions}
+          locale={locale}
+          t={t}
+          onAdded={() => {
+            setShowAddForm(false);
+            router.refresh();
+          }}
+          onCancel={() => setShowAddForm(false)}
+        />
       )}
     </div>
   );
 }
 
-function ItemRow({
+/* -------------------------------------------------------------------------- */
+
+type ChecklistT = (typeof CL_T)[keyof typeof CL_T];
+type ActionResult = { error?: string; success?: boolean } | null;
+
+function ChecklistRow({
   item,
+  eventId,
+  staff,
+  runsheetOptions,
+  locale,
   today,
   onToggle,
   onDelete,
+  t,
   isPending,
-  deleteConfirmText,
-  deleteLabel,
-  cancelLabel,
 }: {
   item: ChecklistItem;
+  eventId: string;
+  staff: { id: string; name: string }[];
+  runsheetOptions: RunsheetPickerOption[];
+  locale: string;
   today: string;
-  onToggle: (item: ChecklistItem) => void;
+  onToggle: (i: ChecklistItem) => void;
   onDelete: (id: string) => void;
+  t: ChecklistT;
   isPending: boolean;
-  deleteConfirmText: string;
-  deleteLabel: string;
-  cancelLabel: string;
 }) {
   const isOverdue =
     item.due_date &&
     item.due_date < today &&
     item.status !== "done" &&
     item.status !== "skipped";
-  const threeDaysFromNow = new Date(new Date(today).getTime() + 3 * 86400000)
-    .toISOString()
-    .slice(0, 10);
-  const isDueSoon =
-    !isOverdue &&
-    item.due_date &&
-    item.due_date <= threeDaysFromNow &&
-    item.status !== "done" &&
-    item.status !== "skipped";
+
+  const dueLabel = item.due_date
+    ? new Date(item.due_date + "T00:00:00").toLocaleDateString(locale, {
+        month: "short",
+        day: "numeric",
+      })
+    : null;
+
+  const costLabel =
+    item.estimated_cost_cents != null && item.estimated_cost_cents > 0
+      ? `€${(item.estimated_cost_cents / 100).toLocaleString(locale)}${
+          item.actual_cost_cents != null
+            ? ` / €${(item.actual_cost_cents / 100).toLocaleString(locale)}`
+            : ""
+        }`
+      : null;
+
+  const metaParts = [
+    item.category && (t.categories[item.category] ?? item.category),
+    dueLabel && (isOverdue ? `⚑ ${dueLabel}` : dueLabel),
+    item.assignee?.display_name,
+    costLabel,
+    item.runsheet_item
+      ? `${t.linkedRunsheet} ${item.runsheet_item.title}`
+      : null,
+    item.description,
+  ].filter(Boolean);
 
   return (
-    <div
-      className={`flex items-center gap-3 rounded-md border p-3 transition-colors ${STATUS_COLORS[item.status] ?? "border-border"}`}
-    >
-      <button
-        type="button"
-        onClick={() => onToggle(item)}
-        disabled={isPending}
-        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 text-xs transition-colors ${
-          item.status === "done"
-            ? "border-success-strong bg-success-strong text-white"
-            : item.status === "in_progress"
-              ? "border-warning-strong bg-warning-soft"
-              : "border-border hover:border-primary"
-        }`}
-        title={`Status: ${item.status} — click to cycle`}
-      >
-        {item.status === "done" && "\u2713"}
-        {item.status === "in_progress" && "\u25CF"}
-      </button>
-
-      <div className="min-w-0 flex-1">
-        <p
-          className={`text-sm font-medium ${item.status === "done" ? "line-through text-muted-foreground" : ""}`}
+    <InlineEditRow
+      title={item.title}
+      badges={
+        <>
+          <Badge variant={STATUS_VARIANT[item.status] ?? "default"}>
+            {t.statuses[item.status] ?? item.status.replace("_", " ")}
+          </Badge>
+          {isOverdue && (
+            <Badge variant="warning">{t.overdue}</Badge>
+          )}
+          {item.notes && (
+            <Badge variant="warning" title={item.notes}>
+              {t.notesIndicator}
+            </Badge>
+          )}
+        </>
+      }
+      meta={metaParts.length > 0 ? metaParts.join(" · ") : undefined}
+      actions={
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => onToggle(item)}
+          disabled={isPending}
+          title={t.statusLabel}
         >
-          {item.title}
-        </p>
-        <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          <Badge variant="default">{item.category}</Badge>
-          {item.due_date && (
-            <span
-              className={
-                isOverdue
-                  ? "font-semibold text-danger"
-                  : isDueSoon
-                    ? "font-semibold text-warning"
-                    : ""
-              }
-            >
-              {new Date(item.due_date + "T00:00:00").toLocaleDateString(
-                undefined,
-                { month: "short", day: "numeric" }
-              )}
-            </span>
-          )}
-          {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-          {(item as any).assignee?.display_name && (
-            <span>
-              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-              {(item as any).assignee.display_name}
-            </span>
-          )}
-          {item.estimated_cost_cents != null && item.estimated_cost_cents > 0 && (
-            <span>
-              {`\u20AC${(item.estimated_cost_cents / 100).toLocaleString()}`}
-              {item.actual_cost_cents != null &&
-                ` / \u20AC${(item.actual_cost_cents / 100).toLocaleString()}`}
-            </span>
-          )}
-        </div>
-      </div>
+          {STATUS_CYCLE[item.status]
+            ? t.statuses[STATUS_CYCLE[item.status]] ?? STATUS_CYCLE[item.status]
+            : t.statusLabel}
+        </Button>
+      }
+      deleteAction={
+        <DeleteButton
+          action={async () => {
+            onDelete(item.id);
+            return { success: true };
+          }}
+          confirmTitle={t.deleteConfirm}
+          confirmLabel={t.deleteLabel}
+          cancelLabel={t.cancel}
+          label={t.deleteLabel}
+          compact
+        />
+      }
+      renderEdit={({ close }) => (
+        <ChecklistEditForm
+          item={item}
+          eventId={eventId}
+          staff={staff}
+          runsheetOptions={runsheetOptions}
+          locale={locale}
+          t={t}
+          onSaved={close}
+        />
+      )}
+    />
+  );
+}
 
-      <ConfirmDialog
-        trigger={
-          <button
-            type="button"
-            disabled={isPending}
-            className="shrink-0 text-xs text-danger hover:opacity-80 disabled:opacity-50"
-          >
-            {deleteLabel}
-          </button>
-        }
-        title={deleteConfirmText}
-        description={item.title}
-        confirmLabel={deleteLabel}
-        cancelLabel={cancelLabel}
-        variant="danger"
-        onConfirm={() => onDelete(item.id)}
-      />
-    </div>
+function ChecklistAddForm({
+  eventId,
+  staff,
+  runsheetOptions,
+  locale,
+  t,
+  onAdded,
+  onCancel,
+}: {
+  eventId: string;
+  staff: { id: string; name: string }[];
+  runsheetOptions: RunsheetPickerOption[];
+  locale: string;
+  t: ChecklistT;
+  onAdded: () => void;
+  onCancel: () => void;
+}) {
+  const formRef = useRef<HTMLFormElement>(null);
+  const [state, formAction, isPending] = useActionState<ActionResult, FormData>(
+    async (_prev, formData) => {
+      formData.set("locale", locale);
+      return createChecklistItem(eventId, formData);
+    },
+    null
+  );
+
+  const handledRef = useRef<ActionResult>(null);
+  useEffect(() => {
+    if (state === handledRef.current) return;
+    handledRef.current = state;
+    if (state?.error) {
+      toast.error(state.error);
+      return;
+    }
+    if (state?.success) {
+      toast.success(t.savedToast);
+      formRef.current?.reset();
+      onAdded();
+    }
+  }, [state, t.savedToast, onAdded]);
+
+  return (
+    <form
+      ref={formRef}
+      action={formAction}
+      className="rounded-lg border border-primary/50 bg-muted/30 p-4 space-y-4"
+    >
+      <FormField label={t.taskTitle} required>
+        <Input name="title" required />
+      </FormField>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <FormField label={t.statusLabel}>
+          <Select name="category" defaultValue="other">
+            {CATEGORIES.filter((c) => c !== "all").map((c) => (
+              <option key={c} value={c}>
+                {t.categories[c] ?? c}
+              </option>
+            ))}
+          </Select>
+        </FormField>
+        <FormField label={t.dueDate}>
+          <Input name="due_date" type="date" />
+        </FormField>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <FormField label={t.estCost}>
+          <Input name="estimated_cost_eur" type="number" step="0.01" min="0" />
+        </FormField>
+        <FormField label={t.assignedTo}>
+          <Select name="assigned_to" defaultValue="">
+            <option value="">{t.unassigned}</option>
+            {staff.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
+          </Select>
+        </FormField>
+      </div>
+      <FormField label={t.description}>
+        <Textarea name="description" rows={2} />
+      </FormField>
+      <FormField
+        label={runsheetItemPickerLabel(locale)}
+        hint={runsheetItemPickerHint(locale)}
+      >
+        <RunsheetItemPicker
+          options={runsheetOptions}
+          locale={locale}
+        />
+      </FormField>
+      <FormField label={t.privateNotes}>
+        <Textarea name="notes" rows={2} />
+      </FormField>
+      <div className="flex gap-2">
+        <Button type="submit" disabled={isPending}>
+          {isPending ? t.adding : t.add}
+        </Button>
+        <Button type="button" variant="secondary" onClick={onCancel}>
+          {t.cancel}
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+function ChecklistEditForm({
+  item,
+  eventId,
+  staff,
+  runsheetOptions,
+  locale,
+  t,
+  onSaved,
+}: {
+  item: ChecklistItem;
+  eventId: string;
+  staff: { id: string; name: string }[];
+  runsheetOptions: RunsheetPickerOption[];
+  locale: string;
+  t: ChecklistT;
+  onSaved: () => void;
+}) {
+  const router = useRouter();
+  const [state, formAction, isSaving] = useActionState<ActionResult, FormData>(
+    async (_prev, formData) => {
+      formData.set("event_id", eventId);
+      formData.set("locale", locale);
+      return updateChecklistItem(item.id, formData);
+    },
+    null
+  );
+
+  const handledRef = useRef<ActionResult>(null);
+  useEffect(() => {
+    if (state === handledRef.current) return;
+    handledRef.current = state;
+    if (state?.error) {
+      toast.error(state.error);
+      return;
+    }
+    if (state?.success) {
+      toast.success(t.savedToast);
+      onSaved();
+      router.refresh();
+    }
+  }, [state, t.savedToast, onSaved, router]);
+
+  return (
+    <form action={formAction} className="space-y-4">
+      <FormField label={t.taskTitle} required>
+        <Input name="title" defaultValue={item.title} required />
+      </FormField>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <FormField label={t.statusLabel}>
+          <Select name="category" defaultValue={item.category}>
+            {CATEGORIES.filter((c) => c !== "all").map((c) => (
+              <option key={c} value={c}>
+                {t.categories[c] ?? c}
+              </option>
+            ))}
+          </Select>
+        </FormField>
+        <FormField label={t.dueDate}>
+          <Input
+            name="due_date"
+            type="date"
+            defaultValue={item.due_date ?? ""}
+          />
+        </FormField>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <FormField label={t.estCost}>
+          <Input
+            name="estimated_cost_eur"
+            type="number"
+            step="0.01"
+            min="0"
+            defaultValue={
+              item.estimated_cost_cents != null
+                ? (item.estimated_cost_cents / 100).toString()
+                : ""
+            }
+          />
+        </FormField>
+        <FormField label={t.actualCost}>
+          <Input
+            name="actual_cost_eur"
+            type="number"
+            step="0.01"
+            min="0"
+            defaultValue={
+              item.actual_cost_cents != null
+                ? (item.actual_cost_cents / 100).toString()
+                : ""
+            }
+          />
+        </FormField>
+      </div>
+      <FormField label={t.assignedTo}>
+        <Select name="assigned_to" defaultValue={item.assigned_to ?? ""}>
+          <option value="">{t.unassigned}</option>
+          {staff.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.name}
+            </option>
+          ))}
+        </Select>
+      </FormField>
+      <FormField label={t.description}>
+        <Textarea
+          name="description"
+          defaultValue={item.description ?? ""}
+          rows={2}
+        />
+      </FormField>
+      <FormField
+        label={runsheetItemPickerLabel(locale)}
+        hint={runsheetItemPickerHint(locale)}
+      >
+        <RunsheetItemPicker
+          defaultValue={item.runsheet_item_id}
+          options={runsheetOptions}
+          locale={locale}
+        />
+      </FormField>
+      <FormField label={t.privateNotes}>
+        <Textarea name="notes" defaultValue={item.notes ?? ""} rows={2} />
+      </FormField>
+      <div className="flex gap-2">
+        <Button type="submit" disabled={isSaving}>
+          {isSaving ? t.saving : t.save}
+        </Button>
+        <Button type="button" variant="secondary" onClick={onSaved}>
+          {t.cancel}
+        </Button>
+      </div>
+    </form>
   );
 }

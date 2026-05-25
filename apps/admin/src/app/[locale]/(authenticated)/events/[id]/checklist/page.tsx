@@ -1,7 +1,10 @@
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { getEvent } from "@/actions/events";
-import { getEventChecklist } from "@/actions/checklist";
+import {
+  getEventChecklist,
+  getRunsheetPickerOptionsForEvent,
+} from "@/actions/checklist";
 import { getStaff } from "@/actions/staff";
 import { PageHeader } from "@/components/page-header";
 import { ChecklistClient } from "./checklist-client";
@@ -28,9 +31,10 @@ export default async function ChecklistPage({
     notFound();
   }
 
-  const [checklist, staff] = await Promise.all([
+  const [checklist, staff, runsheetOptions] = await Promise.all([
     getEventChecklist(id),
     getStaff(),
+    getRunsheetPickerOptionsForEvent(id),
   ]);
 
   const { progress } = checklist;
@@ -55,6 +59,7 @@ export default async function ChecklistPage({
           id: s.id,
           name: s.display_name || s.email,
         }))}
+        runsheetOptions={runsheetOptions}
         locale={locale}
         eventStartsAt={event.starts_at}
       />

@@ -5,6 +5,7 @@ import {
   deleteExpense,
   getProviderContactOptions,
 } from "@/actions/expenses";
+import { getRunsheetPickerOptionsForEvent } from "@/actions/checklist";
 import { PageHeader } from "@/components/page-header";
 import { DeleteButton } from "@/components/delete-button";
 import { ExpenseForm } from "../expense-form";
@@ -18,9 +19,10 @@ export default async function ExpenseDetailPage({
   const { locale, id: eventId, expenseId } = await params;
   const t = pickBudgetT(locale);
 
-  const [expense, providers] = await Promise.all([
+  const [expense, providers, runsheetOptions] = await Promise.all([
     getExpense(expenseId),
     getProviderContactOptions(),
+    getRunsheetPickerOptionsForEvent(eventId),
   ]);
   if (!expense) notFound();
 
@@ -80,6 +82,7 @@ export default async function ExpenseDetailPage({
           eventId={eventId}
           locale={locale}
           providerOptions={providers}
+          runsheetOptions={runsheetOptions}
           successPath={budgetListPath}
           t={t}
         />

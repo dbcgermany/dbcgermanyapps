@@ -1,4 +1,5 @@
 import { getProviderContactOptions } from "@/actions/expenses";
+import { getRunsheetPickerOptionsForEvent } from "@/actions/checklist";
 import { PageHeader } from "@/components/page-header";
 import { ExpenseForm } from "../expense-form";
 import { pickBudgetT } from "../copy";
@@ -10,7 +11,10 @@ export default async function NewExpensePage({
 }) {
   const { locale, id: eventId } = await params;
   const t = pickBudgetT(locale);
-  const providers = await getProviderContactOptions();
+  const [providers, runsheetOptions] = await Promise.all([
+    getProviderContactOptions(),
+    getRunsheetPickerOptionsForEvent(eventId),
+  ]);
   const budgetListPath = `/${locale}/events/${eventId}/budget`;
 
   return (
@@ -26,6 +30,7 @@ export default async function NewExpensePage({
           eventId={eventId}
           locale={locale}
           providerOptions={providers}
+          runsheetOptions={runsheetOptions}
           successPath={budgetListPath}
           t={t}
         />

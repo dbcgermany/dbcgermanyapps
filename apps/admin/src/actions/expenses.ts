@@ -7,8 +7,11 @@ import { captureServerError } from "@/lib/observe";
 // The active-locale description is mirrored into the legacy `description`
 // column so other code paths that read it (CSV export, audit log details,
 // older report queries) keep working.
+// IMPORTANT (feedback_postgrest_column_drift): keep this list in lockstep
+// with event_expenses.Row in packages/types/src/database.ts. PostgREST
+// validates these strings only at runtime — a typo here = production 500.
 const EXPENSE_COLUMNS =
-  "id, event_id, category, description, description_en, description_de, description_fr, amount_cents, currency, vendor_name, vendor_contact, provider_contact_id, due_date, paid_at, receipt_url, notes, created_by, created_at" as const;
+  "id, event_id, category, description, description_en, description_de, description_fr, amount_cents, currency, vendor_name, vendor_contact, provider_contact_id, runsheet_item_id, due_date, paid_at, receipt_url, notes, created_by, created_at" as const;
 
 type Locale = "en" | "de" | "fr";
 
@@ -44,6 +47,8 @@ export interface ExpenseRow {
   vendor_contact: string | null;
   provider_contact_id: string | null;
   provider_name: string | null;
+  /** FK to the runsheet row this spend pays for (added 20260525000001). */
+  runsheet_item_id: string | null;
   due_date: string | null;
   paid_at: string | null;
   receipt_url: string | null;
@@ -90,6 +95,7 @@ export async function getExpense(
     vendor_contact: data.vendor_contact,
     provider_contact_id: data.provider_contact_id,
     provider_name: null, // detail page joins separately if needed
+    runsheet_item_id: data.runsheet_item_id,
     due_date: data.due_date,
     paid_at: data.paid_at,
     receipt_url: data.receipt_url,
@@ -169,6 +175,7 @@ export async function getEventExpenses(eventId: string) {
       vendor_contact: row.vendor_contact,
       provider_contact_id: row.provider_contact_id,
       provider_name: providerName,
+      runsheet_item_id: row.runsheet_item_id,
       due_date: row.due_date,
       paid_at: row.paid_at,
       receipt_url: row.receipt_url,
@@ -296,6 +303,7 @@ export async function createExpense(eventId: string, formData: FormData) {
   const dueDateRaw = (formData.get("due_date") as string) || "";
   const paidAtRaw = (formData.get("paid_at") as string) || "";
   const providerIdRaw = (formData.get("provider_contact_id") as string) || "";
+  const runsheetItemIdRaw = (formData.get("runsheet_item_id") as string) || "";
 
   const expenseData = {
     event_id: eventId,
@@ -310,6 +318,7 @@ export async function createExpense(eventId: string, formData: FormData) {
     vendor_contact:
       ((formData.get("vendor_contact") as string) || "").trim() || null,
     provider_contact_id: providerIdRaw || null,
+    runsheet_item_id: runsheetItemIdRaw || null,
     due_date: dueDateRaw || null,
     paid_at: paidAtRaw || null,
     receipt_url:
@@ -370,6 +379,7 @@ export async function updateExpense(
   }
 
   const providerIdRaw = (formData.get("provider_contact_id") as string) || "";
+  const runsheetItemIdRaw = (formData.get("runsheet_item_id") as string) || "";
   const patch = {
     category: (formData.get("category") as string) || "other",
     description: active,
@@ -381,6 +391,7 @@ export async function updateExpense(
     vendor_contact:
       ((formData.get("vendor_contact") as string) || "").trim() || null,
     provider_contact_id: providerIdRaw || null,
+    runsheet_item_id: runsheetItemIdRaw || null,
     due_date: ((formData.get("due_date") as string) || "") || null,
     paid_at: ((formData.get("paid_at") as string) || "") || null,
     receipt_url:

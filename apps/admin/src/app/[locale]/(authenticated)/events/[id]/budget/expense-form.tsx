@@ -9,6 +9,12 @@ import {
   updateExpense,
   type ExpenseRow,
 } from "@/actions/expenses";
+import type { RunsheetPickerOption } from "@/actions/checklist";
+import {
+  RunsheetItemPicker,
+  runsheetItemPickerHint,
+  runsheetItemPickerLabel,
+} from "@/components/runsheet-item-picker";
 import { EXPENSE_CATEGORIES, type BudgetT } from "./copy";
 
 export interface ProviderOption {
@@ -34,6 +40,7 @@ export function ExpenseForm({
   eventId,
   locale,
   providerOptions,
+  runsheetOptions,
   successPath,
   t,
 }: {
@@ -42,6 +49,7 @@ export function ExpenseForm({
   eventId: string;
   locale: string;
   providerOptions: ReadonlyArray<ProviderOption>;
+  runsheetOptions: ReadonlyArray<RunsheetPickerOption>;
   successPath: string;
   t: BudgetT;
 }) {
@@ -174,6 +182,17 @@ export function ExpenseForm({
             </option>
           ))}
         </Select>
+      </FormField>
+
+      <FormField
+        label={runsheetItemPickerLabel(locale)}
+        hint={runsheetItemPickerHint(locale)}
+      >
+        <RunsheetItemPicker
+          defaultValue={expense?.runsheet_item_id ?? null}
+          options={[...runsheetOptions]}
+          locale={locale}
+        />
       </FormField>
 
       <FormField label={t.receipt}>
