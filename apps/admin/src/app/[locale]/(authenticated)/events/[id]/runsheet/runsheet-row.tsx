@@ -24,6 +24,7 @@ import type {
   ProgramItemOwnerTeamMember,
   ProgramItemOwnerContact,
 } from "@dbc/types";
+import { contactDisplayName } from "@dbc/types";
 import { InlineEditRow } from "@/components/inline-edit-row";
 import { DeleteButton } from "@/components/delete-button";
 
@@ -161,7 +162,7 @@ function ownerDisplayName(
       : item.team_member.name;
   }
   if (item.contact) {
-    return item.contact.full_name ?? item.contact.email;
+    return contactDisplayName(item.contact);
   }
   return item.assignee?.display_name || item.responsible_person || null;
 }
@@ -488,7 +489,7 @@ function RunsheetEditForm({
               <optgroup label={t.ownerContactGroup}>
                 {contactOptions.map((c) => (
                   <option key={`c-${c.id}`} value={`contact:${c.id}`}>
-                    {c.full_name ?? c.email}
+                    {contactDisplayName(c)}
                   </option>
                 ))}
               </optgroup>

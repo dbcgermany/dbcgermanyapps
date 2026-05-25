@@ -10,6 +10,7 @@ import type {
   ProgramItemOwnerTeamMember,
   ProgramItemOwnerContact,
 } from "@dbc/types";
+import { contactDisplayName } from "@dbc/types";
 
 const RF_T = {
   en: {
@@ -224,7 +225,7 @@ export function RunsheetForm({
               <optgroup label={t.ownerContactGroup}>
                 {contactOptions.map((c) => (
                   <option key={`c-${c.id}`} value={`contact:${c.id}`}>
-                    {c.full_name ?? c.email}
+                    {contactDisplayName(c)}
                   </option>
                 ))}
               </optgroup>

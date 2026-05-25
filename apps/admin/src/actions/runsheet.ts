@@ -39,7 +39,7 @@ const JOINS =
   "assignee:profiles!event_runsheet_items_assigned_to_fkey(display_name)," +
   "speaker:speakers!event_runsheet_items_speaker_id_fkey(id, slug, first_name, last_name, photo_url, title_en, title_de, title_fr)," +
   "team_member:team_members!event_runsheet_items_team_member_id_fkey(id, slug, name, photo_url, role_en, role_de, role_fr)," +
-  "contact:contacts!event_runsheet_items_contact_id_fkey(id, full_name, email)";
+  "contact:contacts!event_runsheet_items_contact_id_fkey(id, first_name, last_name, email)";
 
 function normaliseJoined<T>(value: T | T[] | null | undefined): T | null {
   if (Array.isArray(value)) return value[0] ?? null;
@@ -446,17 +446,20 @@ export async function getRunsheetContactOptions() {
 
   // Vendors / external service providers tagged via the service_providers
   // contact category. Same pattern as event_expenses.provider_contact_id.
+  // Note: contacts has first_name/last_name, NOT full_name (canonical
+  // column shape per packages/types/src/database.ts).
   const { data } = await supabase
     .from("contacts")
     .select(
-      "id, full_name, email, contact_category_links!inner(contact_categories!inner(slug))"
+      "id, first_name, last_name, email, contact_category_links!inner(contact_categories!inner(slug))"
     )
     .eq("contact_category_links.contact_categories.slug", "service_providers")
-    .order("full_name", { ascending: true });
+    .order("last_name", { ascending: true });
 
   return (data ?? []).map((c) => ({
     id: c.id,
-    full_name: c.full_name,
+    first_name: c.first_name,
+    last_name: c.last_name,
     email: c.email,
   }));
 }

@@ -700,8 +700,15 @@ export interface ProgramItemOwnerTeamMember {
 
 export interface ProgramItemOwnerContact {
   id: string;
-  full_name: string | null;
+  first_name: string | null;
+  last_name: string | null;
   email: string;
+}
+
+/** Display string for a contact-as-owner: "First Last" if available, else email. */
+export function contactDisplayName(c: ProgramItemOwnerContact): string {
+  const name = [c.first_name, c.last_name].filter(Boolean).join(" ").trim();
+  return name || c.email;
 }
 
 export interface ProgramItem {
