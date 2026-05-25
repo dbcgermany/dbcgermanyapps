@@ -2,55 +2,116 @@
 
 import { createServerClient, requireRole } from "@dbc/supabase/server";
 import { revalidatePath } from "next/cache";
+import type { ProgramItem } from "@dbc/types";
 
-export interface RunsheetItem {
-  id: string;
-  event_id: string;
-  title: string;
-  description: string | null;
-  /**
-   * Internal staff-only notes. Never rendered in the runsheet PDF and
-   * never reaches ticket-buyer emails. Distinct from `description`,
-   * which is the public-facing detail string.
-   */
-  notes: string | null;
-  starts_at: string;
-  ends_at: string | null;
-  responsible_person: string | null;
-  location_note: string | null;
-  status: string;
-  sort_order: number;
-  assigned_to: string | null;
-  default_duration_minutes: number | null;
-  created_at: string;
-  updated_at: string | null;
-  assignee?: { display_name: string | null } | null;
+const ITEM_COLUMNS = [
+  "id",
+  "event_id",
+  "title",
+  "title_de",
+  "title_fr",
+  "description",
+  "description_de",
+  "description_fr",
+  "notes",
+  "starts_at",
+  "ends_at",
+  "responsible_person",
+  "location_note",
+  "status",
+  "sort_order",
+  "assigned_to",
+  "default_duration_minutes",
+  "is_public",
+  "speaker_id",
+  "team_member_id",
+  "contact_id",
+  "speaker_first_name",
+  "speaker_last_name",
+  "speaker_name",
+  "speaker_title",
+  "speaker_image_url",
+  "created_at",
+  "updated_at",
+].join(", ");
+
+const JOINS =
+  "assignee:profiles!event_runsheet_items_assigned_to_fkey(display_name)," +
+  "speaker:speakers!event_runsheet_items_speaker_id_fkey(id, slug, first_name, last_name, photo_url, title_en, title_de, title_fr)," +
+  "team_member:team_members!event_runsheet_items_team_member_id_fkey(id, slug, name, photo_url, role_en, role_de, role_fr)," +
+  "contact:contacts!event_runsheet_items_contact_id_fkey(id, full_name, email)";
+
+function normaliseJoined<T>(value: T | T[] | null | undefined): T | null {
+  if (Array.isArray(value)) return value[0] ?? null;
+  return value ?? null;
 }
 
-const ITEM_COLUMNS =
-  "id, event_id, title, description, notes, starts_at, ends_at, responsible_person, location_note, status, sort_order, assigned_to, default_duration_minutes, created_at, updated_at" as const;
+function fanout(formData: FormData) {
+  const title = ((formData.get("title") as string) || "").trim();
+  const titleDe = ((formData.get("title_de") as string) || "").trim();
+  const titleFr = ((formData.get("title_fr") as string) || "").trim();
+  const description = ((formData.get("description") as string) || "").trim();
+  const descriptionDe = ((formData.get("description_de") as string) || "").trim();
+  const descriptionFr = ((formData.get("description_fr") as string) || "").trim();
+  const notes = ((formData.get("notes") as string) || "").trim();
+  const responsiblePerson =
+    ((formData.get("responsible_person") as string) || "").trim();
+  const locationNote = ((formData.get("location_note") as string) || "").trim();
+  const assignedTo = ((formData.get("assigned_to") as string) || "").trim();
+  const speakerId = ((formData.get("speaker_id") as string) || "").trim();
+  const teamMemberId = ((formData.get("team_member_id") as string) || "").trim();
+  const contactId = ((formData.get("contact_id") as string) || "").trim();
+  return {
+    title,
+    title_de: titleDe || null,
+    title_fr: titleFr || null,
+    description: description || null,
+    description_de: descriptionDe || null,
+    description_fr: descriptionFr || null,
+    notes: notes || null,
+    responsible_person: responsiblePerson || null,
+    location_note: locationNote || null,
+    assigned_to: assignedTo || null,
+    speaker_id: speakerId || null,
+    team_member_id: teamMemberId || null,
+    contact_id: contactId || null,
+  };
+}
 
-export async function getRunsheetItems(eventId: string): Promise<RunsheetItem[]> {
+function revalidate(eventId: string, locale: string) {
+  revalidatePath(`/${locale}/events/${eventId}/runsheet`);
+  revalidatePath(`/${locale}/events/${eventId}/schedule`);
+}
+
+export async function getRunsheetItems(
+  eventId: string,
+  opts: { publicOnly?: boolean } = {}
+): Promise<ProgramItem[]> {
   await requireRole("team_member");
   const supabase = await createServerClient();
 
-  const { data, error } = await supabase
+  let query = supabase
     .from("event_runsheet_items")
-    .select(
-      `${ITEM_COLUMNS}, assignee:profiles!event_runsheet_items_assigned_to_fkey(display_name)`
-    )
+    .select(`${ITEM_COLUMNS}, ${JOINS}`)
     .eq("event_id", eventId)
     .order("sort_order", { ascending: true })
     .order("starts_at", { ascending: true });
 
+  if (opts.publicOnly) {
+    query = query.eq("is_public", true);
+  }
+
+  const { data, error } = await query;
   if (error) throw new Error(error.message);
 
-  // Normalize assignee (Supabase may return array from join)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return ((data ?? []) as any[]).map((r) => ({
     ...r,
-    assignee: Array.isArray(r.assignee) ? r.assignee[0] ?? null : r.assignee ?? null,
-  })) as RunsheetItem[];
+    assignee: normaliseJoined(r.assignee),
+    speaker: normaliseJoined(r.speaker),
+    team_member: normaliseJoined(r.team_member),
+    contact: normaliseJoined(r.contact),
+  })) as ProgramItem[];
 }
 
 export async function createRunsheetItem(
@@ -61,25 +122,24 @@ export async function createRunsheetItem(
   const supabase = await createServerClient();
   const locale = (formData.get("locale") as string) || "en";
 
-  const title = ((formData.get("title") as string) || "").trim();
-  if (!title) return { error: "Title is required." };
+  const fields = fanout(formData);
+  if (!fields.title) return { error: "Title is required." };
 
-  const assignedTo = ((formData.get("assigned_to") as string) || "").trim();
+  const isPublic = formData.get("is_public") === "on" ||
+    formData.get("is_public") === "true";
 
   const { data, error } = await supabase
     .from("event_runsheet_items")
     .insert({
       event_id: eventId,
-      title,
       starts_at: (formData.get("starts_at") as string) || null,
       ends_at: (formData.get("ends_at") as string) || null,
-      description: ((formData.get("description") as string) || "").trim() || null,
-      notes: ((formData.get("notes") as string) || "").trim() || null,
-      responsible_person:
-        ((formData.get("responsible_person") as string) || "").trim() || null,
-      location_note:
-        ((formData.get("location_note") as string) || "").trim() || null,
-      assigned_to: assignedTo || null,
+      sort_order: parseInt(
+        (formData.get("sort_order") as string) || "0",
+        10
+      ),
+      is_public: isPublic,
+      ...fields,
     })
     .select("id")
     .single();
@@ -91,10 +151,10 @@ export async function createRunsheetItem(
     action: "create_runsheet_item",
     entity_type: "event_runsheet_items",
     entity_id: data.id,
-    details: { title, event_id: eventId },
+    details: { title: fields.title, event_id: eventId, is_public: isPublic },
   });
 
-  revalidatePath(`/${locale}/events/${eventId}/runsheet`);
+  revalidate(eventId, locale);
   return { success: true };
 }
 
@@ -102,21 +162,29 @@ export async function updateRunsheetItem(id: string, formData: FormData) {
   const user = await requireRole("manager");
   const supabase = await createServerClient();
   const locale = (formData.get("locale") as string) || "en";
-  const eventId = formData.get("event_id") as string;
+  const eventId = (formData.get("event_id") as string) || "";
 
   const patch: Record<string, unknown> = {};
 
-  const fields = [
+  // Strings (fan-out includes empty-string → null normalisation)
+  const stringFields = [
     "title",
+    "title_de",
+    "title_fr",
     "description",
+    "description_de",
+    "description_fr",
     "notes",
     "responsible_person",
     "location_note",
     "starts_at",
     "ends_at",
     "assigned_to",
+    "speaker_id",
+    "team_member_id",
+    "contact_id",
   ];
-  for (const f of fields) {
+  for (const f of stringFields) {
     const raw = formData.get(f);
     if (raw !== null) {
       const val = typeof raw === "string" ? raw.trim() : "";
@@ -126,6 +194,30 @@ export async function updateRunsheetItem(id: string, formData: FormData) {
 
   if (formData.get("status") !== null) {
     patch.status = (formData.get("status") as string) || "pending";
+  }
+
+  if (formData.get("is_public") !== null) {
+    const raw = formData.get("is_public") as string;
+    patch.is_public = raw === "on" || raw === "true";
+  }
+
+  if (formData.get("sort_order") !== null) {
+    const raw = formData.get("sort_order") as string;
+    patch.sort_order = parseInt(raw, 10);
+  }
+
+  // Owner exclusivity: when one canonical owner FK is being set explicitly to
+  // a non-empty value, clear the other two so we don't end up with multiple
+  // canonical owners on a single row.
+  const ownerFields = ["speaker_id", "team_member_id", "contact_id"] as const;
+  const explicitNonEmpty = ownerFields.filter(
+    (f) => patch[f] !== undefined && patch[f] !== null
+  );
+  if (explicitNonEmpty.length === 1) {
+    const winner = explicitNonEmpty[0];
+    for (const f of ownerFields) {
+      if (f !== winner) patch[f] = null;
+    }
   }
 
   patch.updated_at = new Date().toISOString();
@@ -145,8 +237,44 @@ export async function updateRunsheetItem(id: string, formData: FormData) {
     details: { fields: Object.keys(patch), event_id: eventId },
   });
 
-  revalidatePath(`/${locale}/events/${eventId}/runsheet`);
+  if (eventId) revalidate(eventId, locale);
   return { success: true };
+}
+
+/**
+ * One-click toggle of `is_public`. Used by the inline pill on the runsheet
+ * row — no form open, no submit. UI calls this with the new value already
+ * decided optimistically. Returns the persisted boolean so the client can
+ * reconcile if it diverges.
+ */
+export async function toggleRunsheetItemPublic(
+  id: string,
+  eventId: string,
+  locale: string,
+  nextValue: boolean
+) {
+  const user = await requireRole("manager");
+  const supabase = await createServerClient();
+
+  const { data, error } = await supabase
+    .from("event_runsheet_items")
+    .update({ is_public: nextValue, updated_at: new Date().toISOString() })
+    .eq("id", id)
+    .select("is_public")
+    .single();
+
+  if (error) return { error: error.message };
+
+  await supabase.from("audit_log").insert({
+    user_id: user.userId,
+    action: "toggle_runsheet_item_public",
+    entity_type: "event_runsheet_items",
+    entity_id: id,
+    details: { event_id: eventId, is_public: nextValue },
+  });
+
+  revalidate(eventId, locale);
+  return { success: true, is_public: data?.is_public ?? nextValue };
 }
 
 export async function deleteRunsheetItem(
@@ -172,7 +300,7 @@ export async function deleteRunsheetItem(
     details: { event_id: eventId },
   });
 
-  revalidatePath(`/${locale}/events/${eventId}/runsheet`);
+  revalidate(eventId, locale);
   return { success: true };
 }
 
@@ -184,7 +312,6 @@ export async function reorderRunsheetItems(
   const user = await requireRole("manager");
   const supabase = await createServerClient();
 
-  // Update each item's sort_order based on its position in orderedIds
   const updates = orderedIds.map((id, idx) =>
     supabase
       .from("event_runsheet_items")
@@ -203,7 +330,7 @@ export async function reorderRunsheetItems(
     details: { event_id: eventId, count: orderedIds.length },
   });
 
-  revalidatePath(`/${locale}/events/${eventId}/runsheet`);
+  revalidate(eventId, locale);
   return { success: true };
 }
 
@@ -241,6 +368,8 @@ export async function populateRunsheetFromTemplate(
       default_duration_minutes: t.default_duration_minutes,
       sort_order: t.sort_order,
       status: "pending",
+      // Template rows are operational defaults — internal, never public.
+      is_public: false,
     };
   });
 
@@ -258,6 +387,76 @@ export async function populateRunsheetFromTemplate(
     details: { count: items.length },
   });
 
-  revalidatePath(`/${locale}/events/${eventId}/runsheet`);
+  revalidate(eventId, locale);
   return { success: true };
+}
+
+/* -------------------------------------------------------------------------- */
+/*                       Owner picker option fetchers                         */
+/* -------------------------------------------------------------------------- */
+// Used by the runsheet row's owner combobox. Each returns rows for that
+// canonical-people table, with just the fields needed to render an option +
+// write the FK back. Reused across the form and the inline-edit row so we
+// don't have three near-identical fetchers floating around.
+
+export async function getRunsheetSpeakerOptions(eventId: string) {
+  await requireRole("manager");
+  const supabase = await createServerClient();
+
+  // Pull every speaker linked to this event PLUS every speaker the team has
+  // ever stored — gives Ruth the full canonical list without forcing her to
+  // pre-link a speaker to the event first.
+  const { data: linked } = await supabase
+    .from("event_speakers")
+    .select("speaker_id")
+    .eq("event_id", eventId);
+  const { data: allSpeakers } = await supabase
+    .from("speakers")
+    .select(
+      "id, slug, first_name, last_name, photo_url, title_en, title_de, title_fr"
+    )
+    .order("last_name", { ascending: true });
+
+  const linkedIds = new Set(
+    (linked ?? []).map((r) => r.speaker_id as string)
+  );
+
+  return (allSpeakers ?? []).map((s) => ({
+    ...s,
+    is_event_speaker: linkedIds.has(s.id),
+  }));
+}
+
+export async function getRunsheetTeamMemberOptions() {
+  await requireRole("manager");
+  const supabase = await createServerClient();
+
+  const { data } = await supabase
+    .from("team_members")
+    .select("id, slug, name, photo_url, role_en, role_de, role_fr")
+    .neq("visibility", "hidden")
+    .order("name", { ascending: true });
+
+  return data ?? [];
+}
+
+export async function getRunsheetContactOptions() {
+  await requireRole("manager");
+  const supabase = await createServerClient();
+
+  // Vendors / external service providers tagged via the service_providers
+  // contact category. Same pattern as event_expenses.provider_contact_id.
+  const { data } = await supabase
+    .from("contacts")
+    .select(
+      "id, full_name, email, contact_category_links!inner(contact_categories!inner(slug))"
+    )
+    .eq("contact_category_links.contact_categories.slug", "service_providers")
+    .order("full_name", { ascending: true });
+
+  return (data ?? []).map((c) => ({
+    id: c.id,
+    full_name: c.full_name,
+    email: c.email,
+  }));
 }

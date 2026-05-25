@@ -670,6 +670,84 @@ export type Locale = (typeof LOCALES)[number];
 export const DEFAULT_LOCALE: Locale = "en";
 
 /* -------------------------------------------------------------------------- */
+/*                       Program / runsheet (SSOT)                            */
+/* -------------------------------------------------------------------------- */
+// One table backs both the public-facing event agenda AND the internal day-of
+// run-sheet (see supabase/migrations/20260525000001_unify_program_ssot.sql).
+// `is_public` toggles per row. event_schedule_items is now a VIEW of the
+// same table filtered to is_public=true.
+
+export interface ProgramItemOwnerSpeaker {
+  id: string;
+  slug: string;
+  first_name: string;
+  last_name: string;
+  photo_url: string | null;
+  title_en: string | null;
+  title_de: string | null;
+  title_fr: string | null;
+}
+
+export interface ProgramItemOwnerTeamMember {
+  id: string;
+  slug: string;
+  name: string;
+  photo_url: string | null;
+  role_en: string | null;
+  role_de: string | null;
+  role_fr: string | null;
+}
+
+export interface ProgramItemOwnerContact {
+  id: string;
+  full_name: string | null;
+  email: string;
+}
+
+export interface ProgramItem {
+  id: string;
+  event_id: string;
+  /** EN title — required. */
+  title: string;
+  title_de: string | null;
+  title_fr: string | null;
+  /** EN public description — shown on the marketing site and attendee PDF. */
+  description: string | null;
+  description_de: string | null;
+  description_fr: string | null;
+  /** Internal team-only notes. Never rendered on public agenda or attendee PDF. */
+  notes: string | null;
+  starts_at: string;
+  ends_at: string | null;
+  location_note: string | null;
+  responsible_person: string | null;
+  /** When true, item is on the public agenda (marketing site + attendee PDF). */
+  is_public: boolean;
+  status: string;
+  sort_order: number;
+  default_duration_minutes: number | null;
+  /** Auth-user FK for status-update permissions (separate from canonical owner). */
+  assigned_to: string | null;
+  /** Canonical owner — exactly one of these three should be set, or none. */
+  speaker_id: string | null;
+  team_member_id: string | null;
+  contact_id: string | null;
+  /** Legacy inline-speaker fields kept for back-compat (prefer speaker_id). */
+  speaker_first_name: string | null;
+  speaker_last_name: string | null;
+  speaker_name: string | null;
+  speaker_title: string | null;
+  speaker_image_url: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  // Joined records (populated by getProgramItems / getRunsheetItems)
+  speaker?: ProgramItemOwnerSpeaker | null;
+  team_member?: ProgramItemOwnerTeamMember | null;
+  contact?: ProgramItemOwnerContact | null;
+  assignee?: { display_name: string | null } | null;
+}
+
+/* -------------------------------------------------------------------------- */
 /*                            Business-rule defaults                          */
 /* -------------------------------------------------------------------------- */
 // Defaults are authoritative when the matching env var is unset. Each app

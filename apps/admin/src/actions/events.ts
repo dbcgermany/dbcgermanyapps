@@ -612,20 +612,24 @@ export async function duplicateEvent(sourceId: string, locale: string) {
     );
   }
 
-  // Schedule
-  const { data: srcSchedule } = await supabase
-    .from("event_schedule_items")
+  // Program (formerly: schedule + runsheet, now unified into event_runsheet_items).
+  // Duplicate every public-facing row from the source event so the new event
+  // starts with the same agenda Ruth can then mark internal/public per row.
+  const { data: srcProgram } = await supabase
+    .from("event_runsheet_items")
     .select(
-      "title_en, title_de, title_fr, description_en, description_de, description_fr, starts_at, ends_at, speaker_name, speaker_title, speaker_image_url, sort_order"
+      "title, title_de, title_fr, description, description_de, description_fr, starts_at, ends_at, speaker_id, speaker_first_name, speaker_last_name, speaker_name, speaker_title, speaker_image_url, location_note, sort_order, is_public, default_duration_minutes"
     )
-    .eq("event_id", sourceId);
-  if (srcSchedule && srcSchedule.length) {
-    await supabase.from("event_schedule_items").insert(
-      srcSchedule.map((s) => ({
-        ...s,
+    .eq("event_id", sourceId)
+    .eq("is_public", true);
+  if (srcProgram && srcProgram.length) {
+    await supabase.from("event_runsheet_items").insert(
+      srcProgram.map((p) => ({
+        ...p,
         event_id: newEvent.id,
-        starts_at: shift(s.starts_at),
-        ends_at: shift(s.ends_at),
+        starts_at: shift(p.starts_at),
+        ends_at: p.ends_at ? shift(p.ends_at) : null,
+        status: "pending",
       }))
     );
   }

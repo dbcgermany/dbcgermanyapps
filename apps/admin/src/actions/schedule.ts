@@ -1,27 +1,50 @@
 "use server";
 
-import { createServerClient, requireRole } from "@dbc/supabase/server";
+// Thin compatibility layer over the unified runsheet (program) actions.
+// The Schedule page is now a filtered view of the runsheet (is_public = true),
+// so the old schedule writes route through the same canonical action set.
+// Kept as a separate file only because some existing imports point here;
+// remove this file once those importers are migrated.
+
 import { revalidatePath } from "next/cache";
+import { createServerClient, requireRole } from "@dbc/supabase/server";
+import {
+  createRunsheetItem,
+  updateRunsheetItem,
+  deleteRunsheetItem,
+  reorderRunsheetItems,
+} from "./runsheet";
 
-const SCHEDULE_COLUMNS =
-  "id, event_id, title_en, title_de, title_fr, description_en, description_de, description_fr, starts_at, ends_at, speaker_name, speaker_first_name, speaker_last_name, speaker_title, speaker_image_url, sort_order" as const;
-
-function readSpeakerNames(formData: FormData) {
-  const first = ((formData.get("speaker_first_name") as string) || "").trim();
-  const last = ((formData.get("speaker_last_name") as string) || "").trim();
-  return {
-    first_name: first || null,
-    last_name: last || null,
-  };
+function rewriteScheduleFormDataAsRunsheet(formData: FormData): FormData {
+  // Old schedule form posted EN/DE/FR titles + inline speaker fields.
+  // Map them onto the unified runsheet field shape and mark the row public
+  // (legacy schedule entries are always part of the public agenda).
+  const titleEn = (formData.get("title_en") as string) || "";
+  if (titleEn && !formData.get("title")) {
+    formData.set("title", titleEn);
+  }
+  const descriptionEn = (formData.get("description_en") as string) || "";
+  if (descriptionEn && !formData.get("description")) {
+    formData.set("description", descriptionEn);
+  }
+  if (!formData.get("is_public")) {
+    formData.set("is_public", "on");
+  }
+  return formData;
 }
 
 export async function getScheduleItems(eventId: string) {
   await requireRole("manager");
   const supabase = await createServerClient();
 
+  // Read through the back-compat VIEW so any caller that expected the old
+  // schedule shape keeps working. New callers should prefer getRunsheetItems
+  // with { publicOnly: true }.
   const { data, error } = await supabase
     .from("event_schedule_items")
-    .select(SCHEDULE_COLUMNS)
+    .select(
+      "id, event_id, title_en, title_de, title_fr, description_en, description_de, description_fr, starts_at, ends_at, speaker_id, speaker_first_name, speaker_last_name, speaker_name, speaker_title, speaker_image_url, sort_order"
+    )
     .eq("event_id", eventId)
     .order("sort_order", { ascending: true });
 
@@ -30,92 +53,28 @@ export async function getScheduleItems(eventId: string) {
 }
 
 export async function createScheduleItem(formData: FormData) {
-  const user = await requireRole("manager");
-  const supabase = await createServerClient();
-
   const eventId = formData.get("event_id") as string;
-  const locale = formData.get("locale") as string;
-  const titleEn = formData.get("title_en") as string;
-
-  const itemData = {
-    event_id: eventId,
-    title_en: titleEn,
-    title_de: (formData.get("title_de") as string) || titleEn,
-    title_fr: (formData.get("title_fr") as string) || titleEn,
-    description_en: formData.get("description_en") as string,
-    description_de: formData.get("description_de") as string,
-    description_fr: formData.get("description_fr") as string,
-    starts_at: formData.get("starts_at") as string,
-    ends_at: formData.get("ends_at") as string,
-    speaker_first_name: readSpeakerNames(formData).first_name,
-    speaker_last_name: readSpeakerNames(formData).last_name,
-    speaker_title: formData.get("speaker_title") as string,
-    sort_order: parseInt((formData.get("sort_order") as string) || "0", 10),
-  };
-
-  const { data, error } = await supabase
-    .from("event_schedule_items")
-    .insert(itemData)
-    .select("id")
-    .single();
-
-  if (error) return { error: error.message };
-
-  await supabase.from("audit_log").insert({
-    user_id: user.userId,
-    action: "create_schedule_item",
-    entity_type: "event_schedule_items",
-    entity_id: data.id,
-    details: { title: titleEn, event_id: eventId },
-  });
-
+  const locale = (formData.get("locale") as string) || "en";
+  const result = await createRunsheetItem(
+    eventId,
+    rewriteScheduleFormDataAsRunsheet(formData)
+  );
   revalidatePath(`/${locale}/events/${eventId}/schedule`);
-  return { success: true };
+  return result;
 }
 
 export async function updateScheduleItem(
   itemId: string,
   formData: FormData
 ) {
-  const user = await requireRole("manager");
-  const supabase = await createServerClient();
-
   const eventId = formData.get("event_id") as string;
-  const locale = formData.get("locale") as string;
-  const titleEn = formData.get("title_en") as string;
-
-  const itemData = {
-    title_en: titleEn,
-    title_de: (formData.get("title_de") as string) || titleEn,
-    title_fr: (formData.get("title_fr") as string) || titleEn,
-    description_en: formData.get("description_en") as string,
-    description_de: formData.get("description_de") as string,
-    description_fr: formData.get("description_fr") as string,
-    starts_at: formData.get("starts_at") as string,
-    ends_at: formData.get("ends_at") as string,
-    speaker_first_name: readSpeakerNames(formData).first_name,
-    speaker_last_name: readSpeakerNames(formData).last_name,
-    speaker_title: formData.get("speaker_title") as string,
-    sort_order: parseInt((formData.get("sort_order") as string) || "0", 10),
-  };
-
-  const { error } = await supabase
-    .from("event_schedule_items")
-    .update(itemData)
-    .eq("id", itemId);
-
-  if (error) return { error: error.message };
-
-  await supabase.from("audit_log").insert({
-    user_id: user.userId,
-    action: "update_schedule_item",
-    entity_type: "event_schedule_items",
-    entity_id: itemId,
-    details: { title: titleEn, event_id: eventId },
-  });
-
+  const locale = (formData.get("locale") as string) || "en";
+  const result = await updateRunsheetItem(
+    itemId,
+    rewriteScheduleFormDataAsRunsheet(formData)
+  );
   revalidatePath(`/${locale}/events/${eventId}/schedule`);
-  return { success: true };
+  return result;
 }
 
 export async function reorderScheduleItems(
@@ -123,30 +82,7 @@ export async function reorderScheduleItems(
   orderedIds: string[],
   locale: string
 ) {
-  const user = await requireRole("manager");
-  const supabase = await createServerClient();
-
-  const updates = orderedIds.map((id, index) =>
-    supabase
-      .from("event_schedule_items")
-      .update({ sort_order: index })
-      .eq("id", id)
-      .eq("event_id", eventId)
-  );
-  const results = await Promise.all(updates);
-  const failed = results.find((r) => r.error);
-  if (failed?.error) return { error: failed.error.message };
-
-  await supabase.from("audit_log").insert({
-    user_id: user.userId,
-    action: "reorder_schedule",
-    entity_type: "event_schedule_items",
-    entity_id: eventId,
-    details: { count: orderedIds.length },
-  });
-
-  revalidatePath(`/${locale}/events/${eventId}/schedule`);
-  return { success: true };
+  return reorderRunsheetItems(eventId, orderedIds, locale);
 }
 
 export async function deleteScheduleItem(
@@ -154,24 +90,5 @@ export async function deleteScheduleItem(
   eventId: string,
   locale: string
 ) {
-  const user = await requireRole("manager");
-  const supabase = await createServerClient();
-
-  const { error } = await supabase
-    .from("event_schedule_items")
-    .delete()
-    .eq("id", itemId);
-
-  if (error) return { error: error.message };
-
-  await supabase.from("audit_log").insert({
-    user_id: user.userId,
-    action: "delete_schedule_item",
-    entity_type: "event_schedule_items",
-    entity_id: itemId,
-    details: { event_id: eventId },
-  });
-
-  revalidatePath(`/${locale}/events/${eventId}/schedule`);
-  return { success: true };
+  return deleteRunsheetItem(itemId, eventId, locale);
 }

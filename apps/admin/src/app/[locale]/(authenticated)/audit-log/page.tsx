@@ -40,6 +40,9 @@ const AUDIT_LOG_ENTITY_TYPES = [
   "coupons",
   "event_email_sequences",
   "event_media",
+  "event_runsheet_items",
+  // Kept for historical audit rows written before the schedule/runsheet
+  // unification (20260525000001). New writes use event_runsheet_items.
   "event_schedule_items",
   "events",
   "orders",

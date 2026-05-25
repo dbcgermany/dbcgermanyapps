@@ -5,7 +5,13 @@ import { PageHeader } from "@/components/page-header";
 import { PdfButton } from "@/components/pdf-button";
 import { ActionForm } from "@/components/action-form";
 import { getEvent } from "@/actions/events";
-import { getRunsheetItems, populateRunsheetFromTemplate } from "@/actions/runsheet";
+import {
+  getRunsheetItems,
+  populateRunsheetFromTemplate,
+  getRunsheetSpeakerOptions,
+  getRunsheetTeamMemberOptions,
+  getRunsheetContactOptions,
+} from "@/actions/runsheet";
 import { getAssignableStaff } from "@/actions/staff";
 import { RunsheetSortable } from "./runsheet-sortable";
 import { RunsheetForm } from "./runsheet-form";
@@ -27,10 +33,14 @@ export default async function RunsheetPage({
   const event = eventOrNull;
   const eventStartsAt = event.starts_at;
 
-  const [items, staffList] = await Promise.all([
-    getRunsheetItems(eventId),
-    getAssignableStaff(),
-  ]);
+  const [items, staffList, speakerOptions, teamMemberOptions, contactOptions] =
+    await Promise.all([
+      getRunsheetItems(eventId),
+      getAssignableStaff(),
+      getRunsheetSpeakerOptions(eventId),
+      getRunsheetTeamMemberOptions(),
+      getRunsheetContactOptions(),
+    ]);
 
   const staff = staffList.map((s) => ({
     id: s.id,
@@ -77,6 +87,9 @@ export default async function RunsheetPage({
             eventId={eventId}
             locale={locale}
             staff={staff}
+            speakerOptions={speakerOptions}
+            teamMemberOptions={teamMemberOptions}
+            contactOptions={contactOptions}
           />
         </div>
       )}
@@ -85,7 +98,14 @@ export default async function RunsheetPage({
       <Card padding="md" className="mt-8">
         <h2 className="font-heading text-lg font-semibold">{t("addTitle")}</h2>
         <div className="mt-4">
-          <RunsheetForm eventId={eventId} locale={locale} staff={staff} />
+          <RunsheetForm
+            eventId={eventId}
+            locale={locale}
+            staff={staff}
+            speakerOptions={speakerOptions}
+            teamMemberOptions={teamMemberOptions}
+            contactOptions={contactOptions}
+          />
         </div>
       </Card>
     </div>

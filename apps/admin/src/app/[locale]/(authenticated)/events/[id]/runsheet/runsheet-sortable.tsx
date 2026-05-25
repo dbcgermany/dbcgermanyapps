@@ -2,7 +2,8 @@
 
 import { SortableList } from "@/components/sortable-list";
 import { DragHandle } from "@/components/inline-edit-row";
-import { reorderRunsheetItems, type RunsheetItem } from "@/actions/runsheet";
+import { reorderRunsheetItems } from "@/actions/runsheet";
+import type { ProgramItem, ProgramItemOwnerSpeaker, ProgramItemOwnerTeamMember, ProgramItemOwnerContact } from "@dbc/types";
 import { RunsheetRow } from "./runsheet-row";
 
 export function RunsheetSortable({
@@ -10,11 +11,17 @@ export function RunsheetSortable({
   eventId,
   locale,
   staff,
+  speakerOptions,
+  teamMemberOptions,
+  contactOptions,
 }: {
-  items: RunsheetItem[];
+  items: ProgramItem[];
   eventId: string;
   locale: string;
   staff: { id: string; name: string }[];
+  speakerOptions: (ProgramItemOwnerSpeaker & { is_event_speaker?: boolean })[];
+  teamMemberOptions: ProgramItemOwnerTeamMember[];
+  contactOptions: ProgramItemOwnerContact[];
 }) {
   return (
     <SortableList
@@ -31,6 +38,9 @@ export function RunsheetSortable({
             eventId={eventId}
             locale={locale}
             staff={staff}
+            speakerOptions={speakerOptions}
+            teamMemberOptions={teamMemberOptions}
+            contactOptions={contactOptions}
             dragHandle={
               <DragHandle {...handle.attributes} {...handle.listeners} />
             }
