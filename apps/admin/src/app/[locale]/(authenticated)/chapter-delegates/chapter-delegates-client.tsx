@@ -10,6 +10,7 @@ import {
   ChapterSelect,
   ConfirmDialog,
   DBC_CHAPTER_COUNTRY_CODES,
+  Textarea,
   chapterFlag,
   dbcChapterLabel,
 } from "@dbc/ui";
@@ -417,12 +418,12 @@ export function ChapterDelegatesClient({
                   <label className="block text-[11px] uppercase tracking-wide text-muted-foreground mb-1.5">
                     {t("outreach.recipientsLabel")}
                   </label>
-                  <textarea
+                  <Textarea
                     value={outreachRecipientsRaw}
                     onChange={(e) => setOutreachRecipientsRaw(e.target.value)}
                     placeholder={t("outreach.recipientsPlaceholder")}
                     rows={5}
-                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono"
+                    className="font-mono"
                   />
                   <p className="mt-1 text-[11px] text-muted-foreground">
                     {t("outreach.recipientsHint")}

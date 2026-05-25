@@ -12,7 +12,7 @@ import {
   getOutreachTemplateForContact,
   type OutreachTemplateSummary,
 } from "@/actions/outreach-templates";
-import { Button } from "@dbc/ui";
+import { Button, Textarea } from "@dbc/ui";
 
 const FREE_FORM_SLUG = "__free__";
 const LOCALES = ["en", "de", "fr"] as const;
@@ -385,13 +385,13 @@ export function ComposeDialog({
             <label className="block text-xs font-medium uppercase tracking-wide text-muted-foreground">
               {t("message")}
             </label>
-            <textarea
+            <Textarea
               rows={12}
               value={body}
               onChange={(e) => setBody(e.target.value)}
               disabled={loadingTemplate}
               placeholder={t("bodyPlaceholder")}
-              className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              className="mt-1"
             />
             <p className="mt-1 text-xs text-muted-foreground">
               {t("bodyHint")}

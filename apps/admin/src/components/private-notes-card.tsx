@@ -4,6 +4,7 @@ import { useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { Textarea } from "@dbc/ui";
 import { upsertContactUserState } from "@/actions/contacts";
 import { ProfileSection } from "./profile-section";
 
@@ -53,7 +54,7 @@ export function PrivateNotesCard({
       title={t("profile.sections.privateNotes")}
       description={t("profile.private.caption")}
     >
-      <textarea
+      <Textarea
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onBlur={save}
@@ -66,7 +67,6 @@ export function PrivateNotesCard({
         rows={4}
         disabled={isPending}
         placeholder={t("profile.private.placeholder")}
-        className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
       />
     </ProfileSection>
   );

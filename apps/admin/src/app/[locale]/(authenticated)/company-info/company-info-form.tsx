@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { AssetUpload, Button } from "@dbc/ui";
+import { AssetUpload, Button, Textarea } from "@dbc/ui";
 import { AboutSectionsForm } from "./about-sections-form";
 import { HomeHeroForm } from "./home-hero-form";
 import {
@@ -558,12 +558,11 @@ function SectionForm({
                 <span className="mb-1 block text-sm font-medium">
                   {f.label}
                 </span>
-                <textarea
+                <Textarea
                   name={String(f.name)}
                   defaultValue={value}
                   placeholder={f.placeholder}
                   rows={3}
-                  className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
                 />
                 {f.help && (
                   <span className="mt-1 block text-xs text-muted-foreground">

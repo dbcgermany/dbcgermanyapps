@@ -4,7 +4,7 @@ import { useState, useMemo, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { Badge } from "@dbc/ui";
+import { Badge, Textarea } from "@dbc/ui";
 import { updateAttendeeNotes } from "@/actions/attendees";
 
 interface Attendee {
@@ -259,11 +259,11 @@ export function AttendeesList({
               <div className="mt-2">
                 {editingId === a.id ? (
                   <div className="space-y-2">
-                    <textarea
+                    <Textarea
                       value={notesDraft}
                       onChange={(e) => setNotesDraft(e.target.value)}
                       rows={2}
-                      className="w-full rounded-md border border-input bg-background px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-ring"
+                      className="px-2 py-1 text-xs"
                     />
                     <div className="flex gap-2">
                       <button
@@ -339,11 +339,11 @@ export function AttendeesList({
                   <td className="px-4 py-3">
                     {editingId === a.id ? (
                       <div className="space-y-2">
-                        <textarea
+                        <Textarea
                           value={notesDraft}
                           onChange={(e) => setNotesDraft(e.target.value)}
                           rows={2}
-                          className="w-full rounded-md border border-input bg-background px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-ring"
+                          className="px-2 py-1 text-xs"
                         />
                         <div className="flex gap-2">
                           <button

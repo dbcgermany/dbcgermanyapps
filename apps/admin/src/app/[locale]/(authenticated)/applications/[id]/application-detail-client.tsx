@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Button } from "@dbc/ui";
+import { Button, Textarea } from "@dbc/ui";
 import { type IncubationApplicationStatus } from "@dbc/types";
 import { updateApplicationStatus } from "@/actions/applications";
 import { updateJobApplicationStatus } from "@/actions/job-applications";
@@ -432,11 +432,10 @@ function ReviewSection({
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium">{t("notes")}</label>
-          <textarea
+          <Textarea
             value={notes}
             onChange={(e) => onNotesChange(e.target.value)}
             rows={4}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
         <Button onClick={() => onSave(selectedStatus)} disabled={isPending}>

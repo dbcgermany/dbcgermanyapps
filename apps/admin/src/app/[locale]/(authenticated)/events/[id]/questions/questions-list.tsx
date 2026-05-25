@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { Badge } from "@dbc/ui";
+import { Badge, Textarea } from "@dbc/ui";
 import {
   updateSpeakerQuestionStatus,
   updateSpeakerQuestionNotes,
@@ -242,11 +242,11 @@ export function QuestionsList({
                       <div className="mt-2">
                         {editingNotes === q.id ? (
                           <div className="space-y-2">
-                            <textarea
+                            <Textarea
                               value={notesDraft}
                               onChange={(e) => setNotesDraft(e.target.value)}
                               rows={2}
-                              className="w-full rounded-md border border-input bg-background px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-ring"
+                              className="px-2 py-1 text-xs"
                               placeholder="Internal notes (only admins see this)"
                             />
                             <div className="flex gap-2">

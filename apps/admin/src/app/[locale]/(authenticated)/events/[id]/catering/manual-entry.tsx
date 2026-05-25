@@ -4,7 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { Button } from "@dbc/ui";
+import { Button, Textarea } from "@dbc/ui";
 import { recordManualCateringSelection } from "@/actions/catering";
 import {
   searchAttendees,
@@ -227,13 +227,13 @@ export function ManualCateringEntry({
             <label className="block text-xs font-medium uppercase tracking-wide text-muted-foreground">
               {t("notes")}
             </label>
-            <textarea
+            <Textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
               maxLength={500}
               placeholder={t("notesPlaceholder")}
-              className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              className="mt-1"
             />
           </div>
 

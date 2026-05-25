@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Card, ConfirmDialog } from "@dbc/ui";
+import { Card, ConfirmDialog, Textarea } from "@dbc/ui";
 import type { DomainCheckResult } from "@dbc/email";
 import {
   saveNewsletter,
@@ -213,11 +213,11 @@ export function NewsletterComposer({
             </select>
           </Field>
           <Field label={t("bodyLabel")}>
-            <textarea
+            <Textarea
               rows={14}
               value={state.body_mdx}
               onChange={(e) => update("body_mdx", e.target.value)}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono"
+              className="font-mono"
             />
           </Field>
           {/* Inline preview — visual sanity check while editing. Pixel-

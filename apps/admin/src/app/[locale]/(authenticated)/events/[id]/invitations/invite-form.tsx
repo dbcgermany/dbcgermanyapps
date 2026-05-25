@@ -3,7 +3,7 @@
 import { useState, useTransition, useEffect } from "react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { BirthdayField, Button, CountrySelect, TITLE_VALUES, TitleGenderFields, type Gender, type Title } from "@dbc/ui";
+import { BirthdayField, Button, CountrySelect, Textarea, TITLE_VALUES, TitleGenderFields, type Gender, type Title } from "@dbc/ui";
 import { createInvitation } from "@/actions/invitations";
 import { localeFromCountry } from "@dbc/email";
 
@@ -432,10 +432,10 @@ export function InviteForm({
               <label className="mb-1.5 block text-sm font-medium">
                 {t.bodyLabel}
               </label>
-              <textarea
+              <Textarea
                 value={customBody}
                 onChange={(e) => setCustomBody(e.target.value)}
-                className={`${input} min-h-48 resize-y`}
+                className="min-h-48 resize-y"
                 rows={10}
               />
               <p className="mt-2 text-xs text-muted-foreground">

@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Badge, Button, ConfirmDialog } from "@dbc/ui";
+import { Badge, Button, ConfirmDialog, Textarea } from "@dbc/ui";
 import {
   createDashboardAd,
   updateDashboardAd,
@@ -350,14 +350,13 @@ function Field({
     <label htmlFor={name} className="block">
       <span className="mb-1 block text-sm font-medium">{label}</span>
       {textarea ? (
-        <textarea
+        <Textarea
           id={name}
           name={name}
           defaultValue={defaultValue}
           rows={rows ?? 3}
           required={required}
           placeholder={placeholder}
-          className={cls}
         />
       ) : (
         <input

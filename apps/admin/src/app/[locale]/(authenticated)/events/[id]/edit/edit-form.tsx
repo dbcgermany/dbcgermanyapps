@@ -10,7 +10,7 @@ import {
   type EventBranch,
   type EventType,
 } from "@dbc/types";
-import { Button, LinkButton } from "@dbc/ui";
+import { Button, LinkButton, Textarea } from "@dbc/ui";
 import { updateEvent } from "@/actions/events";
 import { CoverImageUpload } from "@/components/cover-image-upload";
 import { PaymentMethodsSelect } from "@/components/payment-methods-select";
@@ -286,12 +286,11 @@ export function EditEventForm({
             <label htmlFor={field.name} className="block text-xs text-muted-foreground mb-1">
               {field.label}
             </label>
-            <textarea
+            <Textarea
               id={field.name}
               name={field.name}
               rows={4}
               defaultValue={field.value}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
         ))}
@@ -775,33 +774,30 @@ export function EditEventForm({
             <label className="block text-xs text-muted-foreground mb-1">
               Refund policy text (DE)
             </label>
-            <textarea
+            <Textarea
               name="refund_policy_text_de"
               defaultValue={event.refund_policy_text_de ?? ""}
               rows={2}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             />
           </div>
           <div>
             <label className="block text-xs text-muted-foreground mb-1">
               Refund policy text (EN)
             </label>
-            <textarea
+            <Textarea
               name="refund_policy_text_en"
               defaultValue={event.refund_policy_text_en ?? ""}
               rows={2}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             />
           </div>
           <div>
             <label className="block text-xs text-muted-foreground mb-1">
               Refund policy text (FR)
             </label>
-            <textarea
+            <Textarea
               name="refund_policy_text_fr"
               defaultValue={event.refund_policy_text_fr ?? ""}
               rows={2}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             />
           </div>
         </div>
@@ -823,33 +819,30 @@ export function EditEventForm({
             <label className="block text-xs text-muted-foreground mb-1">
               Photo consent text (DE)
             </label>
-            <textarea
+            <Textarea
               name="photo_consent_text_de"
               defaultValue={event.photo_consent_text_de ?? ""}
               rows={2}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             />
           </div>
           <div>
             <label className="block text-xs text-muted-foreground mb-1">
               Photo consent text (EN)
             </label>
-            <textarea
+            <Textarea
               name="photo_consent_text_en"
               defaultValue={event.photo_consent_text_en ?? ""}
               rows={2}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             />
           </div>
           <div>
             <label className="block text-xs text-muted-foreground mb-1">
               Photo consent text (FR)
             </label>
-            <textarea
+            <Textarea
               name="photo_consent_text_fr"
               defaultValue={event.photo_consent_text_fr ?? ""}
               rows={2}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             />
           </div>
         </div>

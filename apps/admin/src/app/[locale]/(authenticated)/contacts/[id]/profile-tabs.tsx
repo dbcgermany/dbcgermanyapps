@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { Badge, Button, ConfirmDialog, CountrySelect, GENDER_VALUES, PhoneInput, TITLE_VALUES, type Gender } from "@dbc/ui";
+import { Badge, Button, ConfirmDialog, CountrySelect, GENDER_VALUES, PhoneInput, Textarea, TITLE_VALUES, type Gender } from "@dbc/ui";
 import {
   addInvolvement,
   removeInvolvement,
@@ -695,11 +695,10 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
         <p className="text-xs text-muted-foreground">{tProfile("shared.caption")}</p>
         <label className="block">
           <span className="mb-1 block text-sm font-medium">{tFields("fields.adminNotes")}</span>
-          <textarea
+          <Textarea
             name="admin_notes"
             defaultValue={contact.admin_notes ?? ""}
             rows={4}
-            className={input}
             placeholder={tFields("fields.adminNotesPlaceholder")}
           />
         </label>

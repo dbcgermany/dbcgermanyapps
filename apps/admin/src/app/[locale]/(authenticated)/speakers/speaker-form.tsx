@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { AssetUpload, Button, NameFields } from "@dbc/ui";
+import { AssetUpload, Button, NameFields, Textarea } from "@dbc/ui";
 import {
   createSpeaker,
   updateSpeaker,
@@ -434,14 +434,13 @@ function Field({
     <label htmlFor={name} className="block">
       <span className="mb-1 block text-sm font-medium">{label}</span>
       {textarea ? (
-        <textarea
+        <Textarea
           id={name}
           name={name}
           defaultValue={defaultValue}
           rows={rows ?? 4}
           required={required}
           placeholder={placeholder}
-          className={className}
         />
       ) : (
         <input

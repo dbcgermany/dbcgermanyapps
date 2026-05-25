@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { ChevronDown, ChevronUp, Pencil } from "lucide-react";
-import { Button, Card } from "@dbc/ui";
+import { Button, Card, Textarea } from "@dbc/ui";
 import { updatePosterConfig, type PosterConfig } from "@/actions/poster";
 
 const T = {
@@ -150,12 +150,11 @@ export function PosterConfigEditor({
                           </span>
                         </label>
                         {field.multiline ? (
-                          <textarea
+                          <Textarea
                             value={(draft[dbKey] as string) ?? ""}
                             onChange={(e) => handleChange(dbKey, e.target.value)}
                             placeholder={placeholder}
                             rows={3}
-                            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
                           />
                         ) : (
                           <input

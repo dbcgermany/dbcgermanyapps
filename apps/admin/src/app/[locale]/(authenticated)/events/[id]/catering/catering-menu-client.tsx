@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { Button, Card, ConfirmDialog } from "@dbc/ui";
+import { Button, Card, ConfirmDialog, Textarea } from "@dbc/ui";
 import {
   createCateringMenuItem,
   deleteCateringMenuItem,
@@ -378,33 +378,30 @@ function MenuItemFields({
           <label className="block text-xs text-muted-foreground mb-1">
             {t("descEn")}
           </label>
-          <textarea
+          <Textarea
             name="description_en"
             defaultValue={item?.description_en ?? ""}
             rows={2}
-            className={inputClass}
           />
         </div>
         <div>
           <label className="block text-xs text-muted-foreground mb-1">
             {t("descDe")}
           </label>
-          <textarea
+          <Textarea
             name="description_de"
             defaultValue={item?.description_de ?? ""}
             rows={2}
-            className={inputClass}
           />
         </div>
         <div>
           <label className="block text-xs text-muted-foreground mb-1">
             {t("descFr")}
           </label>
-          <textarea
+          <Textarea
             name="description_fr"
             defaultValue={item?.description_fr ?? ""}
             rows={2}
-            className={inputClass}
           />
         </div>
       </div>

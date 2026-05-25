@@ -4,7 +4,7 @@ import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { AssetUpload, BirthdayField, Button, CountrySelect, NameFields, TITLE_VALUES, TitleGenderFields, type Gender, type Title } from "@dbc/ui";
+import { AssetUpload, BirthdayField, Button, CountrySelect, NameFields, Textarea, TITLE_VALUES, TitleGenderFields, type Gender, type Title } from "@dbc/ui";
 import {
   createTeamMember,
   updateTeamMember,
@@ -385,13 +385,12 @@ function Field({
     <label htmlFor={name} className="block">
       <span className="mb-1 block text-sm font-medium">{label}</span>
       {textarea ? (
-        <textarea
+        <Textarea
           id={name}
           name={name}
           defaultValue={defaultValue}
           rows={rows ?? 4}
           required={required}
-          className={className}
         />
       ) : (
         <input

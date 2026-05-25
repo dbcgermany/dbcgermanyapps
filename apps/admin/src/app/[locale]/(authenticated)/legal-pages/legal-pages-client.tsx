@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { Button, ConfirmDialog } from "@dbc/ui";
+import { Button, ConfirmDialog, Textarea } from "@dbc/ui";
 import {
   TEMPLATE_VARIABLES,
   type LegalDocumentType,
@@ -332,12 +332,12 @@ function LegalEditor({
       <div className="grid gap-3 lg:grid-cols-2">
         <label className="block">
           <span className="block text-xs font-medium">{t.body}</span>
-          <textarea
+          <Textarea
             value={body}
             onChange={(e) => setBody(e.target.value)}
             rows={28}
             spellCheck
-            className="mt-1 w-full rounded-md border border-input bg-background p-3 font-mono text-xs"
+            className="mt-1 p-3 font-mono text-xs"
           />
         </label>
         <div className="block">
