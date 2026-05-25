@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { Badge, Button, ConfirmDialog, CountrySelect, GENDER_VALUES, PhoneInput, Select, Textarea, TITLE_VALUES, type Gender } from "@dbc/ui";
+import { Badge, Button, ConfirmDialog, CountrySelect, GENDER_VALUES, Input, PhoneInput, Select, Textarea, TITLE_VALUES, type Gender } from "@dbc/ui";
 import {
   addInvolvement,
   removeInvolvement,
@@ -466,7 +466,7 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
           </label>
           <label className="block">
             <span className="mb-1 block text-sm font-medium">{tFields("fields.firstName")}</span>
-            <input
+            <Input
               name="first_name"
               defaultValue={contact.first_name ?? ""}
               className={input}
@@ -474,7 +474,7 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
           </label>
           <label className="block">
             <span className="mb-1 block text-sm font-medium">{tFields("fields.lastName")}</span>
-            <input
+            <Input
               name="last_name"
               defaultValue={contact.last_name ?? ""}
               className={input}
@@ -484,7 +484,7 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <label className="block">
             <span className="mb-1 block text-sm font-medium">{tFields("fields.birthday")}</span>
-            <input
+            <Input
               name="birthday"
               type="date"
               defaultValue={contact.birthday ?? ""}
@@ -528,7 +528,7 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
               </span>
             )}
           </span>
-          <input
+          <Input
             name="email"
             type="email"
             defaultValue={contact.email}
@@ -540,7 +540,7 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
           </span>
         </label>
         <label className="flex items-center gap-2 text-sm">
-          <input
+          <Input
             type="checkbox"
             name="email_verified"
             defaultChecked={contact.email_verified}
@@ -562,7 +562,7 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <label className="block">
             <span className="mb-1 block text-sm font-medium">{tFields("linkedinUrl")}</span>
-            <input
+            <Input
               name="linkedin_url"
               type="url"
               placeholder="https://www.linkedin.com/in/…"
@@ -572,7 +572,7 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
           </label>
           <label className="block">
             <span className="mb-1 block text-sm font-medium">{tFields("fields.websiteUrl")}</span>
-            <input
+            <Input
               name="website_url"
               type="url"
               placeholder="https://…"
@@ -594,7 +594,7 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <label className="block">
             <span className="mb-1 block text-sm font-medium">{tFields("organization")}</span>
-            <input
+            <Input
               name="organization"
               defaultValue={contact.organization ?? ""}
               className={input}
@@ -602,7 +602,7 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
           </label>
           <label className="block">
             <span className="mb-1 block text-sm font-medium">{tFields("fields.occupation")}</span>
-            <input
+            <Input
               name="occupation"
               defaultValue={contact.occupation ?? ""}
               className={input}
@@ -618,7 +618,7 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
         </legend>
         <label className="block">
           <span className="mb-1 block text-sm font-medium">{tFields("fields.addressLine1")}</span>
-          <input
+          <Input
             name="address_line_1"
             defaultValue={contact.address_line_1 ?? ""}
             className={input}
@@ -626,7 +626,7 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
         </label>
         <label className="block">
           <span className="mb-1 block text-sm font-medium">{tFields("fields.addressLine2")}</span>
-          <input
+          <Input
             name="address_line_2"
             defaultValue={contact.address_line_2 ?? ""}
             className={input}
@@ -635,7 +635,7 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <label className="block">
             <span className="mb-1 block text-sm font-medium">{tFields("fields.postalCode")}</span>
-            <input
+            <Input
               name="postal_code"
               defaultValue={contact.postal_code ?? ""}
               className={input}
@@ -643,7 +643,7 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
           </label>
           <label className="block">
             <span className="mb-1 block text-sm font-medium">{tFields("fields.city")}</span>
-            <input
+            <Input
               name="city"
               defaultValue={contact.city ?? ""}
               className={input}
@@ -651,7 +651,7 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
           </label>
           <label className="block">
             <span className="mb-1 block text-sm font-medium">{tFields("fields.stateRegion")}</span>
-            <input
+            <Input
               name="state_region"
               defaultValue={contact.state_region ?? ""}
               className={input}
@@ -672,7 +672,7 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
           </div>
           <label className="block">
             <span className="mb-1 block text-sm font-medium">{tBusiness("fields.hqCountry")}</span>
-            <input
+            <Input
               name="hq_country"
               defaultValue={contact.hq_country ?? ""}
               maxLength={2}
@@ -722,7 +722,7 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <label className="block">
             <span className="mb-1 block text-sm font-medium">{tBusiness("fields.tier")}</span>
-            <input
+            <Input
               name="tier"
               defaultValue={contact.tier ?? ""}
               className={input}
@@ -731,7 +731,7 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
           </label>
           <label className="block">
             <span className="mb-1 block text-sm font-medium">{tBusiness("fields.sector")}</span>
-            <input
+            <Input
               name="sector"
               defaultValue={contact.sector ?? ""}
               className={input}
@@ -757,7 +757,7 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
           </label>
           <label className="block">
             <span className="mb-1 block text-sm font-medium">{tBusiness("fields.pitchTier")}</span>
-            <input
+            <Input
               name="pitch_tier"
               defaultValue={contact.pitch_tier ?? ""}
               className={input}
@@ -769,7 +769,7 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
           <span className="mb-1 block text-sm font-medium">
             {tBusiness("fields.confidence")}
           </span>
-          <input
+          <Input
             name="confidence"
             type="number"
             min={0}
@@ -987,7 +987,7 @@ function TicketRowView({ ticket }: { ticket: TicketRow }) {
             </button>
           }
         />
-        <input
+        <Input
           type="email"
           value={overrideEmail}
           onChange={(e) => setOverrideEmail(e.target.value)}

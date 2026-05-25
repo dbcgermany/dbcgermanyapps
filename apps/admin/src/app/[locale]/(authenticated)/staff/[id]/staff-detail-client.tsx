@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { Badge, Button, ConfirmDialog, Select } from "@dbc/ui";
+import { Badge, Button, ConfirmDialog, Input, Select } from "@dbc/ui";
 import type { AdminModule, UserRole } from "@dbc/types";
 import { canDo } from "@dbc/types";
 import {
@@ -308,7 +308,7 @@ export function StaffDetailClient({
                 key={ev.id}
                 className="flex items-center gap-2 text-sm cursor-pointer"
               >
-                <input
+                <Input
                   type="checkbox"
                   checked={assigned}
                   disabled={isPending}
@@ -361,7 +361,7 @@ export function StaffDetailClient({
               The password stays the same. Both the old and new addresses will
               receive a notice email.
             </p>
-            <input
+            <Input
               type="email"
               required
               value={emailDraft}

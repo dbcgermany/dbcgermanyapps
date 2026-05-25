@@ -1,5 +1,6 @@
 "use client";
 
+import { Input } from "@dbc/ui";
 import { useRef, useState, useTransition } from "react";
 import { uploadEventCover } from "@/actions/events";
 
@@ -39,7 +40,7 @@ export function CoverImageUpload({
       </label>
 
       {/* The value that gets submitted with the parent form. */}
-      <input
+      <Input
         id={name}
         name={name}
         type="url"
@@ -50,7 +51,7 @@ export function CoverImageUpload({
       />
 
       <div className="flex items-center gap-3">
-        <input
+        <Input
           ref={fileRef}
           type="file"
           accept="image/*"

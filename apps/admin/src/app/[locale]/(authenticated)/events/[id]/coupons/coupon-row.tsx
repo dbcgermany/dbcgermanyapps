@@ -273,7 +273,7 @@ function CouponEditForm({
                 key={t.id}
                 className="flex cursor-pointer items-center gap-2 text-xs"
               >
-                <input
+                <Input
                   type="checkbox"
                   name="applicable_tier_ids"
                   value={t.id}

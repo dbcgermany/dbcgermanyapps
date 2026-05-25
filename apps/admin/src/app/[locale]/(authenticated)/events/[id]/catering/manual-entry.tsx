@@ -4,7 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { Button, Textarea } from "@dbc/ui";
+import { Button, Input, Textarea } from "@dbc/ui";
 import { recordManualCateringSelection } from "@/actions/catering";
 import {
   searchAttendees,
@@ -139,7 +139,7 @@ export function ManualCateringEntry({
         <label className="block text-xs font-medium uppercase tracking-wide text-muted-foreground">
           {t("attendee")}
         </label>
-        <input
+        <Input
           type="text"
           value={search}
           onChange={(e) => {

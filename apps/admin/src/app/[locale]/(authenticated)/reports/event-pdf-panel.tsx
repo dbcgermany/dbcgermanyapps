@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Button, LinkButton } from "@dbc/ui";
+import { Button, Input, LinkButton } from "@dbc/ui";
 
 export function EventPdfPanel({
   locale,
@@ -71,7 +71,7 @@ function Toggle({
 }) {
   return (
     <label className="flex cursor-pointer items-start gap-2 rounded-md border border-border p-3 text-sm">
-      <input
+      <Input
         type="checkbox"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}

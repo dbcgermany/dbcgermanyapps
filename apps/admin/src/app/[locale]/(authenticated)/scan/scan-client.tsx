@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { checkInTicket, getScanStats, type ScanResult } from "@/actions/scan";
 import { searchAttendees, manualCheckIn, resendTicketPdf, type AttendeeSearchResult } from "@/actions/tickets";
-import { Button, Select } from "@dbc/ui";
+import { Button, Input, Select } from "@dbc/ui";
 
 type Status =
   | { kind: "idle" }
@@ -404,7 +404,7 @@ export function ScanClient({
       >
         <p className="text-sm font-medium mb-2">{t("manual")}</p>
         <div className="flex gap-2">
-          <input
+          <Input
             type="text"
             inputMode="text"
             autoCapitalize="characters"
@@ -521,7 +521,7 @@ function NameFindPanel({
   return (
     <div className="rounded-lg border border-border p-4">
       <p className="text-sm font-medium mb-2">{ft("heading")}</p>
-      <input
+      <Input
         type="search"
         value={query}
         onChange={(e) => setQuery(e.target.value)}

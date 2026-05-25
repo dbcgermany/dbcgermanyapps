@@ -203,7 +203,7 @@ export function HomeHeroForm({ info }: { info: CompanyInfo }) {
             {strength}%
           </span>
         </Label>
-        <input
+        <Input
           id="home_hero_darkening_strength"
           name="home_hero_darkening_strength"
           type="range"
@@ -272,7 +272,7 @@ function FileUploadField({
     <div>
       <p className="text-sm font-medium text-foreground">{label}</p>
       <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>
-      <input
+      <Input
         type="file"
         accept={accept}
         onChange={handleChange}

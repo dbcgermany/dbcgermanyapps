@@ -228,7 +228,7 @@ export function TeamInvitesClient({
             <Label>{t("applicableTiersLabel")}</Label>
             <div className="mt-2 space-y-2 rounded-md border border-border p-3">
               <label className="flex items-center gap-2 text-sm">
-                <input
+                <Input
                   type="radio"
                   name="applies_to"
                   checked={appliesToAll}
@@ -240,7 +240,7 @@ export function TeamInvitesClient({
                 {t("applicableAllPublicTiers")}
               </label>
               <label className="flex items-center gap-2 text-sm">
-                <input
+                <Input
                   type="radio"
                   name="applies_to"
                   checked={!appliesToAll}
@@ -255,7 +255,7 @@ export function TeamInvitesClient({
                       key={tier.id}
                       className="flex items-center gap-2 text-sm"
                     >
-                      <input
+                      <Input
                         type="checkbox"
                         checked={selectedTierIds.includes(tier.id)}
                         onChange={(e) => {
@@ -430,7 +430,7 @@ export function TeamInvitesClient({
                                 }
                                 className="mt-2 flex items-center gap-2"
                               >
-                                <input
+                                <Input
                                   type="number"
                                   name="quota"
                                   min={0}
@@ -474,7 +474,7 @@ export function TeamInvitesClient({
                                     {t("discountTypeFixed")}
                                   </option>
                                 </Select>
-                                <input
+                                <Input
                                   type="number"
                                   name="override_value"
                                   min={0}

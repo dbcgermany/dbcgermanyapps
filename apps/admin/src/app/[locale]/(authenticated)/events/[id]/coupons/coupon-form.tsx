@@ -146,7 +146,7 @@ export function CouponForm({
                 key={tier.id}
                 className="flex cursor-pointer items-center gap-2 text-sm"
               >
-                <input
+                <Input
                   type="checkbox"
                   name="applicable_tier_ids"
                   value={tier.id}

@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Badge, Button, ConfirmDialog, Textarea } from "@dbc/ui";
+import { Badge, Button, ConfirmDialog, Input, Textarea } from "@dbc/ui";
 import {
   createDashboardAd,
   updateDashboardAd,
@@ -275,7 +275,7 @@ function AdForm({
           defaultValue={initial?.sort_order?.toString() ?? "0"}
         />
         <label className="flex items-end gap-2 text-sm font-medium">
-          <input
+          <Input
             type="checkbox"
             name="is_active"
             defaultChecked={initial?.is_active ?? true}
@@ -359,7 +359,7 @@ function Field({
           placeholder={placeholder}
         />
       ) : (
-        <input
+        <Input
           id={name}
           name={name}
           type={type ?? "text"}

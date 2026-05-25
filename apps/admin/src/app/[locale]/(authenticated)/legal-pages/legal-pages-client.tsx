@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { Button, ConfirmDialog, Textarea } from "@dbc/ui";
+import { Button, ConfirmDialog, Input, Textarea } from "@dbc/ui";
 import {
   TEMPLATE_VARIABLES,
   type LegalDocumentType,
@@ -322,7 +322,7 @@ function LegalEditor({
 
       <label className="block">
         <span className="block text-xs font-medium">{t.title}</span>
-        <input
+        <Input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"

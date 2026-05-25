@@ -1,6 +1,6 @@
 "use client";
 
-import { Select } from "@dbc/ui";
+import { Input, Select } from "@dbc/ui";
 import { Fragment, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -156,7 +156,7 @@ export function AuditLogClient({
             }}
             className="flex items-center gap-2"
           >
-            <input
+            <Input
               type="text"
               value={userInput}
               onChange={(e) => setUserInput(e.target.value)}
@@ -174,7 +174,7 @@ export function AuditLogClient({
           <div className="flex items-center gap-2">
             <label className="flex min-w-0 flex-1 items-center gap-2 text-xs text-muted-foreground lg:flex-none">
               {t("from")}
-              <input
+              <Input
                 type="date"
                 value={currentFromFilter}
                 onChange={(e) =>
@@ -185,7 +185,7 @@ export function AuditLogClient({
             </label>
             <label className="flex min-w-0 flex-1 items-center gap-2 text-xs text-muted-foreground lg:flex-none">
               {t("to")}
-              <input
+              <Input
                 type="date"
                 value={currentToFilter}
                 onChange={(e) => pushFilters({ to: e.target.value, page: 1 })}

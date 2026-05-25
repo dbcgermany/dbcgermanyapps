@@ -1,6 +1,6 @@
 "use client";
 
-import { Select } from "@dbc/ui";
+import { Input, Select } from "@dbc/ui";
 import { useTransition, type ReactNode } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Search, X } from "lucide-react";
@@ -73,7 +73,7 @@ export function FilterBar({
             className="pointer-events-none absolute left-3 h-4 w-4 text-muted-foreground"
             aria-hidden
           />
-          <input
+          <Input
             type="search"
             name={search.name}
             defaultValue={params.get(search.name) ?? ""}

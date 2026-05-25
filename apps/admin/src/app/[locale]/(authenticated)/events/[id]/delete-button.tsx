@@ -1,5 +1,6 @@
 "use client";
 
+import { Input } from "@dbc/ui";
 import { useState } from "react";
 import { deleteEvent } from "@/actions/events";
 
@@ -36,7 +37,7 @@ export function DeleteEventButton({
         Type the event title <strong>{eventTitle}</strong> to confirm deletion.
         This cannot be undone.
       </p>
-      <input
+      <Input
         type="text"
         value={confirmText}
         onChange={(e) => setConfirmText(e.target.value)}

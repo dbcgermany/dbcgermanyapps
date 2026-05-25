@@ -4,7 +4,7 @@ import { Suspense, use, useActionState, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { loginWithPassword, requestPasswordResetForEmail } from "@/actions/auth";
 import { createBrowserClient } from "@dbc/supabase";
-import { Button } from "@dbc/ui";
+import { Button, Input } from "@dbc/ui";
 
 type Locale = "en" | "de" | "fr";
 
@@ -200,7 +200,7 @@ function LoginForm({ locale }: { locale: string }) {
         >
           {t.emailLabel}
         </label>
-        <input
+        <Input
           id="email"
           name="email"
           type="email"
@@ -226,7 +226,7 @@ function LoginForm({ locale }: { locale: string }) {
             {t.forgot}
           </button>
         </div>
-        <input
+        <Input
           id="password"
           name="password"
           type="password"

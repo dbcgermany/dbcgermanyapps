@@ -4,7 +4,7 @@ import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { AssetUpload, BirthdayField, Button, CountrySelect, NameFields, Select, Textarea, TITLE_VALUES, TitleGenderFields, type Gender, type Title } from "@dbc/ui";
+import { AssetUpload, BirthdayField, Button, CountrySelect, Input, NameFields, Select, Textarea, TITLE_VALUES, TitleGenderFields, type Gender, type Title } from "@dbc/ui";
 import {
   createTeamMember,
   updateTeamMember,
@@ -264,7 +264,7 @@ export function TeamMemberForm({
         </div>
         <div className="rounded-md border border-border bg-background p-3">
           <label className="flex items-start gap-3 cursor-pointer">
-            <input
+            <Input
               type="checkbox"
               name="featured_on_about"
               defaultChecked={initial?.featured_on_about ?? false}
@@ -318,7 +318,7 @@ export function TeamMemberForm({
             <span className="mb-1 block text-xs font-medium text-muted-foreground">
               {t.orPasteUrl}
             </span>
-            <input
+            <Input
               type="url"
               name="photo_url"
               value={photoUrl}
@@ -393,7 +393,7 @@ function Field({
           required={required}
         />
       ) : (
-        <input
+        <Input
           id={name}
           name={name}
           type={type ?? "text"}

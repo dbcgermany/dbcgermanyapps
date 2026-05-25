@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { AttendeeIdentityFields, Button, ConfirmDialog, EMPTY_ATTENDEE_IDENTITY, PhoneInput, Select, TITLE_VALUES, type AttendeeIdentity, type AttendeeIdentityLabels, type Gender, type Title } from "@dbc/ui";
+import { AttendeeIdentityFields, Button, ConfirmDialog, EMPTY_ATTENDEE_IDENTITY, Input, PhoneInput, Select, TITLE_VALUES, type AttendeeIdentity, type AttendeeIdentityLabels, type Gender, type Title } from "@dbc/ui";
 import {
   createDoorSale,
   downloadDoorSaleTicketPdf,
@@ -314,7 +314,7 @@ export function DoorSaleClient({
                 } ${soldOut ? "opacity-50 cursor-not-allowed" : ""}`}
               >
                 <div className="flex items-center gap-3">
-                  <input
+                  <Input
                     type="radio"
                     name="tier_id"
                     value={tier.id}
@@ -495,7 +495,7 @@ function PlaceholderBackfill({
                   </div>
                 </td>
                 <td className="px-2 py-2">
-                  <input
+                  <Input
                     type="email"
                     value={drafts[r.ticket_id] ?? ""}
                     onChange={(e) =>

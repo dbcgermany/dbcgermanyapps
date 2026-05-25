@@ -1,5 +1,6 @@
 "use client";
 
+import { Input } from "@dbc/ui";
 import {
   STRIPE_PAYMENT_METHOD_TYPE_VALUES,
   type StripePaymentMethodType,
@@ -58,7 +59,7 @@ export function PaymentMethodsSelect({
             key={value}
             className="flex items-center gap-2 rounded-md border border-border bg-background px-3 py-2 text-sm hover:bg-muted cursor-pointer"
           >
-            <input
+            <Input
               type="checkbox"
               name={name}
               value={value}

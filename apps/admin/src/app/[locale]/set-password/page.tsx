@@ -3,7 +3,7 @@
 import { Suspense, use, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createBrowserClient } from "@dbc/supabase";
-import { Button } from "@dbc/ui";
+import { Button, Input } from "@dbc/ui";
 
 export default function SetPasswordPage({
   params,
@@ -179,7 +179,7 @@ function SetPasswordForm({ locale }: { locale: string }) {
               >
                 {t.passwordLabel}
               </label>
-              <input
+              <Input
                 id="password"
                 type="password"
                 autoComplete="new-password"
@@ -197,7 +197,7 @@ function SetPasswordForm({ locale }: { locale: string }) {
               >
                 {t.confirmLabel}
               </label>
-              <input
+              <Input
                 id="confirm"
                 type="password"
                 autoComplete="new-password"

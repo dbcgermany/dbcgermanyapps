@@ -66,7 +66,7 @@ export default function NewEventPage({
           <div className="flex flex-wrap gap-4">
             {EVENT_BRANCH_VALUES.map((value) => (
               <label key={value} className="flex items-center gap-2 text-sm">
-                <input
+                <Input
                   type="radio"
                   name="event_branch"
                   value={value}
@@ -102,7 +102,7 @@ export default function NewEventPage({
                   key={value}
                   className="flex items-center gap-2 text-sm"
                 >
-                  <input
+                  <Input
                     type="radio"
                     name="event_type"
                     value={value}

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { Button } from "@dbc/ui";
+import { Button, Input } from "@dbc/ui";
 import {
   NOTIFICATION_DEFAULTS,
   NOTIFICATION_TYPE_VALUES,
@@ -161,7 +161,7 @@ export function NotificationsPreferencesForm({
                   <p className="mt-0.5 text-xs text-muted-foreground">{l.desc}</p>
                 </div>
                 <label className="flex w-16 items-center justify-center">
-                  <input
+                  <Input
                     type="checkbox"
                     checked={p.in_app}
                     onChange={(e) => togglePref(type, "in_app", e.target.checked)}
@@ -170,7 +170,7 @@ export function NotificationsPreferencesForm({
                   />
                 </label>
                 <label className="flex w-16 items-center justify-center">
-                  <input
+                  <Input
                     type="checkbox"
                     checked={p.email}
                     onChange={(e) => togglePref(type, "email", e.target.checked)}

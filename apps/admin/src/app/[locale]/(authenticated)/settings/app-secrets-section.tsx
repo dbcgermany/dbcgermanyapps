@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { Key, Plus, Trash2 } from "lucide-react";
 import type { AppSecret } from "@/actions/app-secrets";
-import { Badge, Button, ConfirmDialog } from "@dbc/ui";
+import { Badge, Button, ConfirmDialog, Input } from "@dbc/ui";
 import { upsertAppSecret } from "@/actions/app-secrets";
 
 const KNOWN_KEYS: Array<{ key: string; note: string }> = [
@@ -150,7 +150,7 @@ function SecretRow({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 flex-1">
           {allowKeyEdit ? (
-            <input
+            <Input
               type="text"
               value={keyDraft}
               onChange={(e) => setKeyDraft(e.target.value.toUpperCase())}
@@ -215,7 +215,7 @@ function SecretRow({
 
       {editing && (
         <form onSubmit={submit} className="mt-4 space-y-3">
-          <input
+          <Input
             type="password"
             autoComplete="off"
             value={valueDraft}
@@ -223,7 +223,7 @@ function SecretRow({
             placeholder="Paste secret value"
             className="w-full rounded-md border border-border bg-background px-3 py-2 font-mono text-sm"
           />
-          <input
+          <Input
             type="text"
             value={noteDraft}
             onChange={(e) => setNoteDraft(e.target.value)}

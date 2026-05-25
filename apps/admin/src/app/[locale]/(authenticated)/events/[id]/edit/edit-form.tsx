@@ -10,7 +10,7 @@ import {
   type EventBranch,
   type EventType,
 } from "@dbc/types";
-import { Button, LinkButton, Select, Textarea } from "@dbc/ui";
+import { Button, Input, LinkButton, Select, Textarea } from "@dbc/ui";
 import { updateEvent } from "@/actions/events";
 import { CoverImageUpload } from "@/components/cover-image-upload";
 import { PaymentMethodsSelect } from "@/components/payment-methods-select";
@@ -172,7 +172,7 @@ export function EditEventForm({
         <div className="flex flex-wrap gap-4">
           {EVENT_BRANCH_VALUES.map((value) => (
             <label key={value} className="flex items-center gap-2 text-sm">
-              <input
+              <Input
                 type="radio"
                 name="event_branch"
                 value={value}
@@ -189,7 +189,7 @@ export function EditEventForm({
             <label htmlFor="external_url" className="block text-sm font-medium">
               {tExternal("label")}
             </label>
-            <input
+            <Input
               id="external_url"
               name="external_url"
               type="url"
@@ -213,7 +213,7 @@ export function EditEventForm({
               key={value}
               className="flex items-center gap-2 text-sm"
             >
-              <input
+              <Input
                 type="radio"
                 name="event_type"
                 value={value}
@@ -232,7 +232,7 @@ export function EditEventForm({
         <label htmlFor="slug" className="block text-sm font-medium mb-1">
           {t.slug}
         </label>
-        <input
+        <Input
           id="slug"
           name="slug"
           type="text"
@@ -258,7 +258,7 @@ export function EditEventForm({
             <label htmlFor={field.name} className="block text-xs text-muted-foreground mb-1">
               {field.label}
             </label>
-            <input
+            <Input
               id={field.name}
               name={field.name}
               type="text"
@@ -302,7 +302,7 @@ export function EditEventForm({
           <label htmlFor="venue_name" className="block text-sm font-medium mb-1">
             {t.venueName}
           </label>
-          <input
+          <Input
             id="venue_name"
             name="venue_name"
             type="text"
@@ -314,7 +314,7 @@ export function EditEventForm({
           <label htmlFor="city" className="block text-sm font-medium mb-1">
             {t.city}
           </label>
-          <input
+          <Input
             id="city"
             name="city"
             type="text"
@@ -328,7 +328,7 @@ export function EditEventForm({
         <label htmlFor="venue_address" className="block text-sm font-medium mb-1">
           {t.venueAddress}
         </label>
-        <input
+        <Input
           id="venue_address"
           name="venue_address"
           type="text"
@@ -343,7 +343,7 @@ export function EditEventForm({
           <label htmlFor="starts_at" className="block text-sm font-medium mb-1">
             {t.startDate}
           </label>
-          <input
+          <Input
             id="starts_at"
             name="starts_at"
             type="datetime-local"
@@ -356,7 +356,7 @@ export function EditEventForm({
           <label htmlFor="ends_at" className="block text-sm font-medium mb-1">
             {t.endDate}
           </label>
-          <input
+          <Input
             id="ends_at"
             name="ends_at"
             type="datetime-local"
@@ -380,7 +380,7 @@ export function EditEventForm({
           <label htmlFor="max_tickets_per_order" className="block text-sm font-medium mb-1">
             {t.maxPerOrder}
           </label>
-          <input
+          <Input
             id="max_tickets_per_order"
             name="max_tickets_per_order"
             type="number"
@@ -399,7 +399,7 @@ export function EditEventForm({
           <label htmlFor="sales_target_tickets" className="block text-sm font-medium mb-1">
             {t.salesTargetTickets}
           </label>
-          <input
+          <Input
             id="sales_target_tickets"
             name="sales_target_tickets"
             type="number"
@@ -413,7 +413,7 @@ export function EditEventForm({
           <label htmlFor="sales_target_revenue_eur" className="block text-sm font-medium mb-1">
             {t.salesTargetRevenue}
           </label>
-          <input
+          <Input
             id="sales_target_revenue_eur"
             name="sales_target_revenue_eur"
             type="number"
@@ -432,7 +432,7 @@ export function EditEventForm({
           <label htmlFor="feedback_survey_url" className="block text-sm font-medium mb-1">
             {t.feedbackUrl}
           </label>
-          <input
+          <Input
             id="feedback_survey_url"
             name="feedback_survey_url"
             type="url"
@@ -491,7 +491,7 @@ export function EditEventForm({
             <label className="block text-xs text-muted-foreground mb-1">
               Slots per team member (default quota)
             </label>
-            <input
+            <Input
               type="number"
               name="team_invite_quota"
               min="0"
@@ -577,7 +577,7 @@ export function EditEventForm({
             <label className="block text-xs text-muted-foreground mb-1">
               Delegate review notification email
             </label>
-            <input
+            <Input
               type="email"
               name="delegate_review_notify_email"
               defaultValue={event.delegate_review_notify_email ?? ""}
@@ -589,7 +589,7 @@ export function EditEventForm({
         <div className="grid gap-2 sm:grid-cols-2">
           <label className="flex items-center gap-2 text-sm">
             <input type="hidden" name="chapter_delegate_program_enabled" value="false" />
-            <input
+            <Input
               type="checkbox"
               name="chapter_delegate_program_enabled"
               value="true"
@@ -600,7 +600,7 @@ export function EditEventForm({
           </label>
           <label className="flex items-center gap-2 text-sm">
             <input type="hidden" name="catering_enabled" value="false" />
-            <input
+            <Input
               type="checkbox"
               name="catering_enabled"
               value="true"
@@ -636,7 +636,7 @@ export function EditEventForm({
               { value: "invited_guest", label: "Invited guest" },
             ].map((r) => (
               <label key={r.value} className="flex items-center gap-1.5 text-xs">
-                <input
+                <Input
                   type="checkbox"
                   name="catering_eligible_roles"
                   value={r.value}
@@ -667,7 +667,7 @@ export function EditEventForm({
         <div className="grid gap-2 sm:grid-cols-3">
           <label className="flex items-center gap-2 text-sm">
             <input type="hidden" name="door_sale_enabled" value="false" />
-            <input
+            <Input
               type="checkbox"
               name="door_sale_enabled"
               value="true"
@@ -678,7 +678,7 @@ export function EditEventForm({
           </label>
           <label className="flex items-center gap-2 text-sm">
             <input type="hidden" name="coupons_enabled" value="false" />
-            <input
+            <Input
               type="checkbox"
               name="coupons_enabled"
               value="true"
@@ -689,7 +689,7 @@ export function EditEventForm({
           </label>
           <label className="flex items-center gap-2 text-sm">
             <input type="hidden" name="waitlist_enabled" value="false" />
-            <input
+            <Input
               type="checkbox"
               name="waitlist_enabled"
               value="true"
@@ -706,7 +706,7 @@ export function EditEventForm({
             <label className="block text-xs text-muted-foreground mb-1">
               Max total tickets (overall venue cap)
             </label>
-            <input
+            <Input
               type="number"
               name="max_total_tickets"
               min="0"
@@ -719,7 +719,7 @@ export function EditEventForm({
             <label className="block text-xs text-muted-foreground mb-1">
               Funnel brand accent (#hex)
             </label>
-            <input
+            <Input
               type="text"
               name="funnel_brand_accent_hex"
               defaultValue={event.funnel_brand_accent_hex ?? ""}
@@ -733,7 +733,7 @@ export function EditEventForm({
         <div className="grid gap-3 sm:grid-cols-3">
           <label className="flex items-center gap-2 text-sm sm:col-span-1">
             <input type="hidden" name="ticket_transfer_enabled" value="false" />
-            <input
+            <Input
               type="checkbox"
               name="ticket_transfer_enabled"
               value="true"
@@ -746,7 +746,7 @@ export function EditEventForm({
             <label className="block text-xs text-muted-foreground mb-1">
               Transfer cutoff (hours before event)
             </label>
-            <input
+            <Input
               type="number"
               name="ticket_transfer_cutoff_hours"
               min="0"
@@ -758,7 +758,7 @@ export function EditEventForm({
             <label className="block text-xs text-muted-foreground mb-1">
               Refund policy (days before event)
             </label>
-            <input
+            <Input
               type="number"
               name="refund_policy_days"
               min="0"
@@ -806,7 +806,7 @@ export function EditEventForm({
         <div className="grid gap-3 sm:grid-cols-3">
           <label className="flex items-center gap-2 text-sm sm:col-span-3">
             <input type="hidden" name="requires_photo_consent" value="false" />
-            <input
+            <Input
               type="checkbox"
               name="requires_photo_consent"
               value="true"
@@ -851,7 +851,7 @@ export function EditEventForm({
         <div className="grid gap-3 sm:grid-cols-3">
           <label className="flex items-center gap-2 text-sm">
             <input type="hidden" name="aftercare_emails_enabled" value="false" />
-            <input
+            <Input
               type="checkbox"
               name="aftercare_emails_enabled"
               value="true"
@@ -864,7 +864,7 @@ export function EditEventForm({
             <label className="block text-xs text-muted-foreground mb-1">
               Check-in opens (min before)
             </label>
-            <input
+            <Input
               type="number"
               name="check_in_opens_minutes_before"
               min="0"
@@ -876,7 +876,7 @@ export function EditEventForm({
             <label className="block text-xs text-muted-foreground mb-1">
               Check-in closes (min after start)
             </label>
-            <input
+            <Input
               type="number"
               name="check_in_closes_minutes_after"
               min="0"
@@ -890,7 +890,7 @@ export function EditEventForm({
           <label className="block text-xs text-muted-foreground mb-1">
             Ticket PDF hero image URL
           </label>
-          <input
+          <Input
             type="text"
             name="ticket_pdf_hero_url"
             defaultValue={event.ticket_pdf_hero_url ?? ""}

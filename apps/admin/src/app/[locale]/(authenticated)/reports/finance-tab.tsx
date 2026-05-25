@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { formatMoney, Select } from "@dbc/ui";
+import { formatMoney, Input, Select } from "@dbc/ui";
 import { StatCard } from "@/components/stat-card";
 import { buildCsv, isoDate } from "@/lib/csv";
 import {
@@ -180,7 +180,7 @@ export function FinanceTab({ locale, summary, events, filters }: FinanceTabProps
         <div className="flex flex-wrap items-center gap-3">
           <label className="flex items-center gap-2 text-xs text-muted-foreground">
             {t("from")}
-            <input
+            <Input
               type="date"
               value={filters.from}
               onChange={(e) => updateFilter({ from: e.target.value })}
@@ -189,7 +189,7 @@ export function FinanceTab({ locale, summary, events, filters }: FinanceTabProps
           </label>
           <label className="flex items-center gap-2 text-xs text-muted-foreground">
             {t("to")}
-            <input
+            <Input
               type="date"
               value={filters.to}
               onChange={(e) => updateFilter({ to: e.target.value })}
@@ -468,7 +468,7 @@ export function FinanceTab({ locale, summary, events, filters }: FinanceTabProps
         <div className="flex items-center justify-between">
           <h2 className="font-heading text-lg font-semibold">{t("exports")}</h2>
           <label className="flex items-center gap-2 text-xs text-muted-foreground">
-            <input
+            <Input
               type="checkbox"
               checked={semicolon}
               onChange={(e) => setSemicolon(e.target.checked)}

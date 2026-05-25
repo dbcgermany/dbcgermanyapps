@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Card, ConfirmDialog, Select, Textarea } from "@dbc/ui";
+import { Card, ConfirmDialog, Input, Select, Textarea } from "@dbc/ui";
 import type { DomainCheckResult } from "@dbc/email";
 import {
   saveNewsletter,
@@ -164,14 +164,14 @@ export function NewsletterComposer({
       <div className="space-y-4">
         <fieldset disabled={readOnly} className="space-y-4">
           <Field label={t("subject")} required>
-            <input
+            <Input
               value={state.subject}
               onChange={(e) => update("subject", e.target.value)}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             />
           </Field>
           <Field label={t("preheader")}>
-            <input
+            <Input
               value={state.preheader}
               onChange={(e) => update("preheader", e.target.value)}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
@@ -179,21 +179,21 @@ export function NewsletterComposer({
           </Field>
           <div className="grid gap-3 sm:grid-cols-3">
             <Field label={t("fromName")}>
-              <input
+              <Input
                 value={state.from_name}
                 onChange={(e) => update("from_name", e.target.value)}
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               />
             </Field>
             <Field label={t("fromEmail")}>
-              <input
+              <Input
                 value={state.from_email}
                 onChange={(e) => update("from_email", e.target.value)}
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               />
             </Field>
             <Field label={t("replyTo")}>
-              <input
+              <Input
                 value={state.reply_to}
                 onChange={(e) => update("reply_to", e.target.value)}
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
@@ -282,7 +282,7 @@ export function NewsletterComposer({
                   key={`inc-${c.slug}`}
                   className="flex items-center gap-2 text-xs"
                 >
-                  <input
+                  <Input
                     type="checkbox"
                     disabled={readOnly}
                     checked={state.target_category_slugs.includes(c.slug)}
@@ -303,7 +303,7 @@ export function NewsletterComposer({
                   key={`exc-${c.slug}`}
                   className="flex items-center gap-2 text-xs"
                 >
-                  <input
+                  <Input
                     type="checkbox"
                     disabled={readOnly}
                     checked={state.exclude_category_slugs.includes(c.slug)}
@@ -333,7 +333,7 @@ export function NewsletterComposer({
         {!readOnly && (
           <Card padding="sm">
             <p className="text-sm font-semibold">{t("sendTest")}</p>
-            <input
+            <Input
               type="email"
               value={testEmail}
               onChange={(e) => setTestEmail(e.target.value)}

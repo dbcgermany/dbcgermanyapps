@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { Button, Card, ConfirmDialog, Textarea } from "@dbc/ui";
+import { Button, Card, ConfirmDialog, Input, Textarea } from "@dbc/ui";
 import {
   createCateringMenuItem,
   deleteCateringMenuItem,
@@ -342,7 +342,7 @@ function MenuItemFields({
           <label className="block text-xs text-muted-foreground mb-1">
             {t("nameEn")}
           </label>
-          <input
+          <Input
             name="name_en"
             type="text"
             required
@@ -354,7 +354,7 @@ function MenuItemFields({
           <label className="block text-xs text-muted-foreground mb-1">
             {t("nameDe")}
           </label>
-          <input
+          <Input
             name="name_de"
             type="text"
             defaultValue={item?.name_de ?? ""}
@@ -365,7 +365,7 @@ function MenuItemFields({
           <label className="block text-xs text-muted-foreground mb-1">
             {t("nameFr")}
           </label>
-          <input
+          <Input
             name="name_fr"
             type="text"
             defaultValue={item?.name_fr ?? ""}
@@ -410,7 +410,7 @@ function MenuItemFields({
           <label className="block text-xs text-muted-foreground mb-1">
             {t("allergens")}
           </label>
-          <input
+          <Input
             name="allergens"
             type="text"
             defaultValue={(item?.allergens ?? []).join(", ")}
@@ -422,7 +422,7 @@ function MenuItemFields({
           <label className="block text-xs text-muted-foreground mb-1">
             {t("maxSelections")}
           </label>
-          <input
+          <Input
             name="max_selections_per_event"
             type="number"
             min="0"
@@ -434,7 +434,7 @@ function MenuItemFields({
           <label className="block text-xs text-muted-foreground mb-1">
             {t("sortOrder")}
           </label>
-          <input
+          <Input
             name="sort_order"
             type="number"
             defaultValue={item?.sort_order ?? 0}
@@ -445,7 +445,7 @@ function MenuItemFields({
       <div className="flex flex-wrap gap-4">
         <label className="flex items-center gap-2 text-sm">
           <input type="hidden" name="is_vegetarian" value="false" />
-          <input
+          <Input
             type="checkbox"
             name="is_vegetarian"
             value="true"
@@ -456,7 +456,7 @@ function MenuItemFields({
         </label>
         <label className="flex items-center gap-2 text-sm">
           <input type="hidden" name="is_vegan" value="false" />
-          <input
+          <Input
             type="checkbox"
             name="is_vegan"
             value="true"
@@ -467,7 +467,7 @@ function MenuItemFields({
         </label>
         <label className="flex items-center gap-2 text-sm">
           <input type="hidden" name="is_halal" value="false" />
-          <input
+          <Input
             type="checkbox"
             name="is_halal"
             value="true"
@@ -478,7 +478,7 @@ function MenuItemFields({
         </label>
         <label className="flex items-center gap-2 text-sm">
           <input type="hidden" name="is_active" value="false" />
-          <input
+          <Input
             type="checkbox"
             name="is_active"
             value="true"

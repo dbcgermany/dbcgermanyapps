@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { Badge, Select, Textarea } from "@dbc/ui";
+import { Badge, Input, Select, Textarea } from "@dbc/ui";
 import {
   updateSpeakerQuestionStatus,
   updateSpeakerQuestionNotes,
@@ -155,7 +155,7 @@ export function QuestionsList({
     <div className="mt-6">
       {/* Controls */}
       <div className="flex flex-wrap items-center gap-3">
-        <input
+        <Input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}

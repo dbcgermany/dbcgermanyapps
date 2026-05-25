@@ -357,7 +357,7 @@ export function NewContactForm({
           </FormField>
           <FormField label={tBusiness("fields.emailVerified")} hint={tBusiness("fields.emailVerifiedHint")}>
             <label className="flex items-center gap-2 text-sm">
-              <input
+              <Input
                 type="checkbox"
                 name="email_verified"
                 className="size-4 rounded border-input"

@@ -133,7 +133,7 @@ export function SiteSettingsForm({
 
       <div className="rounded-lg border border-border bg-muted/30 p-4">
         <label className="flex items-start gap-3">
-          <input
+          <Input
             name="maintenance_mode"
             type="checkbox"
             defaultChecked={initial.maintenance_mode}

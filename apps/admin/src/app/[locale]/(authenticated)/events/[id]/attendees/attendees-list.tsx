@@ -4,7 +4,7 @@ import { useState, useMemo, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { Badge, Textarea } from "@dbc/ui";
+import { Badge, Input, Textarea } from "@dbc/ui";
 import { updateAttendeeNotes } from "@/actions/attendees";
 
 interface Attendee {
@@ -185,7 +185,7 @@ export function AttendeesList({
     <div className="mt-6">
       {/* Controls */}
       <div className="flex flex-wrap items-center gap-3">
-        <input
+        <Input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}

@@ -12,7 +12,7 @@ import {
   getOutreachTemplateForContact,
   type OutreachTemplateSummary,
 } from "@/actions/outreach-templates";
-import { Button, Select, Textarea } from "@dbc/ui";
+import { Button, Input, Select, Textarea } from "@dbc/ui";
 
 const FREE_FORM_SLUG = "__free__";
 const LOCALES = ["en", "de", "fr"] as const;
@@ -374,7 +374,7 @@ export function ComposeDialog({
             <label className="block text-xs font-medium uppercase tracking-wide text-muted-foreground">
               {t("subject")}
             </label>
-            <input
+            <Input
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               disabled={loadingTemplate}
@@ -404,7 +404,7 @@ export function ComposeDialog({
             <label className="block text-xs font-medium uppercase tracking-wide text-muted-foreground">
               {t("attachments")}
             </label>
-            <input
+            <Input
               ref={fileInputRef}
               type="file"
               multiple

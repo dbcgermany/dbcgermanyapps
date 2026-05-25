@@ -1,6 +1,6 @@
 "use client";
 
-import { Select } from "@dbc/ui";
+import { Input, Select } from "@dbc/ui";
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -97,7 +97,7 @@ export function ContactsFilterBar({
   return (
     <div className="mt-6 flex flex-col gap-2">
       <div className="flex flex-wrap gap-2">
-        <input
+        <Input
           type="search"
           name="q"
           value={search}
@@ -175,7 +175,7 @@ export function ContactsFilterBar({
         </Select>
 
         <label className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm">
-          <input
+          <Input
             type="checkbox"
             checked={sp.get("marketing") === "1"}
             onChange={(e) => setParam("marketing", e.target.checked ? "1" : null)}

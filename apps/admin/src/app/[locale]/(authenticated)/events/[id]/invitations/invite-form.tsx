@@ -3,7 +3,7 @@
 import { useState, useTransition, useEffect } from "react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { BirthdayField, Button, CountrySelect, Select, Textarea, TITLE_VALUES, TitleGenderFields, type Gender, type Title } from "@dbc/ui";
+import { BirthdayField, Button, CountrySelect, Input, Select, Textarea, TITLE_VALUES, TitleGenderFields, type Gender, type Title } from "@dbc/ui";
 import { createInvitation } from "@/actions/invitations";
 import { localeFromCountry } from "@dbc/email";
 
@@ -238,7 +238,7 @@ export function InviteForm({
         </legend>
         <div className="grid gap-2 sm:grid-cols-2">
           <label className="flex cursor-pointer items-start gap-2 rounded-md border border-border p-2 text-sm hover:border-primary/50 has-checked:border-primary has-checked:bg-primary/5">
-            <input
+            <Input
               type="radio"
               name="delivery_mode"
               checked={deliveryMode === "ticket_only"}
@@ -253,7 +253,7 @@ export function InviteForm({
             </span>
           </label>
           <label className="flex cursor-pointer items-start gap-2 rounded-md border border-border p-2 text-sm hover:border-primary/50 has-checked:border-primary has-checked:bg-primary/5">
-            <input
+            <Input
               type="radio"
               name="delivery_mode"
               checked={deliveryMode === "ticket_with_letter"}
@@ -279,7 +279,7 @@ export function InviteForm({
         </legend>
         <div className="flex gap-4 text-sm">
           <label className="flex cursor-pointer items-center gap-2">
-            <input
+            <Input
               type="radio"
               name="acquisition_type"
               checked={acquisitionType === "invited"}
@@ -289,7 +289,7 @@ export function InviteForm({
             {t.invitedGuest}
           </label>
           <label className="flex cursor-pointer items-center gap-2">
-            <input
+            <Input
               type="radio"
               name="acquisition_type"
               checked={acquisitionType === "assigned"}
@@ -332,7 +332,7 @@ export function InviteForm({
       <div className="grid grid-cols-2 gap-3">
         <label className="block">
           <span className="mb-1 block text-sm font-medium">{tPerson("firstName")}</span>
-          <input
+          <Input
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
             className={input}
@@ -342,7 +342,7 @@ export function InviteForm({
         </label>
         <label className="block">
           <span className="mb-1 block text-sm font-medium">{tPerson("lastName")}</span>
-          <input
+          <Input
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
             className={input}
@@ -369,7 +369,7 @@ export function InviteForm({
       </div>
       <label className="block">
         <span className="mb-1 block text-sm font-medium">{t.email}</span>
-        <input
+        <Input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -406,7 +406,7 @@ export function InviteForm({
         <span className="mb-1 block text-sm font-medium">
           {t.internalNote}
         </span>
-        <input
+        <Input
           value={note}
           onChange={(e) => setNote(e.target.value)}
           className={input}

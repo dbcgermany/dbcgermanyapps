@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { Button, Card, chapterFlag, ChapterSelect, ConfirmDialog, DBC_CHAPTER_COUNTRY_CODES, dbcChapterLabel, Select, Textarea } from "@dbc/ui";
+import { Button, Card, chapterFlag, ChapterSelect, ConfirmDialog, DBC_CHAPTER_COUNTRY_CODES, dbcChapterLabel, Input, Select, Textarea } from "@dbc/ui";
 import {
   approveChapterDelegate,
   bulkApproveChapterDelegates,
@@ -458,7 +458,7 @@ export function ChapterDelegatesClient({
                     <label className="block text-xs text-muted-foreground mb-1">
                       {t("manualAdd.firstName")}
                     </label>
-                    <input
+                    <Input
                       name="first_name"
                       type="text"
                       required
@@ -469,7 +469,7 @@ export function ChapterDelegatesClient({
                     <label className="block text-xs text-muted-foreground mb-1">
                       {t("manualAdd.lastName")}
                     </label>
-                    <input
+                    <Input
                       name="last_name"
                       type="text"
                       required
@@ -480,7 +480,7 @@ export function ChapterDelegatesClient({
                     <label className="block text-xs text-muted-foreground mb-1">
                       {t("manualAdd.email")}
                     </label>
-                    <input
+                    <Input
                       name="email"
                       type="email"
                       required
@@ -502,7 +502,7 @@ export function ChapterDelegatesClient({
                     <label className="block text-xs text-muted-foreground mb-1">
                       {t("manualAdd.position")}
                     </label>
-                    <input
+                    <Input
                       name="position"
                       type="text"
                       required
@@ -514,7 +514,7 @@ export function ChapterDelegatesClient({
                     <label className="block text-xs text-muted-foreground mb-1">
                       {t("manualAdd.leadName")}
                     </label>
-                    <input
+                    <Input
                       name="chapter_lead_name"
                       type="text"
                       className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
@@ -524,7 +524,7 @@ export function ChapterDelegatesClient({
                     <label className="block text-xs text-muted-foreground mb-1">
                       {t("manualAdd.leadEmail")}
                     </label>
-                    <input
+                    <Input
                       name="chapter_lead_email"
                       type="email"
                       className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
@@ -532,7 +532,7 @@ export function ChapterDelegatesClient({
                   </div>
                 </div>
                 <label className="flex items-center gap-2 text-sm">
-                  <input
+                  <Input
                     type="checkbox"
                     checked={manualBringsCompanion}
                     onChange={(e) =>
@@ -548,7 +548,7 @@ export function ChapterDelegatesClient({
                       <label className="block text-xs text-muted-foreground mb-1">
                         {t("manualAdd.companionFirst")}
                       </label>
-                      <input
+                      <Input
                         name="companion_first_name"
                         type="text"
                         required={manualBringsCompanion}
@@ -559,7 +559,7 @@ export function ChapterDelegatesClient({
                       <label className="block text-xs text-muted-foreground mb-1">
                         {t("manualAdd.companionLast")}
                       </label>
-                      <input
+                      <Input
                         name="companion_last_name"
                         type="text"
                         required={manualBringsCompanion}
@@ -570,7 +570,7 @@ export function ChapterDelegatesClient({
                       <label className="block text-xs text-muted-foreground mb-1">
                         {t("manualAdd.companionEmail")}
                       </label>
-                      <input
+                      <Input
                         name="companion_email"
                         type="email"
                         required={manualBringsCompanion}
@@ -663,7 +663,7 @@ export function ChapterDelegatesClient({
           <label className="block text-xs text-muted-foreground mb-1">
             {t("filters.search")}
           </label>
-          <input
+          <Input
             type="text"
             defaultValue={currentSearch ?? ""}
             onBlur={(e) =>
@@ -685,7 +685,7 @@ export function ChapterDelegatesClient({
             <div className="flex flex-wrap items-center gap-2">
               {currentStatus === "pending_approval" && (
                 <>
-                  <input
+                  <Input
                     type="text"
                     value={rejectNote}
                     onChange={(e) => setRejectNote(e.target.value)}
@@ -740,7 +740,7 @@ export function ChapterDelegatesClient({
             <thead>
               <tr className="border-b border-border bg-muted/50">
                 <th className="w-10 px-3 py-3 text-left">
-                  <input
+                  <Input
                     type="checkbox"
                     onChange={(e) =>
                       e.target.checked ? selectAllVisible() : clearSelection()
@@ -763,7 +763,7 @@ export function ChapterDelegatesClient({
               {rows.map((r) => (
                 <tr key={r.involvementId} className="border-b border-border last:border-0">
                   <td className="px-3 py-3">
-                    <input
+                    <Input
                       type="checkbox"
                       checked={selected.has(r.involvementId)}
                       onChange={() => toggleSelect(r.involvementId)}

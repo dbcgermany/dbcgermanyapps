@@ -206,7 +206,7 @@ function SiteTestimonialForm({
             />
           </div>
           <label className="flex items-center gap-2 pb-2 pt-7 text-sm">
-            <input
+            <Input
               type="checkbox"
               name="is_featured"
               defaultChecked={initial?.is_featured ?? true}

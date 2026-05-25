@@ -3,7 +3,7 @@
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { AddressFields, Button, DatePicker, EMPTY_ADDRESS, PhoneInput, Select, Toggle, type Address } from "@dbc/ui";
+import { AddressFields, Button, DatePicker, EMPTY_ADDRESS, Input, PhoneInput, Select, Toggle, type Address } from "@dbc/ui";
 import {
   updateAccountProfile,
   updateAccountPreferences,
@@ -225,7 +225,7 @@ function ProfileTab({
           >
             {avatarPending ? t.uploading : t.changeAvatar}
           </button>
-          <input
+          <Input
             ref={fileRef}
             type="file"
             accept="image/*"
@@ -243,7 +243,7 @@ function ProfileTab({
           <span className="mb-1 block text-sm font-medium">
             {t.firstName}<span className="ml-0.5 text-danger">*</span>
           </span>
-          <input
+          <Input
             type="text"
             required
             autoComplete="given-name"
@@ -254,7 +254,7 @@ function ProfileTab({
         </label>
         <label className="block">
           <span className="mb-1 block text-sm font-medium">{t.lastName}</span>
-          <input
+          <Input
             type="text"
             autoComplete="family-name"
             value={lastName}

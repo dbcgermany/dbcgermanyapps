@@ -225,7 +225,7 @@ export function TierForm({
       <FormField label={t.publicTier} hint={t.publicHint}>
         <label className="flex items-center gap-2 text-sm">
           <input type="hidden" name="is_public" value="false" />
-          <input
+          <Input
             type="checkbox"
             name="is_public"
             value="true"
@@ -325,7 +325,7 @@ function CheckboxField({
   return (
     <label className="flex items-start gap-2 text-sm">
       <input type="hidden" name={name} value="false" />
-      <input
+      <Input
         type="checkbox"
         name={name}
         value="true"

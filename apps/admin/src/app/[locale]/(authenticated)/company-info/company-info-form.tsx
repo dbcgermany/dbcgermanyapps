@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { AssetUpload, Button, Select, Textarea } from "@dbc/ui";
+import { AssetUpload, Button, Input, Select, Textarea } from "@dbc/ui";
 import { AboutSectionsForm } from "./about-sections-form";
 import { HomeHeroForm } from "./home-hero-form";
 import {
@@ -482,7 +482,7 @@ function SectionForm({
                   <span className="mb-1 block text-xs font-medium text-muted-foreground">
                     {tShared("orPasteUrl")}
                   </span>
-                  <input
+                  <Input
                     type="url"
                     name={String(f.name)}
                     value={current}
@@ -509,7 +509,7 @@ function SectionForm({
                 key={String(f.name)}
                 className="col-span-full flex items-start gap-3"
               >
-                <input
+                <Input
                   type="checkbox"
                   name={String(f.name)}
                   defaultChecked={Boolean(info[f.name])}
@@ -575,7 +575,7 @@ function SectionForm({
           return (
             <label key={String(f.name)} className="block">
               <span className="mb-1 block text-sm font-medium">{f.label}</span>
-              <input
+              <Input
                 type={f.type || "text"}
                 name={String(f.name)}
                 defaultValue={value}

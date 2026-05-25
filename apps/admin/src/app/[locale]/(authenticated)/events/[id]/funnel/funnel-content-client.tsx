@@ -308,7 +308,7 @@ function HeroBannerFields({
             {strength}%
           </span>
         </Label>
-        <input
+        <Input
           id="hero_darkening_strength"
           name="hero_darkening_strength"
           type="range"
@@ -373,7 +373,7 @@ function FileUploadField({
     <div>
       <p className="text-sm font-medium text-foreground">{label}</p>
       <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>
-      <input
+      <Input
         type="file"
         accept={accept}
         onChange={handleChange}
@@ -789,7 +789,7 @@ function TestimonialForm({
             />
           </div>
           <label className="flex items-center gap-2 pb-2 pt-7 text-sm">
-            <input
+            <Input
               type="checkbox"
               name="is_featured"
               defaultChecked={initial?.is_featured}

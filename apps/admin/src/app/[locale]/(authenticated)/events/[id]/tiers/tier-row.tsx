@@ -433,7 +433,7 @@ function TierEditForm({
         <div className="grid gap-2 sm:grid-cols-2">
           <label className="flex items-center gap-2 text-sm">
             <input type="hidden" name="catering_included" value="false" />
-            <input
+            <Input
               type="checkbox"
               name="catering_included"
               value="true"
@@ -444,7 +444,7 @@ function TierEditForm({
           </label>
           <label className="flex items-center gap-2 text-sm">
             <input type="hidden" name="counts_as_sold" value="false" />
-            <input
+            <Input
               type="checkbox"
               name="counts_as_sold"
               value="true"
@@ -455,7 +455,7 @@ function TierEditForm({
           </label>
           <label className="flex items-center gap-2 text-sm">
             <input type="hidden" name="is_team" value="false" />
-            <input
+            <Input
               type="checkbox"
               name="is_team"
               value="true"
@@ -466,7 +466,7 @@ function TierEditForm({
           </label>
           <label className="flex items-center gap-2 text-sm">
             <input type="hidden" name="is_companion" value="false" />
-            <input
+            <Input
               type="checkbox"
               name="is_companion"
               value="true"

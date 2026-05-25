@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Card, ConfirmDialog } from "@dbc/ui";
+import { Card, ConfirmDialog, Input } from "@dbc/ui";
 import type { UserRole } from "@dbc/types";
 import {
   lookupBuyer,
@@ -230,7 +230,7 @@ export function SettingsClient({
                 <span className="block text-xs text-muted-foreground mb-1">
                   {t.lookupEmail}
                 </span>
-                <input
+                <Input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}

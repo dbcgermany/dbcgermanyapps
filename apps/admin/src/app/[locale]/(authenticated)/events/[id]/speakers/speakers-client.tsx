@@ -221,7 +221,7 @@ export function EventSpeakersClient({
                 />
               </div>
               <label className="flex items-center gap-2 pb-2 text-sm">
-                <input
+                <Input
                   type="checkbox"
                   name="is_featured"
                   className="h-4 w-4 rounded border-border"

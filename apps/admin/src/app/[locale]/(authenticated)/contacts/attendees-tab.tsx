@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { Badge, Select } from "@dbc/ui";
+import { Badge, Input, Select } from "@dbc/ui";
 import type { CrossEventAttendee } from "@/actions/attendees";
 
 export function AttendeesTab({
@@ -108,7 +108,7 @@ export function AttendeesTab({
   return (
     <div className="mt-6">
       <div className="flex flex-wrap items-center gap-3">
-        <input
+        <Input
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -151,7 +151,7 @@ export function AttendeesTab({
         {/* Newsletter-only filter — parity with the Contacts tab. The same
             `marketing_consent` + `unsubscribed_at` columns drive both. */}
         <label className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm">
-          <input
+          <Input
             type="checkbox"
             checked={marketingOnly}
             onChange={(e) => setMarketingOnly(e.target.checked)}

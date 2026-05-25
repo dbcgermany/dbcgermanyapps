@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import type { UserRole } from "@dbc/types";
-import { Button, Card, ConfirmDialog, Select } from "@dbc/ui";
+import { Button, Card, ConfirmDialog, Input, Select } from "@dbc/ui";
 import {
   inviteStaff,
   updateStaffRole,
@@ -310,7 +310,7 @@ export function StaffClient({
               <label className="block text-xs text-muted-foreground mb-1">
                 {t("inviteEmail")}
               </label>
-              <input
+              <Input
                 type="email"
                 name="email"
                 required
@@ -321,7 +321,7 @@ export function StaffClient({
               <label className="block text-xs text-muted-foreground mb-1">
                 {t("inviteName")}
               </label>
-              <input
+              <Input
                 type="text"
                 name="display_name"
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
@@ -385,7 +385,7 @@ export function StaffClient({
                 <label className="block text-xs text-muted-foreground mb-1">
                   Email
                 </label>
-                <input
+                <Input
                   type="email"
                   name="email"
                   required
@@ -412,7 +412,7 @@ export function StaffClient({
                 <label className="block text-xs text-muted-foreground mb-1">
                   First name
                 </label>
-                <input
+                <Input
                   type="text"
                   name="first_name"
                   className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
@@ -422,7 +422,7 @@ export function StaffClient({
                 <label className="block text-xs text-muted-foreground mb-1">
                   Last name
                 </label>
-                <input
+                <Input
                   type="text"
                   name="last_name"
                   className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
@@ -723,7 +723,7 @@ export function StaffClient({
                                     key={ev.id}
                                     className="flex items-center gap-2 text-sm cursor-pointer"
                                   >
-                                    <input
+                                    <Input
                                       type="checkbox"
                                       checked={assigned}
                                       disabled={isPending}

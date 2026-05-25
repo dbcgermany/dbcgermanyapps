@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { AssetUpload, Button, NameFields, Select, Textarea } from "@dbc/ui";
+import { AssetUpload, Button, Input, NameFields, Select, Textarea } from "@dbc/ui";
 import {
   createSpeaker,
   updateSpeaker,
@@ -227,7 +227,7 @@ export function SpeakerForm({
             <span className="mb-1 block text-xs font-medium text-muted-foreground">
               {t.orPasteUrl}
             </span>
-            <input
+            <Input
               type="url"
               name="photo_url"
               value={photoUrl}
@@ -443,7 +443,7 @@ function Field({
           placeholder={placeholder}
         />
       ) : (
-        <input
+        <Input
           id={name}
           name={name}
           type={type ?? "text"}

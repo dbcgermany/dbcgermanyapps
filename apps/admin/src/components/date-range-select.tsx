@@ -1,6 +1,6 @@
 "use client";
 
-import { Select } from "@dbc/ui";
+import { Input, Select } from "@dbc/ui";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 
@@ -113,7 +113,7 @@ export function DateRangeSelect({
         <option value="ytd">{labels.yearToDate}</option>
         <option value="custom">{labels.custom}</option>
       </Select>
-      <input
+      <Input
         type="date"
         value={value.from}
         onChange={(e) => handleCustom("from", e.target.value)}
@@ -123,7 +123,7 @@ export function DateRangeSelect({
       <span aria-hidden className="text-muted-foreground">
         →
       </span>
-      <input
+      <Input
         type="date"
         value={value.to}
         onChange={(e) => handleCustom("to", e.target.value)}

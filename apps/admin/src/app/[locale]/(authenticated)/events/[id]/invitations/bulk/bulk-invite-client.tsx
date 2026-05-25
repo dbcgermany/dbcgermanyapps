@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Button, Select } from "@dbc/ui";
+import { Button, Input, Select } from "@dbc/ui";
 import {
   parseInvitationsCsv,
   bulkCreateInvitations,
@@ -204,7 +204,7 @@ export function BulkInviteClient({
 
       <div className="rounded-lg border border-dashed border-border p-4">
         <label className="block text-sm font-medium">{t.csvFile}</label>
-        <input
+        <Input
           type="file"
           accept=".csv,text/csv"
           className="mt-2 block text-sm"
@@ -291,7 +291,7 @@ export function BulkInviteClient({
         </legend>
         <div className="flex flex-wrap gap-4 text-sm">
           <label className="flex cursor-pointer items-center gap-2">
-            <input
+            <Input
               type="radio"
               name="bulk_delivery_mode"
               checked={deliveryMode === "ticket_only"}
@@ -301,7 +301,7 @@ export function BulkInviteClient({
             {t.justTicket}
           </label>
           <label className="flex cursor-pointer items-center gap-2">
-            <input
+            <Input
               type="radio"
               name="bulk_delivery_mode"
               checked={deliveryMode === "ticket_with_letter"}
@@ -313,7 +313,7 @@ export function BulkInviteClient({
         </div>
         <div className="mt-3 flex flex-wrap gap-4 text-sm">
           <label className="flex cursor-pointer items-center gap-2">
-            <input
+            <Input
               type="radio"
               name="bulk_acquisition_type"
               checked={acquisitionType === "invited"}
@@ -323,7 +323,7 @@ export function BulkInviteClient({
             {t.invitedGuests}
           </label>
           <label className="flex cursor-pointer items-center gap-2">
-            <input
+            <Input
               type="radio"
               name="bulk_acquisition_type"
               checked={acquisitionType === "assigned"}
@@ -337,7 +337,7 @@ export function BulkInviteClient({
 
       <div className="flex flex-wrap items-center gap-3">
         <label className="flex items-center gap-2 text-sm">
-          <input
+          <Input
             type="checkbox"
             checked={sendEmails}
             onChange={(e) => setSendEmails(e.target.checked)}

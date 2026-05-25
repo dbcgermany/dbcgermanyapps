@@ -735,7 +735,7 @@ function HeroImagePicker({
         placeholder={pasteUrl}
       />
       <div className="flex items-center gap-3">
-        <input
+        <Input
           ref={fileRef}
           type="file"
           accept="image/*"

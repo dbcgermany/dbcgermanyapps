@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { Badge, Button } from "@dbc/ui";
+import { Badge, Button, Input } from "@dbc/ui";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { createBrowserClient } from "@dbc/supabase";
@@ -373,7 +373,7 @@ export function SecurityTab() {
               2. Enter the current 6-digit code
             </p>
             <div className="mt-2 flex gap-2">
-              <input
+              <Input
                 type="text"
                 inputMode="numeric"
                 pattern="[0-9]*"

@@ -1,6 +1,6 @@
 "use client";
 
-import { Badge, formatMoney, Select } from "@dbc/ui";
+import { Badge, formatMoney, Input, Select } from "@dbc/ui";
 import { ORDER_STATUS_VALUES } from "@dbc/types";
 import { useRouter } from "next/navigation";
 import {
@@ -421,7 +421,7 @@ export function ReportsClient({
 
           <label className="flex items-center gap-2 text-xs text-muted-foreground">
             {t.from}
-            <input
+            <Input
               type="date"
               value={currentFromFilter}
               onChange={(e) => updateFilters({ from: e.target.value })}
@@ -430,7 +430,7 @@ export function ReportsClient({
           </label>
           <label className="flex items-center gap-2 text-xs text-muted-foreground">
             {t.to}
-            <input
+            <Input
               type="date"
               value={currentToFilter}
               onChange={(e) => updateFilters({ to: e.target.value })}
