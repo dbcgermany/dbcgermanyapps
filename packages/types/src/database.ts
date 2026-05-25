@@ -14,6 +14,81 @@ export type Database = {
   }
   public: {
     Tables: {
+      _event_schedule_items_legacy: {
+        Row: {
+          description_de: string | null
+          description_en: string | null
+          description_fr: string | null
+          ends_at: string
+          event_id: string
+          id: string
+          sort_order: number
+          speaker_first_name: string | null
+          speaker_id: string | null
+          speaker_image_url: string | null
+          speaker_last_name: string | null
+          speaker_name: string | null
+          speaker_title: string | null
+          starts_at: string
+          title_de: string
+          title_en: string
+          title_fr: string
+        }
+        Insert: {
+          description_de?: string | null
+          description_en?: string | null
+          description_fr?: string | null
+          ends_at: string
+          event_id: string
+          id?: string
+          sort_order?: number
+          speaker_first_name?: string | null
+          speaker_id?: string | null
+          speaker_image_url?: string | null
+          speaker_last_name?: string | null
+          speaker_name?: string | null
+          speaker_title?: string | null
+          starts_at: string
+          title_de: string
+          title_en: string
+          title_fr: string
+        }
+        Update: {
+          description_de?: string | null
+          description_en?: string | null
+          description_fr?: string | null
+          ends_at?: string
+          event_id?: string
+          id?: string
+          sort_order?: number
+          speaker_first_name?: string | null
+          speaker_id?: string | null
+          speaker_image_url?: string | null
+          speaker_last_name?: string | null
+          speaker_name?: string | null
+          speaker_title?: string | null
+          starts_at?: string
+          title_de?: string
+          title_en?: string
+          title_fr?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_schedule_items_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_schedule_items_speaker_id_fkey"
+            columns: ["speaker_id"]
+            isOneToOne: false
+            referencedRelation: "speakers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       abuse_events: {
         Row: {
           id: number
@@ -127,6 +202,80 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      catering_menu_items: {
+        Row: {
+          allergens: string[] | null
+          category: Database["public"]["Enums"]["catering_category"]
+          created_at: string | null
+          description_de: string | null
+          description_en: string | null
+          description_fr: string | null
+          event_id: string
+          id: string
+          is_active: boolean
+          is_halal: boolean | null
+          is_vegan: boolean | null
+          is_vegetarian: boolean | null
+          max_selections_per_event: number | null
+          name_de: string
+          name_en: string
+          name_fr: string
+          selections_count: number
+          sort_order: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          allergens?: string[] | null
+          category: Database["public"]["Enums"]["catering_category"]
+          created_at?: string | null
+          description_de?: string | null
+          description_en?: string | null
+          description_fr?: string | null
+          event_id: string
+          id?: string
+          is_active?: boolean
+          is_halal?: boolean | null
+          is_vegan?: boolean | null
+          is_vegetarian?: boolean | null
+          max_selections_per_event?: number | null
+          name_de: string
+          name_en: string
+          name_fr: string
+          selections_count?: number
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          allergens?: string[] | null
+          category?: Database["public"]["Enums"]["catering_category"]
+          created_at?: string | null
+          description_de?: string | null
+          description_en?: string | null
+          description_fr?: string | null
+          event_id?: string
+          id?: string
+          is_active?: boolean
+          is_halal?: boolean | null
+          is_vegan?: boolean | null
+          is_vegetarian?: boolean | null
+          max_selections_per_event?: number | null
+          name_de?: string
+          name_en?: string
+          name_fr?: string
+          selections_count?: number
+          sort_order?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "catering_menu_items_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       company_info: {
         Row: {
@@ -536,32 +685,72 @@ export type Database = {
       contact_event_involvements: {
         Row: {
           added_by: string | null
+          chapter_country: string | null
+          chapter_lead_email: string | null
+          chapter_lead_name: string | null
+          chapter_position: string | null
+          companion_contact_id: string | null
           contact_id: string
           created_at: string
           event_id: string
           id: string
           notes: string | null
+          review_note: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
           role: Database["public"]["Enums"]["involvement_role"]
+          status: string
+          submission_ip: string | null
+          submission_metadata: Json | null
         }
         Insert: {
           added_by?: string | null
+          chapter_country?: string | null
+          chapter_lead_email?: string | null
+          chapter_lead_name?: string | null
+          chapter_position?: string | null
+          companion_contact_id?: string | null
           contact_id: string
           created_at?: string
           event_id: string
           id?: string
           notes?: string | null
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           role: Database["public"]["Enums"]["involvement_role"]
+          status?: string
+          submission_ip?: string | null
+          submission_metadata?: Json | null
         }
         Update: {
           added_by?: string | null
+          chapter_country?: string | null
+          chapter_lead_email?: string | null
+          chapter_lead_name?: string | null
+          chapter_position?: string | null
+          companion_contact_id?: string | null
           contact_id?: string
           created_at?: string
           event_id?: string
           id?: string
           notes?: string | null
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           role?: Database["public"]["Enums"]["involvement_role"]
+          status?: string
+          submission_ip?: string | null
+          submission_metadata?: Json | null
         }
         Relationships: [
+          {
+            foreignKeyName: "contact_event_involvements_companion_contact_id_fkey"
+            columns: ["companion_contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "contact_event_involvements_contact_id_fkey"
             columns: ["contact_id"]
@@ -576,10 +765,18 @@ export type Database = {
             referencedRelation: "events"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "contact_event_involvements_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       contact_messages: {
         Row: {
+          attachments: Json
           body_md: string
           contact_id: string
           id: string
@@ -588,8 +785,10 @@ export type Database = {
           sent_at: string
           sent_by: string | null
           subject: string
+          template_slug: string | null
         }
         Insert: {
+          attachments?: Json
           body_md: string
           contact_id: string
           id?: string
@@ -598,8 +797,10 @@ export type Database = {
           sent_at?: string
           sent_by?: string | null
           subject: string
+          template_slug?: string | null
         }
         Update: {
+          attachments?: Json
           body_md?: string
           contact_id?: string
           id?: string
@@ -608,6 +809,7 @@ export type Database = {
           sent_at?: string
           sent_by?: string | null
           subject?: string
+          template_slug?: string | null
         }
         Relationships: [
           {
@@ -626,22 +828,62 @@ export type Database = {
           },
         ]
       }
+      contact_user_state: {
+        Row: {
+          contact_id: string
+          pipeline_status: Database["public"]["Enums"]["pipeline_status"] | null
+          private_notes: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          contact_id: string
+          pipeline_status?:
+            | Database["public"]["Enums"]["pipeline_status"]
+            | null
+          private_notes?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          contact_id?: string
+          pipeline_status?:
+            | Database["public"]["Enums"]["pipeline_status"]
+            | null
+          private_notes?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_user_state_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contacts: {
         Row: {
           address_line_1: string | null
           address_line_2: string | null
           admin_notes: string | null
+          best_contact_method: string | null
           birthday: string | null
           bounced_at: string | null
           bounced_reason: string | null
           city: string | null
           complained_at: string | null
+          confidence: number | null
           country: string | null
           created_at: string
           email: string
           email_status: Database["public"]["Enums"]["email_status"]
+          email_verified: boolean
           first_name: string | null
           gender: Database["public"]["Enums"]["gender_identity"] | null
+          hq_country: string | null
           id: string
           last_name: string | null
           linkedin_url: string | null
@@ -656,29 +898,37 @@ export type Database = {
           occupation: string | null
           organization: string | null
           phone: string | null
+          pitch_tier: string | null
           postal_code: string | null
           resend_contact_id: string | null
+          sector: string | null
           state_region: string | null
+          tier: string | null
           title: string | null
           unsubscribe_token: string
           unsubscribed_at: string | null
           updated_at: string
+          website_url: string | null
         }
         Insert: {
           address_line_1?: string | null
           address_line_2?: string | null
           admin_notes?: string | null
+          best_contact_method?: string | null
           birthday?: string | null
           bounced_at?: string | null
           bounced_reason?: string | null
           city?: string | null
           complained_at?: string | null
+          confidence?: number | null
           country?: string | null
           created_at?: string
           email: string
           email_status?: Database["public"]["Enums"]["email_status"]
+          email_verified?: boolean
           first_name?: string | null
           gender?: Database["public"]["Enums"]["gender_identity"] | null
+          hq_country?: string | null
           id?: string
           last_name?: string | null
           linkedin_url?: string | null
@@ -693,29 +943,37 @@ export type Database = {
           occupation?: string | null
           organization?: string | null
           phone?: string | null
+          pitch_tier?: string | null
           postal_code?: string | null
           resend_contact_id?: string | null
+          sector?: string | null
           state_region?: string | null
+          tier?: string | null
           title?: string | null
           unsubscribe_token?: string
           unsubscribed_at?: string | null
           updated_at?: string
+          website_url?: string | null
         }
         Update: {
           address_line_1?: string | null
           address_line_2?: string | null
           admin_notes?: string | null
+          best_contact_method?: string | null
           birthday?: string | null
           bounced_at?: string | null
           bounced_reason?: string | null
           city?: string | null
           complained_at?: string | null
+          confidence?: number | null
           country?: string | null
           created_at?: string
           email?: string
           email_status?: Database["public"]["Enums"]["email_status"]
+          email_verified?: boolean
           first_name?: string | null
           gender?: Database["public"]["Enums"]["gender_identity"] | null
+          hq_country?: string | null
           id?: string
           last_name?: string | null
           linkedin_url?: string | null
@@ -730,13 +988,17 @@ export type Database = {
           occupation?: string | null
           organization?: string | null
           phone?: string | null
+          pitch_tier?: string | null
           postal_code?: string | null
           resend_contact_id?: string | null
+          sector?: string | null
           state_region?: string | null
+          tier?: string | null
           title?: string | null
           unsubscribe_token?: string
           unsubscribed_at?: string | null
           updated_at?: string
+          website_url?: string | null
         }
         Relationships: []
       }
@@ -750,7 +1012,9 @@ export type Database = {
           event_id: string | null
           id: string
           is_active: boolean
+          issued_to_profile_id: string | null
           max_uses: number | null
+          purpose: string | null
           stripe_coupon_id: string | null
           stripe_promotion_code_id: string | null
           times_used: number
@@ -766,7 +1030,9 @@ export type Database = {
           event_id?: string | null
           id?: string
           is_active?: boolean
+          issued_to_profile_id?: string | null
           max_uses?: number | null
+          purpose?: string | null
           stripe_coupon_id?: string | null
           stripe_promotion_code_id?: string | null
           times_used?: number
@@ -782,7 +1048,9 @@ export type Database = {
           event_id?: string | null
           id?: string
           is_active?: boolean
+          issued_to_profile_id?: string | null
           max_uses?: number | null
+          purpose?: string | null
           stripe_coupon_id?: string | null
           stripe_promotion_code_id?: string | null
           times_used?: number
@@ -795,6 +1063,13 @@ export type Database = {
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coupons_issued_to_profile_id_fkey"
+            columns: ["issued_to_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -890,6 +1165,7 @@ export type Database = {
           event_id: string
           id: string
           notes: string | null
+          runsheet_item_id: string | null
           sort_order: number | null
           status: string
           title: string
@@ -907,6 +1183,7 @@ export type Database = {
           event_id: string
           id?: string
           notes?: string | null
+          runsheet_item_id?: string | null
           sort_order?: number | null
           status?: string
           title: string
@@ -924,6 +1201,7 @@ export type Database = {
           event_id?: string
           id?: string
           notes?: string | null
+          runsheet_item_id?: string | null
           sort_order?: number | null
           status?: string
           title?: string
@@ -948,6 +1226,20 @@ export type Database = {
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_checklist_items_runsheet_item_id_fkey"
+            columns: ["runsheet_item_id"]
+            isOneToOne: false
+            referencedRelation: "event_runsheet_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_checklist_items_runsheet_item_id_fkey"
+            columns: ["runsheet_item_id"]
+            isOneToOne: false
+            referencedRelation: "event_schedule_items"
             referencedColumns: ["id"]
           },
         ]
@@ -1046,10 +1338,17 @@ export type Database = {
           created_by: string | null
           currency: string
           description: string
+          description_de: string | null
+          description_en: string | null
+          description_fr: string | null
+          due_date: string | null
           event_id: string
           id: string
+          notes: string | null
           paid_at: string | null
+          provider_contact_id: string | null
           receipt_url: string | null
+          runsheet_item_id: string | null
           updated_at: string | null
           vendor_contact: string | null
           vendor_name: string | null
@@ -1061,10 +1360,17 @@ export type Database = {
           created_by?: string | null
           currency?: string
           description: string
+          description_de?: string | null
+          description_en?: string | null
+          description_fr?: string | null
+          due_date?: string | null
           event_id: string
           id?: string
+          notes?: string | null
           paid_at?: string | null
+          provider_contact_id?: string | null
           receipt_url?: string | null
+          runsheet_item_id?: string | null
           updated_at?: string | null
           vendor_contact?: string | null
           vendor_name?: string | null
@@ -1076,10 +1382,17 @@ export type Database = {
           created_by?: string | null
           currency?: string
           description?: string
+          description_de?: string | null
+          description_en?: string | null
+          description_fr?: string | null
+          due_date?: string | null
           event_id?: string
           id?: string
+          notes?: string | null
           paid_at?: string | null
+          provider_contact_id?: string | null
           receipt_url?: string | null
+          runsheet_item_id?: string | null
           updated_at?: string | null
           vendor_contact?: string | null
           vendor_name?: string | null
@@ -1097,6 +1410,27 @@ export type Database = {
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_expenses_provider_contact_id_fkey"
+            columns: ["provider_contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_expenses_runsheet_item_id_fkey"
+            columns: ["runsheet_item_id"]
+            isOneToOne: false
+            referencedRelation: "event_runsheet_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_expenses_runsheet_item_id_fkey"
+            columns: ["runsheet_item_id"]
+            isOneToOne: false
+            referencedRelation: "event_schedule_items"
             referencedColumns: ["id"]
           },
         ]
@@ -1245,50 +1579,92 @@ export type Database = {
       event_runsheet_items: {
         Row: {
           assigned_to: string | null
+          contact_id: string | null
           created_at: string | null
           default_duration_minutes: number | null
           description: string | null
+          description_de: string | null
+          description_fr: string | null
           ends_at: string | null
           event_id: string
           id: string
+          is_public: boolean
           location_note: string | null
+          notes: string | null
           responsible_person: string | null
           sort_order: number
+          speaker_first_name: string | null
+          speaker_id: string | null
+          speaker_image_url: string | null
+          speaker_last_name: string | null
+          speaker_name: string | null
+          speaker_title: string | null
           starts_at: string
           status: string
+          team_member_id: string | null
           title: string
+          title_de: string | null
+          title_fr: string | null
           updated_at: string | null
         }
         Insert: {
           assigned_to?: string | null
+          contact_id?: string | null
           created_at?: string | null
           default_duration_minutes?: number | null
           description?: string | null
+          description_de?: string | null
+          description_fr?: string | null
           ends_at?: string | null
           event_id: string
           id?: string
+          is_public?: boolean
           location_note?: string | null
+          notes?: string | null
           responsible_person?: string | null
           sort_order?: number
+          speaker_first_name?: string | null
+          speaker_id?: string | null
+          speaker_image_url?: string | null
+          speaker_last_name?: string | null
+          speaker_name?: string | null
+          speaker_title?: string | null
           starts_at: string
           status?: string
+          team_member_id?: string | null
           title: string
+          title_de?: string | null
+          title_fr?: string | null
           updated_at?: string | null
         }
         Update: {
           assigned_to?: string | null
+          contact_id?: string | null
           created_at?: string | null
           default_duration_minutes?: number | null
           description?: string | null
+          description_de?: string | null
+          description_fr?: string | null
           ends_at?: string | null
           event_id?: string
           id?: string
+          is_public?: boolean
           location_note?: string | null
+          notes?: string | null
           responsible_person?: string | null
           sort_order?: number
+          speaker_first_name?: string | null
+          speaker_id?: string | null
+          speaker_image_url?: string | null
+          speaker_last_name?: string | null
+          speaker_name?: string | null
+          speaker_title?: string | null
           starts_at?: string
           status?: string
+          team_member_id?: string | null
           title?: string
+          title_de?: string | null
+          title_fr?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -1300,10 +1676,31 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "event_runsheet_items_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "event_runsheet_items_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_runsheet_items_speaker_id_fkey"
+            columns: ["speaker_id"]
+            isOneToOne: false
+            referencedRelation: "speakers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_runsheet_items_team_member_id_fkey"
+            columns: ["team_member_id"]
+            isOneToOne: false
+            referencedRelation: "team_members"
             referencedColumns: ["id"]
           },
         ]
@@ -1343,81 +1740,6 @@ export type Database = {
           title?: string
         }
         Relationships: []
-      }
-      event_schedule_items: {
-        Row: {
-          description_de: string | null
-          description_en: string | null
-          description_fr: string | null
-          ends_at: string
-          event_id: string
-          id: string
-          sort_order: number
-          speaker_first_name: string | null
-          speaker_id: string | null
-          speaker_image_url: string | null
-          speaker_last_name: string | null
-          speaker_name: string | null
-          speaker_title: string | null
-          starts_at: string
-          title_de: string
-          title_en: string
-          title_fr: string
-        }
-        Insert: {
-          description_de?: string | null
-          description_en?: string | null
-          description_fr?: string | null
-          ends_at: string
-          event_id: string
-          id?: string
-          sort_order?: number
-          speaker_first_name?: string | null
-          speaker_id?: string | null
-          speaker_image_url?: string | null
-          speaker_last_name?: string | null
-          speaker_name?: string | null
-          speaker_title?: string | null
-          starts_at: string
-          title_de: string
-          title_en: string
-          title_fr: string
-        }
-        Update: {
-          description_de?: string | null
-          description_en?: string | null
-          description_fr?: string | null
-          ends_at?: string
-          event_id?: string
-          id?: string
-          sort_order?: number
-          speaker_first_name?: string | null
-          speaker_id?: string | null
-          speaker_image_url?: string | null
-          speaker_last_name?: string | null
-          speaker_name?: string | null
-          speaker_title?: string | null
-          starts_at?: string
-          title_de?: string
-          title_en?: string
-          title_fr?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "event_schedule_items_event_id_fkey"
-            columns: ["event_id"]
-            isOneToOne: false
-            referencedRelation: "events"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "event_schedule_items_speaker_id_fkey"
-            columns: ["speaker_id"]
-            isOneToOne: false
-            referencedRelation: "speakers"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       event_speakers: {
         Row: {
@@ -1481,10 +1803,14 @@ export type Database = {
           currency: string
           deal_value_cents: number | null
           deliverables: string | null
+          description_de: string | null
+          description_en: string | null
+          description_fr: string | null
           event_id: string
           id: string
           logo_url: string | null
           notes: string | null
+          sector: string | null
           sort_order: number
           status: Database["public"]["Enums"]["sponsor_status"]
           tier: Database["public"]["Enums"]["sponsor_tier"]
@@ -1504,10 +1830,14 @@ export type Database = {
           currency?: string
           deal_value_cents?: number | null
           deliverables?: string | null
+          description_de?: string | null
+          description_en?: string | null
+          description_fr?: string | null
           event_id: string
           id?: string
           logo_url?: string | null
           notes?: string | null
+          sector?: string | null
           sort_order?: number
           status?: Database["public"]["Enums"]["sponsor_status"]
           tier?: Database["public"]["Enums"]["sponsor_tier"]
@@ -1527,10 +1857,14 @@ export type Database = {
           currency?: string
           deal_value_cents?: number | null
           deliverables?: string | null
+          description_de?: string | null
+          description_en?: string | null
+          description_fr?: string | null
           event_id?: string
           id?: string
           logo_url?: string | null
           notes?: string | null
+          sector?: string | null
           sort_order?: number
           status?: Database["public"]["Enums"]["sponsor_status"]
           tier?: Database["public"]["Enums"]["sponsor_tier"]
@@ -1557,6 +1891,58 @@ export type Database = {
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_team_member_quota_overrides: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          discount_type: string | null
+          discount_value: number | null
+          event_id: string
+          profile_id: string
+          quota: number
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          discount_type?: string | null
+          discount_value?: number | null
+          event_id: string
+          profile_id: string
+          quota: number
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          discount_type?: string | null
+          discount_value?: number | null
+          event_id?: string
+          profile_id?: string
+          quota?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_team_member_quota_overrides_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_team_member_quota_overrides_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_team_member_quota_overrides_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1634,17 +2020,32 @@ export type Database = {
       }
       events: {
         Row: {
+          aftercare_emails_enabled: boolean
+          catering_eligible_roles: Database["public"]["Enums"]["involvement_role"][]
+          catering_enabled: boolean
+          chapter_companion_tier_id: string | null
+          chapter_companion_value_tier_id: string | null
+          chapter_delegate_program_enabled: boolean
+          chapter_delegate_tier_id: string | null
+          check_in_closes_minutes_after: number
+          check_in_opens_minutes_before: number
           city: string | null
           country: string
+          coupons_enabled: boolean
           cover_image_url: string | null
           created_at: string
+          delegate_review_notify_email: string | null
           description_de: string | null
           description_en: string | null
           description_fr: string | null
+          door_sale_enabled: boolean
           enabled_payment_methods: string[]
           ends_at: string
+          event_branch: string
           event_type: Database["public"]["Enums"]["event_type"]
+          external_url: string | null
           feedback_survey_url: string | null
+          funnel_brand_accent_hex: string | null
           funnel_closing_de: string | null
           funnel_closing_en: string | null
           funnel_closing_fr: string | null
@@ -1663,8 +2064,18 @@ export type Database = {
           id: string
           is_published: boolean
           max_tickets_per_order: number
+          max_total_tickets: number | null
           og_image_url: string | null
+          photo_consent_text_de: string | null
+          photo_consent_text_en: string | null
+          photo_consent_text_fr: string | null
           poster_config: Json | null
+          refund_policy_days: number
+          refund_policy_text_de: string | null
+          refund_policy_text_en: string | null
+          refund_policy_text_fr: string | null
+          reminder_emails_offsets_hours: number[]
+          requires_photo_consent: boolean
           sales_target_revenue_cents: number | null
           sales_target_tickets: number | null
           scarcity_threshold: number
@@ -1673,6 +2084,15 @@ export type Database = {
           seo_title: string | null
           slug: string
           starts_at: string
+          team_invite_applicable_tier_ids: string[]
+          team_invite_discount_type: string
+          team_invite_discount_value: number
+          team_invite_quota: number
+          team_invite_tier_id: string | null
+          team_member_tier_id: string | null
+          ticket_pdf_hero_url: string | null
+          ticket_transfer_cutoff_hours: number
+          ticket_transfer_enabled: boolean
           timezone: string
           title_de: string
           title_en: string
@@ -1680,19 +2100,35 @@ export type Database = {
           updated_at: string
           venue_address: string | null
           venue_name: string | null
+          waitlist_enabled: boolean
         }
         Insert: {
+          aftercare_emails_enabled?: boolean
+          catering_eligible_roles?: Database["public"]["Enums"]["involvement_role"][]
+          catering_enabled?: boolean
+          chapter_companion_tier_id?: string | null
+          chapter_companion_value_tier_id?: string | null
+          chapter_delegate_program_enabled?: boolean
+          chapter_delegate_tier_id?: string | null
+          check_in_closes_minutes_after?: number
+          check_in_opens_minutes_before?: number
           city?: string | null
           country?: string
+          coupons_enabled?: boolean
           cover_image_url?: string | null
           created_at?: string
+          delegate_review_notify_email?: string | null
           description_de?: string | null
           description_en?: string | null
           description_fr?: string | null
+          door_sale_enabled?: boolean
           enabled_payment_methods?: string[]
           ends_at: string
+          event_branch?: string
           event_type: Database["public"]["Enums"]["event_type"]
+          external_url?: string | null
           feedback_survey_url?: string | null
+          funnel_brand_accent_hex?: string | null
           funnel_closing_de?: string | null
           funnel_closing_en?: string | null
           funnel_closing_fr?: string | null
@@ -1711,8 +2147,18 @@ export type Database = {
           id?: string
           is_published?: boolean
           max_tickets_per_order?: number
+          max_total_tickets?: number | null
           og_image_url?: string | null
+          photo_consent_text_de?: string | null
+          photo_consent_text_en?: string | null
+          photo_consent_text_fr?: string | null
           poster_config?: Json | null
+          refund_policy_days?: number
+          refund_policy_text_de?: string | null
+          refund_policy_text_en?: string | null
+          refund_policy_text_fr?: string | null
+          reminder_emails_offsets_hours?: number[]
+          requires_photo_consent?: boolean
           sales_target_revenue_cents?: number | null
           sales_target_tickets?: number | null
           scarcity_threshold?: number
@@ -1721,6 +2167,15 @@ export type Database = {
           seo_title?: string | null
           slug: string
           starts_at: string
+          team_invite_applicable_tier_ids?: string[]
+          team_invite_discount_type?: string
+          team_invite_discount_value?: number
+          team_invite_quota?: number
+          team_invite_tier_id?: string | null
+          team_member_tier_id?: string | null
+          ticket_pdf_hero_url?: string | null
+          ticket_transfer_cutoff_hours?: number
+          ticket_transfer_enabled?: boolean
           timezone?: string
           title_de: string
           title_en: string
@@ -1728,19 +2183,35 @@ export type Database = {
           updated_at?: string
           venue_address?: string | null
           venue_name?: string | null
+          waitlist_enabled?: boolean
         }
         Update: {
+          aftercare_emails_enabled?: boolean
+          catering_eligible_roles?: Database["public"]["Enums"]["involvement_role"][]
+          catering_enabled?: boolean
+          chapter_companion_tier_id?: string | null
+          chapter_companion_value_tier_id?: string | null
+          chapter_delegate_program_enabled?: boolean
+          chapter_delegate_tier_id?: string | null
+          check_in_closes_minutes_after?: number
+          check_in_opens_minutes_before?: number
           city?: string | null
           country?: string
+          coupons_enabled?: boolean
           cover_image_url?: string | null
           created_at?: string
+          delegate_review_notify_email?: string | null
           description_de?: string | null
           description_en?: string | null
           description_fr?: string | null
+          door_sale_enabled?: boolean
           enabled_payment_methods?: string[]
           ends_at?: string
+          event_branch?: string
           event_type?: Database["public"]["Enums"]["event_type"]
+          external_url?: string | null
           feedback_survey_url?: string | null
+          funnel_brand_accent_hex?: string | null
           funnel_closing_de?: string | null
           funnel_closing_en?: string | null
           funnel_closing_fr?: string | null
@@ -1759,8 +2230,18 @@ export type Database = {
           id?: string
           is_published?: boolean
           max_tickets_per_order?: number
+          max_total_tickets?: number | null
           og_image_url?: string | null
+          photo_consent_text_de?: string | null
+          photo_consent_text_en?: string | null
+          photo_consent_text_fr?: string | null
           poster_config?: Json | null
+          refund_policy_days?: number
+          refund_policy_text_de?: string | null
+          refund_policy_text_en?: string | null
+          refund_policy_text_fr?: string | null
+          reminder_emails_offsets_hours?: number[]
+          requires_photo_consent?: boolean
           sales_target_revenue_cents?: number | null
           sales_target_tickets?: number | null
           scarcity_threshold?: number
@@ -1769,6 +2250,15 @@ export type Database = {
           seo_title?: string | null
           slug?: string
           starts_at?: string
+          team_invite_applicable_tier_ids?: string[]
+          team_invite_discount_type?: string
+          team_invite_discount_value?: number
+          team_invite_quota?: number
+          team_invite_tier_id?: string | null
+          team_member_tier_id?: string | null
+          ticket_pdf_hero_url?: string | null
+          ticket_transfer_cutoff_hours?: number
+          ticket_transfer_enabled?: boolean
           timezone?: string
           title_de?: string
           title_en?: string
@@ -1776,8 +2266,45 @@ export type Database = {
           updated_at?: string
           venue_address?: string | null
           venue_name?: string | null
+          waitlist_enabled?: boolean
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "events_chapter_companion_tier_id_fkey"
+            columns: ["chapter_companion_tier_id"]
+            isOneToOne: false
+            referencedRelation: "ticket_tiers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_chapter_companion_value_tier_id_fkey"
+            columns: ["chapter_companion_value_tier_id"]
+            isOneToOne: false
+            referencedRelation: "ticket_tiers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_chapter_delegate_tier_id_fkey"
+            columns: ["chapter_delegate_tier_id"]
+            isOneToOne: false
+            referencedRelation: "ticket_tiers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_team_invite_tier_id_fkey"
+            columns: ["team_invite_tier_id"]
+            isOneToOne: false
+            referencedRelation: "ticket_tiers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_team_member_tier_id_fkey"
+            columns: ["team_member_tier_id"]
+            isOneToOne: false
+            referencedRelation: "ticket_tiers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       funnel_events: {
         Row: {
@@ -2697,6 +3224,71 @@ export type Database = {
           },
         ]
       }
+      outreach_templates: {
+        Row: {
+          body_de: string
+          body_en: string
+          body_fr: string
+          created_at: string
+          description: string | null
+          id: string
+          is_system: boolean
+          name: string
+          reply_to: string
+          slug: string
+          sort_order: number
+          subject_de: string
+          subject_en: string
+          subject_fr: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          body_de: string
+          body_en: string
+          body_fr: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_system?: boolean
+          name: string
+          reply_to: string
+          slug: string
+          sort_order?: number
+          subject_de: string
+          subject_en: string
+          subject_fr: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          body_de?: string
+          body_en?: string
+          body_fr?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_system?: boolean
+          name?: string
+          reply_to?: string
+          slug?: string
+          sort_order?: number
+          subject_de?: string
+          subject_en?: string
+          subject_fr?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outreach_templates_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       processed_webhooks: {
         Row: {
           id: string
@@ -2784,6 +3376,53 @@ export type Database = {
         }
         Relationships: []
       }
+      site_settings: {
+        Row: {
+          default_currency: string
+          id: number
+          maintenance_message_de: string
+          maintenance_message_en: string
+          maintenance_message_fr: string
+          maintenance_mode: boolean
+          press_email: string
+          support_email: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          default_currency?: string
+          id?: number
+          maintenance_message_de?: string
+          maintenance_message_en?: string
+          maintenance_message_fr?: string
+          maintenance_mode?: boolean
+          press_email?: string
+          support_email?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          default_currency?: string
+          id?: number
+          maintenance_message_de?: string
+          maintenance_message_en?: string
+          maintenance_message_fr?: string
+          maintenance_mode?: boolean
+          press_email?: string
+          support_email?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_settings_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       site_testimonials: {
         Row: {
           author_name: string
@@ -2843,53 +3482,6 @@ export type Database = {
           video_url?: string | null
         }
         Relationships: []
-      }
-      site_settings: {
-        Row: {
-          default_currency: string
-          id: number
-          maintenance_message_de: string
-          maintenance_message_en: string
-          maintenance_message_fr: string
-          maintenance_mode: boolean
-          press_email: string
-          support_email: string
-          updated_at: string
-          updated_by: string | null
-        }
-        Insert: {
-          default_currency?: string
-          id?: number
-          maintenance_message_de?: string
-          maintenance_message_en?: string
-          maintenance_message_fr?: string
-          maintenance_mode?: boolean
-          press_email?: string
-          support_email?: string
-          updated_at?: string
-          updated_by?: string | null
-        }
-        Update: {
-          default_currency?: string
-          id?: number
-          maintenance_message_de?: string
-          maintenance_message_en?: string
-          maintenance_message_fr?: string
-          maintenance_mode?: boolean
-          press_email?: string
-          support_email?: string
-          updated_at?: string
-          updated_by?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "site_settings_updated_by_fkey"
-            columns: ["updated_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       speaker_questions: {
         Row: {
@@ -3197,8 +3789,52 @@ export type Database = {
           },
         ]
       }
+      ticket_catering_selections: {
+        Row: {
+          created_at: string | null
+          id: string
+          menu_item_id: string
+          notes: string | null
+          ticket_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          menu_item_id: string
+          notes?: string | null
+          ticket_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          menu_item_id?: string
+          notes?: string | null
+          ticket_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_catering_selections_menu_item_id_fkey"
+            columns: ["menu_item_id"]
+            isOneToOne: false
+            referencedRelation: "catering_menu_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_catering_selections_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ticket_tiers: {
         Row: {
+          catering_included: boolean
+          counts_as_sold: boolean
           created_at: string
           currency: string
           description_de: string | null
@@ -3209,7 +3845,9 @@ export type Database = {
           headline_en: string | null
           headline_fr: string | null
           id: string
+          is_companion: boolean
           is_public: boolean
+          is_team: boolean
           low_stock_threshold_pct: number
           max_quantity: number | null
           name_de: string
@@ -3218,9 +3856,11 @@ export type Database = {
           original_price_cents: number | null
           perks: Json
           price_cents: number
+          purpose: string
           quantity_sold: number
           sales_end_at: string | null
           sales_start_at: string | null
+          scanner_badge_label: string | null
           slug: string
           sort_order: number
           stripe_price_archived_ids: string[]
@@ -3228,6 +3868,8 @@ export type Database = {
           stripe_product_id: string | null
         }
         Insert: {
+          catering_included?: boolean
+          counts_as_sold?: boolean
           created_at?: string
           currency?: string
           description_de?: string | null
@@ -3238,7 +3880,9 @@ export type Database = {
           headline_en?: string | null
           headline_fr?: string | null
           id?: string
+          is_companion?: boolean
           is_public?: boolean
+          is_team?: boolean
           low_stock_threshold_pct?: number
           max_quantity?: number | null
           name_de: string
@@ -3247,9 +3891,11 @@ export type Database = {
           original_price_cents?: number | null
           perks?: Json
           price_cents: number
+          purpose?: string
           quantity_sold?: number
           sales_end_at?: string | null
           sales_start_at?: string | null
+          scanner_badge_label?: string | null
           slug: string
           sort_order?: number
           stripe_price_archived_ids?: string[]
@@ -3257,6 +3903,8 @@ export type Database = {
           stripe_product_id?: string | null
         }
         Update: {
+          catering_included?: boolean
+          counts_as_sold?: boolean
           created_at?: string
           currency?: string
           description_de?: string | null
@@ -3267,7 +3915,9 @@ export type Database = {
           headline_en?: string | null
           headline_fr?: string | null
           id?: string
+          is_companion?: boolean
           is_public?: boolean
+          is_team?: boolean
           low_stock_threshold_pct?: number
           max_quantity?: number | null
           name_de?: string
@@ -3276,9 +3926,11 @@ export type Database = {
           original_price_cents?: number | null
           perks?: Json
           price_cents?: number
+          purpose?: string
           quantity_sold?: number
           sales_end_at?: string | null
           sales_start_at?: string | null
+          scanner_badge_label?: string | null
           slug?: string
           sort_order?: number
           stripe_price_archived_ids?: string[]
@@ -3305,6 +3957,8 @@ export type Database = {
           attendee_name: string
           attendee_title: string | null
           buyer_id: string | null
+          catering_eligible_override: boolean | null
+          certificate_sent_at: string | null
           checked_in_at: string | null
           checked_in_by: string | null
           contact_id: string | null
@@ -3318,6 +3972,9 @@ export type Database = {
           order_id: string
           pdf_url: string | null
           reminder_sent_at: string | null
+          revocation_reason: string | null
+          revoked_at: string | null
+          revoked_by: string | null
           ticket_token: string
           tier_id: string
         }
@@ -3332,6 +3989,8 @@ export type Database = {
           attendee_name: string
           attendee_title?: string | null
           buyer_id?: string | null
+          catering_eligible_override?: boolean | null
+          certificate_sent_at?: string | null
           checked_in_at?: string | null
           checked_in_by?: string | null
           contact_id?: string | null
@@ -3345,6 +4004,9 @@ export type Database = {
           order_id: string
           pdf_url?: string | null
           reminder_sent_at?: string | null
+          revocation_reason?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
           ticket_token?: string
           tier_id: string
         }
@@ -3359,6 +4021,8 @@ export type Database = {
           attendee_name?: string
           attendee_title?: string | null
           buyer_id?: string | null
+          catering_eligible_override?: boolean | null
+          certificate_sent_at?: string | null
           checked_in_at?: string | null
           checked_in_by?: string | null
           contact_id?: string | null
@@ -3372,6 +4036,9 @@ export type Database = {
           order_id?: string
           pdf_url?: string | null
           reminder_sent_at?: string | null
+          revocation_reason?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
           ticket_token?: string
           tier_id?: string
         }
@@ -3402,6 +4069,13 @@ export type Database = {
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tickets_revoked_by_fkey"
+            columns: ["revoked_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -3463,7 +4137,43 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      event_schedule_items: {
+        Row: {
+          description_de: string | null
+          description_en: string | null
+          description_fr: string | null
+          ends_at: string | null
+          event_id: string | null
+          id: string | null
+          sort_order: number | null
+          speaker_first_name: string | null
+          speaker_id: string | null
+          speaker_image_url: string | null
+          speaker_last_name: string | null
+          speaker_name: string | null
+          speaker_title: string | null
+          starts_at: string | null
+          title_de: string | null
+          title_en: string | null
+          title_fr: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_runsheet_items_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_runsheet_items_speaker_id_fkey"
+            columns: ["speaker_id"]
+            isOneToOne: false
+            referencedRelation: "speakers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       _first_from_name: { Args: { full_name: string }; Returns: string }
@@ -3551,6 +4261,13 @@ export type Database = {
     }
     Enums: {
       acquisition_type: "purchased" | "invited" | "assigned" | "door_sale"
+      catering_category:
+        | "starter"
+        | "main"
+        | "dessert"
+        | "drink_non_alcoholic"
+        | "drink_alcoholic"
+        | "snack"
       discount_type: "percentage" | "fixed_amount"
       email_status: "active" | "bounced" | "complained" | "unsubscribed"
       employment_type: "full_time" | "part_time" | "freelance" | "internship"
@@ -3575,6 +4292,11 @@ export type Database = {
         | "staff"
         | "press"
         | "vip"
+        | "chapter_delegate"
+        | "delegate_companion"
+        | "team_member_de"
+        | "team_member_external"
+        | "institutional_guest"
       job_application_status:
         | "new"
         | "reviewing"
@@ -3605,6 +4327,16 @@ export type Database = {
         | "cash"
         | "sepa_debit"
         | "klarna"
+        | "link"
+        | "bancontact"
+        | "eps"
+        | "pix"
+        | "amazon_pay"
+        | "ideal"
+        | "giropay"
+        | "p24"
+        | "cartes_bancaires"
+      pipeline_status: "new" | "engaged" | "considering" | "declined"
       speaker_question_status: "new" | "shortlisted" | "answered" | "declined"
       sponsor_status: "lead" | "proposal" | "confirmed" | "active" | "completed"
       sponsor_tier:
@@ -3752,6 +4484,14 @@ export const Constants = {
   public: {
     Enums: {
       acquisition_type: ["purchased", "invited", "assigned", "door_sale"],
+      catering_category: [
+        "starter",
+        "main",
+        "dessert",
+        "drink_non_alcoholic",
+        "drink_alcoholic",
+        "snack",
+      ],
       discount_type: ["percentage", "fixed_amount"],
       email_status: ["active", "bounced", "complained", "unsubscribed"],
       employment_type: ["full_time", "part_time", "freelance", "internship"],
@@ -3777,6 +4517,11 @@ export const Constants = {
         "staff",
         "press",
         "vip",
+        "chapter_delegate",
+        "delegate_companion",
+        "team_member_de",
+        "team_member_external",
+        "institutional_guest",
       ],
       job_application_status: [
         "new",
@@ -3811,7 +4556,17 @@ export const Constants = {
         "cash",
         "sepa_debit",
         "klarna",
+        "link",
+        "bancontact",
+        "eps",
+        "pix",
+        "amazon_pay",
+        "ideal",
+        "giropay",
+        "p24",
+        "cartes_bancaires",
       ],
+      pipeline_status: ["new", "engaged", "considering", "declined"],
       speaker_question_status: ["new", "shortlisted", "answered", "declined"],
       sponsor_status: ["lead", "proposal", "confirmed", "active", "completed"],
       sponsor_tier: [

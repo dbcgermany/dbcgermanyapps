@@ -3,7 +3,6 @@
 import {
   useActionState,
   useEffect,
-  useOptimistic,
   useRef,
   useState,
   useTransition,
@@ -16,7 +15,6 @@ import { Badge, Button, FormField, Input, Select, Textarea } from "@dbc/ui";
 import {
   updateRunsheetItem,
   deleteRunsheetItem,
-  toggleRunsheetItemPublic,
 } from "@/actions/runsheet";
 import type {
   ProgramItem,
@@ -27,6 +25,7 @@ import type {
 import { contactDisplayName } from "@dbc/types";
 import { InlineEditRow } from "@/components/inline-edit-row";
 import { DeleteButton } from "@/components/delete-button";
+import { RunsheetPublicSelect } from "./runsheet-public-select";
 
 const STATUS_CYCLE: Record<string, "pending" | "in_progress" | "done"> = {
   pending: "in_progress",
@@ -48,7 +47,7 @@ const RR_T = {
     notesDe: "Description (DE)", notesFr: "Description (FR)",
     privateNotes: "Internal notes (team-only — not on PDF or in emails)",
     privateNotesHint: "Internal-only. Won't appear on the run-sheet PDF or in any attendee email.",
-    privateNotesDisplay: "Team note",
+    notesIndicator: "Internal note",
     owner: "Owner",
     ownerHint: "Pick from team / speakers / vendors so we don't duplicate people. Leave blank if the slot has no single owner.",
     ownerNone: "— No specific owner —",
@@ -59,8 +58,6 @@ const RR_T = {
     responsibleFallback: "Or type a generic role (e.g. Security, Hostesses)",
     isPublic: "On public agenda",
     isPublicHint: "Public rows appear on the marketing site agenda and in the attendee PDF. Internal rows stay on the staff run-sheet only.",
-    pillPublic: "Public",
-    pillInternal: "Internal",
     saving: "Saving…", save: "Save", cancel: "Cancel",
     savedToast: "Saved",
     languagesExpand: "Other languages (optional)",
@@ -75,7 +72,7 @@ const RR_T = {
     notesDe: "Beschreibung (DE)", notesFr: "Beschreibung (FR)",
     privateNotes: "Interne Notizen (nur fürs Team — nicht im PDF oder in E-Mails)",
     privateNotesHint: "Nur intern. Erscheint weder im Ablaufplan-PDF noch in E-Mails an Teilnehmende.",
-    privateNotesDisplay: "Team-Notiz",
+    notesIndicator: "Interne Notiz",
     owner: "Verantwortlich",
     ownerHint: "Wähle aus Team / Speakern / Dienstleistern, damit wir niemanden doppelt anlegen. Leer lassen, wenn kein:e Einzelverantwortliche:r.",
     ownerNone: "— Niemand bestimmtes —",
@@ -86,8 +83,6 @@ const RR_T = {
     responsibleFallback: "Oder generische Rolle eintippen (z. B. Security, Hostessen)",
     isPublic: "Im öffentlichen Programm",
     isPublicHint: "Öffentliche Zeilen erscheinen im Website-Programm und im Teilnehmer-PDF. Interne Zeilen nur im Team-Ablaufplan.",
-    pillPublic: "Öffentlich",
-    pillInternal: "Intern",
     saving: "Wird gespeichert…", save: "Speichern", cancel: "Abbrechen",
     savedToast: "Gespeichert",
     languagesExpand: "Andere Sprachen (optional)",
@@ -102,7 +97,7 @@ const RR_T = {
     notesDe: "Description (DE)", notesFr: "Description (FR)",
     privateNotes: "Notes internes (équipe uniquement — pas dans le PDF ni les e-mails)",
     privateNotesHint: "Visible uniquement par l’équipe. N’apparaît ni dans la feuille de route PDF ni dans les e-mails aux participants.",
-    privateNotesDisplay: "Note équipe",
+    notesIndicator: "Note interne",
     owner: "Responsable",
     ownerHint: "Choisis dans équipe / intervenants / prestataires pour ne pas doublonner. Laisser vide s’il n’y a pas de responsable unique.",
     ownerNone: "— Pas de responsable —",
@@ -113,8 +108,6 @@ const RR_T = {
     responsibleFallback: "Ou saisir un rôle générique (ex. Sécurité, Hôtesses)",
     isPublic: "Dans le programme public",
     isPublicHint: "Les lignes publiques apparaissent sur le programme du site et dans le PDF participant. Les internes restent sur la feuille de route équipe.",
-    pillPublic: "Public",
-    pillInternal: "Interne",
     saving: "Enregistrement…", save: "Enregistrer", cancel: "Annuler",
     savedToast: "Enregistré",
     languagesExpand: "Autres langues (facultatif)",
@@ -191,12 +184,6 @@ export function RunsheetRow({
   const [isPending, startTransition] = useTransition();
   const t = RR_T[pickLocale(locale)];
 
-  const [optimisticPublic, setOptimisticPublic] = useOptimistic(
-    item.is_public,
-    (_, next: boolean) => next
-  );
-  const [isTogglingPublic, startToggleTransition] = useTransition();
-
   function handleStatusAdvance() {
     const next = STATUS_CYCLE[item.status] ?? "pending";
     const fd = new FormData();
@@ -211,19 +198,6 @@ export function RunsheetRow({
       }
       toast.success(tCommon("savedToast"));
       router.refresh();
-    });
-  }
-
-  function handleTogglePublic() {
-    const next = !optimisticPublic;
-    startToggleTransition(async () => {
-      setOptimisticPublic(next);
-      const res = await toggleRunsheetItemPublic(item.id, eventId, locale, next);
-      if ("error" in res && res.error) {
-        toast.error(tCommon("actionFailedToast", { error: res.error }));
-        // Server-state-driven revert: re-fetch happens via revalidatePath in
-        // the action; the useOptimistic reducer reverts on next render.
-      }
     });
   }
 
@@ -242,70 +216,52 @@ export function RunsheetRow({
     return `${start} – ${end}`;
   })();
 
+  // One compact meta line, mirrors the team / speakers list pattern.
+  const metaParts = [
+    timeRange,
+    ownerName,
+    item.location_note,
+    item.description,
+  ].filter(Boolean);
+
   return (
     <InlineEditRow
       dragHandle={dragHandle}
       title={item.title}
       badges={
         <>
-          <button
-            type="button"
-            onClick={handleTogglePublic}
-            disabled={isTogglingPublic}
-            className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium transition-colors disabled:cursor-wait ${
-              optimisticPublic
-                ? "border-success-strong/40 bg-success-soft text-success-strong hover:bg-success-soft/80"
-                : "border-border bg-muted/40 text-muted-foreground hover:bg-muted/60"
-            }`}
-            aria-pressed={optimisticPublic}
-            title={t.isPublicHint}
-          >
-            <span aria-hidden>{optimisticPublic ? "👁" : "🔒"}</span>
-            {optimisticPublic ? t.pillPublic : t.pillInternal}
-          </button>
+          <Badge variant={item.is_public ? "success" : "default"}>
+            {item.is_public ? "Public" : "Internal"}
+          </Badge>
           <Badge variant={STATUS_VARIANT[item.status] ?? "default"}>
             {t.statuses[item.status] ?? item.status.replace("_", " ")}
           </Badge>
-        </>
-      }
-      meta={
-        <>
-          <div>
-            <span>{timeRange}</span>
-            {(ownerName || item.location_note) && (
-              <span>
-                {" · "}
-                {ownerName}
-                {ownerName && item.location_note && " · "}
-                {item.location_note}
-              </span>
-            )}
-          </div>
-          {item.description && (
-            <div className="mt-1">{item.description}</div>
-          )}
           {item.notes && (
-            <div className="mt-2 rounded-md border-l-2 border-warning-strong bg-warning-soft px-2 py-1 text-xs">
-              <span className="font-medium text-warning-strong">
-                {t.privateNotesDisplay}:
-              </span>{" "}
-              <span className="whitespace-pre-wrap text-foreground/80">
-                {item.notes}
-              </span>
-            </div>
+            <Badge variant="warning" title={item.notes}>
+              {t.notesIndicator}
+            </Badge>
           )}
         </>
       }
+      meta={metaParts.length > 0 ? metaParts.join(" · ") : undefined}
       actions={
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={handleStatusAdvance}
-          disabled={isPending}
-        >
-          {t.advance}
-        </Button>
+        <>
+          <RunsheetPublicSelect
+            id={item.id}
+            eventId={eventId}
+            current={item.is_public}
+            locale={locale}
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={handleStatusAdvance}
+            disabled={isPending}
+          >
+            {t.advance}
+          </Button>
+        </>
       }
       deleteAction={
         <DeleteButton

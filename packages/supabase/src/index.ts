@@ -4,6 +4,7 @@
 
 export { createBrowserClient } from "./browser-client";
 export { createMiddlewareClient } from "./middleware-client";
+export { cols, joinCols } from "./select";
 export {
   resolveTicketAccess,
   formatPrice,

@@ -4,36 +4,14 @@ import { createServerClient, requireRole } from "@dbc/supabase/server";
 import { revalidatePath } from "next/cache";
 import type { ProgramItem } from "@dbc/types";
 
-const ITEM_COLUMNS = [
-  "id",
-  "event_id",
-  "title",
-  "title_de",
-  "title_fr",
-  "description",
-  "description_de",
-  "description_fr",
-  "notes",
-  "starts_at",
-  "ends_at",
-  "responsible_person",
-  "location_note",
-  "status",
-  "sort_order",
-  "assigned_to",
-  "default_duration_minutes",
-  "is_public",
-  "speaker_id",
-  "team_member_id",
-  "contact_id",
-  "speaker_first_name",
-  "speaker_last_name",
-  "speaker_name",
-  "speaker_title",
-  "speaker_image_url",
-  "created_at",
-  "updated_at",
-].join(", ");
+// IMPORTANT (feedback_postgrest_column_drift): every column referenced
+// below must exist on the matching Row type in
+// packages/types/src/database.ts. PostgREST validates these strings only
+// at runtime; a typo here = production 500 on the runsheet page. When
+// modifying, prefer the typed `cols()` / `joinCols()` helpers from
+// @dbc/supabase for new code (they error at compile time on column drift).
+const ITEM_COLUMNS =
+  "id, event_id, title, title_de, title_fr, description, description_de, description_fr, notes, starts_at, ends_at, responsible_person, location_note, status, sort_order, assigned_to, default_duration_minutes, is_public, speaker_id, team_member_id, contact_id, speaker_first_name, speaker_last_name, speaker_name, speaker_title, speaker_image_url, created_at, updated_at" as const;
 
 const JOINS =
   "assignee:profiles!event_runsheet_items_assigned_to_fkey(display_name)," +

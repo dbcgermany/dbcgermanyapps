@@ -1,5 +1,7 @@
-// Auto-generated database types will be in ./database.ts
-// Manual type definitions below.
+// Auto-generated database types are in ./database.ts and re-exported below.
+// Manual type definitions follow further down.
+
+export type { Database, Json } from "./database";
 //
 // Every union type in this file is derived from a `*_VALUES` readonly
 // tuple so the TS type and the runtime value list stay locked together.
