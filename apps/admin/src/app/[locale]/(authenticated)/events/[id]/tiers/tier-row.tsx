@@ -1,9 +1,10 @@
 "use client";
 
-import { useActionState, type ReactNode } from "react";
+import { useActionState, useEffect, useRef, type ReactNode } from "react";
+import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { updateTier, toggleTierPublic, deleteTier, resyncTierToStripe } from "@/actions/tiers";
-import { Badge, Button } from "@dbc/ui";
+import { Badge, Button, FormField, Input, Select, Textarea } from "@dbc/ui";
 import { ActionForm } from "@/components/action-form";
 import { InlineEditRow } from "@/components/inline-edit-row";
 import { DeleteButton } from "@/components/delete-button";
@@ -25,6 +26,7 @@ const TR_T = {
     lowStockPct: "Low-stock alert at %",
     lowStockPctHint: "Notify admins when remaining drops to this % of capacity, then again at half and a quarter.",
     saving: "Saving…", save: "Save", cancel: "Cancel",
+    savedToast: "Saved",
     hidden: "Hidden", sold: "sold", unlimited: "unlimited",
     hide: "Hide", publish: "Publish", delete: "Delete",
     deleteConfirm: 'Delete tier "{name}"?',
@@ -46,6 +48,7 @@ const TR_T = {
     lowStockPct: "Bestandsalarm bei %",
     lowStockPctHint: "Admins werden benachrichtigt, wenn der Restbestand auf diesen % der Kapazität fällt, dann erneut bei der Hälfte und einem Viertel.",
     saving: "Wird gespeichert…", save: "Speichern", cancel: "Abbrechen",
+    savedToast: "Gespeichert",
     hidden: "Ausgeblendet", sold: "verkauft", unlimited: "unbegrenzt",
     hide: "Ausblenden", publish: "Veröffentlichen", delete: "Löschen",
     deleteConfirm: "Kategorie „{name}“ löschen?",
@@ -67,6 +70,7 @@ const TR_T = {
     lowStockPct: "Alerte stock à %",
     lowStockPctHint: "Notifier les admins quand le restant tombe à ce % de la capacité, puis à la moitié et au quart.",
     saving: "Enregistrement…", save: "Enregistrer", cancel: "Annuler",
+    savedToast: "Enregistré",
     hidden: "Masqué", sold: "vendus", unlimited: "illimité",
     hide: "Masquer", publish: "Publier", delete: "Supprimer",
     deleteConfirm: "Supprimer la catégorie « {name} » ?",
@@ -205,6 +209,7 @@ export function TierRow({
 /* -------------------------------------------------------------------------- */
 
 type TierT = (typeof TR_T)[keyof typeof TR_T];
+type ActionResult = { error?: string; success?: boolean } | null;
 
 function TierEditForm({
   tier,
@@ -219,64 +224,56 @@ function TierEditForm({
   t: TierT;
   onSaved: () => void;
 }) {
-  const [state, formAction, isPending] = useActionState(
-    async (
-      _prev: { error?: string; success?: boolean } | null,
-      formData: FormData
-    ) => {
+  const [state, formAction, isPending] = useActionState<ActionResult, FormData>(
+    async (_prev, formData) => {
       formData.set("event_id", eventId);
       formData.set("locale", locale);
-      const result = await updateTier(tier.id, formData);
-      if (result.success) onSaved();
-      return result;
+      return updateTier(tier.id, formData);
     },
     null
   );
 
+  const lastHandledRef = useRef<ActionResult>(null);
+  useEffect(() => {
+    if (state === lastHandledRef.current) return;
+    lastHandledRef.current = state;
+    if (state?.error) {
+      toast.error(state.error);
+      return;
+    }
+    if (state?.success) {
+      toast.success(t.savedToast);
+      onSaved();
+    }
+  }, [state, t.savedToast, onSaved]);
+
   return (
-    <form action={formAction} className="space-y-3">
-      {state?.error && (
-        <div className="rounded-md bg-danger-soft p-2 text-xs text-danger">
-          {state.error}
-        </div>
-      )}
-      <div className="grid gap-2 sm:grid-cols-3">
-        <input
-          name="name_en"
-          defaultValue={tier.name_en}
-          placeholder={t.nameEn}
-          required
-          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-        />
-        <input
-          name="name_de"
-          defaultValue={tier.name_de ?? ""}
-          placeholder={t.nameDe}
-          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-        />
-        <input
-          name="name_fr"
-          defaultValue={tier.name_fr ?? ""}
-          placeholder={t.nameFr}
-          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-        />
+    <form action={formAction} className="space-y-4">
+      <div className="grid gap-4 sm:grid-cols-3">
+        <FormField label={t.nameEn} required>
+          <Input name="name_en" defaultValue={tier.name_en} required />
+        </FormField>
+        <FormField label={t.nameDe}>
+          <Input name="name_de" defaultValue={tier.name_de ?? ""} />
+        </FormField>
+        <FormField label={t.nameFr}>
+          <Input name="name_fr" defaultValue={tier.name_fr ?? ""} />
+        </FormField>
       </div>
-      <div className="grid gap-2 sm:grid-cols-2">
-        <div>
-          <input
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <FormField label={t.price} required>
+          <Input
             name="price"
             type="number"
             step="0.01"
             min="0"
             defaultValue={(tier.price_cents / 100).toFixed(2)}
             required
-            placeholder={t.price}
-            aria-label={t.price}
-            className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
           />
-        </div>
-        <div>
-          <input
+        </FormField>
+        <FormField label={t.originalPrice} hint={t.originalPriceHint}>
+          <Input
             name="original_price"
             type="number"
             step="0.01"
@@ -286,144 +283,134 @@ function TierEditForm({
                 ? (tier.original_price_cents / 100).toFixed(2)
                 : ""
             }
-            placeholder={t.originalPrice}
-            aria-label={t.originalPrice}
-            className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
           />
-          <p className="mt-1 text-[11px] leading-snug text-muted-foreground">
-            {t.originalPriceHint}
-          </p>
-        </div>
+        </FormField>
       </div>
-      <div className="grid gap-2 sm:grid-cols-3">
-        <input
-          name="max_quantity"
-          type="number"
-          min="1"
-          defaultValue={tier.max_quantity ?? ""}
-          placeholder={t.maxQty}
-          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-        />
-        <div>
-          <input
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        <FormField label={t.maxQty}>
+          <Input
+            name="max_quantity"
+            type="number"
+            min="1"
+            defaultValue={tier.max_quantity ?? ""}
+          />
+        </FormField>
+        <FormField label={t.lowStockPct} hint={t.lowStockPctHint}>
+          <Input
             name="low_stock_threshold_pct"
             type="number"
             min="1"
             max="100"
             defaultValue={tier.low_stock_threshold_pct}
-            placeholder={t.lowStockPct}
-            aria-label={t.lowStockPct}
-            className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
           />
-          <p className="mt-1 text-[11px] leading-snug text-muted-foreground">
-            {t.lowStockPctHint}
-          </p>
-        </div>
-        <input
-          name="sort_order"
-          type="number"
-          defaultValue={tier.sort_order}
-          placeholder={t.sort}
-          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-        />
+        </FormField>
+        <FormField label={t.sort}>
+          <Input name="sort_order" type="number" defaultValue={tier.sort_order} />
+        </FormField>
       </div>
-      <div className="grid gap-2 sm:grid-cols-2">
-        <input
-          name="sales_start_at"
-          type="datetime-local"
-          defaultValue={toLocal(tier.sales_start_at)}
-          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-        />
-        <input
-          name="sales_end_at"
-          type="datetime-local"
-          defaultValue={toLocal(tier.sales_end_at)}
-          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-        />
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <FormField label="Sales start">
+          <Input
+            name="sales_start_at"
+            type="datetime-local"
+            defaultValue={toLocal(tier.sales_start_at)}
+          />
+        </FormField>
+        <FormField label="Sales end">
+          <Input
+            name="sales_end_at"
+            type="datetime-local"
+            defaultValue={toLocal(tier.sales_end_at)}
+          />
+        </FormField>
       </div>
-      <div className="grid gap-2 sm:grid-cols-3">
-        <textarea
-          name="description_en"
-          defaultValue={tier.description_en ?? ""}
-          placeholder={t.descEn}
-          rows={2}
-          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-        />
-        <textarea
-          name="description_de"
-          defaultValue={tier.description_de ?? ""}
-          placeholder={t.descDe}
-          rows={2}
-          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-        />
-        <textarea
-          name="description_fr"
-          defaultValue={tier.description_fr ?? ""}
-          placeholder={t.descFr}
-          rows={2}
-          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-        />
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        <FormField label={t.descEn}>
+          <Textarea
+            name="description_en"
+            defaultValue={tier.description_en ?? ""}
+            rows={2}
+          />
+        </FormField>
+        <FormField label={t.descDe}>
+          <Textarea
+            name="description_de"
+            defaultValue={tier.description_de ?? ""}
+            rows={2}
+          />
+        </FormField>
+        <FormField label={t.descFr}>
+          <Textarea
+            name="description_fr"
+            defaultValue={tier.description_fr ?? ""}
+            rows={2}
+          />
+        </FormField>
       </div>
-      <div className="grid gap-2 sm:grid-cols-3">
-        <input
-          name="headline_en"
-          defaultValue={tier.headline_en ?? ""}
-          placeholder={t.headlineEn}
-          maxLength={160}
-          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-        />
-        <input
-          name="headline_de"
-          defaultValue={tier.headline_de ?? ""}
-          placeholder={t.headlineDe}
-          maxLength={160}
-          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-        />
-        <input
-          name="headline_fr"
-          defaultValue={tier.headline_fr ?? ""}
-          placeholder={t.headlineFr}
-          maxLength={160}
-          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-        />
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        <FormField label={t.headlineEn}>
+          <Input
+            name="headline_en"
+            defaultValue={tier.headline_en ?? ""}
+            maxLength={160}
+          />
+        </FormField>
+        <FormField label={t.headlineDe}>
+          <Input
+            name="headline_de"
+            defaultValue={tier.headline_de ?? ""}
+            maxLength={160}
+          />
+        </FormField>
+        <FormField label={t.headlineFr}>
+          <Input
+            name="headline_fr"
+            defaultValue={tier.headline_fr ?? ""}
+            maxLength={160}
+          />
+        </FormField>
       </div>
-      <p className="-mt-1 text-[11px] text-muted-foreground">{t.headlineHint}</p>
-      <div className="grid gap-2 sm:grid-cols-3">
-        <textarea
-          name="perks_en"
-          defaultValue={perksToLines(tier.perks, "en")}
-          placeholder={t.perksEn}
-          rows={5}
-          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm font-mono"
-        />
-        <textarea
-          name="perks_de"
-          defaultValue={perksToLines(tier.perks, "de")}
-          placeholder={t.perksDe}
-          rows={5}
-          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm font-mono"
-        />
-        <textarea
-          name="perks_fr"
-          defaultValue={perksToLines(tier.perks, "fr")}
-          placeholder={t.perksFr}
-          rows={5}
-          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm font-mono"
-        />
+      <p className="-mt-2 text-[11px] text-muted-foreground">{t.headlineHint}</p>
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        <FormField label={t.perksEn}>
+          <Textarea
+            name="perks_en"
+            defaultValue={perksToLines(tier.perks, "en")}
+            rows={5}
+            className="font-mono"
+          />
+        </FormField>
+        <FormField label={t.perksDe}>
+          <Textarea
+            name="perks_de"
+            defaultValue={perksToLines(tier.perks, "de")}
+            rows={5}
+            className="font-mono"
+          />
+        </FormField>
+        <FormField label={t.perksFr}>
+          <Textarea
+            name="perks_fr"
+            defaultValue={perksToLines(tier.perks, "fr")}
+            rows={5}
+            className="font-mono"
+          />
+        </FormField>
       </div>
-      <p className="-mt-1 text-[11px] text-muted-foreground">{t.perksHint}</p>
-      <fieldset className="rounded-md border border-border bg-muted/20 p-3 space-y-3">
+      <p className="-mt-2 text-[11px] text-muted-foreground">{t.perksHint}</p>
+
+      <fieldset className="rounded-md border border-border bg-muted/20 p-4 space-y-4">
         <legend className="px-1 text-xs uppercase tracking-wide text-muted-foreground">
           Role & flags
         </legend>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">Purpose</label>
-            <select
-              name="purpose"
-              defaultValue={tier.purpose ?? "public"}
-              className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-            >
+        <div className="grid gap-4 sm:grid-cols-2">
+          <FormField label="Purpose">
+            <Select name="purpose" defaultValue={tier.purpose ?? "public"}>
               <option value="public">Public (paid attendee)</option>
               <option value="vip">VIP</option>
               <option value="speaker">Speaker</option>
@@ -433,20 +420,15 @@ function TierEditForm({
               <option value="team_friend">Team friend (discounted)</option>
               <option value="press">Press</option>
               <option value="other">Other</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs text-muted-foreground mb-1">
-              Scanner badge label
-            </label>
-            <input
+            </Select>
+          </FormField>
+          <FormField label="Scanner badge label">
+            <Input
               name="scanner_badge_label"
-              type="text"
               defaultValue={tier.scanner_badge_label ?? ""}
               placeholder="VIP / TEAM (DE) / SPEAKER…"
-              className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
             />
-          </div>
+          </FormField>
         </div>
         <div className="grid gap-2 sm:grid-cols-2">
           <label className="flex items-center gap-2 text-sm">
@@ -495,6 +477,7 @@ function TierEditForm({
           </label>
         </div>
       </fieldset>
+
       <div className="flex gap-2">
         <Button type="submit" disabled={isPending}>
           {isPending ? t.saving : t.save}

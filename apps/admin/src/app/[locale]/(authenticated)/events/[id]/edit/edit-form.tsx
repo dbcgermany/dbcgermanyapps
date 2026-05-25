@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 import {
   EVENT_BRANCH_VALUES,
   EVENT_TYPE_VALUES,
@@ -13,6 +14,8 @@ import { Button, LinkButton } from "@dbc/ui";
 import { updateEvent } from "@/actions/events";
 import { CoverImageUpload } from "@/components/cover-image-upload";
 import { PaymentMethodsSelect } from "@/components/payment-methods-select";
+
+type ActionResult = { error?: string; success?: boolean } | null;
 
 const T = {
   en: {
@@ -137,11 +140,8 @@ export function EditEventForm({
   );
   const isExternal = branch === "other";
 
-  const [state, formAction, isPending] = useActionState(
-    async (
-      _prev: { error?: string; success?: boolean } | null,
-      formData: FormData
-    ) => {
+  const [state, formAction, isPending] = useActionState<ActionResult, FormData>(
+    async (_prev, formData) => {
       formData.set("locale", locale);
       formData.set("updated_at", event.updated_at);
       return updateEvent(event.id, formData);
@@ -149,21 +149,23 @@ export function EditEventForm({
     null
   );
 
+  const lastHandledRef = useRef<ActionResult>(null);
   useEffect(() => {
+    if (state === lastHandledRef.current) return;
+    lastHandledRef.current = state;
+    if (state?.error) {
+      toast.error(state.error);
+      return;
+    }
     if (state?.success) {
+      toast.success(t.saveChanges);
       router.push(`/${locale}/events/${event.id}`);
       router.refresh();
     }
-  }, [state, router, locale, event.id]);
+  }, [state, router, locale, event.id, t.saveChanges]);
 
   return (
     <form action={formAction} className="mt-8 max-w-2xl space-y-6">
-      {state?.error && (
-        <div className="rounded-md bg-danger-soft p-4 text-sm text-danger">
-          {state.error}
-        </div>
-      )}
-
       {/* Branch (DBC Germany vs Other) */}
       <fieldset className="rounded-md border border-border p-4">
         <legend className="px-2 text-sm font-medium">{tBranch("label")}</legend>

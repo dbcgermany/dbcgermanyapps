@@ -1,8 +1,11 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef } from "react";
+import { toast } from "sonner";
+import { Button, FormField, Input, Textarea } from "@dbc/ui";
 import { updateSiteSettings, type SiteSettings } from "@/actions/settings";
-import { Button } from "@dbc/ui";
+
+type ActionResult = { error?: string; success?: boolean } | null;
 
 export function SiteSettingsForm({
   locale,
@@ -11,11 +14,8 @@ export function SiteSettingsForm({
   locale: string;
   initial: SiteSettings;
 }) {
-  const [state, formAction, isPending] = useActionState(
-    async (
-      _prev: { error?: string; success?: boolean } | null,
-      formData: FormData
-    ) => updateSiteSettings(formData),
+  const [state, formAction, isPending] = useActionState<ActionResult, FormData>(
+    async (_prev, formData) => updateSiteSettings(formData),
     null
   );
 
@@ -33,7 +33,7 @@ export function SiteSettingsForm({
       currency: "Default currency",
       save: "Save settings",
       saving: "Saving…",
-      saved: "Saved.",
+      saved: "Saved",
       lastUpdated: "Last updated",
     },
     de: {
@@ -49,7 +49,7 @@ export function SiteSettingsForm({
       currency: "Standardwährung",
       save: "Speichern",
       saving: "Speichert…",
-      saved: "Gespeichert.",
+      saved: "Gespeichert",
       lastUpdated: "Zuletzt aktualisiert",
     },
     fr: {
@@ -65,7 +65,7 @@ export function SiteSettingsForm({
       currency: "Devise par défaut",
       save: "Enregistrer",
       saving: "Enregistrement…",
-      saved: "Enregistré.",
+      saved: "Enregistré",
       lastUpdated: "Dernière mise à jour",
     },
   }[locale as "en" | "de" | "fr"] ?? {
@@ -83,60 +83,52 @@ export function SiteSettingsForm({
     lastUpdated: "Last updated",
   };
 
-  const inputClass =
-    "w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring";
+  const lastHandledRef = useRef<ActionResult>(null);
+  useEffect(() => {
+    if (state === lastHandledRef.current) return;
+    lastHandledRef.current = state;
+    if (state?.error) {
+      toast.error(state.error);
+      return;
+    }
+    if (state?.success) {
+      toast.success(t.saved);
+    }
+  }, [state, t.saved]);
 
   return (
     <form
       action={formAction}
-      className="rounded-lg border border-border p-6 space-y-5"
+      className="rounded-lg border border-border p-6 space-y-6"
     >
       <div>
         <h2 className="font-heading text-lg font-semibold">{t.title}</h2>
         <p className="mt-1 text-sm text-muted-foreground">{t.subtitle}</p>
       </div>
 
-      {state?.error && (
-        <div className="rounded-md bg-danger-soft p-3 text-sm text-danger">
-          {state.error}
-        </div>
-      )}
-      {state?.success && (
-        <div className="rounded-md bg-success-soft p-3 text-sm text-success">
-          {t.saved}
-        </div>
-      )}
-
       <div className="grid gap-4 sm:grid-cols-2">
-        <label className="block">
-          <span className="mb-1 block text-sm font-medium">{t.support}</span>
-          <input
+        <FormField label={t.support} required>
+          <Input
             name="support_email"
             type="email"
             required
             defaultValue={initial.support_email}
-            className={inputClass}
           />
-        </label>
-        <label className="block">
-          <span className="mb-1 block text-sm font-medium">{t.press}</span>
-          <input
+        </FormField>
+        <FormField label={t.press}>
+          <Input
             name="press_email"
             type="email"
             defaultValue={initial.press_email}
-            className={inputClass}
           />
-        </label>
-        <label className="block">
-          <span className="mb-1 block text-sm font-medium">{t.currency}</span>
-          <input
+        </FormField>
+        <FormField label={t.currency}>
+          <Input
             name="default_currency"
-            type="text"
             defaultValue={initial.default_currency}
             maxLength={3}
-            className={inputClass}
           />
-        </label>
+        </FormField>
       </div>
 
       <div className="rounded-lg border border-border bg-muted/30 p-4">
@@ -155,40 +147,28 @@ export function SiteSettingsForm({
           </span>
         </label>
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          <label>
-            <span className="mb-1 block text-xs text-muted-foreground">
-              {t.message} (EN)
-            </span>
-            <textarea
+        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+          <FormField label={`${t.message} (EN)`}>
+            <Textarea
               name="maintenance_message_en"
               rows={3}
               defaultValue={initial.maintenance_message_en}
-              className={inputClass}
             />
-          </label>
-          <label>
-            <span className="mb-1 block text-xs text-muted-foreground">
-              {t.message} (DE)
-            </span>
-            <textarea
+          </FormField>
+          <FormField label={`${t.message} (DE)`}>
+            <Textarea
               name="maintenance_message_de"
               rows={3}
               defaultValue={initial.maintenance_message_de}
-              className={inputClass}
             />
-          </label>
-          <label>
-            <span className="mb-1 block text-xs text-muted-foreground">
-              {t.message} (FR)
-            </span>
-            <textarea
+          </FormField>
+          <FormField label={`${t.message} (FR)`}>
+            <Textarea
               name="maintenance_message_fr"
               rows={3}
               defaultValue={initial.maintenance_message_fr}
-              className={inputClass}
             />
-          </label>
+          </FormField>
         </div>
       </div>
 
@@ -196,8 +176,7 @@ export function SiteSettingsForm({
         <p className="text-xs text-muted-foreground">
           {t.lastUpdated}: {new Date(initial.updated_at).toLocaleString(locale)}
         </p>
-        <Button type="submit"
-          disabled={isPending}>
+        <Button type="submit" disabled={isPending}>
           {isPending ? t.saving : t.save}
         </Button>
       </div>

@@ -1,10 +1,10 @@
 "use client";
 
-import { useActionState, useTransition, type ReactNode } from "react";
+import { useActionState, useEffect, useRef, useTransition, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { Badge, Button } from "@dbc/ui";
+import { Badge, Button, FormField, Input, Select, Textarea } from "@dbc/ui";
 import {
   updateRunsheetItem,
   deleteRunsheetItem,
@@ -32,6 +32,7 @@ const RR_T = {
     privateNotesHint: "Internal-only. Won't appear on the run-sheet PDF or in any attendee email.",
     privateNotesDisplay: "Team note",
     saving: "Saving…", save: "Save", cancel: "Cancel",
+    savedToast: "Saved",
     advance: "Advance", delete: "Delete", deleteConfirm: 'Delete "{title}"?',
     deletedToast: "Item deleted",
     statuses: { pending: "Pending", in_progress: "In progress", done: "Done" } as Record<string, string>,
@@ -42,6 +43,7 @@ const RR_T = {
     privateNotesHint: "Nur intern. Erscheint weder im Ablaufplan-PDF noch in E-Mails an Teilnehmende.",
     privateNotesDisplay: "Team-Notiz",
     saving: "Wird gespeichert…", save: "Speichern", cancel: "Abbrechen",
+    savedToast: "Gespeichert",
     advance: "Weiter", delete: "Löschen", deleteConfirm: "„{title}“ löschen?",
     deletedToast: "Eintrag gelöscht",
     statuses: { pending: "Offen", in_progress: "Läuft", done: "Erledigt" } as Record<string, string>,
@@ -52,6 +54,7 @@ const RR_T = {
     privateNotesHint: "Visible uniquement par l’équipe. N’apparaît ni dans la feuille de route PDF ni dans les e-mails aux participants.",
     privateNotesDisplay: "Note équipe",
     saving: "Enregistrement…", save: "Enregistrer", cancel: "Annuler",
+    savedToast: "Enregistré",
     advance: "Avancer", delete: "Supprimer", deleteConfirm: "Supprimer « {title} » ?",
     deletedToast: "Élément supprimé",
     statuses: { pending: "En attente", in_progress: "En cours", done: "Terminé" } as Record<string, string>,
@@ -200,6 +203,7 @@ export function RunsheetRow({
 /* -------------------------------------------------------------------------- */
 
 type RunsheetT = (typeof RR_T)[keyof typeof RR_T];
+type ActionResult = { error?: string; success?: boolean } | null;
 
 function RunsheetEditForm({
   item,
@@ -217,11 +221,8 @@ function RunsheetEditForm({
   onSaved: () => void;
 }) {
   const router = useRouter();
-  const [state, formAction, isSaving] = useActionState(
-    async (
-      _prev: { error?: string; success?: boolean } | null,
-      formData: FormData
-    ) => {
+  const [state, formAction, isSaving] = useActionState<ActionResult, FormData>(
+    async (_prev, formData) => {
       formData.set("event_id", eventId);
       formData.set("locale", locale);
       // datetime-local inputs submit a tz-less string ("2026-06-13T18:30").
@@ -233,86 +234,69 @@ function RunsheetEditForm({
           formData.set(field, fromLocal(raw) ?? "");
         }
       }
-      const result = await updateRunsheetItem(item.id, formData);
-      if (result.success) {
-        onSaved();
-        router.refresh();
-      }
-      return result;
+      return updateRunsheetItem(item.id, formData);
     },
     null
   );
 
+  const lastHandledRef = useRef<ActionResult>(null);
+  useEffect(() => {
+    if (state === lastHandledRef.current) return;
+    lastHandledRef.current = state;
+    if (state?.error) {
+      toast.error(state.error);
+      return;
+    }
+    if (state?.success) {
+      toast.success(t.savedToast);
+      onSaved();
+      router.refresh();
+    }
+  }, [state, t.savedToast, onSaved, router]);
+
   return (
-    <form action={formAction} className="space-y-3">
-      {state?.error && (
-        <div className="rounded-md bg-danger-soft p-2 text-xs text-danger">
-          {state.error}
-        </div>
-      )}
-      <input
-        name="title"
-        defaultValue={item.title}
-        required
-        placeholder={t.title}
-        className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-      />
-      <div className="grid gap-2 sm:grid-cols-2">
-        <input
-          name="starts_at"
-          type="datetime-local"
-          defaultValue={toLocal(item.starts_at)}
-          required
-          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-        />
-        <input
-          name="ends_at"
-          type="datetime-local"
-          defaultValue={toLocal(item.ends_at)}
-          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-        />
+    <form action={formAction} className="space-y-4">
+      <FormField label={t.title} required>
+        <Input name="title" defaultValue={item.title} required />
+      </FormField>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <FormField label="Start" required>
+          <Input
+            name="starts_at"
+            type="datetime-local"
+            defaultValue={toLocal(item.starts_at)}
+            required
+          />
+        </FormField>
+        <FormField label="End">
+          <Input
+            name="ends_at"
+            type="datetime-local"
+            defaultValue={toLocal(item.ends_at)}
+          />
+        </FormField>
       </div>
-      <div className="grid gap-2 sm:grid-cols-2">
-        <select
-          name="assigned_to"
-          defaultValue={item.assigned_to ?? ""}
-          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-        >
-          <option value="">{t.unassigned}</option>
-          {staff.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name}
-            </option>
-          ))}
-        </select>
-        <input
-          name="location_note"
-          defaultValue={item.location_note ?? ""}
-          placeholder={t.location}
-          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-        />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <FormField label="Assigned">
+          <Select name="assigned_to" defaultValue={item.assigned_to ?? ""}>
+            <option value="">{t.unassigned}</option>
+            {staff.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
+          </Select>
+        </FormField>
+        <FormField label={t.location}>
+          <Input name="location_note" defaultValue={item.location_note ?? ""} />
+        </FormField>
       </div>
-      <textarea
-        name="description"
-        defaultValue={item.description ?? ""}
-        placeholder={t.notes}
-        rows={2}
-        className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-      />
-      <label className="block">
-        <span className="mb-1 block text-xs font-medium text-muted-foreground">
-          {t.privateNotes}
-        </span>
-        <textarea
-          name="notes"
-          defaultValue={item.notes ?? ""}
-          rows={2}
-          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-sm"
-        />
-        <span className="mt-1 block text-[11px] text-muted-foreground">
-          {t.privateNotesHint}
-        </span>
-      </label>
+      <FormField label={t.notes}>
+        <Textarea name="description" defaultValue={item.description ?? ""} rows={2} />
+      </FormField>
+      <FormField label={t.privateNotes} hint={t.privateNotesHint}>
+        <Textarea name="notes" defaultValue={item.notes ?? ""} rows={2} />
+      </FormField>
       <div className="flex gap-2">
         <Button type="submit" disabled={isSaving}>
           {isSaving ? t.saving : t.save}
