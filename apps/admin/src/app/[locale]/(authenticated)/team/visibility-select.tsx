@@ -1,5 +1,6 @@
 "use client";
 
+import { Select } from "@dbc/ui";
 import { useTransition } from "react";
 import {
   TEAM_MEMBER_VISIBILITY_VALUES,
@@ -34,7 +35,7 @@ export function VisibilitySelect({
   }
 
   return (
-    <select
+    <Select
       value={current}
       onChange={handleChange}
       disabled={isPending}
@@ -45,6 +46,6 @@ export function VisibilitySelect({
           {labels[o]}
         </option>
       ))}
-    </select>
+    </Select>
   );
 }

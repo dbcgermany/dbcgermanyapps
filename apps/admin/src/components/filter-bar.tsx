@@ -1,5 +1,6 @@
 "use client";
 
+import { Select } from "@dbc/ui";
 import { useTransition, type ReactNode } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Search, X } from "lucide-react";
@@ -98,7 +99,7 @@ export function FilterBar({
           {f.label && (
             <span className="text-muted-foreground">{f.label}</span>
           )}
-          <select
+          <Select
             value={params.get(f.name) ?? ""}
             onChange={(e) => setParam(f.name, e.target.value || null)}
             className="h-10 rounded-md border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
@@ -108,7 +109,7 @@ export function FilterBar({
                 {o.label}
               </option>
             ))}
-          </select>
+          </Select>
         </label>
       ))}
       {hasAny && (

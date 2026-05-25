@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { Badge, Button, ConfirmDialog } from "@dbc/ui";
+import { Badge, Button, ConfirmDialog, Select } from "@dbc/ui";
 import type { AdminModule, UserRole } from "@dbc/types";
 import { canDo } from "@dbc/types";
 import {
@@ -261,7 +261,7 @@ export function StaffDetailClient({
           <div className="flex items-center justify-between">
             <dt className="text-muted-foreground">{t.role}</dt>
             <dd>
-              <select
+              <Select
                 value={profile.role}
                 onChange={(e) => handleRoleChange(e.target.value as UserRole)}
                 disabled={isPending}
@@ -272,7 +272,7 @@ export function StaffDetailClient({
                     {roleLabels[r]}
                   </option>
                 ))}
-              </select>
+              </Select>
             </dd>
           </div>
           {profile.locale && (

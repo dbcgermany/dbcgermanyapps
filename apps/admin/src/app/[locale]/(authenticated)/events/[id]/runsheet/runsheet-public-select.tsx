@@ -1,5 +1,6 @@
 "use client";
 
+import { Select } from "@dbc/ui";
 import { useOptimistic, useTransition } from "react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
@@ -7,7 +8,7 @@ import { toggleRunsheetItemPublic } from "@/actions/runsheet";
 
 // Inline visibility-style picker for a runsheet row's public/internal flag.
 // Mirrors VisibilitySelect on the /team page so the admin reads as one app,
-// not a patchwork — same compact <select>, same tone-of-voice labels.
+// not a patchwork — same compact <Select>, same tone-of-voice labels.
 const LABELS = {
   en: { public: "Public", internal: "Internal" },
   de: { public: "Öffentlich", internal: "Intern" },
@@ -47,7 +48,7 @@ export function RunsheetPublicSelect({
   }
 
   return (
-    <select
+    <Select
       value={optimistic ? "public" : "internal"}
       onChange={handleChange}
       disabled={isPending}
@@ -56,6 +57,6 @@ export function RunsheetPublicSelect({
     >
       <option value="public">{labels.public}</option>
       <option value="internal">{labels.internal}</option>
-    </select>
+    </Select>
   );
 }

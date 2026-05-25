@@ -1,6 +1,6 @@
 "use client";
 
-import { Badge, formatMoney } from "@dbc/ui";
+import { Badge, formatMoney, Select } from "@dbc/ui";
 import { ORDER_STATUS_VALUES } from "@dbc/types";
 import { useRouter } from "next/navigation";
 import {
@@ -384,7 +384,7 @@ export function ReportsClient({
           {t.filters}
         </p>
         <div className="flex flex-wrap items-center gap-3">
-          <select
+          <Select
             value={currentEventFilter}
             onChange={(e) => updateFilters({ event: e.target.value })}
             className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
@@ -395,9 +395,9 @@ export function ReportsClient({
                 {e.title}
               </option>
             ))}
-          </select>
+          </Select>
 
-          <select
+          <Select
             value={currentStatusFilter}
             onChange={(e) => updateFilters({ status: e.target.value })}
             className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
@@ -407,9 +407,9 @@ export function ReportsClient({
                 {s === "" ? t.allStatus : t[s as keyof typeof t]}
               </option>
             ))}
-          </select>
+          </Select>
 
-          <select
+          <Select
             value={currentCheckedInFilter}
             onChange={(e) => updateFilters({ checkedIn: e.target.value })}
             className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
@@ -417,7 +417,7 @@ export function ReportsClient({
             <option value="">{t.checkedInAny}</option>
             <option value="yes">{t.checkedInYes}</option>
             <option value="no">{t.checkedInNo}</option>
-          </select>
+          </Select>
 
           <label className="flex items-center gap-2 text-xs text-muted-foreground">
             {t.from}

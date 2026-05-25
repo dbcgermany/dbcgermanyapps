@@ -3,7 +3,7 @@
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { AddressFields, Button, DatePicker, EMPTY_ADDRESS, PhoneInput, Toggle, type Address } from "@dbc/ui";
+import { AddressFields, Button, DatePicker, EMPTY_ADDRESS, PhoneInput, Select, Toggle, type Address } from "@dbc/ui";
 import {
   updateAccountProfile,
   updateAccountPreferences,
@@ -361,7 +361,7 @@ function PreferencesTab({ profile }: { profile: AccountProfile }) {
     <form onSubmit={handleSubmit} className="space-y-6">
       <label className="block">
         <span className="mb-1 block text-sm font-medium">{t.language}</span>
-        <select
+        <Select
           value={locale}
           onChange={(e) => setLocale(e.target.value)}
           className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
@@ -369,7 +369,7 @@ function PreferencesTab({ profile }: { profile: AccountProfile }) {
           <option value="en">English</option>
           <option value="de">Deutsch</option>
           <option value="fr">Français</option>
-        </select>
+        </Select>
       </label>
 
       <div>

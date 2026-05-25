@@ -1,5 +1,6 @@
 "use client";
 
+import { Select } from "@dbc/ui";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -55,7 +56,7 @@ export function StatusSelect({
   }
 
   return (
-    <select
+    <Select
       value={current}
       onChange={handleChange}
       disabled={isPending}
@@ -66,6 +67,6 @@ export function StatusSelect({
           {labels[s]}
         </option>
       ))}
-    </select>
+    </Select>
   );
 }

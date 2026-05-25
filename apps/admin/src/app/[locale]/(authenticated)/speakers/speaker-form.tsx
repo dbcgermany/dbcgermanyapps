@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { AssetUpload, Button, NameFields, Textarea } from "@dbc/ui";
+import { AssetUpload, Button, NameFields, Select, Textarea } from "@dbc/ui";
 import {
   createSpeaker,
   updateSpeaker,
@@ -294,7 +294,7 @@ export function SpeakerForm({
           <label htmlFor="visibility" className="mb-1 block text-sm font-medium">
             {t.visibility}
           </label>
-          <select
+          <Select
             id="visibility"
             name="visibility"
             defaultValue={speaker?.visibility ?? "public"}
@@ -303,13 +303,13 @@ export function SpeakerForm({
             <option value="public">{t.visPublic}</option>
             <option value="internal">{t.visInternal}</option>
             <option value="hidden">{t.visHidden}</option>
-          </select>
+          </Select>
         </div>
         <div className="sm:col-span-2">
           <label htmlFor="team_member_id" className="mb-1 block text-sm font-medium">
             {t.linkedTeam}
           </label>
-          <select
+          <Select
             id="team_member_id"
             name="team_member_id"
             defaultValue={speaker?.team_member_id ?? ""}
@@ -321,7 +321,7 @@ export function SpeakerForm({
                 {m.name}
               </option>
             ))}
-          </select>
+          </Select>
           <span className="mt-1 block text-xs text-muted-foreground">
             {t.linkedHint}
           </span>

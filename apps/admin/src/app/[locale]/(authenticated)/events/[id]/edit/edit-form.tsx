@@ -10,7 +10,7 @@ import {
   type EventBranch,
   type EventType,
 } from "@dbc/types";
-import { Button, LinkButton, Textarea } from "@dbc/ui";
+import { Button, LinkButton, Select, Textarea } from "@dbc/ui";
 import { updateEvent } from "@/actions/events";
 import { CoverImageUpload } from "@/components/cover-image-upload";
 import { PaymentMethodsSelect } from "@/components/payment-methods-select";
@@ -473,7 +473,7 @@ export function EditEventForm({
             <label className="block text-xs text-muted-foreground mb-1">
               Team-friend invite tier (€-discounted target)
             </label>
-            <select
+            <Select
               name="team_invite_tier_id"
               defaultValue={event.team_invite_tier_id ?? ""}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
@@ -485,7 +485,7 @@ export function EditEventForm({
                   {t.purpose ? ` · ${t.purpose}` : ""}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
           <div>
             <label className="block text-xs text-muted-foreground mb-1">
@@ -503,7 +503,7 @@ export function EditEventForm({
             <label className="block text-xs text-muted-foreground mb-1">
               Branch delegate tier (other-branch team members)
             </label>
-            <select
+            <Select
               name="chapter_delegate_tier_id"
               defaultValue={event.chapter_delegate_tier_id ?? ""}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
@@ -515,13 +515,13 @@ export function EditEventForm({
                   {t.purpose ? ` · ${t.purpose}` : ""}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
           <div>
             <label className="block text-xs text-muted-foreground mb-1">
               Companion (+1) tier (operational, €0)
             </label>
-            <select
+            <Select
               name="chapter_companion_tier_id"
               defaultValue={event.chapter_companion_tier_id ?? ""}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
@@ -533,13 +533,13 @@ export function EditEventForm({
                   {t.purpose ? ` · ${t.purpose}` : ""}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
           <div>
             <label className="block text-xs text-muted-foreground mb-1">
               Companion (+1) reference tier (display + access)
             </label>
-            <select
+            <Select
               name="chapter_companion_value_tier_id"
               defaultValue={event.chapter_companion_value_tier_id ?? ""}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
@@ -550,7 +550,7 @@ export function EditEventForm({
                   {t.name_de || t.name_en} · €{(t.price_cents / 100).toFixed(2)}
                 </option>
               ))}
-            </select>
+            </Select>
             <p className="mt-1 text-[11px] text-muted-foreground">
               Defines what value the +1 sees on the public register page and which tier they get access to at the venue. The +1 is still issued the free Companion tier above.
             </p>
@@ -559,7 +559,7 @@ export function EditEventForm({
             <label className="block text-xs text-muted-foreground mb-1">
               Germany team-member tier
             </label>
-            <select
+            <Select
               name="team_member_tier_id"
               defaultValue={event.team_member_tier_id ?? ""}
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
@@ -571,7 +571,7 @@ export function EditEventForm({
                   {t.purpose ? ` · ${t.purpose}` : ""}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
           <div>
             <label className="block text-xs text-muted-foreground mb-1">

@@ -1,5 +1,6 @@
 "use client";
 
+import { Select } from "@dbc/ui";
 import { useTransition } from "react";
 import { setSpeakerVisibility } from "@/actions/speakers";
 
@@ -36,7 +37,7 @@ export function SpeakerVisibilitySelect({
   }
 
   return (
-    <select
+    <Select
       value={current}
       onChange={handleChange}
       disabled={isPending}
@@ -47,6 +48,6 @@ export function SpeakerVisibilitySelect({
           {labels[o]}
         </option>
       ))}
-    </select>
+    </Select>
   );
 }

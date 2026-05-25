@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { Badge } from "@dbc/ui";
+import { Badge, Select } from "@dbc/ui";
 import type { CrossEventAttendee } from "@/actions/attendees";
 
 export function AttendeesTab({
@@ -115,7 +115,7 @@ export function AttendeesTab({
           placeholder={t("search")}
           className={`${filterInput} w-full flex-1 sm:min-w-60`}
         />
-        <select
+        <Select
           value={selectedEventId}
           onChange={onEventChange}
           className={filterInput}
@@ -126,7 +126,7 @@ export function AttendeesTab({
               {ev.title_en}
             </option>
           ))}
-        </select>
+        </Select>
         <div className="flex gap-1 rounded-md border border-border p-1">
           {(
             [

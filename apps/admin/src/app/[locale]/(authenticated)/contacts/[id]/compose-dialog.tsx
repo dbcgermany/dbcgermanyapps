@@ -12,7 +12,7 @@ import {
   getOutreachTemplateForContact,
   type OutreachTemplateSummary,
 } from "@/actions/outreach-templates";
-import { Button, Textarea } from "@dbc/ui";
+import { Button, Select, Textarea } from "@dbc/ui";
 
 const FREE_FORM_SLUG = "__free__";
 const LOCALES = ["en", "de", "fr"] as const;
@@ -336,7 +336,7 @@ export function ComposeDialog({
             <label className="block text-xs font-medium uppercase tracking-wide text-muted-foreground">
               {t("template")}
             </label>
-            <select
+            <Select
               value={templateSlug}
               onChange={(e) => setTemplateSlug(e.target.value)}
               disabled={isPending || loadingTemplate}
@@ -348,13 +348,13 @@ export function ComposeDialog({
                   {tmpl.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
           <div>
             <label className="block text-xs font-medium uppercase tracking-wide text-muted-foreground">
               {t("language")}
             </label>
-            <select
+            <Select
               value={language}
               onChange={(e) => setLanguage(e.target.value as Locale)}
               disabled={isPending || loadingTemplate}
@@ -365,7 +365,7 @@ export function ComposeDialog({
                   {tLocale(l)}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
         </div>
 

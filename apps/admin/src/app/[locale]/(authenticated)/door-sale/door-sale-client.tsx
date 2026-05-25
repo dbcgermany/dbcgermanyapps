@@ -3,18 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import {
-  AttendeeIdentityFields,
-  Button,
-  ConfirmDialog,
-  EMPTY_ATTENDEE_IDENTITY,
-  PhoneInput,
-  TITLE_VALUES,
-  type AttendeeIdentity,
-  type AttendeeIdentityLabels,
-  type Gender,
-  type Title,
-} from "@dbc/ui";
+import { AttendeeIdentityFields, Button, ConfirmDialog, EMPTY_ATTENDEE_IDENTITY, PhoneInput, Select, TITLE_VALUES, type AttendeeIdentity, type AttendeeIdentityLabels, type Gender, type Title } from "@dbc/ui";
 import {
   createDoorSale,
   downloadDoorSaleTicketPdf,
@@ -294,7 +283,7 @@ export function DoorSaleClient({
         <label className="block text-sm font-medium mb-1.5">
           {t("selectEvent")}
         </label>
-        <select
+        <Select
           value={eventId}
           onChange={(e) => handleEventChange(e.target.value)}
           className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
@@ -304,7 +293,7 @@ export function DoorSaleClient({
               {e.title}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
 
       {/* Tier */}

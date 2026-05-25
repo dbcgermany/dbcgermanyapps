@@ -3,7 +3,7 @@
 import { useState, useTransition, useEffect } from "react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import { BirthdayField, Button, CountrySelect, Textarea, TITLE_VALUES, TitleGenderFields, type Gender, type Title } from "@dbc/ui";
+import { BirthdayField, Button, CountrySelect, Select, Textarea, TITLE_VALUES, TitleGenderFields, type Gender, type Title } from "@dbc/ui";
 import { createInvitation } from "@/actions/invitations";
 import { localeFromCountry } from "@dbc/email";
 
@@ -303,7 +303,7 @@ export function InviteForm({
 
       <label className="block">
         <span className="mb-1 block text-sm font-medium">{t.tier}</span>
-        <select
+        <Select
           value={tierId}
           onChange={(e) => setTierId(e.target.value)}
           className={input}
@@ -314,7 +314,7 @@ export function InviteForm({
               {tier.remaining !== null ? ` (${tier.remaining} ${t.left})` : ""}
             </option>
           ))}
-        </select>
+        </Select>
       </label>
 
       {/* Title + Gender (coupled for Mr/Ms/Mrs) */}
@@ -385,7 +385,7 @@ export function InviteForm({
         <span className="mb-1 block text-sm font-medium">
           {t.inviteLang}
         </span>
-        <select
+        <Select
           value={inviteLocale}
           onChange={(e) => {
             setInviteLocale(e.target.value as "en" | "de" | "fr");
@@ -396,7 +396,7 @@ export function InviteForm({
           <option value="en">English</option>
           <option value="de">Deutsch</option>
           <option value="fr">Français</option>
-        </select>
+        </Select>
         <span className="mt-1 block text-xs text-muted-foreground">
           {t.inviteLangHint}
         </span>

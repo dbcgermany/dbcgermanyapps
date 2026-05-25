@@ -1,5 +1,6 @@
 "use client";
 
+import { Select } from "@dbc/ui";
 import { useTransition } from "react";
 import { setEventSpeakerFeatured } from "@/actions/speakers";
 
@@ -32,7 +33,7 @@ export function FeaturedSelect({
   }
 
   return (
-    <select
+    <Select
       value={current ? "yes" : "no"}
       onChange={handleChange}
       disabled={isPending}
@@ -40,6 +41,6 @@ export function FeaturedSelect({
     >
       <option value="yes">{labels.yes}</option>
       <option value="no">{labels.no}</option>
-    </select>
+    </Select>
   );
 }

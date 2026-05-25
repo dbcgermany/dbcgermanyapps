@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Badge, ConfirmDialog } from "@dbc/ui";
+import { Badge, ConfirmDialog, Select } from "@dbc/ui";
 import { toast } from "sonner";
 import { ORDER_STATUS_VALUES } from "@dbc/types";
 import { refundOrder } from "@/actions/orders";
@@ -111,7 +111,7 @@ export function OrdersClient({
       {/* Filters + export */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
-          <select
+          <Select
             value={currentEventFilter}
             onChange={(e) => updateFilters(e.target.value, undefined)}
             className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
@@ -122,8 +122,8 @@ export function OrdersClient({
                 {e.title}
               </option>
             ))}
-          </select>
-          <select
+          </Select>
+          <Select
             value={currentStatusFilter}
             onChange={(e) => updateFilters(undefined, e.target.value)}
             className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
@@ -133,7 +133,7 @@ export function OrdersClient({
                 {s === "" ? t("allStatus") : t(s)}
               </option>
             ))}
-          </select>
+          </Select>
           {/* Real-vs-allocations tabs. Default ("real") hides internal
               invitations and team assignments so headline counts match
               actual sales. Toggling "allocations" or "all" surfaces them. */}

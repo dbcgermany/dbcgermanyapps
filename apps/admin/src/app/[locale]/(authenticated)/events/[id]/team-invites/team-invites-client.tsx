@@ -457,7 +457,7 @@ export function TeamInvitesClient({
                                 }
                                 className="mt-2 flex items-center gap-2"
                               >
-                                <select
+                                <Select
                                   name="override_type"
                                   defaultValue={
                                     s.isDiscountOverride ? s.discountType : "inherit"
@@ -473,7 +473,7 @@ export function TeamInvitesClient({
                                   <option value="fixed">
                                     {t("discountTypeFixed")}
                                   </option>
-                                </select>
+                                </Select>
                                 <input
                                   type="number"
                                   name="override_value"

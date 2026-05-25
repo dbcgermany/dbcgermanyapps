@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { checkInTicket, getScanStats, type ScanResult } from "@/actions/scan";
 import { searchAttendees, manualCheckIn, resendTicketPdf, type AttendeeSearchResult } from "@/actions/tickets";
-import { Button } from "@dbc/ui";
+import { Button, Select } from "@dbc/ui";
 
 type Status =
   | { kind: "idle" }
@@ -196,7 +196,7 @@ export function ScanClient({
         <label className="block text-sm font-medium mb-1.5">
           {t("selectEvent")}
         </label>
-        <select
+        <Select
           value={eventId}
           onChange={(e) => setEventId(e.target.value)}
           className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
@@ -206,7 +206,7 @@ export function ScanClient({
               {e.title}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
 
       {/* Stats — scrolls with the page on mobile so the camera viewport

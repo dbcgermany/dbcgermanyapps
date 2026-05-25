@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import type { UserRole } from "@dbc/types";
-import { Button, Card, ConfirmDialog } from "@dbc/ui";
+import { Button, Card, ConfirmDialog, Select } from "@dbc/ui";
 import {
   inviteStaff,
   updateStaffRole,
@@ -331,7 +331,7 @@ export function StaffClient({
               <label className="block text-xs text-muted-foreground mb-1">
                 {t("inviteRole")}
               </label>
-              <select
+              <Select
                 name="role"
                 defaultValue="team_member"
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
@@ -341,7 +341,7 @@ export function StaffClient({
                     {roleLabels[r]}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
           </div>
 
@@ -396,7 +396,7 @@ export function StaffClient({
                 <label className="block text-xs text-muted-foreground mb-1">
                   Role
                 </label>
-                <select
+                <Select
                   name="role"
                   defaultValue="team_member"
                   className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
@@ -406,7 +406,7 @@ export function StaffClient({
                       {roleLabels[r]}
                     </option>
                   ))}
-                </select>
+                </Select>
               </div>
               <div>
                 <label className="block text-xs text-muted-foreground mb-1">
@@ -432,7 +432,7 @@ export function StaffClient({
                 <label className="block text-xs text-muted-foreground mb-1">
                   Locale
                 </label>
-                <select
+                <Select
                   name="locale"
                   defaultValue="de"
                   className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
@@ -440,7 +440,7 @@ export function StaffClient({
                   <option value="en">English</option>
                   <option value="de">Deutsch</option>
                   <option value="fr">Français</option>
-                </select>
+                </Select>
               </div>
             </div>
             <div className="flex gap-2">
@@ -515,7 +515,7 @@ export function StaffClient({
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      <select
+                      <Select
                         value={pendingRoleDraft[p.id] ?? "team_member"}
                         onChange={(e) =>
                           setPendingRoleDraft((prev) => ({
@@ -531,7 +531,7 @@ export function StaffClient({
                             {roleLabels[r]}
                           </option>
                         ))}
-                      </select>
+                      </Select>
                     </td>
                     <td className="px-4 py-3 text-right">
                       <button
@@ -594,7 +594,7 @@ export function StaffClient({
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <select
+                          <Select
                             value={s.role}
                             onChange={(e) =>
                               handleRoleChange(s.id, e.target.value as UserRole)
@@ -607,7 +607,7 @@ export function StaffClient({
                                 {roleLabels[r]}
                               </option>
                             ))}
-                          </select>
+                          </Select>
                           {isPaused && (
                             <span className="rounded-full bg-warning-soft px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-warning">
                               Paused

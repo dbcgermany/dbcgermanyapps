@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { formatMoney } from "@dbc/ui";
+import { formatMoney, Select } from "@dbc/ui";
 import { StatCard } from "@/components/stat-card";
 import { buildCsv, isoDate } from "@/lib/csv";
 import {
@@ -196,7 +196,7 @@ export function FinanceTab({ locale, summary, events, filters }: FinanceTabProps
               className="rounded-md border border-input bg-background px-2 py-1 text-sm"
             />
           </label>
-          <select
+          <Select
             value={filters.channel}
             onChange={(e) =>
               updateFilter({ channel: e.target.value as FinanceChannel | "" })
@@ -207,8 +207,8 @@ export function FinanceTab({ locale, summary, events, filters }: FinanceTabProps
             <option value="online">{t("online")}</option>
             <option value="door">{t("door")}</option>
             <option value="allocations">{t("allocations")}</option>
-          </select>
-          <select
+          </Select>
+          <Select
             value={filters.eventId}
             onChange={(e) => updateFilter({ eventId: e.target.value })}
             className="rounded-md border border-input bg-background px-3 py-2 text-sm"
@@ -219,7 +219,7 @@ export function FinanceTab({ locale, summary, events, filters }: FinanceTabProps
                 {e.title}
               </option>
             ))}
-          </select>
+          </Select>
           <button
             onClick={() =>
               updateFilter({ from: "", to: "", channel: "", eventId: "" })

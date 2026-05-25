@@ -4,16 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
-import {
-  Button,
-  Card,
-  ChapterSelect,
-  ConfirmDialog,
-  DBC_CHAPTER_COUNTRY_CODES,
-  Textarea,
-  chapterFlag,
-  dbcChapterLabel,
-} from "@dbc/ui";
+import { Button, Card, chapterFlag, ChapterSelect, ConfirmDialog, DBC_CHAPTER_COUNTRY_CODES, dbcChapterLabel, Select, Textarea } from "@dbc/ui";
 import {
   approveChapterDelegate,
   bulkApproveChapterDelegates,
@@ -644,7 +635,7 @@ export function ChapterDelegatesClient({
           <label className="block text-xs text-muted-foreground mb-1">
             {t("filters.event")}
           </label>
-          <select
+          <Select
             value={currentEventId ?? ""}
             onChange={(e) => setQueryParam("event", e.target.value || null)}
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
@@ -655,7 +646,7 @@ export function ChapterDelegatesClient({
                 {ev.title}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
         <div>
           <label className="block text-xs text-muted-foreground mb-1">

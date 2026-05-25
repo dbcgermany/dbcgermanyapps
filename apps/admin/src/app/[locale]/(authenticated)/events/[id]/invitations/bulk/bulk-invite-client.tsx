@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Button } from "@dbc/ui";
+import { Button, Select } from "@dbc/ui";
 import {
   parseInvitationsCsv,
   bulkCreateInvitations,
@@ -188,7 +188,7 @@ export function BulkInviteClient({
         <p className="mt-1 text-xs text-muted-foreground">
           {t.defaultTierHelp}
         </p>
-        <select
+        <Select
           value={defaultTierId}
           onChange={(e) => setDefaultTierId(e.target.value)}
           className="mt-2 w-full max-w-md rounded-md border border-input bg-background px-3 py-2 text-sm"
@@ -199,7 +199,7 @@ export function BulkInviteClient({
               {tier.remaining !== null ? ` — ${tier.remaining} ${t.left}` : ` — ${t.unlimited}`}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
 
       <div className="rounded-lg border border-dashed border-border p-4">

@@ -1,5 +1,6 @@
 "use client";
 
+import { Select } from "@dbc/ui";
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -105,7 +106,7 @@ export function ContactsFilterBar({
           className={`${filterInput} w-64`}
         />
 
-        <select
+        <Select
           value={sp.get("event") ?? ""}
           onChange={(e) => setParam("event", e.target.value || null)}
           className={filterInput}
@@ -117,9 +118,9 @@ export function ContactsFilterBar({
               {e.title_en}
             </option>
           ))}
-        </select>
+        </Select>
 
-        <select
+        <Select
           value={sp.get("category") ?? ""}
           onChange={(e) => setParam("category", e.target.value || null)}
           className={filterInput}
@@ -137,9 +138,9 @@ export function ContactsFilterBar({
               </option>
             );
           })}
-        </select>
+        </Select>
 
-        <select
+        <Select
           value={sp.get("role") ?? ""}
           onChange={(e) => setParam("role", e.target.value || null)}
           className={filterInput}
@@ -153,9 +154,9 @@ export function ContactsFilterBar({
               </option>
             )
           )}
-        </select>
+        </Select>
 
-        <select
+        <Select
           value={sp.get("pipeline") ?? ""}
           onChange={(e) => setParam("pipeline", e.target.value || null)}
           className={filterInput}
@@ -171,7 +172,7 @@ export function ContactsFilterBar({
               {tPipeline(`statuses.${s}`)}
             </option>
           ))}
-        </select>
+        </Select>
 
         <label className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm">
           <input

@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Button, Textarea } from "@dbc/ui";
+import { Button, Select, Textarea } from "@dbc/ui";
 import { type IncubationApplicationStatus } from "@dbc/types";
 import { updateApplicationStatus } from "@/actions/applications";
 import { updateJobApplicationStatus } from "@/actions/job-applications";
@@ -418,7 +418,7 @@ function ReviewSection({
         )}
         <div>
           <label className="mb-1 block text-sm font-medium">{t("status")}</label>
-          <select
+          <Select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value as Status)}
             className="w-full max-w-xs rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
@@ -428,7 +428,7 @@ function ReviewSection({
                 {s.charAt(0).toUpperCase() + s.slice(1)}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium">{t("notes")}</label>

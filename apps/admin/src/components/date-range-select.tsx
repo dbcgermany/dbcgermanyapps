@@ -1,5 +1,6 @@
 "use client";
 
+import { Select } from "@dbc/ui";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 
@@ -99,7 +100,7 @@ export function DateRangeSelect({
 
   return (
     <div className={`flex flex-wrap items-center gap-2 ${className}`}>
-      <select
+      <Select
         value={preset}
         onChange={handlePreset}
         className="h-9 rounded-md border border-input bg-background px-2 text-sm"
@@ -111,7 +112,7 @@ export function DateRangeSelect({
         <option value="90d">{labels.last90Days}</option>
         <option value="ytd">{labels.yearToDate}</option>
         <option value="custom">{labels.custom}</option>
-      </select>
+      </Select>
       <input
         type="date"
         value={value.from}

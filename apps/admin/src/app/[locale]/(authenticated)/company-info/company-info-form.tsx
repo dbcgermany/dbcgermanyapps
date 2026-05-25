@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { AssetUpload, Button, Textarea } from "@dbc/ui";
+import { AssetUpload, Button, Select, Textarea } from "@dbc/ui";
 import { AboutSectionsForm } from "./about-sections-form";
 import { HomeHeroForm } from "./home-hero-form";
 import {
@@ -531,7 +531,7 @@ function SectionForm({
             return (
               <label key={String(f.name)} className="block">
                 <span className="mb-1 block text-sm font-medium">{f.label}</span>
-                <select
+                <Select
                   name={String(f.name)}
                   defaultValue={value}
                   className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
@@ -542,7 +542,7 @@ function SectionForm({
                       {opt.label}
                     </option>
                   ))}
-                </select>
+                </Select>
                 {f.help && (
                   <span className="mt-1 block text-xs text-muted-foreground">
                     {f.help}

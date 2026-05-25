@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { Badge, Button, ConfirmDialog, CountrySelect, GENDER_VALUES, PhoneInput, Textarea, TITLE_VALUES, type Gender } from "@dbc/ui";
+import { Badge, Button, ConfirmDialog, CountrySelect, GENDER_VALUES, PhoneInput, Select, Textarea, TITLE_VALUES, type Gender } from "@dbc/ui";
 import {
   addInvolvement,
   removeInvolvement,
@@ -281,7 +281,7 @@ function InvolvementsList({
           <span className="mb-1 block text-xs font-medium text-muted-foreground">
             {tInv("eventFilter")}
           </span>
-          <select
+          <Select
             value={selectedEventId}
             onChange={(e) => setSelectedEventId(e.target.value)}
             className={`${input} w-full`}
@@ -292,13 +292,13 @@ function InvolvementsList({
                 {ev.title_en}
               </option>
             ))}
-          </select>
+          </Select>
         </label>
         <label>
           <span className="mb-1 block text-xs font-medium text-muted-foreground">
             {tInv("roleFilter")}
           </span>
-          <select
+          <Select
             value={selectedRole}
             onChange={(e) =>
               setSelectedRole(e.target.value as InvolvementRole)
@@ -310,7 +310,7 @@ function InvolvementsList({
                 {tRole(r)}
               </option>
             ))}
-          </select>
+          </Select>
         </label>
         <Button type="button"
           disabled={!selectedEventId || isPending}
@@ -451,7 +451,7 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <label className="block">
             <span className="mb-1 block text-sm font-medium">{tFields("fields.title")}</span>
-            <select
+            <Select
               name="title"
               defaultValue={contact.title ?? ""}
               className={input}
@@ -462,7 +462,7 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
                   {v}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
           <label className="block">
             <span className="mb-1 block text-sm font-medium">{tFields("fields.firstName")}</span>
@@ -493,7 +493,7 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
           </label>
           <label className="block">
             <span className="mb-1 block text-sm font-medium">{tFields("fields.gender")}</span>
-            <select
+            <Select
               name="gender"
               defaultValue={contact.gender ?? ""}
               className={input}
@@ -504,7 +504,7 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
                   {genderLabels[v]}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
         </div>
       </fieldset>
@@ -742,7 +742,7 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <label className="block">
             <span className="mb-1 block text-sm font-medium">{tBusiness("fields.bestContactMethod")}</span>
-            <select
+            <Select
               name="best_contact_method"
               defaultValue={contact.best_contact_method ?? ""}
               className={input}
@@ -753,7 +753,7 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
                   {tBcm(m)}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
           <label className="block">
             <span className="mb-1 block text-sm font-medium">{tBusiness("fields.pitchTier")}</span>

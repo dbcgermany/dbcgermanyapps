@@ -1,5 +1,6 @@
 "use client";
 
+import { Select } from "@dbc/ui";
 import { Fragment, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -122,7 +123,7 @@ export function AuditLogClient({
         {/* Mobile: each filter gets its own row; search+apply share a row,
             from+to share a row. Desktop (lg+): everything inlines left-to-right. */}
         <div className="flex flex-col gap-3 lg:flex-row lg:flex-wrap lg:items-center">
-          <select
+          <Select
             value={currentActionFilter}
             onChange={(e) => pushFilters({ action: e.target.value, page: 1 })}
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring lg:w-auto"
@@ -133,9 +134,9 @@ export function AuditLogClient({
                 {a}
               </option>
             ))}
-          </select>
+          </Select>
 
-          <select
+          <Select
             value={currentEntityFilter}
             onChange={(e) => pushFilters({ entity: e.target.value, page: 1 })}
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring lg:w-auto"
@@ -146,7 +147,7 @@ export function AuditLogClient({
                 {e}
               </option>
             ))}
-          </select>
+          </Select>
 
           <form
             onSubmit={(e) => {

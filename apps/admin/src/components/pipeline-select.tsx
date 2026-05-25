@@ -1,5 +1,6 @@
 "use client";
 
+import { Select } from "@dbc/ui";
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -44,7 +45,7 @@ export function PipelineSelect({
   return (
     <div className="flex items-center gap-3">
       <PipelineBadge status={status} />
-      <select
+      <Select
         value={status ?? ""}
         onChange={(e) =>
           apply((e.target.value || null) as PipelineStatus | null)
@@ -58,7 +59,7 @@ export function PipelineSelect({
             {t(`statuses.${s}`)}
           </option>
         ))}
-      </select>
+      </Select>
     </div>
   );
 }

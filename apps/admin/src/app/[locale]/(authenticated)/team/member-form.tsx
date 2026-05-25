@@ -4,7 +4,7 @@ import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { AssetUpload, BirthdayField, Button, CountrySelect, NameFields, Textarea, TITLE_VALUES, TitleGenderFields, type Gender, type Title } from "@dbc/ui";
+import { AssetUpload, BirthdayField, Button, CountrySelect, NameFields, Select, Textarea, TITLE_VALUES, TitleGenderFields, type Gender, type Title } from "@dbc/ui";
 import {
   createTeamMember,
   updateTeamMember,
@@ -251,7 +251,7 @@ export function TeamMemberForm({
           <label htmlFor="visibility" className="mb-1 block text-sm font-medium">
             {t.visibility}
           </label>
-          <select
+          <Select
             id="visibility"
             name="visibility"
             defaultValue={initial?.visibility ?? "internal"}
@@ -260,7 +260,7 @@ export function TeamMemberForm({
             <option value="public">{t.visPublic}</option>
             <option value="internal">{t.visInternal}</option>
             <option value="hidden">{t.visHidden}</option>
-          </select>
+          </Select>
         </div>
         <div className="rounded-md border border-border bg-background p-3">
           <label className="flex items-start gap-3 cursor-pointer">
@@ -282,7 +282,7 @@ export function TeamMemberForm({
           <label htmlFor="profile_id" className="mb-1 block text-sm font-medium">
             {t.linkedStaff}
           </label>
-          <select
+          <Select
             id="profile_id"
             name="profile_id"
             defaultValue={initial?.profile_id ?? ""}
@@ -300,7 +300,7 @@ export function TeamMemberForm({
                   {t.linkedCurrent}
                 </option>
               )}
-          </select>
+          </Select>
           <span className="mt-1 block text-xs text-muted-foreground">
             {t.linkedHint}
           </span>

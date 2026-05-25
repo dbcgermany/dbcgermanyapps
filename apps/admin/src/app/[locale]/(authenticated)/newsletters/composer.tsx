@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Card, ConfirmDialog, Textarea } from "@dbc/ui";
+import { Card, ConfirmDialog, Select, Textarea } from "@dbc/ui";
 import type { DomainCheckResult } from "@dbc/email";
 import {
   saveNewsletter,
@@ -201,7 +201,7 @@ export function NewsletterComposer({
             </Field>
           </div>
           <Field label={t("localeLabel")}>
-            <select
+            <Select
               value={state.locale}
               onChange={(e) => update("locale", e.target.value)}
               className="w-32 rounded-md border border-input bg-background px-3 py-2 text-sm"
@@ -210,7 +210,7 @@ export function NewsletterComposer({
               <option value="de">de</option>
               <option value="fr">fr</option>
               <option value="multi">multi</option>
-            </select>
+            </Select>
           </Field>
           <Field label={t("bodyLabel")}>
             <Textarea

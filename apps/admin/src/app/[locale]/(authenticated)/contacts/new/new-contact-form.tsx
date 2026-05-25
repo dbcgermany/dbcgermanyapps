@@ -3,22 +3,7 @@
 import { useActionState, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import {
-  AddressFields,
-  BirthdayField,
-  Button,
-  EMPTY_ADDRESS,
-  FormField,
-  Input,
-  NameFields,
-  PhoneInput,
-  TITLE_VALUES,
-  Textarea,
-  TitleGenderFields,
-  type Address,
-  type Gender,
-  type Title,
-} from "@dbc/ui";
+import { AddressFields, BirthdayField, Button, EMPTY_ADDRESS, FormField, Input, NameFields, PhoneInput, Select, Textarea, TITLE_VALUES, TitleGenderFields, type Address, type Gender, type Title } from "@dbc/ui";
 import {
   createContact,
   upsertContactUserState,
@@ -252,7 +237,7 @@ export function NewContactForm({
             {tFilters("categoryLabel")}
           </h2>
           <p className="text-sm text-muted-foreground">{tFilters("categoryHint")}</p>
-          <select
+          <Select
             name="category_slug"
             defaultValue=""
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
@@ -269,7 +254,7 @@ export function NewContactForm({
                 </option>
               );
             })}
-          </select>
+          </Select>
         </section>
       )}
 
@@ -280,7 +265,7 @@ export function NewContactForm({
         </h2>
         <p className="text-sm text-muted-foreground">{tFilters("eventRoleHint")}</p>
         <div className="grid gap-3 sm:grid-cols-2">
-          <select
+          <Select
             name="event_id"
             defaultValue=""
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
@@ -291,8 +276,8 @@ export function NewContactForm({
                 {e.title_en}
               </option>
             ))}
-          </select>
-          <select
+          </Select>
+          <Select
             name="role"
             defaultValue=""
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
@@ -305,7 +290,7 @@ export function NewContactForm({
                 </option>
               )
             )}
-          </select>
+          </Select>
         </div>
       </section>
 
@@ -331,7 +316,7 @@ export function NewContactForm({
             />
           </FormField>
           <FormField label={tBusiness("fields.bestContactMethod")}>
-            <select
+            <Select
               name="best_contact_method"
               defaultValue=""
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
@@ -342,7 +327,7 @@ export function NewContactForm({
                   {tBcm(m)}
                 </option>
               ))}
-            </select>
+            </Select>
           </FormField>
           <FormField label={tBusiness("fields.pitchTier")}>
             <Input
@@ -389,7 +374,7 @@ export function NewContactForm({
           {tPipeline("label")}
         </h2>
         <p className="text-sm text-muted-foreground">{t("profile.private.caption")}</p>
-        <select
+        <Select
           value={initialPipeline}
           onChange={(e) =>
             setInitialPipeline((e.target.value || "") as PipelineStatus | "")
@@ -402,7 +387,7 @@ export function NewContactForm({
               {tPipeline(`statuses.${s}`)}
             </option>
           ))}
-        </select>
+        </Select>
       </section>
 
       {/* Internal */}

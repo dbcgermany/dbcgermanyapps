@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { Badge, Textarea } from "@dbc/ui";
+import { Badge, Select, Textarea } from "@dbc/ui";
 import {
   updateSpeakerQuestionStatus,
   updateSpeakerQuestionNotes,
@@ -177,7 +177,7 @@ export function QuestionsList({
             </button>
           ))}
         </div>
-        <select
+        <Select
           value={speakerFilter}
           onChange={(e) => setSpeakerFilter(e.target.value)}
           className="rounded-md border border-input bg-background px-3 py-2 text-sm"
@@ -188,7 +188,7 @@ export function QuestionsList({
               {name}
             </option>
           ))}
-        </select>
+        </Select>
         <button
           onClick={exportCsv}
           className="rounded-md border border-border px-3 py-2 text-sm font-medium hover:bg-muted"
@@ -289,7 +289,7 @@ export function QuestionsList({
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         {statusBadge(q.status)}
-                        <select
+                        <Select
                           value={q.status}
                           onChange={(e) =>
                             setStatus(
@@ -305,7 +305,7 @@ export function QuestionsList({
                               {o.label}
                             </option>
                           ))}
-                        </select>
+                        </Select>
                       </div>
                     </td>
                   </tr>
