@@ -35,7 +35,7 @@ export async function getAffiliateDashboardByToken(
     .from("event_affiliates")
     .select(
       `id, event_id, affiliate_id, commission_pct, coupon_id, status,
-       dashboard_token, token_expires_at, token_revoked_at,
+       dashboard_token, tracking_tag, token_expires_at, token_revoked_at,
        affiliates ( id, display_name, contact_email, preferred_locale,
                     country, status, notes, created_at, updated_at,
                     profile_id ),
@@ -59,7 +59,7 @@ export async function getAffiliateDashboardByToken(
     starts_at: string;
     ends_at: string | null;
   };
-  const couponRow = ea.coupons as unknown as DashboardData["coupon"];
+  const couponRow = (ea.coupons as unknown as DashboardData["coupon"]) ?? null;
 
   const eventTitle =
     (locale === "de" && eventRow.title_de) ||
@@ -131,7 +131,8 @@ export async function getAffiliateDashboardByToken(
   const referralUrl = buildReferralUrl({
     locale,
     eventSlug: eventRow.slug,
-    couponCode: couponRow.code,
+    trackingTag: ea.tracking_tag,
+    couponCode: couponRow?.code ?? null,
   });
 
   return {
@@ -146,6 +147,7 @@ export async function getAffiliateDashboardByToken(
         coupon_id: ea.coupon_id,
         status: ea.status,
         dashboard_token: ea.dashboard_token,
+        tracking_tag: ea.tracking_tag,
         token_expires_at: ea.token_expires_at,
         token_revoked_at: ea.token_revoked_at,
         created_at: "",

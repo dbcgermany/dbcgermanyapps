@@ -9,7 +9,7 @@ export interface AffiliateWelcomeEmailProps {
   recipientName: string;
   eventTitle: string;
   commissionPct: number;
-  couponCode: string;
+  couponCode: string | null;
   referralUrl: string;
   dashboardUrl: string;
   locale: "en" | "de" | "fr";
@@ -151,10 +151,12 @@ export function AffiliateWelcomeEmail(props: AffiliateWelcomeEmailProps) {
           <span className="text-neutral-500">{t.commissionLabel}:</span>{" "}
           {props.commissionPct}%
         </Text>
-        <Text className="m-0 my-1 text-sm text-neutral-700">
-          <span className="text-neutral-500">{t.codeLabel}:</span>{" "}
-          <span className="font-mono">{props.couponCode}</span>
-        </Text>
+        {props.couponCode && (
+          <Text className="m-0 my-1 text-sm text-neutral-700">
+            <span className="text-neutral-500">{t.codeLabel}:</span>{" "}
+            <span className="font-mono">{props.couponCode}</span>
+          </Text>
+        )}
       </Section>
 
       <Section className="mt-6">

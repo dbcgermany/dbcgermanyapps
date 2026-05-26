@@ -87,53 +87,67 @@ export interface EnrollAffiliateInput {
   affiliateId: string;
   eventId: string;
   commissionPct: number;
-  couponCode: string;
-  discountType: "percentage" | "fixed_amount";
-  discountValue: number;
-  applicableTierIds?: string[] | null;
+  // Coupon is OPTIONAL. When omitted, the affiliate's referral URL still
+  // works via ?src=aff_<tracking_tag>, and the buyer pays full price; the
+  // affiliate still earns commission on the conversion.
+  coupon?: {
+    code: string;
+    discountType: "percentage" | "fixed_amount";
+    discountValue: number;
+    applicableTierIds?: string[] | null;
+  } | null;
 }
 
 export interface EnrollAffiliateResult {
   eventAffiliate: EventAffiliate;
-  couponId: string;
-  couponCode: string;
+  couponId: string | null;
+  couponCode: string | null;
+  trackingTag: string;
   dashboardToken: string;
   referralUrl: string;
   dashboardUrl: string;
 }
 
 /**
- * Enroll an affiliate in an event. Creates:
- *   1. coupons row with purpose='affiliate'
- *   2. event_affiliates row with the dashboard token + commission %
+ * Enroll an affiliate in an event. Always creates:
+ *   - event_affiliates row with dashboard_token + tracking_tag + commission_pct
  *
- * Atomicity: in PostgREST there's no transaction wrapper; if step 2 fails
- * we'd be left with an orphan coupon. Acceptable for an admin-only flow
- * (the rare orphan can be cleaned up via the coupons admin page).
+ * Optionally creates:
+ *   - coupons row (purpose='affiliate') if input.coupon is set
+ *
+ * No coupon = no buyer discount; affiliate still earns commission via ?src
+ * tracking on the referral URL.
  */
 export async function enrollAffiliateInEvent(
   supabase: SupabaseClient,
   input: EnrollAffiliateInput,
   opts: { eventEndsAt: string | null; eventSlug: string; locale: AffiliateLocale }
 ): Promise<EnrollAffiliateResult> {
-  // 1. Create the coupon (purpose=affiliate).
-  const { data: couponRow, error: couponErr } = await supabase
-    .from("coupons")
-    .insert({
-      code: input.couponCode.trim().toUpperCase(),
-      event_id: input.eventId,
-      discount_type: input.discountType,
-      discount_value: input.discountValue,
-      applicable_tier_ids: input.applicableTierIds ?? null,
-      is_active: true,
-      purpose: "affiliate",
-    })
-    .select("id, code")
-    .single();
-  if (couponErr || !couponRow) {
-    throw new Error(
-      `enrollAffiliateInEvent: create coupon: ${couponErr?.message ?? "unknown"}`
-    );
+  let couponId: string | null = null;
+  let couponCode: string | null = null;
+
+  // 1. Optionally create the discount coupon.
+  if (input.coupon) {
+    const { data: couponRow, error: couponErr } = await supabase
+      .from("coupons")
+      .insert({
+        code: input.coupon.code.trim().toUpperCase(),
+        event_id: input.eventId,
+        discount_type: input.coupon.discountType,
+        discount_value: input.coupon.discountValue,
+        applicable_tier_ids: input.coupon.applicableTierIds ?? null,
+        is_active: true,
+        purpose: "affiliate",
+      })
+      .select("id, code")
+      .single();
+    if (couponErr || !couponRow) {
+      throw new Error(
+        `enrollAffiliateInEvent: create coupon: ${couponErr?.message ?? "unknown"}`
+      );
+    }
+    couponId = couponRow.id;
+    couponCode = couponRow.code;
   }
 
   // 2. Create the event_affiliates row.
@@ -152,9 +166,10 @@ export async function enrollAffiliateInEvent(
       event_id: input.eventId,
       affiliate_id: input.affiliateId,
       commission_pct: input.commissionPct,
-      coupon_id: couponRow.id,
+      coupon_id: couponId,
       status: "active",
       dashboard_token: token,
+      tracking_tag: tag,
       token_expires_at: expiresAt,
     })
     .select("*")
@@ -174,14 +189,15 @@ export async function enrollAffiliateInEvent(
 
   return {
     eventAffiliate: ea as EventAffiliate,
-    couponId: couponRow.id,
-    couponCode: couponRow.code,
+    couponId,
+    couponCode,
+    trackingTag: tag,
     dashboardToken: token,
     referralUrl: buildReferralUrl({
       locale: opts.locale,
       eventSlug: opts.eventSlug,
-      couponCode: couponRow.code,
       trackingTag: tag,
+      couponCode,
     }),
     dashboardUrl: buildDashboardUrl({ locale: opts.locale, token }),
   };

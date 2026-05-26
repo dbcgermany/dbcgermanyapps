@@ -39,7 +39,7 @@ export interface DashboardData {
     code: string;
     discount_type: string;
     discount_value: number;
-  };
+  } | null;
   kpis: {
     ticketsSold: number;
     totalEarnedCents: number;

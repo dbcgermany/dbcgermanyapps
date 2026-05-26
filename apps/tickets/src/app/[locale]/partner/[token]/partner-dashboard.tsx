@@ -185,8 +185,13 @@ export function PartnerDashboard({
           {t.welcomeBack.replace("{name}", data.affiliate.display_name)}
         </Heading>
         <p className="text-base text-muted-foreground">
-          {data.event.title} · {Number(data.eventAffiliate.commission_pct)}% ·{" "}
-          <span className="font-mono">{data.coupon.code}</span>
+          {data.event.title} · {Number(data.eventAffiliate.commission_pct)}%
+          {data.coupon ? (
+            <>
+              {" · "}
+              <span className="font-mono">{data.coupon.code}</span>
+            </>
+          ) : null}
         </p>
       </div>
 

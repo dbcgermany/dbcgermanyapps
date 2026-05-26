@@ -231,9 +231,16 @@ export function EventAffiliatesClient({
                       </Badge>
                     </div>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      {aff?.contact_email} · code{" "}
-                      <span className="font-mono">{cp?.code ?? "—"}</span> ·
-                      expires{" "}
+                      {aff?.contact_email}
+                      {cp?.code ? (
+                        <>
+                          {" · code "}
+                          <span className="font-mono">{cp.code}</span>
+                        </>
+                      ) : (
+                        " · no discount code"
+                      )}
+                      {" · expires "}
                       {new Date(ea.token_expires_at).toLocaleDateString(locale)}
                     </p>
                   </div>
@@ -346,6 +353,7 @@ function EnrollDialog({
   const [newLocale, setNewLocale] = useState<"en" | "de" | "fr">("en");
 
   const [commissionPct, setCommissionPct] = useState(10);
+  const [offerDiscount, setOfferDiscount] = useState(false);
   const [couponCode, setCouponCode] = useState("");
   const [discountType, setDiscountType] = useState<
     "percentage" | "fixed_amount"
@@ -372,17 +380,21 @@ function EnrollDialog({
           toast.error("Pick an affiliate or create a new one");
           return;
         }
-        if (!couponCode.trim()) {
-          toast.error("Coupon code is required");
+        if (offerDiscount && !couponCode.trim()) {
+          toast.error("Enter a coupon code or turn off the discount option");
           return;
         }
         await enrollAffiliateAction({
           affiliateId: resolvedId,
           eventId,
           commissionPct,
-          couponCode: couponCode.trim().toUpperCase(),
-          discountType,
-          discountValue,
+          coupon: offerDiscount
+            ? {
+                code: couponCode.trim().toUpperCase(),
+                discountType,
+                discountValue,
+              }
+            : null,
         });
         toast.success("Enrolled and welcome email sent");
         onDone();
@@ -485,52 +497,77 @@ function EnrollDialog({
             </div>
           )}
 
-          <div className="mt-2 grid grid-cols-2 gap-3">
-            <div>
-              <Label>Commission %</Label>
-              <Input
-                type="number"
-                min="0"
-                max="100"
-                step="0.01"
-                value={commissionPct}
-                onChange={(e) => setCommissionPct(Number(e.target.value))}
-              />
-            </div>
-            <div>
-              <Label>Coupon code</Label>
-              <Input
-                value={couponCode}
-                onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                placeholder="ESTHER10"
-              />
-            </div>
+          <div className="mt-2">
+            <Label>Commission %</Label>
+            <Input
+              type="number"
+              min="0"
+              max="100"
+              step="0.01"
+              value={commissionPct}
+              onChange={(e) => setCommissionPct(Number(e.target.value))}
+            />
+            <p className="mt-1 text-xs text-muted-foreground">
+              Paid on the order total when a sale is attributed to this
+              affiliate via their referral URL.
+            </p>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label>Discount type</Label>
-              <Select
-                value={discountType}
-                onChange={(e) =>
-                  setDiscountType(
-                    e.target.value as "percentage" | "fixed_amount"
-                  )
-                }
-              >
-                <option value="percentage">Percentage</option>
-                <option value="fixed_amount">Fixed (cents)</option>
-              </Select>
-            </div>
-            <div>
-              <Label>Discount value</Label>
-              <Input
-                type="number"
-                min="0"
-                value={discountValue}
-                onChange={(e) => setDiscountValue(Number(e.target.value))}
+
+          <div className="rounded-md border border-border bg-muted/20 p-3">
+            <label className="flex items-start gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={offerDiscount}
+                onChange={(e) => setOfferDiscount(e.target.checked)}
+                className="mt-0.5"
               />
-            </div>
+              <span>
+                <span className="font-medium">Also offer a discount</span> to
+                buyers who use this affiliate&rsquo;s link.{" "}
+                <span className="text-muted-foreground">
+                  Optional — the affiliate earns commission either way.
+                </span>
+              </span>
+            </label>
           </div>
+
+          {offerDiscount && (
+            <div className="space-y-3 rounded-md border border-border p-3">
+              <div>
+                <Label>Coupon code</Label>
+                <Input
+                  value={couponCode}
+                  onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                  placeholder="ESTHER10"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Discount type</Label>
+                  <Select
+                    value={discountType}
+                    onChange={(e) =>
+                      setDiscountType(
+                        e.target.value as "percentage" | "fixed_amount"
+                      )
+                    }
+                  >
+                    <option value="percentage">Percentage</option>
+                    <option value="fixed_amount">Fixed (cents)</option>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Discount value</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    value={discountValue}
+                    onChange={(e) => setDiscountValue(Number(e.target.value))}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="mt-6 flex justify-end gap-2">

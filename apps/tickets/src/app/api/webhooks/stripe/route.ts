@@ -378,7 +378,7 @@ export async function POST(request: Request) {
       const { data: order } = await supabase
         .from("orders")
         .select(
-          "recipient_name, recipient_email, total_cents, subtotal_cents, discount_cents, currency, locale, payment_method, event_id"
+          "recipient_name, recipient_email, total_cents, subtotal_cents, discount_cents, currency, locale, payment_method, event_id, source"
         )
         .eq("id", orderId)
         .single();
@@ -533,6 +533,7 @@ export async function POST(request: Request) {
             total_cents: order.total_cents,
             currency: order.currency,
             coupon_id: couponId ?? null,
+            source: order.source,
             recipient_name: order.recipient_name,
             recipient_email: order.recipient_email,
             locale: order.locale,

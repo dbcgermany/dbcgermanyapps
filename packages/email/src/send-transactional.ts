@@ -1008,7 +1008,7 @@ export interface SendAffiliateWelcomeInput {
   recipientName: string;
   eventTitle: string;
   commissionPct: number;
-  couponCode: string;
+  couponCode: string | null;
   referralUrl: string;
   dashboardUrl: string;
   locale: Locale;

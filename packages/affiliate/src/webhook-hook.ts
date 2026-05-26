@@ -32,6 +32,7 @@ interface OrderForAttribution {
   total_cents: number;
   currency: string | null;
   coupon_id: string | null;
+  source: string | null;
   recipient_name: string | null;
   recipient_email: string | null;
   locale: string | null;
@@ -53,27 +54,63 @@ export async function processAffiliateAttribution(
   ctx: WebhookCtx
 ): Promise<void> {
   if (!affiliateEnabled()) return;
-  if (!order.coupon_id) return;
 
+  // Resolve the event_affiliate row from EITHER:
+  //   1. orders.source = 'aff_<tracking_tag>' — buyer arrived via affiliate link
+  //   2. orders.coupon_id → coupon.purpose='affiliate' — buyer applied affiliate code
+  // A coupon is NOT required; the tracking_tag alone is enough to credit a sale.
+  // When both are present and point to different enrollments, the coupon wins
+  // (it's the more explicit signal).
   try {
-    const { data: coupon } = await ctx.supabase
-      .from("coupons")
-      .select("id, code, purpose")
-      .eq("id", order.coupon_id)
-      .maybeSingle();
-    if (!coupon || coupon.purpose !== "affiliate") return;
+    let eventAffiliate: {
+      id: string;
+      affiliate_id: string;
+      commission_pct: number;
+      status: string;
+      dashboard_token: string;
+      event_id: string;
+    } | null = null;
 
-    const { data: eventAffiliate } = await ctx.supabase
-      .from("event_affiliates")
-      .select(
-        "id, affiliate_id, commission_pct, status, dashboard_token, event_id"
-      )
-      .eq("coupon_id", coupon.id)
-      .maybeSingle();
+    // Coupon-based lookup (preferred when present).
+    if (order.coupon_id) {
+      const { data: coupon } = await ctx.supabase
+        .from("coupons")
+        .select("id, purpose")
+        .eq("id", order.coupon_id)
+        .maybeSingle();
+      if (coupon?.purpose === "affiliate") {
+        const { data } = await ctx.supabase
+          .from("event_affiliates")
+          .select(
+            "id, affiliate_id, commission_pct, status, dashboard_token, event_id"
+          )
+          .eq("coupon_id", coupon.id)
+          .maybeSingle();
+        eventAffiliate = data;
+      }
+    }
+
+    // Fall back to tracking_tag from orders.source = 'aff_<tag>'.
+    if (!eventAffiliate && order.source && order.source.startsWith("aff_")) {
+      const tag = order.source.slice("aff_".length);
+      if (tag) {
+        const { data } = await ctx.supabase
+          .from("event_affiliates")
+          .select(
+            "id, affiliate_id, commission_pct, status, dashboard_token, event_id"
+          )
+          .eq("tracking_tag", tag)
+          .eq("event_id", order.event_id)
+          .maybeSingle();
+        eventAffiliate = data;
+      }
+    }
+
     if (!eventAffiliate) return;
+
     if (eventAffiliate.status !== "active") {
-      // Coupon was once an affiliate code but the enrollment is now paused/
-      // ended. Still record the referral for audit but skip the commission.
+      // Enrollment is paused/ended. Still record the referral for audit
+      // but skip the commission.
       await ctx.supabase.from("affiliate_referrals").insert({
         order_id: order.id,
         affiliate_id: eventAffiliate.affiliate_id,

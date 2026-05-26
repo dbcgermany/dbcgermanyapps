@@ -1370,7 +1370,7 @@ export type Database = {
         Row: {
           affiliate_id: string
           commission_pct: number
-          coupon_id: string
+          coupon_id: string | null
           created_at: string
           dashboard_token: string
           event_id: string
@@ -1378,12 +1378,13 @@ export type Database = {
           status: string
           token_expires_at: string
           token_revoked_at: string | null
+          tracking_tag: string
           updated_at: string
         }
         Insert: {
           affiliate_id: string
           commission_pct: number
-          coupon_id: string
+          coupon_id?: string | null
           created_at?: string
           dashboard_token: string
           event_id: string
@@ -1391,12 +1392,13 @@ export type Database = {
           status?: string
           token_expires_at: string
           token_revoked_at?: string | null
+          tracking_tag: string
           updated_at?: string
         }
         Update: {
           affiliate_id?: string
           commission_pct?: number
-          coupon_id?: string
+          coupon_id?: string | null
           created_at?: string
           dashboard_token?: string
           event_id?: string
@@ -1404,6 +1406,7 @@ export type Database = {
           status?: string
           token_expires_at?: string
           token_revoked_at?: string | null
+          tracking_tag?: string
           updated_at?: string
         }
         Relationships: [

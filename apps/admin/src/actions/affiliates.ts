@@ -94,10 +94,12 @@ export async function enrollAffiliateAction(input: {
   affiliateId: string;
   eventId: string;
   commissionPct: number;
-  couponCode: string;
-  discountType: "percentage" | "fixed_amount";
-  discountValue: number;
-  applicableTierIds?: string[] | null;
+  coupon?: {
+    code: string;
+    discountType: "percentage" | "fixed_amount";
+    discountValue: number;
+    applicableTierIds?: string[] | null;
+  } | null;
 }) {
   await guard();
   const supabase = await createServerClient();
@@ -121,31 +123,34 @@ export async function enrollAffiliateAction(input: {
     locale,
   });
 
-  // Sync coupon to Stripe (best-effort).
-  try {
-    const { data: couponRow } = await supabase
-      .from("coupons")
-      .select(
-        "id, code, discount_type, discount_value, max_uses, valid_until, is_active, stripe_coupon_id, stripe_promotion_code_id, event_id"
-      )
-      .eq("id", result.couponId)
-      .single();
-    if (couponRow) {
-      await syncCouponToStripe({
-        id: couponRow.id,
-        code: couponRow.code,
-        discount_type: couponRow.discount_type,
-        discount_value: couponRow.discount_value,
-        max_uses: couponRow.max_uses,
-        valid_until: couponRow.valid_until,
-        is_active: couponRow.is_active,
-        stripe_coupon_id: couponRow.stripe_coupon_id,
-        stripe_promotion_code_id: couponRow.stripe_promotion_code_id,
-        event_id: couponRow.event_id,
-      });
+  // Sync coupon to Stripe (best-effort). Only when a coupon was actually
+  // created for this enrollment.
+  if (result.couponId) {
+    try {
+      const { data: couponRow } = await supabase
+        .from("coupons")
+        .select(
+          "id, code, discount_type, discount_value, max_uses, valid_until, is_active, stripe_coupon_id, stripe_promotion_code_id, event_id"
+        )
+        .eq("id", result.couponId)
+        .single();
+      if (couponRow) {
+        await syncCouponToStripe({
+          id: couponRow.id,
+          code: couponRow.code,
+          discount_type: couponRow.discount_type,
+          discount_value: couponRow.discount_value,
+          max_uses: couponRow.max_uses,
+          valid_until: couponRow.valid_until,
+          is_active: couponRow.is_active,
+          stripe_coupon_id: couponRow.stripe_coupon_id,
+          stripe_promotion_code_id: couponRow.stripe_promotion_code_id,
+          event_id: couponRow.event_id,
+        });
+      }
+    } catch (err) {
+      console.error("[enrollAffiliateAction] stripe sync failed", err);
     }
-  } catch (err) {
-    console.error("[enrollAffiliateAction] stripe sync failed", err);
   }
 
   // Send welcome email with both links.
@@ -185,7 +190,7 @@ export async function rotateAffiliateTokenAction(
   const { data: ea } = await supabase
     .from("event_affiliates")
     .select(
-      `affiliate_id, commission_pct, coupon_id,
+      `affiliate_id, commission_pct, coupon_id, tracking_tag,
        affiliates ( display_name, contact_email, preferred_locale ),
        events ( title_en, title_de, title_fr, slug ),
        coupons ( code )`
@@ -204,7 +209,7 @@ export async function rotateAffiliateTokenAction(
       title_fr: string | null;
       slug: string;
     };
-    const cp = ea.coupons as unknown as { code: string };
+    const cp = ea.coupons as unknown as { code: string } | null;
     const locale = (aff?.preferred_locale as AffiliateLocale) ?? "en";
     const eventTitle =
       (locale === "de" && ev.title_de) ||
@@ -216,11 +221,12 @@ export async function rotateAffiliateTokenAction(
         recipientName: aff.display_name,
         eventTitle,
         commissionPct: Number(ea.commission_pct),
-        couponCode: cp.code,
+        couponCode: cp?.code ?? null,
         referralUrl: buildReferralUrl({
           locale,
           eventSlug: ev.slug,
-          couponCode: cp.code,
+          trackingTag: ea.tracking_tag,
+          couponCode: cp?.code ?? null,
         }),
         dashboardUrl: buildDashboardUrl({ locale, token: result.token }),
         locale,
