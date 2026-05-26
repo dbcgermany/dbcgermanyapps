@@ -28,7 +28,7 @@ export default async function EventAffiliatesPage({
     (event[titleKey] as string | undefined) || event.title_en;
 
   return (
-    <>
+    <div>
       <PageHeader
         title={`Affiliate marketing · ${eventTitle}`}
         description="Enroll partners with a referral code and a private dashboard link. Each affiliate gets one of each — no login required."
@@ -78,6 +78,6 @@ export default async function EventAffiliatesPage({
         })}
         locale={locale}
       />
-    </>
+    </div>
   );
 }

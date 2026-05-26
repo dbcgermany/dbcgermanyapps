@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Button, Card, Input, Label, Select } from "@dbc/ui";
+import { Button, Input, Label, Select } from "@dbc/ui";
 import { createAffiliateAction } from "@/actions/affiliates";
 
 export function AffiliatesIndexActions() {
@@ -37,7 +37,9 @@ export function AffiliatesIndexActions() {
         setCountry("");
         setNotes("");
         router.refresh();
-        router.push(`/${window.location.pathname.split("/")[1]}/affiliates/${row.id}`);
+        router.push(
+          `/${window.location.pathname.split("/")[1]}/affiliates/${row.id}`
+        );
       } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed");
       }
@@ -48,12 +50,18 @@ export function AffiliatesIndexActions() {
     <>
       <Button onClick={() => setOpen(true)}>New affiliate</Button>
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <Card padding="lg" className="w-full max-w-md">
-            <h2 className="text-lg font-semibold">New affiliate</h2>
+        <div
+          className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 p-4 pt-20"
+          onClick={() => !pending && setOpen(false)}
+        >
+          <div
+            className="w-full max-w-md rounded-lg border border-border bg-background p-6 shadow-lg"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="font-heading text-lg font-bold">New affiliate</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Creates the affiliate record. They&rsquo;ll get a welcome email once
-              you enroll them in a specific event.
+              Creates the affiliate record. They&rsquo;ll get a welcome email
+              once you enroll them in a specific event.
             </p>
             <div className="mt-4 space-y-3">
               <div>
@@ -116,7 +124,7 @@ export function AffiliatesIndexActions() {
                 {pending ? "Creating…" : "Create"}
               </Button>
             </div>
-          </Card>
+          </div>
         </div>
       )}
     </>

@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { affiliateEnabled } from "@dbc/affiliate";
 import { createServerClient } from "@dbc/supabase/server";
-import { Card, Badge } from "@dbc/ui";
+import { Badge } from "@dbc/ui";
 import { listEligiblePayoutAggregatesAction } from "@/actions/affiliates";
 import { PageHeader } from "@/components/page-header";
 import { StatGrid } from "@/components/stat-grid";
@@ -32,13 +32,13 @@ export default async function PayoutsPage({
   const totalPending = eligibles.reduce((s, a) => s + a.total_cents, 0);
 
   return (
-    <>
+    <div>
       <PageHeader
         title="Affiliate payouts"
         description="Generate statements and mark payouts as paid once the bank transfer settles."
         back={{ href: `/${locale}/affiliates`, label: "Affiliates" }}
       />
-      <div className="space-y-6">
+      <div className="mt-6">
         <StatGrid cols={4}>
           <StatCard
             label="Affiliates pending"
@@ -61,16 +61,19 @@ export default async function PayoutsPage({
             dense
           />
         </StatGrid>
+      </div>
 
+      <div className="mt-6">
         <PayoutQueueClient eligibles={eligibles} locale={locale} />
+      </div>
 
-        <Card padding="md">
-          <h2 className="text-lg font-semibold">Recent payouts</h2>
-          {(recentPayouts ?? []).length === 0 ? (
-            <p className="mt-2 text-sm text-muted-foreground">No payouts yet.</p>
-          ) : (
-            <ul className="mt-3 divide-y divide-border">
-              {(recentPayouts ?? []).map((p) => {
+      <div className="mt-6 rounded-lg border border-border bg-surface p-4">
+        <h2 className="font-heading text-lg font-bold">Recent payouts</h2>
+        {(recentPayouts ?? []).length === 0 ? (
+          <p className="mt-2 text-sm text-muted-foreground">No payouts yet.</p>
+        ) : (
+          <ul className="mt-3 divide-y divide-border">
+            {(recentPayouts ?? []).map((p) => {
                 const aff = p.affiliates as unknown as {
                   id: string;
                   display_name: string;
@@ -116,10 +119,9 @@ export default async function PayoutsPage({
                   </li>
                 );
               })}
-            </ul>
-          )}
-        </Card>
+          </ul>
+        )}
       </div>
-    </>
+    </div>
   );
 }

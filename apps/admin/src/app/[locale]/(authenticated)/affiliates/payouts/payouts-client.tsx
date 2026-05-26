@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Button, Card, Input, Label } from "@dbc/ui";
+import { Button, Input, Label } from "@dbc/ui";
 import {
   createAndSendPayoutAction,
   markPayoutPaidAction,
@@ -87,13 +87,13 @@ export function PayoutQueueClient({
 
   return (
     <>
-      <Card padding="md">
-        <h2 className="text-lg font-semibold">Eligible for payout</h2>
+      <div className="rounded-lg border border-border bg-surface p-4">
+        <h2 className="font-heading text-lg font-bold">Eligible for payout</h2>
         {eligibles.length === 0 ? (
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-3 text-sm text-muted-foreground">
             No affiliates have eligible commissions right now. Commissions move
-            from &ldquo;pending&rdquo; to &ldquo;eligible&rdquo; after the event&rsquo;s
-            refund window closes.
+            from &ldquo;pending&rdquo; to &ldquo;eligible&rdquo; after the
+            event&rsquo;s refund window closes.
           </p>
         ) : (
           <ul className="mt-3 divide-y divide-border">
@@ -103,18 +103,18 @@ export function PayoutQueueClient({
                 className="flex items-center justify-between py-3 text-sm"
               >
                 <span>
-                  <span className="font-semibold">{e.affiliate.display_name}</span>
+                  <span className="font-semibold">
+                    {e.affiliate.display_name}
+                  </span>
                   <span className="text-muted-foreground">
                     {" · "}
-                    {e.affiliate.contact_email} · {e.commission_count} commission(s)
+                    {e.affiliate.contact_email} · {e.commission_count}{" "}
+                    commission(s)
                   </span>
                 </span>
                 <span className="flex items-center gap-3">
                   <span className="font-mono">{fmt(e.total_cents)}</span>
-                  <Button
-                    onClick={() => setOpenPayout(e)}
-                    disabled={pending}
-                  >
+                  <Button onClick={() => setOpenPayout(e)} disabled={pending}>
                     Generate statement
                   </Button>
                 </span>
@@ -122,12 +122,18 @@ export function PayoutQueueClient({
             ))}
           </ul>
         )}
-      </Card>
+      </div>
 
       {openPayout && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <Card padding="lg" className="w-full max-w-md">
-            <h3 className="text-lg font-semibold">
+        <div
+          className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 p-4 pt-20"
+          onClick={() => !pending && setOpenPayout(null)}
+        >
+          <div
+            className="w-full max-w-md rounded-lg border border-border bg-background p-6 shadow-lg"
+            onClick={(ev) => ev.stopPropagation()}
+          >
+            <h3 className="font-heading text-lg font-bold">
               Generate statement for {openPayout.affiliate.display_name}
             </h3>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -139,7 +145,7 @@ export function PayoutQueueClient({
               <Label>Period label (appears on the PDF)</Label>
               <Input
                 value={periodLabel}
-                onChange={(e) => setPeriodLabel(e.target.value)}
+                onChange={(ev) => setPeriodLabel(ev.target.value)}
                 placeholder="e.g. Richesses 2026"
               />
             </div>
@@ -155,14 +161,22 @@ export function PayoutQueueClient({
                 {pending ? "Generating…" : "Generate & send"}
               </Button>
             </div>
-          </Card>
+          </div>
         </div>
       )}
 
       {openMarkPaid && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <Card padding="lg" className="w-full max-w-md">
-            <h3 className="text-lg font-semibold">Mark payout as paid</h3>
+        <div
+          className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 p-4 pt-20"
+          onClick={() => !pending && setOpenMarkPaid(null)}
+        >
+          <div
+            className="w-full max-w-md rounded-lg border border-border bg-background p-6 shadow-lg"
+            onClick={(ev) => ev.stopPropagation()}
+          >
+            <h3 className="font-heading text-lg font-bold">
+              Mark payout as paid
+            </h3>
             <p className="mt-1 text-sm text-muted-foreground">
               Enter the bank reference (Qonto transaction ID, IBAN reference,
               etc.). The affiliate sees this on their dashboard.
@@ -171,7 +185,7 @@ export function PayoutQueueClient({
               <Label>Bank reference</Label>
               <Input
                 value={reference}
-                onChange={(e) => setReference(e.target.value)}
+                onChange={(ev) => setReference(ev.target.value)}
                 placeholder="QNT-2026-…"
               />
             </div>
@@ -187,7 +201,7 @@ export function PayoutQueueClient({
                 {pending ? "Saving…" : "Mark paid"}
               </Button>
             </div>
-          </Card>
+          </div>
         </div>
       )}
     </>

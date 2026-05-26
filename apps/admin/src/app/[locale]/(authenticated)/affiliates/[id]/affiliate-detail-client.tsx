@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Badge, Button, Card, Input, Label, Select, Textarea } from "@dbc/ui";
+import { Badge, Button, Input, Label, Select, Textarea } from "@dbc/ui";
 import type { Affiliate } from "@dbc/affiliate";
 import { updateAffiliateAction } from "@/actions/affiliates";
 
@@ -89,8 +89,8 @@ export function AffiliateDetailClient({
 
   return (
     <div className="space-y-6">
-      <Card padding="md">
-        <h2 className="text-lg font-semibold">Profile</h2>
+      <div className="rounded-lg border border-border bg-surface p-4">
+        <h2 className="font-heading text-lg font-bold">Profile</h2>
         <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
           <div>
             <Label>Display name</Label>
@@ -141,10 +141,10 @@ export function AffiliateDetailClient({
             {pending ? "Saving…" : "Save changes"}
           </Button>
         </div>
-      </Card>
+      </div>
 
-      <Card padding="md">
-        <h2 className="text-lg font-semibold">Event enrollments</h2>
+      <div className="rounded-lg border border-border bg-surface p-4">
+        <h2 className="font-heading text-lg font-bold">Event enrollments</h2>
         {enrollments.length === 0 ? (
           <p className="mt-2 text-sm text-muted-foreground">
             Not enrolled in any events. Open an event and use its &ldquo;Affiliate
@@ -195,10 +195,10 @@ export function AffiliateDetailClient({
             })}
           </ul>
         )}
-      </Card>
+      </div>
 
-      <Card padding="md">
-        <h2 className="text-lg font-semibold">Payout history</h2>
+      <div className="rounded-lg border border-border bg-surface p-4">
+        <h2 className="font-heading text-lg font-bold">Payout history</h2>
         {payouts.length === 0 ? (
           <p className="mt-2 text-sm text-muted-foreground">No payouts yet.</p>
         ) : (
@@ -229,7 +229,7 @@ export function AffiliateDetailClient({
             ))}
           </ul>
         )}
-      </Card>
+      </div>
     </div>
   );
 }

@@ -33,18 +33,20 @@ export default async function AffiliateDetailPage({
   ]);
 
   return (
-    <>
+    <div>
       <PageHeader
         title={aff.display_name}
         description={aff.contact_email}
         back={{ href: `/${locale}/affiliates`, label: "Affiliates" }}
       />
-      <AffiliateDetailClient
-        affiliate={aff}
-        enrollments={(enrollments ?? []) as never[]}
-        payouts={payouts}
-        locale={locale}
-      />
-    </>
+      <div className="mt-6">
+        <AffiliateDetailClient
+          affiliate={aff}
+          enrollments={(enrollments ?? []) as never[]}
+          payouts={payouts}
+          locale={locale}
+        />
+      </div>
+    </div>
   );
 }
