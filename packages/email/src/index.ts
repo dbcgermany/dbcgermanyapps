@@ -52,6 +52,9 @@ export {
   sendChapterDelegateOutcome,
   sendPaymentReminder,
   sendTeamFriendCodeRedeemed,
+  sendAffiliateWelcome,
+  sendAffiliateConversion,
+  sendAffiliatePayoutStatement,
 } from "./send-transactional";
 export type {
   SendTransferConfirmationInput,
@@ -123,6 +126,17 @@ export type {
 } from "./templates/chapter-delegate-outcome";
 export { TeamFriendCodeRedeemedEmail } from "./templates/team-friend-code-redeemed";
 export type { TeamFriendCodeRedeemedEmailProps } from "./templates/team-friend-code-redeemed";
+export { AffiliateWelcomeEmail } from "./templates/affiliate-welcome";
+export type { AffiliateWelcomeEmailProps } from "./templates/affiliate-welcome";
+export { AffiliateConversionEmail } from "./templates/affiliate-conversion";
+export type { AffiliateConversionEmailProps } from "./templates/affiliate-conversion";
+export { AffiliatePayoutStatementEmail } from "./templates/affiliate-payout-statement";
+export type { AffiliatePayoutStatementEmailProps } from "./templates/affiliate-payout-statement";
+export type {
+  SendAffiliateWelcomeInput,
+  SendAffiliateConversionInput,
+  SendAffiliatePayoutStatementInput,
+} from "./send-transactional";
 export { AskSpeakersEmail } from "./templates/ask-speakers";
 export type {
   AskSpeakersEmailProps,

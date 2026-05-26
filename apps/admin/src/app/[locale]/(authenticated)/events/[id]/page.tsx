@@ -8,6 +8,7 @@ import {
   Gift,
   Globe,
   Handshake,
+  HandCoins,
   Image as ImageIcon,
   ListChecks,
   Mail,
@@ -24,6 +25,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { Badge, Button, Card, LinkButton, BRAND_HEX } from "@dbc/ui";
+import { affiliateEnabled } from "@dbc/affiliate";
 import { getEvent, togglePublish, duplicateEvent } from "@/actions/events";
 import { getEventChecklist } from "@/actions/checklist";
 import { getLiveEventStats } from "@/actions/live-event";
@@ -462,6 +464,14 @@ export default async function EventDetailPage({
             />
             <HubLink href={`/${locale}/events/${id}/invitations`} icon={Gift} title={t("invitations")} desc={t("invitationsDesc")} />
             <HubLink href={`/${locale}/events/${id}/invitations/bulk`} icon={Upload} title={t("bulkInvitations")} desc={t("bulkInvitationsDesc")} />
+            {affiliateEnabled() && (
+              <HubLink
+                href={`/${locale}/events/${id}/affiliates`}
+                icon={HandCoins}
+                title="Affiliate marketing"
+                desc="Enroll external partners with a referral code + private dashboard link. Commission paid by bank transfer after the event."
+              />
+            )}
           </div>
         </section>
 

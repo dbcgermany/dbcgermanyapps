@@ -1,0 +1,47 @@
+{
+  "name": "@dbc/affiliate",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./server": {
+      "types": "./src/server.ts",
+      "default": "./src/server.ts"
+    },
+    "./emails": {
+      "types": "./src/emails/index.ts",
+      "default": "./src/emails/index.ts"
+    },
+    "./pdf": {
+      "types": "./src/pdf/index.ts",
+      "default": "./src/pdf/index.ts"
+    }
+  },
+  "scripts": {
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@dbc/email": "workspace:*",
+    "@dbc/i18n": "workspace:*",
+    "@dbc/supabase": "workspace:*",
+    "@dbc/types": "workspace:*",
+    "@dbc/ui": "workspace:*",
+    "@react-email/components": "^0.0.36",
+    "@react-pdf/renderer": "^4.4.0",
+    "@supabase/supabase-js": "^2.103.0",
+    "lucide-react": "^0.460.0",
+    "next": "^15.0.0",
+    "react": "^19.0.0",
+    "resend": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19.2.14",
+    "typescript": "^5"
+  }
+}

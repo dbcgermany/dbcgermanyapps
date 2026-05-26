@@ -113,6 +113,221 @@ export type Database = {
         }
         Relationships: []
       }
+      affiliate_commissions: {
+        Row: {
+          affiliate_id: string
+          commission_cents: number
+          cooldown_until: string
+          created_at: string
+          currency: string
+          event_affiliate_id: string
+          id: string
+          order_id: string
+          payout_id: string | null
+          reversal_reason: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          affiliate_id: string
+          commission_cents: number
+          cooldown_until: string
+          created_at?: string
+          currency?: string
+          event_affiliate_id: string
+          id?: string
+          order_id: string
+          payout_id?: string | null
+          reversal_reason?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          affiliate_id?: string
+          commission_cents?: number
+          cooldown_until?: string
+          created_at?: string
+          currency?: string
+          event_affiliate_id?: string
+          id?: string
+          order_id?: string
+          payout_id?: string | null
+          reversal_reason?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_commissions_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "affiliate_commissions_event_affiliate_id_fkey"
+            columns: ["event_affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "event_affiliates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "affiliate_commissions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "affiliate_commissions_payout_id_fkey"
+            columns: ["payout_id"]
+            isOneToOne: false
+            referencedRelation: "affiliate_payouts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      affiliate_payouts: {
+        Row: {
+          affiliate_id: string
+          amount_cents: number
+          created_at: string
+          currency: string
+          id: string
+          notes: string | null
+          paid_at: string | null
+          payment_reference: string | null
+          period_ends_at: string | null
+          period_starts_at: string | null
+          statement_storage_path: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          affiliate_id: string
+          amount_cents: number
+          created_at?: string
+          currency?: string
+          id?: string
+          notes?: string | null
+          paid_at?: string | null
+          payment_reference?: string | null
+          period_ends_at?: string | null
+          period_starts_at?: string | null
+          statement_storage_path?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          affiliate_id?: string
+          amount_cents?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          notes?: string | null
+          paid_at?: string | null
+          payment_reference?: string | null
+          period_ends_at?: string | null
+          period_starts_at?: string | null
+          statement_storage_path?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_payouts_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      affiliate_referrals: {
+        Row: {
+          affiliate_id: string
+          created_at: string
+          event_affiliate_id: string
+          id: string
+          order_id: string
+        }
+        Insert: {
+          affiliate_id: string
+          created_at?: string
+          event_affiliate_id: string
+          id?: string
+          order_id: string
+        }
+        Update: {
+          affiliate_id?: string
+          created_at?: string
+          event_affiliate_id?: string
+          id?: string
+          order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_referrals_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "affiliate_referrals_event_affiliate_id_fkey"
+            columns: ["event_affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "event_affiliates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "affiliate_referrals_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      affiliates: {
+        Row: {
+          contact_email: string
+          country: string | null
+          created_at: string
+          display_name: string
+          id: string
+          notes: string | null
+          preferred_locale: string
+          profile_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          contact_email: string
+          country?: string | null
+          created_at?: string
+          display_name: string
+          id?: string
+          notes?: string | null
+          preferred_locale?: string
+          profile_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          contact_email?: string
+          country?: string | null
+          created_at?: string
+          display_name?: string
+          id?: string
+          notes?: string | null
+          preferred_locale?: string
+          profile_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       analytics_events: {
         Row: {
           created_at: string
@@ -1147,6 +1362,70 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_affiliates: {
+        Row: {
+          affiliate_id: string
+          commission_pct: number
+          coupon_id: string
+          created_at: string
+          dashboard_token: string
+          event_id: string
+          id: string
+          status: string
+          token_expires_at: string
+          token_revoked_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          affiliate_id: string
+          commission_pct: number
+          coupon_id: string
+          created_at?: string
+          dashboard_token: string
+          event_id: string
+          id?: string
+          status?: string
+          token_expires_at: string
+          token_revoked_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          affiliate_id?: string
+          commission_pct?: number
+          coupon_id?: string
+          created_at?: string
+          dashboard_token?: string
+          event_id?: string
+          id?: string
+          status?: string
+          token_expires_at?: string
+          token_revoked_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_affiliates_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_affiliates_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: false
+            referencedRelation: "coupons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_affiliates_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
             referencedColumns: ["id"]
           },
         ]

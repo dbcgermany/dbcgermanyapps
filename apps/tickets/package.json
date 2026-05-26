@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@dbc/affiliate": "workspace:*",
     "@dbc/email": "workspace:*",
     "@dbc/i18n": "workspace:*",
     "@dbc/legal": "workspace:*",

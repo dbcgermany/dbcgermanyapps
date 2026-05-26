@@ -7,8 +7,13 @@ import {
   sendOrderReceipt,
   sendTeamFriendCodeRedeemed,
   sendTicketsForOrder,
+  sendAffiliateConversion,
   resolveRecipientLocale,
 } from "@dbc/email";
+import {
+  processAffiliateAttribution,
+  reverseAffiliateCommissions,
+} from "@dbc/affiliate/server";
 import { sendAskSpeakersPromptForOrder } from "@/lib/send-ask-speakers-prompt";
 import { captureServerError } from "@/lib/observe";
 import { getStripe } from "@/lib/stripe";
@@ -517,6 +522,32 @@ export async function POST(request: Request) {
         }
       }
 
+      // Affiliate program attribution. No-ops when AFFILIATE_ENABLED=false
+      // or when the order has no affiliate-program coupon. Inserts a referral
+      // row and (for paid orders) a commission row in `pending` status, then
+      // emails the affiliate. Idempotent against webhook retries.
+      if (order && order.event_id && order.total_cents !== null) {
+        await processAffiliateAttribution(
+          {
+            id: orderId,
+            total_cents: order.total_cents,
+            currency: order.currency,
+            coupon_id: couponId ?? null,
+            recipient_name: order.recipient_name,
+            recipient_email: order.recipient_email,
+            locale: order.locale,
+            event_id: order.event_id,
+            status: null,
+          },
+          {
+            supabase,
+            sendConversionEmail: (params) => sendAffiliateConversion(params),
+            captureError: (err, info) =>
+              captureServerError(err, { scope: "affiliate_attribution", data: info }),
+          }
+        );
+      }
+
       // "Ask a speaker" prompt \u2014 late-purchase branch.
       // The cron `/api/cron/ask-speakers-prompts` handles the normal case
       // (1 day after purchase, \u2265 2 days before event). When the event is
@@ -757,6 +788,24 @@ export async function POST(request: Request) {
               is_full: isFull,
             },
           });
+
+          // Affiliate program: reverse / pro-rate the commission. No-ops
+          // when AFFILIATE_ENABLED=false or when the order had no affiliate
+          // attribution.
+          await reverseAffiliateCommissions(
+            order.id,
+            newAmount,
+            order.total_cents ?? 0,
+            {
+              supabase,
+              sendConversionEmail: async () => undefined,
+              captureError: (err, info) =>
+                captureServerError(err, {
+                  scope: "affiliate_reverse",
+                  data: info,
+                }),
+            }
+          );
 
           after(async () => {
             try {

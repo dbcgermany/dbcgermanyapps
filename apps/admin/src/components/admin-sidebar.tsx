@@ -21,6 +21,7 @@ import {
   Megaphone,
   Mail,
   Globe,
+  HandCoins,
   Newspaper,
   Quote,
   Scale,
@@ -36,6 +37,7 @@ import {
 } from "lucide-react";
 import type { AdminModule, UserRole } from "@dbc/types";
 import { canDo } from "@dbc/types";
+import { affiliateEnabled } from "@dbc/affiliate";
 import { useAdminShell } from "./admin-shell-layout";
 
 interface NavItem {
@@ -58,6 +60,7 @@ const NAV_ITEMS: NavItem[] = [
   { labelKey: "doorSale", href: "/door-sale", icon: DoorOpen, mod: "doorSale" },
   { labelKey: "scan", href: "/scan", icon: ScanLine, mod: "scan" },
   { labelKey: "chapterDelegates", href: "/chapter-delegates", icon: Globe, mod: "events" },
+  { labelKey: "affiliates", href: "/affiliates", icon: HandCoins, mod: "events" },
 
   { labelKey: "news", href: "/news", icon: Newspaper, mod: "news", dividerAbove: true },
   { labelKey: "newsletters", href: "/newsletters", icon: Mail, mod: "newsletters" },
@@ -98,9 +101,11 @@ export function AdminSidebar({
   const { mobileOpen, closeMobile } = useAdminShell();
   const [collapsed, setCollapsed] = useState(false);
 
-  const visibleItems = NAV_ITEMS.filter((item) =>
-    canDo(userRole, item.mod, "read")
-  );
+  const affiliatesOn = affiliateEnabled();
+  const visibleItems = NAV_ITEMS.filter((item) => {
+    if (item.labelKey === "affiliates" && !affiliatesOn) return false;
+    return canDo(userRole, item.mod, "read");
+  });
 
   // Hydrate collapse state from localStorage on mount. This intentionally
   // calls setState inside the effect — SSR renders expanded; the client

@@ -18,6 +18,9 @@ import { StaffEmailChangedEmail } from "./templates/staff-email-changed";
 import { StaffPausedEmail } from "./templates/staff-paused";
 import { ChapterDelegateAmbassadorInviteEmail } from "./templates/chapter-delegate-ambassador-invite";
 import { ChapterDelegateTeamMemberInviteEmail } from "./templates/chapter-delegate-team-member-invite";
+import { AffiliateWelcomeEmail } from "./templates/affiliate-welcome";
+import { AffiliateConversionEmail } from "./templates/affiliate-conversion";
+import { AffiliatePayoutStatementEmail } from "./templates/affiliate-payout-statement";
 import {
   ChapterDelegateOutcomeEmail,
   chapterDelegateOutcomeSubject,
@@ -993,4 +996,150 @@ export async function sendChapterDelegateInvitesBatch(input: {
   }
 
   return result;
+}
+
+// ===========================================================================
+// Affiliate program (modular — remove this block + the three template imports
+// above if affiliate program is decommissioned, per packages/affiliate plan).
+// ===========================================================================
+
+export interface SendAffiliateWelcomeInput {
+  to: string;
+  recipientName: string;
+  eventTitle: string;
+  commissionPct: number;
+  couponCode: string;
+  referralUrl: string;
+  dashboardUrl: string;
+  locale: Locale;
+}
+
+const AFFILIATE_WELCOME_SUBJECT = {
+  en: "Welcome to the {event} affiliate program",
+  de: "Willkommen im Affiliate-Programm zu {event}",
+  fr: "Bienvenue dans le programme d'affiliation pour {event}",
+};
+
+export async function sendAffiliateWelcome(input: SendAffiliateWelcomeInput) {
+  const html = await render(
+    React.createElement(AffiliateWelcomeEmail, {
+      recipientName: input.recipientName,
+      eventTitle: input.eventTitle,
+      commissionPct: input.commissionPct,
+      couponCode: input.couponCode,
+      referralUrl: input.referralUrl,
+      dashboardUrl: input.dashboardUrl,
+      locale: input.locale,
+    })
+  );
+  const subject = AFFILIATE_WELCOME_SUBJECT[input.locale].replace(
+    "{event}",
+    input.eventTitle
+  );
+  const resend = createEmailClient();
+  const res = await resend.emails.send({
+    from: transactionalFrom(),
+    replyTo: transactionalReplyTo(),
+    to: input.to,
+    subject,
+    html,
+  });
+  if (res.error) throw new Error(`Resend: ${res.error.message}`);
+  return { id: res.data?.id ?? "" };
+}
+
+export interface SendAffiliateConversionInput {
+  to: string;
+  recipientName: string;
+  eventTitle: string;
+  commissionAmountFormatted: string;
+  ticketCount: number;
+  dashboardUrl: string;
+  locale: Locale;
+}
+
+const AFFILIATE_CONVERSION_SUBJECT = {
+  en: "You earned a commission from {event}",
+  de: "Du hast eine Provision für {event} verdient",
+  fr: "Vous avez gagné une commission pour {event}",
+};
+
+export async function sendAffiliateConversion(
+  input: SendAffiliateConversionInput
+) {
+  const html = await render(
+    React.createElement(AffiliateConversionEmail, {
+      recipientName: input.recipientName,
+      eventTitle: input.eventTitle,
+      commissionAmountFormatted: input.commissionAmountFormatted,
+      ticketCount: input.ticketCount,
+      dashboardUrl: input.dashboardUrl,
+      locale: input.locale,
+    })
+  );
+  const subject = AFFILIATE_CONVERSION_SUBJECT[input.locale].replace(
+    "{event}",
+    input.eventTitle
+  );
+  const resend = createEmailClient();
+  const res = await resend.emails.send({
+    from: transactionalFrom(),
+    replyTo: transactionalReplyTo(),
+    to: input.to,
+    subject,
+    html,
+  });
+  if (res.error) throw new Error(`Resend: ${res.error.message}`);
+  return { id: res.data?.id ?? "" };
+}
+
+export interface SendAffiliatePayoutStatementInput {
+  to: string;
+  recipientName: string;
+  amountFormatted: string;
+  periodLabel: string;
+  paymentReference: string | null;
+  dashboardUrl: string | null;
+  pdfAttachment: { filename: string; content: Buffer } | null;
+  locale: Locale;
+}
+
+const AFFILIATE_PAYOUT_SUBJECT = {
+  en: "Your affiliate payout is on the way",
+  de: "Deine Affiliate-Auszahlung ist unterwegs",
+  fr: "Votre paiement d'affiliation est en route",
+};
+
+export async function sendAffiliatePayoutStatement(
+  input: SendAffiliatePayoutStatementInput
+) {
+  const html = await render(
+    React.createElement(AffiliatePayoutStatementEmail, {
+      recipientName: input.recipientName,
+      amountFormatted: input.amountFormatted,
+      periodLabel: input.periodLabel,
+      paymentReference: input.paymentReference,
+      dashboardUrl: input.dashboardUrl,
+      locale: input.locale,
+    })
+  );
+  const subject = AFFILIATE_PAYOUT_SUBJECT[input.locale];
+  const resend = createEmailClient();
+  const res = await resend.emails.send({
+    from: transactionalFrom(),
+    replyTo: transactionalReplyTo(),
+    to: input.to,
+    subject,
+    html,
+    attachments: input.pdfAttachment
+      ? [
+          {
+            filename: input.pdfAttachment.filename,
+            content: input.pdfAttachment.content,
+          },
+        ]
+      : undefined,
+  });
+  if (res.error) throw new Error(`Resend: ${res.error.message}`);
+  return { id: res.data?.id ?? "" };
 }

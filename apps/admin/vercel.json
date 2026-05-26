@@ -19,6 +19,10 @@
     {
       "path": "/api/cron/admin-event-reminders",
       "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/api/cron/affiliate-cooldown",
+      "schedule": "0 3 * * *"
     }
   ]
 }
