@@ -10,6 +10,14 @@ export interface AffiliateWelcomeEmailProps {
   eventTitle: string;
   commissionPct: number;
   couponCode: string | null;
+  goals?:
+    | Array<{
+        target_count: number;
+        tier_name: string;
+        reward_count: number;
+        reward_tier_name: string;
+      }>
+    | null;
   referralUrl: string;
   dashboardUrl: string;
   locale: "en" | "de" | "fr";
@@ -21,6 +29,11 @@ const T = {
     greeting: "Hi {name},",
     intro:
       "You're confirmed as an affiliate partner for {event}. Here are the two links you'll use during this campaign — please read carefully so you share the right one.",
+    goalsTitle: "Free tickets you can earn",
+    goalsLine:
+      "Sell {target} × {tier} → get {rewardCount} × {reward} free for yourself",
+    goalsNote:
+      "We'll send you the free-ticket codes manually once you hit each target.",
     sharingTitle: "Your sharing link",
     sharingBody:
       "Share this anywhere — Instagram bio, WhatsApp, newsletters, business cards. Your audience gets your discount code automatically applied at checkout, and you get credit for every sale.",
@@ -43,6 +56,11 @@ const T = {
     greeting: "Hallo {name},",
     intro:
       "Du bist als Affiliate-Partner für {event} bestätigt. Hier sind die zwei Links, die du in dieser Kampagne nutzt — bitte lies sie sorgfältig, damit du den richtigen teilst.",
+    goalsTitle: "Gratis-Tickets, die du verdienen kannst",
+    goalsLine:
+      "Verkaufe {target} × {tier} → erhalte {rewardCount} × {reward} gratis für dich",
+    goalsNote:
+      "Sobald du ein Ziel erreichst, senden wir dir den Gratis-Ticket-Code manuell zu.",
     sharingTitle: "Dein Sharing-Link",
     sharingBody:
       "Teile diesen Link überall — Instagram-Bio, WhatsApp, Newsletter, Visitenkarten. Deine Zielgruppe bekommt deinen Rabattcode beim Checkout automatisch angewendet, und du erhältst Credit für jeden Verkauf.",
@@ -65,6 +83,11 @@ const T = {
     greeting: "Bonjour {name},",
     intro:
       "Vous êtes confirmé comme partenaire affilié pour {event}. Voici les deux liens que vous utiliserez pendant cette campagne — lisez attentivement pour partager le bon.",
+    goalsTitle: "Billets gratuits à débloquer",
+    goalsLine:
+      "Vendez {target} × {tier} → recevez {rewardCount} × {reward} gratuit(s) pour vous-même",
+    goalsNote:
+      "Dès qu'un objectif est atteint, nous vous enverrons le code manuellement.",
     sharingTitle: "Votre lien de partage",
     sharingBody:
       "Partagez ce lien partout — bio Instagram, WhatsApp, newsletters, cartes de visite. Votre audience reçoit votre code de réduction appliqué automatiquement au paiement, et vous obtenez le crédit pour chaque vente.",
@@ -147,10 +170,12 @@ export function AffiliateWelcomeEmail(props: AffiliateWelcomeEmailProps) {
           <span className="text-neutral-500">{t.eventLabel}:</span>{" "}
           {props.eventTitle}
         </Text>
-        <Text className="m-0 my-1 text-sm text-neutral-700">
-          <span className="text-neutral-500">{t.commissionLabel}:</span>{" "}
-          {props.commissionPct}%
-        </Text>
+        {props.commissionPct > 0 && (
+          <Text className="m-0 my-1 text-sm text-neutral-700">
+            <span className="text-neutral-500">{t.commissionLabel}:</span>{" "}
+            {props.commissionPct}%
+          </Text>
+        )}
         {props.couponCode && (
           <Text className="m-0 my-1 text-sm text-neutral-700">
             <span className="text-neutral-500">{t.codeLabel}:</span>{" "}
@@ -158,6 +183,25 @@ export function AffiliateWelcomeEmail(props: AffiliateWelcomeEmailProps) {
           </Text>
         )}
       </Section>
+
+      {props.goals && props.goals.length > 0 && (
+        <Section className="mt-4 rounded-lg border border-neutral-200 p-5">
+          <Text className="m-0 mb-2 text-sm font-semibold text-neutral-900">
+            {t.goalsTitle}
+          </Text>
+          {props.goals.map((g, i) => (
+            <Text key={i} className="m-0 my-1 text-sm text-neutral-700">
+              ·{" "}
+              {t.goalsLine
+                .replace("{target}", String(g.target_count))
+                .replace("{tier}", g.tier_name)
+                .replace("{rewardCount}", String(g.reward_count))
+                .replace("{reward}", g.reward_tier_name)}
+            </Text>
+          ))}
+          <Text className="mt-3 text-xs text-neutral-500">{t.goalsNote}</Text>
+        </Section>
+      )}
 
       <Section className="mt-6">
         <Text className="text-sm leading-6 text-neutral-700">{t.footer}</Text>

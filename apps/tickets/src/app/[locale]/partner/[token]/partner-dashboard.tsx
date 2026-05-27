@@ -23,6 +23,13 @@ const T = {
     kpiTotalEarned: "Total earned",
     kpiPending: "Pending payout",
     kpiCooldown: "In refund window",
+    goalsTitle: "Free-ticket goals",
+    goalsEmpty: "No free-ticket goals set for this campaign.",
+    goalProgress: "Sell {target} {tier} → earn {rewardCount} {reward} free",
+    goalStatusReached:
+      "Goal reached — we'll send your free-ticket code soon.",
+    goalStatusInProgress: "{remaining} more {tier} to go",
+    goalStatusFulfilled: "Done — your free-ticket code has been sent.",
     sharingTitle: "Your sharing link",
     sharingDesc:
       "Share this link anywhere — Instagram bio, WhatsApp, newsletters. Your audience gets the discount, you get credit.",
@@ -52,6 +59,14 @@ const T = {
     kpiTotalEarned: "Bereits ausgezahlt",
     kpiPending: "Ausstehende Auszahlung",
     kpiCooldown: "In Widerrufsfrist",
+    goalsTitle: "Ziele für Gratis-Tickets",
+    goalsEmpty: "Für diese Kampagne sind keine Ziele festgelegt.",
+    goalProgress:
+      "Verkaufe {target} {tier} → erhalte {rewardCount} {reward} gratis",
+    goalStatusReached:
+      "Ziel erreicht — wir senden dir deinen Gratis-Ticket-Code in Kürze.",
+    goalStatusInProgress: "Noch {remaining} {tier} bis zum Ziel",
+    goalStatusFulfilled: "Erledigt — dein Gratis-Ticket-Code wurde gesendet.",
     sharingTitle: "Dein Sharing-Link",
     sharingDesc:
       "Teile diesen Link überall — Instagram-Bio, WhatsApp, Newsletter. Deine Zielgruppe bekommt den Rabatt, du den Credit.",
@@ -82,6 +97,14 @@ const T = {
     kpiTotalEarned: "Déjà versé",
     kpiPending: "Paiement en attente",
     kpiCooldown: "En période de remboursement",
+    goalsTitle: "Objectifs de billets gratuits",
+    goalsEmpty: "Aucun objectif défini pour cette campagne.",
+    goalProgress:
+      "Vendez {target} {tier} → recevez {rewardCount} {reward} gratuit(s)",
+    goalStatusReached:
+      "Objectif atteint — nous vous enverrons votre code bientôt.",
+    goalStatusInProgress: "Encore {remaining} {tier} pour atteindre l'objectif",
+    goalStatusFulfilled: "Terminé — votre code de billet gratuit a été envoyé.",
     sharingTitle: "Votre lien de partage",
     sharingDesc:
       "Partagez ce lien partout — bio Instagram, WhatsApp, newsletters. Votre audience reçoit la réduction, vous obtenez le crédit.",
@@ -210,6 +233,54 @@ export function PartnerDashboard({
           value={formatMoney(data.kpis.cooldownCents, currency, locale)}
         />
       </div>
+
+      {data.goals.length > 0 && (
+        <Card className="mt-8" padding="md">
+          <h2 className="text-lg font-semibold">{t.goalsTitle}</h2>
+          <ul className="mt-4 space-y-3">
+            {data.goals.map((g) => {
+              const remaining = Math.max(0, g.target_count - g.current_count);
+              const pct = Math.min(
+                100,
+                Math.round((g.current_count / g.target_count) * 100)
+              );
+              return (
+                <li key={g.id}>
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+                    <span>
+                      {t.goalProgress
+                        .replace("{target}", String(g.target_count))
+                        .replace("{tier}", g.tier_name)
+                        .replace("{rewardCount}", String(g.reward_count))
+                        .replace("{reward}", g.reward_tier_name)}
+                    </span>
+                    {g.fulfilled_at ? (
+                      <Badge variant="success">{t.goalStatusFulfilled}</Badge>
+                    ) : g.reached ? (
+                      <Badge variant="warning">{t.goalStatusReached}</Badge>
+                    ) : (
+                      <Badge variant="default">
+                        {t.goalStatusInProgress
+                          .replace("{remaining}", String(remaining))
+                          .replace("{tier}", g.tier_name)}
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted/40">
+                    <div
+                      className="h-full bg-primary transition-all"
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                  <div className="mt-1 text-xs text-muted-foreground">
+                    {g.current_count}/{g.target_count}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </Card>
+      )}
 
       <Card className="mt-8" padding="md">
         <h2 className="text-lg font-semibold">{t.sharingTitle}</h2>

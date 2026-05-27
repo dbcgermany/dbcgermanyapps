@@ -45,3 +45,16 @@ export {
   generateAffiliateStatementPdf,
 } from "./pdf/generate-statement";
 export type { GenerateStatementInput } from "./pdf/generate-statement";
+export {
+  setTierGoalsForEnrollment,
+  getGoalProgressForEnrollment,
+  fulfillTierGoal,
+  unfulfillTierGoal,
+  listReachedUnfulfilledGoals,
+} from "./server-actions/goals";
+export type {
+  TierGoalRow,
+  TierGoalProgress,
+  GoalRuleInput,
+  ReachedGoalEntry,
+} from "./server-actions/goals";

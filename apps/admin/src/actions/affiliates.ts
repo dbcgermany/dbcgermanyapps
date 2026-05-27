@@ -25,6 +25,12 @@ import {
   cancelPayout as cancelPayoutImpl,
   listPayoutsForAffiliate as listPayoutsForAffiliateImpl,
   generateAffiliateStatementPdf,
+  setTierGoalsForEnrollment as setTierGoalsImpl,
+  getGoalProgressForEnrollment as getGoalProgressImpl,
+  fulfillTierGoal as fulfillTierGoalImpl,
+  unfulfillTierGoal as unfulfillTierGoalImpl,
+  listReachedUnfulfilledGoals as listReachedGoalsImpl,
+  type GoalRuleInput,
 } from "@dbc/affiliate/server";
 import {
   sendAffiliateWelcome,
@@ -104,6 +110,7 @@ export async function enrollAffiliateAction(input: {
     applicableTierIds?: string[] | null;
   } | null;
   tokenExpiresAt?: string | null;
+  tierGoals?: GoalRuleInput[] | null;
 }) {
   await guard();
   const supabase = await createServerClient();
@@ -162,6 +169,41 @@ export async function enrollAffiliateAction(input: {
     (locale === "de" && event.title_de) ||
     (locale === "fr" && event.title_fr) ||
     event.title_en;
+  // Build goal labels for the welcome email (resolve tier names by id).
+  let goalsForEmail:
+    | Array<{
+        target_count: number;
+        tier_name: string;
+        reward_count: number;
+        reward_tier_name: string;
+      }>
+    | null = null;
+  if (input.tierGoals && input.tierGoals.length > 0) {
+    const tierIds = Array.from(
+      new Set(
+        input.tierGoals.flatMap((g) => [g.tier_id, g.reward_tier_id])
+      )
+    );
+    const { data: tiers } = await supabase
+      .from("ticket_tiers")
+      .select("id, name_en, name_de, name_fr")
+      .in("id", tierIds);
+    const nameById = new Map<string, string>();
+    for (const t of tiers ?? []) {
+      const name =
+        (locale === "de" && t.name_de) ||
+        (locale === "fr" && t.name_fr) ||
+        t.name_en;
+      nameById.set(t.id, name);
+    }
+    goalsForEmail = input.tierGoals.map((g) => ({
+      target_count: g.target_count,
+      tier_name: nameById.get(g.tier_id) ?? "—",
+      reward_count: g.reward_count,
+      reward_tier_name: nameById.get(g.reward_tier_id) ?? "—",
+    }));
+  }
+
   try {
     await sendAffiliateWelcome({
       to: affiliate.contact_email,
@@ -169,6 +211,7 @@ export async function enrollAffiliateAction(input: {
       eventTitle,
       commissionPct: input.commissionPct,
       couponCode: result.couponCode,
+      goals: goalsForEmail,
       referralUrl: result.referralUrl,
       dashboardUrl: result.dashboardUrl,
       locale,
@@ -436,4 +479,56 @@ export async function listPayoutsForAffiliateAction(affiliateId: string) {
   await guard();
   const supabase = await createServerClient();
   return listPayoutsForAffiliateImpl(supabase, affiliateId);
+}
+
+// ----- Tier goals (free-ticket rewards) -----
+
+export async function setTierGoalsAction(
+  eventAffiliateId: string,
+  eventId: string,
+  rules: GoalRuleInput[]
+) {
+  await guard();
+  const supabase = await createServerClient();
+  await setTierGoalsImpl(supabase, eventAffiliateId, rules);
+  revalidatePath(`/[locale]/events/${eventId}/affiliates`, "page");
+}
+
+export async function getGoalProgressAction(eventAffiliateId: string) {
+  await guard();
+  const supabase = await createServerClient();
+  return getGoalProgressImpl(supabase, eventAffiliateId);
+}
+
+export async function fulfillTierGoalAction(
+  goalId: string,
+  notes: string,
+  eventId: string
+) {
+  await guard();
+  const supabase = await createServerClient();
+  await fulfillTierGoalImpl(supabase, goalId, notes);
+  await supabase.from("audit_log").insert({
+    action: "affiliate_goal_fulfilled",
+    entity_type: "event_affiliate_tier_goals",
+    entity_id: goalId,
+    details: { notes },
+  });
+  revalidatePath(`/[locale]/events/${eventId}/affiliates`, "page");
+}
+
+export async function unfulfillTierGoalAction(
+  goalId: string,
+  eventId: string
+) {
+  await guard();
+  const supabase = await createServerClient();
+  await unfulfillTierGoalImpl(supabase, goalId);
+  revalidatePath(`/[locale]/events/${eventId}/affiliates`, "page");
+}
+
+export async function listReachedGoalsAction(eventId: string) {
+  await guard();
+  const supabase = await createServerClient();
+  return listReachedGoalsImpl(supabase, eventId);
 }

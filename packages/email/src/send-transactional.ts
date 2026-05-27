@@ -1009,6 +1009,14 @@ export interface SendAffiliateWelcomeInput {
   eventTitle: string;
   commissionPct: number;
   couponCode: string | null;
+  goals?:
+    | Array<{
+        target_count: number;
+        tier_name: string;
+        reward_count: number;
+        reward_tier_name: string;
+      }>
+    | null;
   referralUrl: string;
   dashboardUrl: string;
   locale: Locale;
@@ -1027,6 +1035,7 @@ export async function sendAffiliateWelcome(input: SendAffiliateWelcomeInput) {
       eventTitle: input.eventTitle,
       commissionPct: input.commissionPct,
       couponCode: input.couponCode,
+      goals: input.goals ?? null,
       referralUrl: input.referralUrl,
       dashboardUrl: input.dashboardUrl,
       locale: input.locale,

@@ -1366,6 +1366,67 @@ export type Database = {
           },
         ]
       }
+      event_affiliate_tier_goals: {
+        Row: {
+          created_at: string
+          event_affiliate_id: string
+          fulfilled_at: string | null
+          fulfilled_notes: string | null
+          id: string
+          reward_count: number
+          reward_tier_id: string
+          target_count: number
+          tier_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          event_affiliate_id: string
+          fulfilled_at?: string | null
+          fulfilled_notes?: string | null
+          id?: string
+          reward_count?: number
+          reward_tier_id: string
+          target_count: number
+          tier_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          event_affiliate_id?: string
+          fulfilled_at?: string | null
+          fulfilled_notes?: string | null
+          id?: string
+          reward_count?: number
+          reward_tier_id?: string
+          target_count?: number
+          tier_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_affiliate_tier_goals_event_affiliate_id_fkey"
+            columns: ["event_affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "event_affiliates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_affiliate_tier_goals_reward_tier_id_fkey"
+            columns: ["reward_tier_id"]
+            isOneToOne: false
+            referencedRelation: "ticket_tiers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_affiliate_tier_goals_tier_id_fkey"
+            columns: ["tier_id"]
+            isOneToOne: false
+            referencedRelation: "ticket_tiers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_affiliates: {
         Row: {
           affiliate_id: string

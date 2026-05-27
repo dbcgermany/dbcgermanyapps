@@ -61,5 +61,15 @@ export interface DashboardData {
     statement_storage_path: string | null;
     status: PayoutStatus;
   }>;
+  goals: Array<{
+    id: string;
+    tier_name: string;
+    reward_tier_name: string;
+    target_count: number;
+    reward_count: number;
+    current_count: number;
+    reached: boolean;
+    fulfilled_at: string | null;
+  }>;
   referralUrl: string;
 }

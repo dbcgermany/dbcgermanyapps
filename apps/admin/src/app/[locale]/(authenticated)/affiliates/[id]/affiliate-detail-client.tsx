@@ -16,16 +16,19 @@ type EnrollmentRow = {
   dashboard_token: string;
   token_expires_at: string;
   token_revoked_at: string | null;
-  events: {
+  event: {
     id: string;
-    title_en: string;
-    title_de: string | null;
-    title_fr: string | null;
+    title: string;
     starts_at: string;
     ends_at: string | null;
     slug: string;
   } | null;
-  coupons: { code: string } | null;
+  coupon_code: string | null;
+  referralUrl: string;
+  dashboardUrl: string;
+  referralsCount: number;
+  earnedCents: number;
+  pendingCents: number;
 };
 
 type PayoutRow = {
@@ -151,49 +154,74 @@ export function AffiliateDetailClient({
             marketing&rdquo; card to enroll this affiliate.
           </p>
         ) : (
-          <ul className="mt-3 divide-y divide-border">
+          <div className="mt-3 space-y-3">
             {enrollments.map((ea) => {
-              const ev = ea.events;
-              const evTitle = ev
-                ? (locale === "de" && ev.title_de) ||
-                  (locale === "fr" && ev.title_fr) ||
-                  ev.title_en
-                : "—";
               const tokenLive =
                 !ea.token_revoked_at &&
                 new Date(ea.token_expires_at) > new Date();
               return (
-                <li key={ea.id} className="flex items-center justify-between py-3">
-                  <div>
-                    {ev ? (
-                      <Link
-                        href={`/${locale}/events/${ev.id}/affiliates`}
-                        className="font-semibold hover:underline"
+                <div
+                  key={ea.id}
+                  className="rounded-md border border-border p-3"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      {ea.event ? (
+                        <Link
+                          href={`/${locale}/events/${ea.event.id}/affiliates`}
+                          className="font-semibold hover:underline"
+                        >
+                          {ea.event.title}
+                        </Link>
+                      ) : (
+                        <span className="font-semibold">—</span>
+                      )}
+                      <p className="text-xs text-muted-foreground">
+                        {ea.commission_pct}% commission ·{" "}
+                        {ea.coupon_code ? (
+                          <>
+                            code{" "}
+                            <span className="font-mono">{ea.coupon_code}</span>
+                          </>
+                        ) : (
+                          "no discount code"
+                        )}{" "}
+                        · expires{" "}
+                        {new Date(ea.token_expires_at).toLocaleDateString(
+                          locale
+                        )}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge
+                        variant={ea.status === "active" ? "success" : "default"}
                       >
-                        {evTitle}
-                      </Link>
-                    ) : (
-                      <span>{evTitle}</span>
-                    )}
-                    <p className="text-xs text-muted-foreground">
-                      code <span className="font-mono">{ea.coupons?.code}</span>
-                      {" · "}
-                      {Number(ea.commission_pct)}% commission · expires{" "}
-                      {new Date(ea.token_expires_at).toLocaleDateString(locale)}
-                    </p>
+                        {ea.status}
+                      </Badge>
+                      <Badge variant={tokenLive ? "default" : "warning"}>
+                        token: {tokenLive ? "live" : "ended"}
+                      </Badge>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant={ea.status === "active" ? "success" : "default"}>
-                      {ea.status}
-                    </Badge>
-                    <Badge variant={tokenLive ? "default" : "warning"}>
-                      token: {tokenLive ? "live" : "ended"}
-                    </Badge>
+                  <div className="mt-2 flex flex-wrap gap-3 text-xs text-muted-foreground">
+                    <span>{ea.referralsCount} referrals</span>
+                    <span>· paid {formatMoney(ea.earnedCents, "EUR")}</span>
+                    <span>
+                      · in pipeline {formatMoney(ea.pendingCents, "EUR")}
+                    </span>
                   </div>
-                </li>
+                  <UrlRow
+                    label="Sharing link"
+                    url={ea.referralUrl}
+                  />
+                  <UrlRow
+                    label="Private dashboard"
+                    url={ea.dashboardUrl}
+                  />
+                </div>
               );
             })}
-          </ul>
+          </div>
         )}
       </div>
 
@@ -229,6 +257,33 @@ export function AffiliateDetailClient({
             ))}
           </ul>
         )}
+      </div>
+    </div>
+  );
+}
+
+function UrlRow({ label, url }: { label: string; url: string }) {
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success(`${label} copied`);
+    } catch {
+      toast.error("Could not copy");
+    }
+  }
+  if (!url) return null;
+  return (
+    <div className="mt-2">
+      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+        {label}
+      </div>
+      <div className="mt-1 flex items-center gap-2">
+        <code className="flex-1 break-all rounded border border-border bg-muted/20 px-2 py-1 text-xs">
+          {url}
+        </code>
+        <Button variant="ghost" onClick={copy}>
+          Copy
+        </Button>
       </div>
     </div>
   );

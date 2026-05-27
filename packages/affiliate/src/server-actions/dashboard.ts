@@ -7,6 +7,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { affiliateEnabled } from "../feature-flag";
 import { buildReferralUrl } from "../urls";
+import { getGoalProgressForEnrollment } from "./goals";
 import type {
   AffiliateLocale,
   CommissionStatus,
@@ -135,6 +136,18 @@ export async function getAffiliateDashboardByToken(
     couponCode: couponRow?.code ?? null,
   });
 
+  const goalsProgress = await getGoalProgressForEnrollment(supabase, ea.id);
+  const goals = goalsProgress.map((g) => ({
+    id: g.id,
+    tier_name: g.tier?.name ?? "—",
+    reward_tier_name: g.reward_tier?.name ?? "—",
+    target_count: g.target_count,
+    reward_count: g.reward_count,
+    current_count: g.current_count,
+    reached: g.reached,
+    fulfilled_at: g.fulfilled_at,
+  }));
+
   return {
     kind: "ok",
     data: {
@@ -168,6 +181,7 @@ export async function getAffiliateDashboardByToken(
         cooldownCents,
       },
       recentReferrals,
+      goals,
       payouts: (
         (payouts ?? []) as Array<{
           id: string;

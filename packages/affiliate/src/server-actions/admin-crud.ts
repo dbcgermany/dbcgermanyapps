@@ -14,6 +14,10 @@ import type {
   EventAffiliate,
   AffiliateLocale,
 } from "../types";
+import {
+  setTierGoalsForEnrollment,
+  type GoalRuleInput,
+} from "./goals";
 
 export interface CreateAffiliateInput {
   display_name: string;
@@ -100,6 +104,8 @@ export interface EnrollAffiliateInput {
   // default is event.ends_at + 20 days (or 180 days from now when the
   // event has no end date).
   tokenExpiresAt?: string | null;
+  // Optional free-ticket goal rules. Replaces any existing goals.
+  tierGoals?: GoalRuleInput[] | null;
 }
 
 export interface EnrollAffiliateResult {
@@ -192,6 +198,11 @@ export async function enrollAffiliateInEvent(
     .update({ status: "active" })
     .eq("id", input.affiliateId)
     .eq("status", "invited");
+
+  // Persist free-ticket goal rules, if any.
+  if (input.tierGoals && input.tierGoals.length > 0) {
+    await setTierGoalsForEnrollment(supabase, ea.id, input.tierGoals);
+  }
 
   return {
     eventAffiliate: ea as EventAffiliate,
@@ -309,6 +320,9 @@ export interface EventAffiliateListRow {
   referralsCount: number;
   earnedCents: number;
   pendingCents: number;
+  goalsTotal: number;
+  goalsReached: number;
+  goalsFulfilled: number;
 }
 
 /**
@@ -336,7 +350,7 @@ export async function listEventAffiliates(
   if (!rows || rows.length === 0) return [];
 
   const ids = rows.map((r) => r.id as string);
-  const [{ data: referralCounts }, { data: commissionRows }] =
+  const [{ data: referralCounts }, { data: commissionRows }, { data: goalRows }] =
     await Promise.all([
       supabase
         .from("affiliate_referrals")
@@ -345,6 +359,10 @@ export async function listEventAffiliates(
       supabase
         .from("affiliate_commissions")
         .select("event_affiliate_id, commission_cents, status")
+        .in("event_affiliate_id", ids),
+      supabase
+        .from("event_affiliate_tier_goals")
+        .select("event_affiliate_id, tier_id, target_count, fulfilled_at")
         .in("event_affiliate_id", ids),
     ]);
 
@@ -362,6 +380,78 @@ export async function listEventAffiliates(
     if (s === "paid") earnedBy.set(id, (earnedBy.get(id) ?? 0) + cents);
     if (s === "pending" || s === "eligible" || s === "payout_queued")
       pendingBy.set(id, (pendingBy.get(id) ?? 0) + cents);
+  }
+
+  // For each enrollment, compute goal totals + fulfilled count, and how
+  // many goals are currently reached (live count >= target_count). Need a
+  // per-enrollment ticket tally by tier to know that, so we batch ticket
+  // queries via a single in() lookup per referred order set.
+  const goalsByEa = new Map<
+    string,
+    Array<{ tier_id: string; target_count: number; fulfilled_at: string | null }>
+  >();
+  for (const g of (goalRows ?? []) as Array<{
+    event_affiliate_id: string;
+    tier_id: string;
+    target_count: number;
+    fulfilled_at: string | null;
+  }>) {
+    const arr = goalsByEa.get(g.event_affiliate_id) ?? [];
+    arr.push({
+      tier_id: g.tier_id,
+      target_count: g.target_count,
+      fulfilled_at: g.fulfilled_at,
+    });
+    goalsByEa.set(g.event_affiliate_id, arr);
+  }
+  const reachedBy = new Map<string, number>();
+  const fulfilledBy = new Map<string, number>();
+  if (goalsByEa.size > 0) {
+    const { data: refs } = await supabase
+      .from("affiliate_referrals")
+      .select("event_affiliate_id, order_id")
+      .in("event_affiliate_id", Array.from(goalsByEa.keys()));
+    const ordersByEa = new Map<string, string[]>();
+    for (const r of (refs ?? []) as Array<{
+      event_affiliate_id: string;
+      order_id: string;
+    }>) {
+      const arr = ordersByEa.get(r.event_affiliate_id) ?? [];
+      arr.push(r.order_id);
+      ordersByEa.set(r.event_affiliate_id, arr);
+    }
+    for (const [eaId, goals] of goalsByEa.entries()) {
+      const orderIds = ordersByEa.get(eaId) ?? [];
+      let fulfilled = 0;
+      let reached = 0;
+      const countByTier = new Map<string, number>();
+      if (orderIds.length > 0) {
+        const { data: tickets } = await supabase
+          .from("tickets")
+          .select("tier_id, orders!inner ( status )")
+          .in("order_id", orderIds)
+          .is("revoked_at", null);
+        for (const t of (tickets ?? []) as Array<{
+          tier_id: string;
+          orders: { status: string } | { status: string }[] | null;
+        }>) {
+          const orderRow = Array.isArray(t.orders) ? t.orders[0] : t.orders;
+          const status = orderRow?.status;
+          if (
+            !status ||
+            ["refunded", "cancelled", "expired"].includes(status)
+          )
+            continue;
+          countByTier.set(t.tier_id, (countByTier.get(t.tier_id) ?? 0) + 1);
+        }
+      }
+      for (const g of goals) {
+        if (g.fulfilled_at) fulfilled += 1;
+        if ((countByTier.get(g.tier_id) ?? 0) >= g.target_count) reached += 1;
+      }
+      reachedBy.set(eaId, reached);
+      fulfilledBy.set(eaId, fulfilled);
+    }
   }
 
   return rows.map((r) => {
@@ -405,6 +495,9 @@ export async function listEventAffiliates(
       referralsCount: refsBy.get(r.id as string) ?? 0,
       earnedCents: earnedBy.get(r.id as string) ?? 0,
       pendingCents: pendingBy.get(r.id as string) ?? 0,
+      goalsTotal: goalsByEa.get(r.id as string)?.length ?? 0,
+      goalsReached: reachedBy.get(r.id as string) ?? 0,
+      goalsFulfilled: fulfilledBy.get(r.id as string) ?? 0,
     };
   });
 }
