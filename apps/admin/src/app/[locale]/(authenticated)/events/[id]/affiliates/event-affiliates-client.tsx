@@ -522,8 +522,8 @@ function EnrollDialog({
                 className="mt-0.5"
               />
               <span>
-                <span className="font-medium">Also offer a discount</span> to
-                buyers who use this affiliate&rsquo;s link.{" "}
+                <span className="font-medium">Also offer a discount</span>{" "}
+                to buyers who use this affiliate&rsquo;s link.{" "}
                 <span className="text-muted-foreground">
                   Optional — the affiliate earns commission either way.
                 </span>
