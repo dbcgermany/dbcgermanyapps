@@ -638,7 +638,6 @@ export function ChapterDelegatesClient({
           <Select
             value={currentEventId ?? ""}
             onChange={(e) => setQueryParam("event", e.target.value || null)}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
           >
             <option value="">{t("filters.allEvents")}</option>
             {events.map((ev) => (
@@ -670,7 +669,6 @@ export function ChapterDelegatesClient({
               setQueryParam("q", e.target.value.trim() || null)
             }
             placeholder={t("filters.searchPlaceholder")}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
           />
         </div>
       </div>
@@ -690,7 +688,7 @@ export function ChapterDelegatesClient({
                     value={rejectNote}
                     onChange={(e) => setRejectNote(e.target.value)}
                     placeholder={t("bulk.rejectNote")}
-                    className="w-60 rounded-md border border-input bg-background px-3 py-1.5 text-xs"
+                    className="w-60"
                   />
                   <ConfirmDialog
                     trigger={

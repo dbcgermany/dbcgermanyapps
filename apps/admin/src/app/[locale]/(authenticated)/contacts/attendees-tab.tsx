@@ -102,9 +102,6 @@ export function AttendeesTab({
     window.location.search = params.toString();
   }
 
-  const filterInput =
-    "rounded-md border border-border bg-background px-3 py-2 text-sm";
-
   return (
     <div className="mt-6">
       <div className="flex flex-wrap items-center gap-3">
@@ -113,12 +110,12 @@ export function AttendeesTab({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t("search")}
-          className={`${filterInput} w-full flex-1 sm:min-w-60`}
+          className="min-w-60 flex-1"
         />
         <Select
           value={selectedEventId}
           onChange={onEventChange}
-          className={filterInput}
+          className="w-auto sm:w-56"
         >
           <option value="">{t("allEvents")}</option>
           {events.map((ev) => (
@@ -151,10 +148,11 @@ export function AttendeesTab({
         {/* Newsletter-only filter — parity with the Contacts tab. The same
             `marketing_consent` + `unsubscribed_at` columns drive both. */}
         <label className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm">
-          <Input
+          <input
             type="checkbox"
             checked={marketingOnly}
             onChange={(e) => setMarketingOnly(e.target.checked)}
+            className="h-4 w-4 accent-foreground"
           />
           {tContacts("marketingOnly")}
         </label>

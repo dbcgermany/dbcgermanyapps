@@ -68,7 +68,7 @@ export function FilterBar({
       role="search"
     >
       {search && (
-        <label className="relative inline-flex min-w-[200px] flex-1 items-center">
+        <label className="relative inline-flex min-w-50 flex-1 items-center">
           <Search
             className="pointer-events-none absolute left-3 h-4 w-4 text-muted-foreground"
             aria-hidden
@@ -87,7 +87,7 @@ export function FilterBar({
                 250
               ) as unknown as number;
             }}
-            className="h-10 w-full rounded-md border border-border bg-background pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="pl-9"
           />
         </label>
       )}
@@ -102,7 +102,7 @@ export function FilterBar({
           <Select
             value={params.get(f.name) ?? ""}
             onChange={(e) => setParam(f.name, e.target.value || null)}
-            className="h-10 rounded-md border border-border bg-background px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="w-auto"
           >
             {f.options.map((o) => (
               <option key={o.value} value={o.value}>

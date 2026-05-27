@@ -114,7 +114,7 @@ export function OrdersClient({
           <Select
             value={currentEventFilter}
             onChange={(e) => updateFilters(e.target.value, undefined)}
-            className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="w-auto sm:w-56"
           >
             <option value="">{t("all")}</option>
             {events.map((e) => (
@@ -126,7 +126,7 @@ export function OrdersClient({
           <Select
             value={currentStatusFilter}
             onChange={(e) => updateFilters(undefined, e.target.value)}
-            className="rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            className="w-auto sm:w-40"
           >
             {STATUS_OPTIONS.map((s) => (
               <option key={s || "all"} value={s}>

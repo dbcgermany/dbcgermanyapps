@@ -126,7 +126,7 @@ export function AuditLogClient({
           <Select
             value={currentActionFilter}
             onChange={(e) => pushFilters({ action: e.target.value, page: 1 })}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring lg:w-auto"
+            className="lg:w-auto"
           >
             <option value="">{t("allActions")}</option>
             {actions.map((a) => (
@@ -139,7 +139,7 @@ export function AuditLogClient({
           <Select
             value={currentEntityFilter}
             onChange={(e) => pushFilters({ entity: e.target.value, page: 1 })}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring lg:w-auto"
+            className="lg:w-auto"
           >
             <option value="">{t("allEntities")}</option>
             {entityTypes.map((e) => (
@@ -161,7 +161,7 @@ export function AuditLogClient({
               value={userInput}
               onChange={(e) => setUserInput(e.target.value)}
               placeholder={t("userPlaceholder")}
-              className="min-w-0 flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring lg:flex-none"
+              className="min-w-0 flex-1 lg:w-56 lg:flex-none"
             />
             <button
               type="submit"
@@ -180,7 +180,7 @@ export function AuditLogClient({
                 onChange={(e) =>
                   pushFilters({ from: e.target.value, page: 1 })
                 }
-                className="w-full min-w-0 rounded-md border border-input bg-background px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-ring lg:w-auto"
+                className="min-w-0 lg:w-auto"
               />
             </label>
             <label className="flex min-w-0 flex-1 items-center gap-2 text-xs text-muted-foreground lg:flex-none">
@@ -189,7 +189,7 @@ export function AuditLogClient({
                 type="date"
                 value={currentToFilter}
                 onChange={(e) => pushFilters({ to: e.target.value, page: 1 })}
-                className="w-full min-w-0 rounded-md border border-input bg-background px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-ring lg:w-auto"
+                className="min-w-0 lg:w-auto"
               />
             </label>
           </div>
