@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button, Input, Label, Select, Badge } from "@dbc/ui";
+import type { EventAffiliateListRow } from "@dbc/affiliate/server";
 import {
   createAffiliateAction,
   enrollAffiliateAction,
@@ -21,28 +22,24 @@ type AffiliateLite = {
   status: string;
 };
 
-type EventAffiliateRow = {
-  id: string;
-  affiliate_id: string;
-  commission_pct: number;
-  coupon_id: string;
-  status: string;
-  dashboard_token: string;
-  token_expires_at: string;
-  token_revoked_at: string | null;
-  affiliates: {
-    id: string;
-    display_name: string;
-    contact_email: string;
-    status: string;
-  } | null;
-  coupons: {
-    id: string;
-    code: string;
-    discount_type: string;
-    discount_value: number;
-  } | null;
-};
+/**
+ * Compute the default token expiry, mirroring the server-side default in
+ * `enrollAffiliateInEvent`. Kept in the client so the dialog can preview
+ * the date the admin would otherwise get if they leave the field alone.
+ */
+function defaultExpiry(eventEndsAt: string | null): string {
+  const baseMs = eventEndsAt
+    ? new Date(eventEndsAt).getTime() + 20 * 86400000
+    : Date.now() + 180 * 86400000;
+  return new Date(baseMs).toISOString().slice(0, 10); // yyyy-mm-dd
+}
+
+function fmtMoney(cents: number, locale: string) {
+  return new Intl.NumberFormat(
+    locale === "de" ? "de-DE" : locale === "fr" ? "fr-FR" : "en-US",
+    { style: "currency", currency: "EUR" }
+  ).format(cents / 100);
+}
 
 export function EventAffiliatesClient({
   eventId,
@@ -56,7 +53,7 @@ export function EventAffiliatesClient({
   eventSlug: string;
   eventEndsAt: string | null;
   affiliates: AffiliateLite[];
-  eventAffiliates: EventAffiliateRow[];
+  eventAffiliates: EventAffiliateListRow[];
   locale: string;
 }) {
   const router = useRouter();
@@ -109,11 +106,15 @@ export function EventAffiliatesClient({
       }
     });
   }
-  function handleExtend(id: string) {
+  function handleExtend(id: string, days: number) {
+    if (!Number.isFinite(days) || days <= 0) {
+      toast.error("Enter a positive number of days");
+      return;
+    }
     startTransition(async () => {
       try {
-        await extendAffiliateTokenAction(id, eventId, 20);
-        toast.success("Token expiry extended by 20 days");
+        await extendAffiliateTokenAction(id, eventId, days);
+        toast.success(`Token expiry extended by ${days} days`);
         router.refresh();
       } catch (err) {
         toast.error(err instanceof Error ? err.message : "Failed");
@@ -158,17 +159,16 @@ export function EventAffiliatesClient({
 
   return (
     <>
-      {/* CTA row sits below the PageHeader; mirrors team-invites layout. */}
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">
           {totals.total > 0
             ? `${totals.active} active · ${totals.total} enrolled`
             : "No affiliates enrolled yet for this event."}
           {eventEndsAt
-            ? ` · Tokens auto-close ${new Date(
+            ? ` · Default token closes ${new Date(
                 new Date(eventEndsAt).getTime() + 20 * 86400000
-              ).toLocaleDateString(locale)}`
-            : ""}
+              ).toLocaleDateString(locale)} (event end + 20 days)`
+            : " · No event end set — default token lasts 180 days from enrollment"}
         </p>
         <Button onClick={() => setShowEnroll(true)} disabled={pending}>
           Enroll affiliate
@@ -185,138 +185,26 @@ export function EventAffiliatesClient({
         </div>
       ) : (
         <div className="mt-6 space-y-3">
-          {eventAffiliates.map((ea) => {
-            const aff = ea.affiliates;
-            const cp = ea.coupons;
-            const tokenStatus = ea.token_revoked_at
-              ? "revoked"
-              : new Date(ea.token_expires_at) <= new Date()
-                ? "expired"
-                : "active";
-            return (
-              <div
-                key={ea.id}
-                className="rounded-lg border border-border bg-surface p-4"
-              >
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Link
-                        href={`/${locale}/affiliates/${ea.affiliate_id}`}
-                        className="text-base font-semibold hover:underline"
-                      >
-                        {aff?.display_name ?? "—"}
-                      </Link>
-                      <Badge
-                        variant={
-                          ea.status === "active"
-                            ? "success"
-                            : ea.status === "paused"
-                              ? "warning"
-                              : "default"
-                        }
-                      >
-                        {ea.status}
-                      </Badge>
-                      <Badge
-                        variant={
-                          tokenStatus === "active"
-                            ? "default"
-                            : tokenStatus === "expired"
-                              ? "warning"
-                              : "error"
-                        }
-                      >
-                        token: {tokenStatus}
-                      </Badge>
-                    </div>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {aff?.contact_email}
-                      {cp?.code ? (
-                        <>
-                          {" · code "}
-                          <span className="font-mono">{cp.code}</span>
-                        </>
-                      ) : (
-                        " · no discount code"
-                      )}
-                      {" · expires "}
-                      {new Date(ea.token_expires_at).toLocaleDateString(locale)}
-                    </p>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <div className="flex items-center gap-1">
-                      <Label
-                        htmlFor={`pct-${ea.id}`}
-                        className="text-xs text-muted-foreground"
-                      >
-                        %
-                      </Label>
-                      <Input
-                        id={`pct-${ea.id}`}
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        max="100"
-                        defaultValue={Number(ea.commission_pct)}
-                        onBlur={(e) => {
-                          const v = Number(e.target.value);
-                          if (
-                            !Number.isNaN(v) &&
-                            v !== Number(ea.commission_pct)
-                          ) {
-                            handlePctChange(ea.id, v);
-                          }
-                        }}
-                        className="w-20"
-                      />
-                    </div>
-                    <Select
-                      value={ea.status}
-                      onChange={(e) =>
-                        handleStatusChange(
-                          ea.id,
-                          e.target.value as "active" | "paused" | "ended"
-                        )
-                      }
-                      className="w-32"
-                    >
-                      <option value="active">Active</option>
-                      <option value="paused">Paused</option>
-                      <option value="ended">Ended</option>
-                    </Select>
-                    <Button
-                      variant="ghost"
-                      onClick={() => handleExtend(ea.id)}
-                      disabled={pending}
-                    >
-                      +20 days
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      onClick={() => handleRotate(ea.id)}
-                      disabled={pending}
-                    >
-                      Rotate
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      onClick={() => handleRevoke(ea.id)}
-                      disabled={pending || tokenStatus === "revoked"}
-                    >
-                      Revoke
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          {eventAffiliates.map((ea) => (
+            <EnrollmentRow
+              key={ea.id}
+              ea={ea}
+              locale={locale}
+              pending={pending}
+              onPctChange={handlePctChange}
+              onStatusChange={handleStatusChange}
+              onRotate={handleRotate}
+              onRevoke={handleRevoke}
+              onExtend={handleExtend}
+            />
+          ))}
         </div>
       )}
 
       {showEnroll && (
         <EnrollDialog
           eventId={eventId}
+          eventEndsAt={eventEndsAt}
           eligibleAffiliates={eligibleAffiliates}
           onClose={() => setShowEnroll(false)}
           onDone={() => {
@@ -329,13 +217,236 @@ export function EventAffiliatesClient({
   );
 }
 
+function EnrollmentRow({
+  ea,
+  locale,
+  pending,
+  onPctChange,
+  onStatusChange,
+  onRotate,
+  onRevoke,
+  onExtend,
+}: {
+  ea: EventAffiliateListRow;
+  locale: string;
+  pending: boolean;
+  onPctChange: (id: string, v: number) => void;
+  onStatusChange: (id: string, s: "active" | "paused" | "ended") => void;
+  onRotate: (id: string) => void;
+  onRevoke: (id: string) => void;
+  onExtend: (id: string, days: number) => void;
+}) {
+  const [extendDays, setExtendDays] = useState(20);
+  const tokenStatus = ea.token_revoked_at
+    ? "revoked"
+    : new Date(ea.token_expires_at) <= new Date()
+      ? "expired"
+      : "active";
+
+  async function copy(url: string, label: string) {
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success(`${label} copied`);
+    } catch {
+      toast.error("Could not copy — your browser blocked clipboard access");
+    }
+  }
+
+  return (
+    <div className="rounded-lg border border-border bg-surface p-4">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              href={`/${locale}/affiliates/${ea.affiliate_id}`}
+              className="text-base font-semibold hover:underline"
+            >
+              {ea.affiliate.display_name}
+            </Link>
+            <Badge
+              variant={
+                ea.status === "active"
+                  ? "success"
+                  : ea.status === "paused"
+                    ? "warning"
+                    : "default"
+              }
+            >
+              {ea.status}
+            </Badge>
+            <Badge
+              variant={
+                tokenStatus === "active"
+                  ? "default"
+                  : tokenStatus === "expired"
+                    ? "warning"
+                    : "error"
+              }
+            >
+              token: {tokenStatus}
+            </Badge>
+          </div>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {ea.affiliate.contact_email}
+            {ea.coupon?.code ? (
+              <>
+                {" · code "}
+                <span className="font-mono">{ea.coupon.code}</span>
+              </>
+            ) : (
+              " · no discount code"
+            )}
+            {" · expires "}
+            {new Date(ea.token_expires_at).toLocaleDateString(locale)}
+          </p>
+
+          {/* Per-row performance */}
+          <div className="mt-2 flex flex-wrap items-center gap-3 text-xs">
+            <span className="text-muted-foreground">
+              {ea.referralsCount} referral
+              {ea.referralsCount === 1 ? "" : "s"}
+            </span>
+            <span className="text-muted-foreground">
+              · paid out{" "}
+              <span className="font-mono">
+                {fmtMoney(ea.earnedCents, locale)}
+              </span>
+            </span>
+            <span className="text-muted-foreground">
+              · in pipeline{" "}
+              <span className="font-mono">
+                {fmtMoney(ea.pendingCents, locale)}
+              </span>
+            </span>
+          </div>
+
+          {/* URLs to copy / share */}
+          <div className="mt-3 space-y-2">
+            <UrlBlock
+              label="Sharing link (public)"
+              url={ea.referralUrl}
+              onCopy={() => copy(ea.referralUrl, "Sharing link")}
+            />
+            <UrlBlock
+              label="Dashboard (private — affiliate only)"
+              url={ea.dashboardUrl}
+              onCopy={() => copy(ea.dashboardUrl, "Dashboard link")}
+            />
+          </div>
+        </div>
+
+        <div className="flex flex-col items-end gap-2">
+          <div className="flex items-center gap-2">
+            <Label
+              htmlFor={`pct-${ea.id}`}
+              className="text-xs text-muted-foreground"
+            >
+              %
+            </Label>
+            <Input
+              id={`pct-${ea.id}`}
+              type="number"
+              step="0.01"
+              min="0"
+              max="100"
+              defaultValue={Number(ea.commission_pct)}
+              onBlur={(e) => {
+                const v = Number(e.target.value);
+                if (!Number.isNaN(v) && v !== Number(ea.commission_pct)) {
+                  onPctChange(ea.id, v);
+                }
+              }}
+              className="w-20"
+            />
+            <Select
+              value={ea.status}
+              onChange={(e) =>
+                onStatusChange(
+                  ea.id,
+                  e.target.value as "active" | "paused" | "ended"
+                )
+              }
+              className="w-32"
+            >
+              <option value="active">Active</option>
+              <option value="paused">Paused</option>
+              <option value="ended">Ended</option>
+            </Select>
+          </div>
+          <div className="flex items-center gap-2">
+            <Label className="text-xs text-muted-foreground">Extend</Label>
+            <Input
+              type="number"
+              min="1"
+              max="365"
+              value={extendDays}
+              onChange={(e) => setExtendDays(Number(e.target.value))}
+              className="w-16"
+            />
+            <span className="text-xs text-muted-foreground">days</span>
+            <Button
+              variant="ghost"
+              onClick={() => onExtend(ea.id, extendDays)}
+              disabled={pending}
+            >
+              Apply
+            </Button>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              onClick={() => onRotate(ea.id)}
+              disabled={pending}
+            >
+              Rotate
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => onRevoke(ea.id)}
+              disabled={pending || tokenStatus === "revoked"}
+            >
+              Revoke
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function UrlBlock({
+  label,
+  url,
+  onCopy,
+}: {
+  label: string;
+  url: string;
+  onCopy: () => void;
+}) {
+  return (
+    <div>
+      <div className="text-xs font-medium text-muted-foreground">{label}</div>
+      <div className="mt-1 flex items-center gap-2">
+        <code className="flex-1 break-all rounded border border-border bg-muted/20 px-2 py-1 text-xs">
+          {url}
+        </code>
+        <Button variant="ghost" onClick={onCopy}>
+          Copy
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 function EnrollDialog({
   eventId,
+  eventEndsAt,
   eligibleAffiliates,
   onClose,
   onDone,
 }: {
   eventId: string;
+  eventEndsAt: string | null;
   eligibleAffiliates: AffiliateLite[];
   onClose: () => void;
   onDone: () => void;
@@ -353,6 +464,7 @@ function EnrollDialog({
   const [newLocale, setNewLocale] = useState<"en" | "de" | "fr">("en");
 
   const [commissionPct, setCommissionPct] = useState(10);
+  const [expiryDate, setExpiryDate] = useState(defaultExpiry(eventEndsAt));
   const [offerDiscount, setOfferDiscount] = useState(false);
   const [couponCode, setCouponCode] = useState("");
   const [discountType, setDiscountType] = useState<
@@ -395,6 +507,9 @@ function EnrollDialog({
                 discountValue,
               }
             : null,
+          // Send end-of-day in the local TZ so a date picker date doesn't
+          // expire at midnight UTC mid-business-day.
+          tokenExpiresAt: new Date(`${expiryDate}T23:59:59`).toISOString(),
         });
         toast.success("Enrolled and welcome email sent");
         onDone();
@@ -403,6 +518,10 @@ function EnrollDialog({
       }
     });
   }
+
+  const expiryHint = eventEndsAt
+    ? `Default: 20 days after the event end (${new Date(eventEndsAt).toLocaleDateString()}). Editable.`
+    : "Event has no end date set — defaulting to 180 days from now. Editable.";
 
   return (
     <div
@@ -415,8 +534,8 @@ function EnrollDialog({
       >
         <h2 className="font-heading text-lg font-bold">Enroll affiliate</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          One click creates the coupon, generates the dashboard token, and emails
-          the affiliate.
+          Creates the dashboard token + coupon (if any), and emails the
+          affiliate the two links.
         </p>
 
         <div className="mt-5 flex gap-2 border-b border-border">
@@ -511,6 +630,17 @@ function EnrollDialog({
               Paid on the order total when a sale is attributed to this
               affiliate via their referral URL.
             </p>
+          </div>
+
+          <div>
+            <Label>Dashboard token expires</Label>
+            <Input
+              type="date"
+              value={expiryDate}
+              min={new Date().toISOString().slice(0, 10)}
+              onChange={(e) => setExpiryDate(e.target.value)}
+            />
+            <p className="mt-1 text-xs text-muted-foreground">{expiryHint}</p>
           </div>
 
           <div className="rounded-md border border-border bg-muted/20 p-3">

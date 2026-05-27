@@ -84,10 +84,13 @@ export async function getAffiliateAction(id: string) {
   return getAffiliateImpl(supabase, id);
 }
 
-export async function listEventAffiliatesAction(eventId: string) {
+export async function listEventAffiliatesAction(
+  eventId: string,
+  eventSlug: string
+) {
   await guard();
   const supabase = await createServerClient();
-  return listEventAffiliatesImpl(supabase, eventId);
+  return listEventAffiliatesImpl(supabase, eventId, { eventSlug });
 }
 
 export async function enrollAffiliateAction(input: {
@@ -100,6 +103,7 @@ export async function enrollAffiliateAction(input: {
     discountValue: number;
     applicableTierIds?: string[] | null;
   } | null;
+  tokenExpiresAt?: string | null;
 }) {
   await guard();
   const supabase = await createServerClient();

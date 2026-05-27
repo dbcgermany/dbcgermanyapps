@@ -96,6 +96,10 @@ export interface EnrollAffiliateInput {
     discountValue: number;
     applicableTierIds?: string[] | null;
   } | null;
+  // Explicit override for the dashboard token expiry. If omitted, the
+  // default is event.ends_at + 20 days (or 180 days from now when the
+  // event has no end date).
+  tokenExpiresAt?: string | null;
 }
 
 export interface EnrollAffiliateResult {
@@ -153,12 +157,14 @@ export async function enrollAffiliateInEvent(
   // 2. Create the event_affiliates row.
   const token = generateDashboardToken();
   const tag = generateTrackingTag();
-  const expiresAt = opts.eventEndsAt
-    ? new Date(
-        new Date(opts.eventEndsAt).getTime() + 20 * 86400000
-      ).toISOString()
-    : // No end date on the event — fall back to 6 months from now.
-      new Date(Date.now() + 180 * 86400000).toISOString();
+  const expiresAt =
+    input.tokenExpiresAt ??
+    (opts.eventEndsAt
+      ? new Date(
+          new Date(opts.eventEndsAt).getTime() + 20 * 86400000
+        ).toISOString()
+      : // No end date on the event — fall back to 6 months from now.
+        new Date(Date.now() + 180 * 86400000).toISOString());
 
   const { data: ea, error: eaErr } = await supabase
     .from("event_affiliates")
@@ -273,20 +279,132 @@ export async function updateEventAffiliate(
   if (error) throw new Error(`updateEventAffiliate: ${error.message}`);
 }
 
+export interface EventAffiliateListRow {
+  id: string;
+  event_id: string;
+  affiliate_id: string;
+  commission_pct: number;
+  status: string;
+  coupon_id: string | null;
+  dashboard_token: string;
+  tracking_tag: string;
+  token_expires_at: string;
+  token_revoked_at: string | null;
+  created_at: string;
+  affiliate: {
+    id: string;
+    display_name: string;
+    contact_email: string;
+    status: string;
+    preferred_locale: AffiliateLocale;
+  };
+  coupon: {
+    id: string;
+    code: string;
+    discount_type: string;
+    discount_value: number;
+  } | null;
+  referralUrl: string;
+  dashboardUrl: string;
+  referralsCount: number;
+  earnedCents: number;
+  pendingCents: number;
+}
+
+/**
+ * Listing the per-event roster needs more than the raw rows — admin wants
+ * the live referral URL + dashboard URL (to copy / resend manually), and
+ * a per-affiliate snapshot of conversions + earnings. This batches the
+ * commission aggregates in a second query and stitches it together.
+ */
 export async function listEventAffiliates(
   supabase: SupabaseClient,
-  eventId: string
-) {
-  const { data, error } = await supabase
+  eventId: string,
+  opts: { eventSlug: string }
+): Promise<EventAffiliateListRow[]> {
+  const { data: rows, error } = await supabase
     .from("event_affiliates")
     .select(
       `id, event_id, affiliate_id, commission_pct, status, coupon_id,
-       dashboard_token, token_expires_at, token_revoked_at, created_at,
-       affiliates ( id, display_name, contact_email, status ),
+       dashboard_token, tracking_tag, token_expires_at, token_revoked_at, created_at,
+       affiliates ( id, display_name, contact_email, status, preferred_locale ),
        coupons ( id, code, discount_type, discount_value )`
     )
     .eq("event_id", eventId)
     .order("created_at", { ascending: false });
   if (error) throw new Error(`listEventAffiliates: ${error.message}`);
-  return data ?? [];
+  if (!rows || rows.length === 0) return [];
+
+  const ids = rows.map((r) => r.id as string);
+  const [{ data: referralCounts }, { data: commissionRows }] =
+    await Promise.all([
+      supabase
+        .from("affiliate_referrals")
+        .select("event_affiliate_id")
+        .in("event_affiliate_id", ids),
+      supabase
+        .from("affiliate_commissions")
+        .select("event_affiliate_id, commission_cents, status")
+        .in("event_affiliate_id", ids),
+    ]);
+
+  const refsBy = new Map<string, number>();
+  for (const r of referralCounts ?? []) {
+    const id = r.event_affiliate_id as string;
+    refsBy.set(id, (refsBy.get(id) ?? 0) + 1);
+  }
+  const earnedBy = new Map<string, number>();
+  const pendingBy = new Map<string, number>();
+  for (const c of commissionRows ?? []) {
+    const id = c.event_affiliate_id as string;
+    const cents = c.commission_cents as number;
+    const s = c.status as string;
+    if (s === "paid") earnedBy.set(id, (earnedBy.get(id) ?? 0) + cents);
+    if (s === "pending" || s === "eligible" || s === "payout_queued")
+      pendingBy.set(id, (pendingBy.get(id) ?? 0) + cents);
+  }
+
+  return rows.map((r) => {
+    const aff = (Array.isArray(r.affiliates) ? r.affiliates[0] : r.affiliates) as
+      | EventAffiliateListRow["affiliate"]
+      | null;
+    const cp = (Array.isArray(r.coupons) ? r.coupons[0] : r.coupons) as
+      | EventAffiliateListRow["coupon"]
+      | null;
+    const locale = (aff?.preferred_locale as AffiliateLocale) ?? "en";
+    return {
+      id: r.id as string,
+      event_id: r.event_id as string,
+      affiliate_id: r.affiliate_id as string,
+      commission_pct: Number(r.commission_pct),
+      status: r.status as string,
+      coupon_id: (r.coupon_id as string | null) ?? null,
+      dashboard_token: r.dashboard_token as string,
+      tracking_tag: r.tracking_tag as string,
+      token_expires_at: r.token_expires_at as string,
+      token_revoked_at: (r.token_revoked_at as string | null) ?? null,
+      created_at: r.created_at as string,
+      affiliate: aff ?? {
+        id: r.affiliate_id as string,
+        display_name: "—",
+        contact_email: "",
+        status: "",
+        preferred_locale: "en",
+      },
+      coupon: cp,
+      referralUrl: buildReferralUrl({
+        locale,
+        eventSlug: opts.eventSlug,
+        trackingTag: r.tracking_tag as string,
+        couponCode: cp?.code ?? null,
+      }),
+      dashboardUrl: buildDashboardUrl({
+        locale,
+        token: r.dashboard_token as string,
+      }),
+      referralsCount: refsBy.get(r.id as string) ?? 0,
+      earnedCents: earnedBy.get(r.id as string) ?? 0,
+      pendingCents: pendingBy.get(r.id as string) ?? 0,
+    };
+  });
 }

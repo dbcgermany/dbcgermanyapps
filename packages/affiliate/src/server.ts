@@ -20,6 +20,7 @@ export type {
   CreateAffiliateInput,
   EnrollAffiliateInput,
   EnrollAffiliateResult,
+  EventAffiliateListRow,
 } from "./server-actions/admin-crud";
 export {
   getAffiliateDashboardByToken,

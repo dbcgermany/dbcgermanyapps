@@ -16,9 +16,9 @@ export default async function EventAffiliatesPage({
 }) {
   if (!affiliateEnabled()) notFound();
   const { locale, id } = await params;
-  const [event, eventAffiliates, allAffiliates, tBack] = await Promise.all([
-    getEvent(id),
-    listEventAffiliatesAction(id),
+  const event = await getEvent(id);
+  const [eventAffiliates, allAffiliates, tBack] = await Promise.all([
+    listEventAffiliatesAction(id, event.slug),
     listAffiliatesAction(),
     getTranslations({ locale, namespace: "admin.back" }),
   ]);
@@ -44,38 +44,7 @@ export default async function EventAffiliatesPage({
           contact_email: a.contact_email,
           status: a.status,
         }))}
-        eventAffiliates={eventAffiliates.map((ea) => {
-          const aff = Array.isArray(ea.affiliates)
-            ? ea.affiliates[0]
-            : ea.affiliates;
-          const cp = Array.isArray(ea.coupons) ? ea.coupons[0] : ea.coupons;
-          return {
-            id: ea.id,
-            affiliate_id: ea.affiliate_id,
-            commission_pct: Number(ea.commission_pct),
-            coupon_id: ea.coupon_id,
-            status: ea.status,
-            dashboard_token: ea.dashboard_token,
-            token_expires_at: ea.token_expires_at,
-            token_revoked_at: ea.token_revoked_at,
-            affiliates: aff
-              ? {
-                  id: aff.id,
-                  display_name: aff.display_name,
-                  contact_email: aff.contact_email,
-                  status: aff.status,
-                }
-              : null,
-            coupons: cp
-              ? {
-                  id: cp.id,
-                  code: cp.code,
-                  discount_type: cp.discount_type,
-                  discount_value: cp.discount_value,
-                }
-              : null,
-          };
-        })}
+        eventAffiliates={eventAffiliates}
         locale={locale}
       />
     </div>
