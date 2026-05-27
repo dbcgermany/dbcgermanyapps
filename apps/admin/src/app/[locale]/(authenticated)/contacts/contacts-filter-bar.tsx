@@ -75,8 +75,10 @@ export function ContactsFilterBar({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
 
-  const filterInput =
-    "rounded-md border border-border bg-background px-3 py-2 text-sm";
+  // Empty — the SSOT Input/Select primitives carry their own border/bg/padding.
+  // The wrapping <div className="grid …"> below sets each control's width;
+  // we don't pass extra classes here so we don't risk shadowing the SSOT.
+  const filterInput = "";
 
   const visibleCategories = categories.filter(
     (c) =>
@@ -95,15 +97,15 @@ export function ContactsFilterBar({
   );
 
   return (
-    <div className="mt-6 flex flex-col gap-2">
-      <div className="flex flex-wrap gap-2">
+    <div className="mt-6 flex flex-col gap-3">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-6">
         <Input
           type="search"
           name="q"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder={t("search")}
-          className={`${filterInput} w-64`}
+          className={`${filterInput} lg:col-span-2`}
         />
 
         <Select
@@ -173,12 +175,17 @@ export function ContactsFilterBar({
             </option>
           ))}
         </Select>
+      </div>
 
+      <div className="flex flex-wrap items-center gap-3">
         <label className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm">
-          <Input
+          <input
             type="checkbox"
             checked={sp.get("marketing") === "1"}
-            onChange={(e) => setParam("marketing", e.target.checked ? "1" : null)}
+            onChange={(e) =>
+              setParam("marketing", e.target.checked ? "1" : null)
+            }
+            className="h-4 w-4 accent-foreground"
           />
           {t("marketingOnly")}
         </label>
