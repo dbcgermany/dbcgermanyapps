@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button, Input, Label, Select, Badge } from "@dbc/ui";
 import type { EventAffiliateListRow } from "@dbc/affiliate/server";
+import { StatGrid } from "@/components/stat-grid";
+import { StatCard } from "@/components/stat-card";
 import {
   createAffiliateAction,
   enrollAffiliateAction,
@@ -195,6 +197,8 @@ export function EventAffiliatesClient({
     () => ({
       active: eventAffiliates.filter((e) => e.status === "active").length,
       total: eventAffiliates.length,
+      referrals: eventAffiliates.reduce((s, e) => s + e.referralsCount, 0),
+      earned: eventAffiliates.reduce((s, e) => s + e.earnedCents, 0),
     }),
     [eventAffiliates]
   );
@@ -202,23 +206,31 @@ export function EventAffiliatesClient({
   return (
     <>
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-muted-foreground">
-          {totals.total > 0
-            ? `${totals.active} active · ${totals.total} enrolled`
-            : "No affiliates enrolled yet for this event."}
+        <p className="min-w-0 text-sm text-muted-foreground">
           {eventEndsAt
-            ? ` · Default token closes ${new Date(
+            ? `Default token closes ${new Date(
                 new Date(eventEndsAt).getTime() + 20 * 86400000
               ).toLocaleDateString(locale)} (event end + 20 days)`
-            : " · No event end set — default token lasts 180 days from enrollment"}
+            : "No event end set — default token lasts 180 days from enrollment"}
         </p>
         <Button onClick={() => setShowEnroll(true)} disabled={pending}>
           Enroll affiliate
         </Button>
       </div>
 
+      {eventAffiliates.length > 0 && (
+        <div className="mt-6">
+          <StatGrid cols={4}>
+            <StatCard label="Active" value={String(totals.active)} />
+            <StatCard label="Enrolled" value={String(totals.total)} />
+            <StatCard label="Referrals" value={String(totals.referrals)} />
+            <StatCard label="Paid out" value={fmtMoney(totals.earned, locale)} />
+          </StatGrid>
+        </div>
+      )}
+
       {reachedGoals.length > 0 && (
-        <div className="mt-6 rounded-lg border border-amber-300 bg-amber-50 p-4 text-amber-950 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-100">
+        <div className="mt-6 rounded-lg border border-warning-border bg-warning-soft p-4 text-warning-strong">
           <h2 className="font-heading text-base font-bold">
             Free tickets to send ({reachedGoals.length})
           </h2>
@@ -227,13 +239,13 @@ export function EventAffiliatesClient({
             code for their free ticket, then mark the goal fulfilled here so
             the affiliate&rsquo;s dashboard reflects it.
           </p>
-          <ul className="mt-3 divide-y divide-amber-200 dark:divide-amber-800">
+          <ul className="mt-3 divide-y divide-warning-border">
             {reachedGoals.map((g) => (
               <li
                 key={g.goal_id}
                 className="flex flex-wrap items-center justify-between gap-3 py-2 text-sm"
               >
-                <span>
+                <span className="min-w-0 wrap-break-word">
                   <strong>{g.affiliate.display_name}</strong> ·{" "}
                   {g.affiliate.contact_email} · sold{" "}
                   <span className="font-mono">{g.current_count}</span>/
@@ -361,7 +373,7 @@ function EnrollmentRow({
 
   return (
     <div className="rounded-lg border border-border bg-surface p-4">
-      <div className="flex flex-wrap items-start justify-between gap-4">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <Link
@@ -450,8 +462,8 @@ function EnrollmentRow({
           </div>
         </div>
 
-        <div className="flex flex-col items-end gap-2">
-          <div className="flex items-center gap-2">
+        <div className="flex w-full flex-col gap-2 lg:w-auto lg:items-end">
+          <div className="flex flex-wrap items-center gap-2">
             <Label
               htmlFor={`pct-${ea.id}`}
               className="text-xs text-muted-foreground"
@@ -488,7 +500,7 @@ function EnrollmentRow({
               <option value="ended">Ended</option>
             </Select>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Label className="text-xs text-muted-foreground">Extend</Label>
             <Input
               type="number"
@@ -507,7 +519,7 @@ function EnrollmentRow({
               Apply
             </Button>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               variant="ghost"
               onClick={onManageGoals}
@@ -680,7 +692,7 @@ function EnrollDialog({
       onClick={() => !pending && onClose()}
     >
       <div
-        className="w-full max-w-xl rounded-lg border border-border bg-background p-6 shadow-lg"
+        className="max-h-[calc(100vh-6rem)] w-full max-w-xl overflow-y-auto rounded-lg border border-border bg-background p-6 shadow-lg"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="font-heading text-lg font-bold">Enroll affiliate</h2>
@@ -726,7 +738,7 @@ function EnrollDialog({
                   placeholder="e.g. Esther Tshipama"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
                   <Label>Contact email</Label>
                   <Input
@@ -796,7 +808,7 @@ function EnrollDialog({
 
           <div className="rounded-md border border-border bg-muted/20 p-3">
             <label className="flex items-start gap-2 text-sm">
-              <input
+              <Input
                 type="checkbox"
                 checked={offerDiscount}
                 onChange={(e) => setOfferDiscount(e.target.checked)}
@@ -822,7 +834,7 @@ function EnrollDialog({
                   placeholder="ESTHER10"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
                   <Label>Discount type</Label>
                   <Select
@@ -852,7 +864,7 @@ function EnrollDialog({
 
           <div className="rounded-md border border-border bg-muted/20 p-3">
             <label className="flex items-start gap-2 text-sm">
-              <input
+              <Input
                 type="checkbox"
                 checked={offerGoals}
                 onChange={(e) => {
@@ -926,7 +938,7 @@ function GoalRulesEditor({
       {goals.map((g, i) => (
         <div
           key={g.id}
-          className="grid grid-cols-[1fr_auto_1fr_auto_auto] items-end gap-2"
+          className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_auto_1fr_auto_auto] sm:items-end"
         >
           <div>
             <Label className="text-xs">Sell</Label>
@@ -1113,7 +1125,7 @@ function ManageGoalsDialog({
       onClick={() => !pending && onClose()}
     >
       <div
-        className="w-full max-w-2xl rounded-lg border border-border bg-background p-6 shadow-lg"
+        className="max-h-[calc(100vh-6rem)] w-full max-w-2xl overflow-y-auto rounded-lg border border-border bg-background p-6 shadow-lg"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="font-heading text-lg font-bold">
@@ -1144,7 +1156,7 @@ function ManageGoalsDialog({
                       key={p.id}
                       className="flex flex-wrap items-center justify-between gap-2 rounded border border-border bg-muted/10 px-3 py-2 text-sm"
                     >
-                      <span>
+                      <span className="min-w-0 wrap-break-word">
                         <strong>{p.current_count}</strong>/{p.target_count}{" "}
                         {tier} → {p.reward_count} {rewardTier} free
                       </span>
@@ -1230,7 +1242,7 @@ function FulfillDialog({
       onClick={() => !pending && onClose()}
     >
       <div
-        className="w-full max-w-md rounded-lg border border-border bg-background p-6 shadow-lg"
+        className="max-h-[calc(100vh-6rem)] w-full max-w-md overflow-y-auto rounded-lg border border-border bg-background p-6 shadow-lg"
         onClick={(e) => e.stopPropagation()}
       >
         <h3 className="font-heading text-lg font-bold">

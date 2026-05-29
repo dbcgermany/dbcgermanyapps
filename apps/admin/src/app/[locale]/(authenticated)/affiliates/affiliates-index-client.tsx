@@ -55,7 +55,7 @@ export function AffiliatesIndexActions() {
           onClick={() => !pending && setOpen(false)}
         >
           <div
-            className="w-full max-w-md rounded-lg border border-border bg-background p-6 shadow-lg"
+            className="max-h-[calc(100vh-6rem)] w-full max-w-md overflow-y-auto rounded-lg border border-border bg-background p-6 shadow-lg"
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="font-heading text-lg font-bold">New affiliate</h2>
@@ -81,7 +81,7 @@ export function AffiliatesIndexActions() {
                   placeholder="esther@example.com"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
                   <Label>Locale</Label>
                   <Select

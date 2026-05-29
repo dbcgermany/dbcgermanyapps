@@ -17,6 +17,12 @@ const ALLOWED_SOURCES = new Set([
 // metadata. Accept the same slug shape the funnels table's CHECK enforces.
 const FUNNEL_SLUG_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
+// Affiliate referral tag: `src=aff_<trackingTag>` where the tag is URL-safe
+// base64 (see packages/affiliate token.ts). The Stripe webhook reads this off
+// orders.source to attribute the sale to the affiliate, so it must survive the
+// source guard rather than being dropped like an unknown channel.
+const AFFILIATE_SRC_RE = /^aff_[A-Za-z0-9_-]{1,64}$/;
+
 export default async function CheckoutPage({
   params,
   searchParams,
@@ -30,7 +36,10 @@ export default async function CheckoutPage({
     locale,
     namespace: "tickets.checkout",
   });
-  const source = src && ALLOWED_SOURCES.has(src) ? src : null;
+  const source =
+    src && (ALLOWED_SOURCES.has(src) || AFFILIATE_SRC_RE.test(src))
+      ? src
+      : null;
   const funnelSlug = fn && FUNNEL_SLUG_RE.test(fn) ? fn : null;
   const COUPON_CODE_RE = /^[A-Z0-9_-]{3,40}$/i;
   const initialCouponCode =
