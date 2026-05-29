@@ -178,7 +178,6 @@ export function EditEventForm({
                 value={value}
                 checked={branch === value}
                 onChange={() => setBranch(value)}
-                className="accent-primary"
               />
               {tBranch(`values.${value}`)}
             </label>
@@ -218,7 +217,6 @@ export function EditEventForm({
                 name="event_type"
                 value={value}
                 defaultChecked={event.event_type === value}
-                className="accent-primary"
               />
               {t[value as EventType]}
             </label>
@@ -594,7 +592,6 @@ export function EditEventForm({
               name="chapter_delegate_program_enabled"
               value="true"
               defaultChecked={event.chapter_delegate_program_enabled !== false}
-              className="accent-primary"
             />
             Branch delegate program enabled
           </label>
@@ -605,7 +602,6 @@ export function EditEventForm({
               name="catering_enabled"
               value="true"
               defaultChecked={!!event.catering_enabled}
-              className="accent-primary"
             />
             Catering enabled for this event
           </label>
@@ -643,7 +639,6 @@ export function EditEventForm({
                   defaultChecked={
                     (event.catering_eligible_roles ?? []).includes(r.value)
                   }
-                  className="accent-primary"
                 />
                 <span>{r.label}</span>
               </label>
@@ -672,7 +667,6 @@ export function EditEventForm({
               name="door_sale_enabled"
               value="true"
               defaultChecked={event.door_sale_enabled !== false}
-              className="accent-primary"
             />
             Door sale enabled
           </label>
@@ -683,7 +677,6 @@ export function EditEventForm({
               name="coupons_enabled"
               value="true"
               defaultChecked={event.coupons_enabled !== false}
-              className="accent-primary"
             />
             Coupons enabled
           </label>
@@ -694,7 +687,6 @@ export function EditEventForm({
               name="waitlist_enabled"
               value="true"
               defaultChecked={!!event.waitlist_enabled}
-              className="accent-primary"
             />
             Waitlist enabled
           </label>
@@ -738,7 +730,6 @@ export function EditEventForm({
               name="ticket_transfer_enabled"
               value="true"
               defaultChecked={event.ticket_transfer_enabled !== false}
-              className="accent-primary"
             />
             Ticket transfer enabled
           </label>
@@ -811,7 +802,6 @@ export function EditEventForm({
               name="requires_photo_consent"
               value="true"
               defaultChecked={!!event.requires_photo_consent}
-              className="accent-primary"
             />
             Require photo / video consent at checkout
           </label>
@@ -856,7 +846,6 @@ export function EditEventForm({
               name="aftercare_emails_enabled"
               value="true"
               defaultChecked={event.aftercare_emails_enabled !== false}
-              className="accent-primary"
             />
             Aftercare emails
           </label>

@@ -280,7 +280,6 @@ function CouponEditForm({
                   defaultChecked={
                     coupon.applicable_tier_ids?.includes(t.id) ?? false
                   }
-                  className="accent-primary"
                 />
                 {t.name}
               </label>

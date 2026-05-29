@@ -72,7 +72,6 @@ export default function NewEventPage({
                   value={value}
                   checked={branch === value}
                   onChange={() => setBranch(value)}
-                  className="accent-primary"
                 />
                 {tBranch(`values.${value}`)}
               </label>
@@ -107,7 +106,6 @@ export default function NewEventPage({
                     name="event_type"
                     value={value}
                     defaultChecked={i === 0}
-                    className="accent-primary"
                   />
                   {t(value as EventType)}
                 </label>

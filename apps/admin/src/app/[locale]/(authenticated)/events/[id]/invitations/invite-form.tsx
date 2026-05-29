@@ -243,7 +243,7 @@ export function InviteForm({
               name="delivery_mode"
               checked={deliveryMode === "ticket_only"}
               onChange={() => setDeliveryMode("ticket_only")}
-              className="mt-0.5 accent-primary"
+              className="mt-0.5"
             />
             <span>
               <span className="block font-medium">{t.justTicket}</span>
@@ -258,7 +258,7 @@ export function InviteForm({
               name="delivery_mode"
               checked={deliveryMode === "ticket_with_letter"}
               onChange={() => setDeliveryMode("ticket_with_letter")}
-              className="mt-0.5 accent-primary"
+              className="mt-0.5"
             />
             <span>
               <span className="block font-medium">
@@ -284,7 +284,6 @@ export function InviteForm({
               name="acquisition_type"
               checked={acquisitionType === "invited"}
               onChange={() => setAcquisitionType("invited")}
-              className="accent-primary"
             />
             {t.invitedGuest}
           </label>
@@ -294,7 +293,6 @@ export function InviteForm({
               name="acquisition_type"
               checked={acquisitionType === "assigned"}
               onChange={() => setAcquisitionType("assigned")}
-              className="accent-primary"
             />
             {t.preAssigned}
           </label>

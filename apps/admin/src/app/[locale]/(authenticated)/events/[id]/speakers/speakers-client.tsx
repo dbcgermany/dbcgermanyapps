@@ -224,7 +224,6 @@ export function EventSpeakersClient({
                 <Input
                   type="checkbox"
                   name="is_featured"
-                  className="h-4 w-4 rounded border-border"
                 />
                 Featured
               </label>

@@ -513,7 +513,7 @@ function SectionForm({
                   type="checkbox"
                   name={String(f.name)}
                   defaultChecked={Boolean(info[f.name])}
-                  className="mt-1 h-4 w-4 rounded border-border"
+                  className="mt-1"
                 />
                 <span className="flex-1">
                   <span className="block text-sm font-medium">{f.label}</span>

@@ -793,7 +793,6 @@ function TestimonialForm({
               type="checkbox"
               name="is_featured"
               defaultChecked={initial?.is_featured}
-              className="h-4 w-4 rounded border-border"
             />
             Featured
           </label>

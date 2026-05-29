@@ -450,7 +450,6 @@ function MenuItemFields({
             name="is_vegetarian"
             value="true"
             defaultChecked={!!item?.is_vegetarian}
-            className="accent-primary"
           />
           {t("vegetarian")}
         </label>
@@ -461,7 +460,6 @@ function MenuItemFields({
             name="is_vegan"
             value="true"
             defaultChecked={!!item?.is_vegan}
-            className="accent-primary"
           />
           {t("vegan")}
         </label>
@@ -472,7 +470,6 @@ function MenuItemFields({
             name="is_halal"
             value="true"
             defaultChecked={!!item?.is_halal}
-            className="accent-primary"
           />
           {t("halal")}
         </label>
@@ -483,7 +480,6 @@ function MenuItemFields({
             name="is_active"
             value="true"
             defaultChecked={item ? item.is_active : true}
-            className="accent-primary"
           />
           {t("active")}
         </label>

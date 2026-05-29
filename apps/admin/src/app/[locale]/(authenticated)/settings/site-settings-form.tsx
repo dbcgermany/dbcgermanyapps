@@ -137,7 +137,7 @@ export function SiteSettingsForm({
             name="maintenance_mode"
             type="checkbox"
             defaultChecked={initial.maintenance_mode}
-            className="mt-1 accent-primary"
+            className="mt-1"
           />
           <span>
             <span className="block text-sm font-medium">{t.maintenance}</span>

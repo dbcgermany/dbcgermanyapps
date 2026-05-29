@@ -268,7 +268,7 @@ export function TeamMemberForm({
               type="checkbox"
               name="featured_on_about"
               defaultChecked={initial?.featured_on_about ?? false}
-              className="mt-0.5 h-4 w-4 accent-primary cursor-pointer"
+              className="mt-0.5"
             />
             <span className="min-w-0">
               <span className="block text-sm font-medium">{t.featuredOnAbout}</span>

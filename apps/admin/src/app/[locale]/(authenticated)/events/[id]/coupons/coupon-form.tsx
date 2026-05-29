@@ -150,7 +150,6 @@ export function CouponForm({
                   type="checkbox"
                   name="applicable_tier_ids"
                   value={tier.id}
-                  className="accent-primary"
                 />
                 {tier.name}
               </label>

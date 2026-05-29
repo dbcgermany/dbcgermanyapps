@@ -734,7 +734,6 @@ export function StaffClient({
                                           assigned
                                         )
                                       }
-                                      className="accent-primary"
                                     />
                                     <span>{ev.title}</span>
                                     <span className="text-xs text-muted-foreground">

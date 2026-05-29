@@ -279,7 +279,6 @@ function AdForm({
             type="checkbox"
             name="is_active"
             defaultChecked={initial?.is_active ?? true}
-            className="h-4 w-4 accent-primary"
           />
           {t("active")}
         </label>

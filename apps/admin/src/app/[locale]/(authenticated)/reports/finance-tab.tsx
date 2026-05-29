@@ -472,7 +472,6 @@ export function FinanceTab({ locale, summary, events, filters }: FinanceTabProps
               type="checkbox"
               checked={semicolon}
               onChange={(e) => setSemicolon(e.target.checked)}
-              className="h-4 w-4"
             />
             {t("semicolon")}
           </label>

@@ -360,7 +360,6 @@ export function NewContactForm({
               <Input
                 type="checkbox"
                 name="email_verified"
-                className="size-4 rounded border-input"
               />
               <span>{tBusiness("fields.emailVerifiedToggle")}</span>
             </label>

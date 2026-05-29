@@ -313,7 +313,6 @@ export function StaffDetailClient({
                   checked={assigned}
                   disabled={isPending}
                   onChange={() => handleToggleEvent(ev.id, assigned)}
-                  className="accent-primary"
                 />
                 <span>{ev.title}</span>
                 <span className="text-xs text-muted-foreground">

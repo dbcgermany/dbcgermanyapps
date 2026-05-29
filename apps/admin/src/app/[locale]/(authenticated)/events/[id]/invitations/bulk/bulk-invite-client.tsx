@@ -296,7 +296,6 @@ export function BulkInviteClient({
               name="bulk_delivery_mode"
               checked={deliveryMode === "ticket_only"}
               onChange={() => setDeliveryMode("ticket_only")}
-              className="accent-primary"
             />
             {t.justTicket}
           </label>
@@ -306,7 +305,6 @@ export function BulkInviteClient({
               name="bulk_delivery_mode"
               checked={deliveryMode === "ticket_with_letter"}
               onChange={() => setDeliveryMode("ticket_with_letter")}
-              className="accent-primary"
             />
             {t.ticketWithLetter}
           </label>
@@ -318,7 +316,6 @@ export function BulkInviteClient({
               name="bulk_acquisition_type"
               checked={acquisitionType === "invited"}
               onChange={() => setAcquisitionType("invited")}
-              className="accent-primary"
             />
             {t.invitedGuests}
           </label>
@@ -328,7 +325,6 @@ export function BulkInviteClient({
               name="bulk_acquisition_type"
               checked={acquisitionType === "assigned"}
               onChange={() => setAcquisitionType("assigned")}
-              className="accent-primary"
             />
             {t.preAssigned}
           </label>

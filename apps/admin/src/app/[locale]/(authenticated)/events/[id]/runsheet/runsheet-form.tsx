@@ -255,7 +255,7 @@ export function RunsheetForm({
 
       <FormField hint={t.isPublicHint}>
         <label className="flex items-center gap-2 text-sm font-medium">
-          <Input type="checkbox" name="is_public" className="size-4" />
+          <Input type="checkbox" name="is_public" />
           {t.isPublic}
         </label>
       </FormField>

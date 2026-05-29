@@ -139,11 +139,21 @@ export type InputProps = Omit<
   VariantProps<typeof inputVariants>;
 
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  function Input({ className, size, state, ...props }, ref) {
+  function Input({ className, size, state, type, ...props }, ref) {
+    // Radio/checkbox are native toggle controls, not text fields — the
+    // text-input variants (w-full, h-11, border, shadow) stretch them into a
+    // mess. Render them at their natural size with the brand accent instead.
+    const isToggleControl = type === "radio" || type === "checkbox";
     return (
       <input
         ref={ref}
-        className={cn(inputVariants({ size, state }), className)}
+        type={type}
+        className={cn(
+          isToggleControl
+            ? "size-4 shrink-0 accent-primary cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+            : inputVariants({ size, state }),
+          className
+        )}
         {...props}
       />
     );

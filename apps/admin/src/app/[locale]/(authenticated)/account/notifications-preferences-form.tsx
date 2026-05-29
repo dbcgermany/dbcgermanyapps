@@ -165,7 +165,6 @@ export function NotificationsPreferencesForm({
                     type="checkbox"
                     checked={p.in_app}
                     onChange={(e) => togglePref(type, "in_app", e.target.checked)}
-                    className="h-4 w-4 accent-primary cursor-pointer"
                     aria-label={`${l.title} — ${t.inApp}`}
                   />
                 </label>
@@ -174,7 +173,6 @@ export function NotificationsPreferencesForm({
                     type="checkbox"
                     checked={p.email}
                     onChange={(e) => togglePref(type, "email", e.target.checked)}
-                    className="h-4 w-4 accent-primary cursor-pointer"
                     aria-label={`${l.title} — ${t.email}`}
                   />
                 </label>

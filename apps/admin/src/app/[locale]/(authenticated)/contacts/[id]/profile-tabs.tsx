@@ -544,7 +544,6 @@ function ProfileForm({ contact, locale }: { contact: Contact; locale: string }) 
             type="checkbox"
             name="email_verified"
             defaultChecked={contact.email_verified}
-            className="size-4 rounded border-input"
           />
           <input type="hidden" name="email_verified_present" value="1" />
           <span>{tFields("fields.emailVerifiedToggle")}</span>

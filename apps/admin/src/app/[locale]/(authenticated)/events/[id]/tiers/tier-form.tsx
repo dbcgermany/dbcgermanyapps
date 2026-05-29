@@ -230,7 +230,6 @@ export function TierForm({
             name="is_public"
             value="true"
             defaultChecked
-            className="accent-primary"
           />
           {t.publicTier}
         </label>
@@ -330,7 +329,7 @@ function CheckboxField({
         name={name}
         value="true"
         defaultChecked={defaultChecked}
-        className="mt-0.5 accent-primary"
+        className="mt-0.5"
       />
       <span>
         <span className="block font-medium">{label}</span>

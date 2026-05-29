@@ -538,7 +538,6 @@ export function ChapterDelegatesClient({
                     onChange={(e) =>
                       setManualBringsCompanion(e.target.checked)
                     }
-                    className="accent-primary"
                   />
                   {t("manualAdd.bringsCompanion")}
                 </label>

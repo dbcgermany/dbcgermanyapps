@@ -438,7 +438,6 @@ function TierEditForm({
               name="catering_included"
               value="true"
               defaultChecked={!!tier.catering_included}
-              className="accent-primary"
             />
             Catering included
           </label>
@@ -449,7 +448,6 @@ function TierEditForm({
               name="counts_as_sold"
               value="true"
               defaultChecked={tier.counts_as_sold !== false}
-              className="accent-primary"
             />
             Counts as sold
           </label>
@@ -460,7 +458,6 @@ function TierEditForm({
               name="is_team"
               value="true"
               defaultChecked={!!tier.is_team}
-              className="accent-primary"
             />
             Team ticket
           </label>
@@ -471,7 +468,6 @@ function TierEditForm({
               name="is_companion"
               value="true"
               defaultChecked={!!tier.is_companion}
-              className="accent-primary"
             />
             Companion ticket
           </label>

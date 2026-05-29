@@ -64,7 +64,6 @@ export function PaymentMethodsSelect({
               name={name}
               value={value}
               defaultChecked={initial.has(value)}
-              className="accent-primary"
             />
             <span>{LABELS[value]}</span>
           </label>

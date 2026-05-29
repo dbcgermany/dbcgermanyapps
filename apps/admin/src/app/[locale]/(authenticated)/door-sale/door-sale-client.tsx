@@ -321,7 +321,6 @@ export function DoorSaleClient({
                     checked={tierId === tier.id}
                     onChange={() => setTierId(tier.id)}
                     disabled={soldOut}
-                    className="accent-primary"
                   />
                   <div>
                     <p className="font-medium">{tier.name}</p>
