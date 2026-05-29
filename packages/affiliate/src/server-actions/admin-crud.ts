@@ -25,6 +25,11 @@ export interface CreateAffiliateInput {
   preferred_locale?: AffiliateLocale;
   country?: string | null;
   notes?: string | null;
+  // Split name + the linked contacts SSOT row. Resolved by the admin action
+  // (which owns the contact upsert); the package just persists them.
+  first_name?: string | null;
+  last_name?: string | null;
+  contact_id?: string | null;
 }
 
 export async function createAffiliate(
@@ -38,6 +43,9 @@ export async function createAffiliate(
     country: input.country ?? null,
     notes: input.notes ?? null,
     status: "invited",
+    first_name: input.first_name ?? null,
+    last_name: input.last_name ?? null,
+    contact_id: input.contact_id ?? null,
   };
   const { data, error } = await supabase
     .from("affiliates")

@@ -10,21 +10,23 @@ export function AffiliatesIndexActions() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
-  const [displayName, setDisplayName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [locale, setLocale] = useState<"en" | "de" | "fr">("en");
   const [country, setCountry] = useState("");
   const [notes, setNotes] = useState("");
 
   function submit() {
-    if (!displayName.trim() || !email.trim()) {
-      toast.error("Name and email are required");
+    if (!firstName.trim() || !email.trim()) {
+      toast.error("First name and email are required");
       return;
     }
     startTransition(async () => {
       try {
         const row = await createAffiliateAction({
-          display_name: displayName.trim(),
+          first_name: firstName.trim(),
+          last_name: lastName.trim() || null,
           contact_email: email.trim(),
           preferred_locale: locale,
           country: country.trim() || null,
@@ -32,7 +34,8 @@ export function AffiliatesIndexActions() {
         });
         toast.success("Affiliate created");
         setOpen(false);
-        setDisplayName("");
+        setFirstName("");
+        setLastName("");
         setEmail("");
         setCountry("");
         setNotes("");
@@ -64,13 +67,23 @@ export function AffiliatesIndexActions() {
               once you enroll them in a specific event.
             </p>
             <div className="mt-4 space-y-3">
-              <div>
-                <Label>Display name</Label>
-                <Input
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  placeholder="e.g. Esther Tshipama"
-                />
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div>
+                  <Label>First name</Label>
+                  <Input
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    placeholder="Esther"
+                  />
+                </div>
+                <div>
+                  <Label>Last name</Label>
+                  <Input
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    placeholder="Tshipama"
+                  />
+                </div>
               </div>
               <div>
                 <Label>Contact email</Label>

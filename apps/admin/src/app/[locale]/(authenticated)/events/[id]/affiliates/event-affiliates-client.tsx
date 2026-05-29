@@ -600,7 +600,8 @@ function EnrollDialog({
   const [affiliateId, setAffiliateId] = useState(
     eligibleAffiliates[0]?.id ?? ""
   );
-  const [newName, setNewName] = useState("");
+  const [newFirst, setNewFirst] = useState("");
+  const [newLast, setNewLast] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [newLocale, setNewLocale] = useState<"en" | "de" | "fr">("en");
 
@@ -620,12 +621,13 @@ function EnrollDialog({
       try {
         let resolvedId = affiliateId;
         if (mode === "new") {
-          if (!newName.trim() || !newEmail.trim()) {
-            toast.error("Name and email are required");
+          if (!newFirst.trim() || !newEmail.trim()) {
+            toast.error("First name and email are required");
             return;
           }
           const created = await createAffiliateAction({
-            display_name: newName.trim(),
+            first_name: newFirst.trim(),
+            last_name: newLast.trim() || null,
             contact_email: newEmail.trim(),
             preferred_locale: newLocale,
           });
@@ -730,13 +732,23 @@ function EnrollDialog({
         <div className="mt-4 space-y-3">
           {mode === "new" ? (
             <>
-              <div>
-                <Label>Display name</Label>
-                <Input
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  placeholder="e.g. Esther Tshipama"
-                />
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div>
+                  <Label>First name</Label>
+                  <Input
+                    value={newFirst}
+                    onChange={(e) => setNewFirst(e.target.value)}
+                    placeholder="Esther"
+                  />
+                </div>
+                <div>
+                  <Label>Last name</Label>
+                  <Input
+                    value={newLast}
+                    onChange={(e) => setNewLast(e.target.value)}
+                    placeholder="Tshipama"
+                  />
+                </div>
               </div>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>

@@ -55,7 +55,8 @@ export function AffiliateDetailClient({
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const [displayName, setDisplayName] = useState(affiliate.display_name);
+  const [firstName, setFirstName] = useState(affiliate.first_name ?? "");
+  const [lastName, setLastName] = useState(affiliate.last_name ?? "");
   const [email, setEmail] = useState(affiliate.contact_email);
   const [country, setCountry] = useState(affiliate.country ?? "");
   const [pLocale, setPLocale] = useState<"en" | "de" | "fr">(
@@ -68,7 +69,8 @@ export function AffiliateDetailClient({
     startTransition(async () => {
       try {
         await updateAffiliateAction(affiliate.id, {
-          display_name: displayName.trim(),
+          first_name: firstName.trim() || null,
+          last_name: lastName.trim() || null,
           contact_email: email.trim(),
           country: country.trim() || null,
           preferred_locale: pLocale,
@@ -93,13 +95,30 @@ export function AffiliateDetailClient({
   return (
     <div className="space-y-6">
       <div className="rounded-lg border border-border bg-surface p-4">
-        <h2 className="font-heading text-lg font-bold">Profile</h2>
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="font-heading text-lg font-bold">Profile</h2>
+          {affiliate.contact_id && (
+            <Link
+              href={`/${locale}/contacts/${affiliate.contact_id}`}
+              className="text-sm font-medium text-primary hover:underline"
+            >
+              View contact →
+            </Link>
+          )}
+        </div>
         <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
           <div>
-            <Label>Display name</Label>
+            <Label>First name</Label>
             <Input
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+            />
+          </div>
+          <div>
+            <Label>Last name</Label>
+            <Input
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
             />
           </div>
           <div>

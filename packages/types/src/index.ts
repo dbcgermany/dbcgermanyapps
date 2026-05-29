@@ -648,6 +648,7 @@ export const CONTACT_CATEGORY_SLUGS = [
   "press",
   "diaspora",
   "alumni",
+  "affiliate",
 ] as const;
 export type ContactCategorySlug = (typeof CONTACT_CATEGORY_SLUGS)[number];
 

@@ -36,7 +36,49 @@ import {
   sendAffiliateWelcome,
   sendAffiliatePayoutStatement,
 } from "@dbc/email";
+import { CONTACT_CATEGORY } from "@dbc/types";
 import { syncCouponToStripe } from "@/lib/stripe-sync";
+
+/**
+ * Contact is king: every affiliate is a person in the `contacts` SSOT. Resolve
+ * (find-or-create by email) the contact via the canonical upsert RPC and tag it
+ * with the `affiliate` category so they're filterable in the Contacts list.
+ * Returns the contact id to store on affiliates.contact_id. Runs BEFORE the
+ * affiliate row is written so we never create an affiliate without its contact.
+ */
+async function linkAffiliateContact(
+  supabase: Awaited<ReturnType<typeof createServerClient>>,
+  args: {
+    email: string;
+    first_name?: string | null;
+    last_name?: string | null;
+    country?: string | null;
+    locale?: AffiliateLocale | null;
+  }
+): Promise<string | null> {
+  const { data, error } = await supabase.rpc("upsert_contact_from_checkout", {
+    p_email: args.email,
+    p_first_name: args.first_name ?? null,
+    p_last_name: args.last_name ?? null,
+    p_country: args.country ?? null,
+    p_locale: args.locale ?? null,
+    p_auto_category_slug: CONTACT_CATEGORY.affiliate,
+  });
+  if (error) throw new Error(`Could not link affiliate to a contact: ${error.message}`);
+  return (data as string | null) ?? null;
+}
+
+function deriveDisplayName(
+  first?: string | null,
+  last?: string | null,
+  fallback?: string | null
+): string {
+  const joined = [first, last]
+    .map((s) => (s ?? "").trim())
+    .filter(Boolean)
+    .join(" ");
+  return joined || (fallback ?? "").trim();
+}
 
 async function guard() {
   if (!affiliateEnabled()) {
@@ -46,15 +88,43 @@ async function guard() {
 }
 
 export async function createAffiliateAction(input: {
-  display_name: string;
+  first_name: string;
+  last_name?: string | null;
   contact_email: string;
   preferred_locale?: AffiliateLocale;
   country?: string | null;
   notes?: string | null;
+  // Back-compat: older callers may still pass a single display_name.
+  display_name?: string;
 }) {
   await guard();
   const supabase = await createServerClient();
-  const row = await createAffiliateImpl(supabase, input);
+
+  const first = (input.first_name ?? "").trim();
+  const last = (input.last_name ?? "").trim();
+  const display_name = deriveDisplayName(first, last, input.display_name);
+  if (!display_name) throw new Error("Affiliate name is required");
+  const email = input.contact_email.trim().toLowerCase();
+
+  // Resolve/create the contact first — an affiliate must always be a contact.
+  const contactId = await linkAffiliateContact(supabase, {
+    email,
+    first_name: first || null,
+    last_name: last || null,
+    country: input.country ?? null,
+    locale: input.preferred_locale ?? null,
+  });
+
+  const row = await createAffiliateImpl(supabase, {
+    display_name,
+    contact_email: email,
+    preferred_locale: input.preferred_locale,
+    country: input.country ?? null,
+    notes: input.notes ?? null,
+    first_name: first || null,
+    last_name: last || null,
+    contact_id: contactId,
+  });
   revalidatePath("/[locale]/affiliates", "page");
   return row;
 }
@@ -62,6 +132,8 @@ export async function createAffiliateAction(input: {
 export async function updateAffiliateAction(
   id: string,
   patch: {
+    first_name?: string | null;
+    last_name?: string | null;
     display_name?: string;
     contact_email?: string;
     preferred_locale?: AffiliateLocale;
@@ -72,7 +144,52 @@ export async function updateAffiliateAction(
 ) {
   await guard();
   const supabase = await createServerClient();
-  const row = await updateAffiliateImpl(supabase, id, patch);
+
+  const next: Record<string, unknown> = { ...patch };
+  const nameEdited =
+    patch.first_name !== undefined || patch.last_name !== undefined;
+  if (nameEdited) {
+    const first = (patch.first_name ?? "").trim();
+    const last = (patch.last_name ?? "").trim();
+    next.first_name = first || null;
+    next.last_name = last || null;
+    const dn = deriveDisplayName(first, last);
+    if (dn) next.display_name = dn;
+  }
+
+  // Keep the linked contact in sync when the name or email changes.
+  if (nameEdited || patch.contact_email !== undefined) {
+    const current = await getAffiliateImpl(supabase, id);
+    const email = (patch.contact_email ?? current?.contact_email ?? "")
+      .trim()
+      .toLowerCase();
+    if (email) {
+      const contactId = await linkAffiliateContact(supabase, {
+        email,
+        first_name:
+          (next.first_name as string | null | undefined) ??
+          current?.first_name ??
+          null,
+        last_name:
+          (next.last_name as string | null | undefined) ??
+          current?.last_name ??
+          null,
+        country: patch.country ?? current?.country ?? null,
+        locale:
+          (patch.preferred_locale ??
+            (current?.preferred_locale as AffiliateLocale | undefined)) ??
+          null,
+      });
+      if (contactId) next.contact_id = contactId;
+      if (patch.contact_email !== undefined) next.contact_email = email;
+    }
+  }
+
+  const row = await updateAffiliateImpl(
+    supabase,
+    id,
+    next as Parameters<typeof updateAffiliateImpl>[2]
+  );
   revalidatePath(`/[locale]/affiliates/${id}`, "page");
   revalidatePath("/[locale]/affiliates", "page");
   return row;

@@ -292,10 +292,13 @@ export type Database = {
       affiliates: {
         Row: {
           contact_email: string
+          contact_id: string | null
           country: string | null
           created_at: string
           display_name: string
+          first_name: string | null
           id: string
+          last_name: string | null
           notes: string | null
           preferred_locale: string
           profile_id: string | null
@@ -304,10 +307,13 @@ export type Database = {
         }
         Insert: {
           contact_email: string
+          contact_id?: string | null
           country?: string | null
           created_at?: string
           display_name: string
+          first_name?: string | null
           id?: string
+          last_name?: string | null
           notes?: string | null
           preferred_locale?: string
           profile_id?: string | null
@@ -316,17 +322,28 @@ export type Database = {
         }
         Update: {
           contact_email?: string
+          contact_id?: string | null
           country?: string | null
           created_at?: string
           display_name?: string
+          first_name?: string | null
           id?: string
+          last_name?: string | null
           notes?: string | null
           preferred_locale?: string
           profile_id?: string | null
           status?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "affiliates_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       analytics_events: {
         Row: {
