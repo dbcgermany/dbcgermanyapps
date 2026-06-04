@@ -18,7 +18,7 @@ export default async function CouponsPage({
   const supabase = await createServerClient();
   const { data: tiersData } = await supabase
     .from("ticket_tiers")
-    .select("id, name_en, name_de, name_fr, is_active, sort_order")
+    .select("id, name_en, name_de, name_fr, sort_order")
     .eq("event_id", eventId)
     .order("sort_order");
   type TierKey = "name_en" | "name_de" | "name_fr";
