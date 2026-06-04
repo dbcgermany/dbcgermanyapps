@@ -370,6 +370,12 @@ export async function createCheckoutSession(input: CheckoutInput) {
   let discountCents = 0;
   let couponId: string | null = null;
   let couponStripePromotionCodeId: string | null = null;
+  // True when the coupon is scoped to specific tiers. Such coupons must NOT
+  // be handed to Stripe as the whole-order promotion code (Stripe would
+  // discount every line item); instead we pass the tier-scoped amount as an
+  // ephemeral amount_off coupon so Stripe's amount_total matches the
+  // tier-scoped order total exactly (and clears the webhook integrity guard).
+  let couponTierRestricted = false;
 
   if (input.couponCode) {
     const { data: coupon } = await supabase
@@ -415,6 +421,7 @@ export async function createCheckoutSession(input: CheckoutInput) {
     );
     let eligibleCents = subtotalCents;
     if (applicableTierIds.length > 0) {
+      couponTierRestricted = true;
       const allowed = new Set(applicableTierIds);
       eligibleCents = 0;
       for (const attendee of input.attendees) {
@@ -722,12 +729,19 @@ export async function createCheckoutSession(input: CheckoutInput) {
     }
   }
 
-  // Apply discount: prefer the synced Promotion Code so URL ?code= flows
-  // surface in Stripe Checkout's promotion-code field. Fall back to an
-  // ephemeral session-level Coupon for legacy coupons not yet backfilled.
+  // Apply discount. For unrestricted coupons we prefer the synced Promotion
+  // Code so URL ?code= flows surface in Stripe Checkout's promotion-code
+  // field. For tier-restricted coupons (general, affiliate, or team-friend)
+  // the promotion code would make Stripe discount EVERY line item, not just
+  // the eligible tiers — so we pass our already-computed tier-scoped amount
+  // as an ephemeral amount_off coupon. That guarantees Stripe's amount_total
+  // equals the tier-scoped order total exactly (no whole-order over-discount,
+  // no per-line rounding drift) and clears the webhook money-math guard.
+  // The legacy fallback (no synced promotion code) uses the same ephemeral
+  // path.
   const discounts: Array<{ promotion_code?: string; coupon?: string }> = [];
   if (discountCents > 0) {
-    if (couponStripePromotionCodeId) {
+    if (couponStripePromotionCodeId && !couponTierRestricted) {
       discounts.push({ promotion_code: couponStripePromotionCodeId });
     } else {
       const stripeCoupon = await getStripe().coupons.create({
