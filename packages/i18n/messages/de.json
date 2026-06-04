@@ -1079,7 +1079,10 @@
       "sentToast": "Versendet",
       "actionFailedToast": "Aktion fehlgeschlagen: {error}",
       "resyncStripe": "Mit Stripe neu synchronisieren",
-      "resyncedStripeToast": "Mit Stripe synchronisiert"
+      "resyncedStripeToast": "Mit Stripe synchronisiert",
+      "copiedToast": "Kopiert",
+      "copyFailedToast": "Kopieren nicht möglich — Ihr Browser hat den Zugriff auf die Zwischenablage blockiert",
+      "clickToCopy": "Zum Kopieren klicken"
     },
     "emailPreviews": {
       "title": "E-Mail-Vorlagen-Vorschau",

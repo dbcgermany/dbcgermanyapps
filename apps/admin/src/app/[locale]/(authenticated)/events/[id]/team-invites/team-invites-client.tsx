@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { Button, Card, ConfirmDialog, Input, Label, Select } from "@dbc/ui";
+import { CopyCode } from "@/components/copy-code";
 import {
   issueTeamFriendCoupons,
   overrideTeamMemberQuota,
@@ -386,9 +387,7 @@ export function TeamInvitesClient({
                                       key={c.id}
                                       className="flex items-center justify-between gap-2 rounded-md border border-border bg-background px-2 py-1.5"
                                     >
-                                      <span className="font-mono text-xs">
-                                        {c.code}
-                                      </span>
+                                      <CopyCode value={c.code} className="text-xs" />
                                       <span className="text-[11px] text-muted-foreground">
                                         {!c.isActive
                                           ? t("codeStatus.revoked")

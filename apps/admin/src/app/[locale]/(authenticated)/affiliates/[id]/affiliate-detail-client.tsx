@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Badge, Button, Input, Label, Select, Textarea } from "@dbc/ui";
 import type { Affiliate } from "@dbc/affiliate";
 import { updateAffiliateAction } from "@/actions/affiliates";
+import { CopyCode } from "@/components/copy-code";
 
 type EnrollmentRow = {
   id: string;
@@ -200,7 +201,7 @@ export function AffiliateDetailClient({
                         {ea.coupon_code ? (
                           <>
                             code{" "}
-                            <span className="font-mono">{ea.coupon_code}</span>
+                            <CopyCode value={ea.coupon_code} className="text-xs" />
                           </>
                         ) : (
                           "no discount code"

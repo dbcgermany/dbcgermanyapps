@@ -13,6 +13,7 @@ import {
 import { ActionForm } from "@/components/action-form";
 import { InlineEditRow } from "@/components/inline-edit-row";
 import { DeleteButton } from "@/components/delete-button";
+import { CopyCode } from "@/components/copy-code";
 
 const CR_T = {
   en: {
@@ -87,9 +88,10 @@ export function CouponRow({
   return (
     <InlineEditRow
       title={
-        <code className="rounded bg-muted px-2 py-0.5 font-mono text-sm font-semibold">
-          {coupon.code}
-        </code>
+        <CopyCode
+          value={coupon.code}
+          className="rounded bg-muted px-2 py-0.5 text-sm font-semibold"
+        />
       }
       badges={!coupon.is_active && <Badge variant="error">{cr.inactive}</Badge>}
       meta={

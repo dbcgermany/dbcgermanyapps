@@ -8,6 +8,7 @@ import { Button, Input, Label, Select, Badge } from "@dbc/ui";
 import type { EventAffiliateListRow } from "@dbc/affiliate/server";
 import { StatGrid } from "@/components/stat-grid";
 import { StatCard } from "@/components/stat-card";
+import { CopyCode } from "@/components/copy-code";
 import {
   createAffiliateAction,
   enrollAffiliateAction,
@@ -410,7 +411,7 @@ function EnrollmentRow({
             {ea.coupon?.code ? (
               <>
                 {" · code "}
-                <span className="font-mono">{ea.coupon.code}</span>
+                <CopyCode value={ea.coupon.code} className="text-sm" />
               </>
             ) : (
               " · no discount code"

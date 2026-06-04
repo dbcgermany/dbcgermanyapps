@@ -4,6 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { Button, Card, ConfirmDialog } from "@dbc/ui";
+import { CopyCode } from "@/components/copy-code";
 import {
   getEffectiveTeamInviteConfig,
   issueTeamFriendCoupons,
@@ -143,16 +144,7 @@ export function YourInvitesCard({ eventId }: { eventId: string }) {
                 className="flex items-center justify-between gap-3 rounded-md border border-border bg-muted/20 px-3 py-2"
               >
                 <div className="min-w-0">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      navigator.clipboard.writeText(c.code);
-                      toast.success(t("copied"));
-                    }}
-                    className="font-mono text-sm font-medium hover:text-primary"
-                  >
-                    {c.code}
-                  </button>
+                  <CopyCode value={c.code} className="text-sm font-medium" />
                   <p className="text-xs text-muted-foreground">
                     {!c.is_active
                       ? t("codeRevoked")

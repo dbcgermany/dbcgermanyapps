@@ -1079,7 +1079,10 @@
       "sentToast": "Sent",
       "actionFailedToast": "Action failed: {error}",
       "resyncStripe": "Resync to Stripe",
-      "resyncedStripeToast": "Resynced to Stripe"
+      "resyncedStripeToast": "Resynced to Stripe",
+      "copiedToast": "Copied",
+      "copyFailedToast": "Could not copy — your browser blocked clipboard access",
+      "clickToCopy": "Click to copy"
     },
     "emailPreviews": {
       "title": "Email template previews",

@@ -1079,7 +1079,10 @@
       "sentToast": "Envoyé",
       "actionFailedToast": "Action échouée : {error}",
       "resyncStripe": "Resynchroniser avec Stripe",
-      "resyncedStripeToast": "Resynchronisé avec Stripe"
+      "resyncedStripeToast": "Resynchronisé avec Stripe",
+      "copiedToast": "Copié",
+      "copyFailedToast": "Copie impossible — votre navigateur a bloqué l’accès au presse-papiers",
+      "clickToCopy": "Cliquer pour copier"
     },
     "emailPreviews": {
       "title": "Aperçus des modèles d'e-mail",
