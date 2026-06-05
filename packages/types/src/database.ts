@@ -3374,20 +3374,39 @@ export type Database = {
           body_de: string
           body_en: string
           body_fr: string
+          canonical_url: string | null
           cover_image_url: string | null
           created_at: string
           excerpt_de: string | null
           excerpt_en: string | null
           excerpt_fr: string | null
+          focus_keyword_de: string | null
+          focus_keyword_en: string | null
+          focus_keyword_fr: string | null
           id: string
           is_pillar: boolean
           is_published: boolean
+          og_description_de: string | null
+          og_description_en: string | null
+          og_description_fr: string | null
           og_image_url: string | null
+          og_title_de: string | null
+          og_title_en: string | null
+          og_title_fr: string | null
           pillar_id: string | null
           published_at: string | null
+          robots_nofollow: boolean
+          robots_noindex: boolean
+          schema_type: string
           seo_description: string | null
+          seo_description_de: string | null
+          seo_description_en: string | null
+          seo_description_fr: string | null
           seo_keywords: string | null
           seo_title: string | null
+          seo_title_de: string | null
+          seo_title_en: string | null
+          seo_title_fr: string | null
           slug: string
           title_de: string
           title_en: string
@@ -3399,20 +3418,39 @@ export type Database = {
           body_de: string
           body_en: string
           body_fr: string
+          canonical_url?: string | null
           cover_image_url?: string | null
           created_at?: string
           excerpt_de?: string | null
           excerpt_en?: string | null
           excerpt_fr?: string | null
+          focus_keyword_de?: string | null
+          focus_keyword_en?: string | null
+          focus_keyword_fr?: string | null
           id?: string
           is_pillar?: boolean
           is_published?: boolean
+          og_description_de?: string | null
+          og_description_en?: string | null
+          og_description_fr?: string | null
           og_image_url?: string | null
+          og_title_de?: string | null
+          og_title_en?: string | null
+          og_title_fr?: string | null
           pillar_id?: string | null
           published_at?: string | null
+          robots_nofollow?: boolean
+          robots_noindex?: boolean
+          schema_type?: string
           seo_description?: string | null
+          seo_description_de?: string | null
+          seo_description_en?: string | null
+          seo_description_fr?: string | null
           seo_keywords?: string | null
           seo_title?: string | null
+          seo_title_de?: string | null
+          seo_title_en?: string | null
+          seo_title_fr?: string | null
           slug: string
           title_de: string
           title_en: string
@@ -3424,20 +3462,39 @@ export type Database = {
           body_de?: string
           body_en?: string
           body_fr?: string
+          canonical_url?: string | null
           cover_image_url?: string | null
           created_at?: string
           excerpt_de?: string | null
           excerpt_en?: string | null
           excerpt_fr?: string | null
+          focus_keyword_de?: string | null
+          focus_keyword_en?: string | null
+          focus_keyword_fr?: string | null
           id?: string
           is_pillar?: boolean
           is_published?: boolean
+          og_description_de?: string | null
+          og_description_en?: string | null
+          og_description_fr?: string | null
           og_image_url?: string | null
+          og_title_de?: string | null
+          og_title_en?: string | null
+          og_title_fr?: string | null
           pillar_id?: string | null
           published_at?: string | null
+          robots_nofollow?: boolean
+          robots_noindex?: boolean
+          schema_type?: string
           seo_description?: string | null
+          seo_description_de?: string | null
+          seo_description_en?: string | null
+          seo_description_fr?: string | null
           seo_keywords?: string | null
           seo_title?: string | null
+          seo_title_de?: string | null
+          seo_title_en?: string | null
+          seo_title_fr?: string | null
           slug?: string
           title_de?: string
           title_en?: string
@@ -3448,6 +3505,35 @@ export type Database = {
           {
             foreignKeyName: "news_posts_pillar_id_fkey"
             columns: ["pillar_id"]
+            isOneToOne: false
+            referencedRelation: "news_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      news_slug_history: {
+        Row: {
+          created_at: string
+          id: string
+          old_slug: string
+          post_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          old_slug: string
+          post_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          old_slug?: string
+          post_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "news_slug_history_post_id_fkey"
+            columns: ["post_id"]
             isOneToOne: false
             referencedRelation: "news_posts"
             referencedColumns: ["id"]
