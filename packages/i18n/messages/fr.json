@@ -1950,6 +1950,41 @@
           "guest": "Invité",
           "dbc_org": "DBC Germany"
         }
+      },
+      "seo": {
+        "title": "SEO",
+        "hint": "Paramètres pour moteurs de recherche et réseaux sociaux. Les champs vides reprennent le titre/extrait.",
+        "focusKeyword": "Mot-clé principal",
+        "metaTitle": "Titre SEO",
+        "metaDescription": "Méta-description",
+        "ogTitle": "Titre social (optionnel)",
+        "ogDescription": "Description sociale (optionnelle)",
+        "ogImage": "Image sociale (optionnelle)",
+        "canonical": "URL canonique (optionnelle)",
+        "robots": "Moteurs de recherche",
+        "noindex": "Masquer des moteurs de recherche (noindex)",
+        "nofollow": "Ne pas suivre les liens (nofollow)",
+        "schemaType": "Type de schéma",
+        "score": "Score SEO",
+        "googlePreview": "Aperçu Google",
+        "socialPreview": "Aperçu social",
+        "checks": {
+          "keywordSet": "Mot-clé principal défini",
+          "keywordInTitle": "Mot-clé dans le titre SEO",
+          "keywordInDescription": "Mot-clé dans la méta-description",
+          "keywordInSlug": "Mot-clé dans l’URL",
+          "titleLength": "Longueur du titre SEO (30–60)",
+          "descriptionLength": "Longueur de la méta-description (120–160)",
+          "keywordInIntro": "Mot-clé dans l’introduction",
+          "contentLength": "Longueur du contenu (300+ mots)"
+        },
+        "schemaTypes": {
+          "Article": "Article",
+          "NewsArticle": "Article de presse",
+          "BlogPosting": "Billet de blog",
+          "Opinion": "Opinion",
+          "Interview": "Entretien"
+        }
       }
     },
     "funnels": {

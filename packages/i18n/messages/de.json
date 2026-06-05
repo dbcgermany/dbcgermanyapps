@@ -1950,6 +1950,41 @@
           "guest": "Gast",
           "dbc_org": "DBC Germany"
         }
+      },
+      "seo": {
+        "title": "SEO",
+        "hint": "Einstellungen für Suchmaschinen und Social Media. Leere Felder greifen auf Titel/Auszug zurück.",
+        "focusKeyword": "Fokus-Keyword",
+        "metaTitle": "SEO-Titel",
+        "metaDescription": "Meta-Beschreibung",
+        "ogTitle": "Social-Titel (optional)",
+        "ogDescription": "Social-Beschreibung (optional)",
+        "ogImage": "Social-Bild (optional)",
+        "canonical": "Canonical-URL (optional)",
+        "robots": "Suchmaschinen",
+        "noindex": "Vor Suchmaschinen verbergen (noindex)",
+        "nofollow": "Links nicht folgen (nofollow)",
+        "schemaType": "Schema-Typ",
+        "score": "SEO-Score",
+        "googlePreview": "Google-Vorschau",
+        "socialPreview": "Social-Vorschau",
+        "checks": {
+          "keywordSet": "Fokus-Keyword gesetzt",
+          "keywordInTitle": "Keyword im SEO-Titel",
+          "keywordInDescription": "Keyword in der Meta-Beschreibung",
+          "keywordInSlug": "Keyword in der URL",
+          "titleLength": "SEO-Titel-Länge (30–60)",
+          "descriptionLength": "Meta-Beschreibung-Länge (120–160)",
+          "keywordInIntro": "Keyword in der Einleitung",
+          "contentLength": "Inhaltslänge (300+ Wörter)"
+        },
+        "schemaTypes": {
+          "Article": "Artikel",
+          "NewsArticle": "Nachrichtenartikel",
+          "BlogPosting": "Blogbeitrag",
+          "Opinion": "Meinung",
+          "Interview": "Interview"
+        }
       }
     },
     "funnels": {

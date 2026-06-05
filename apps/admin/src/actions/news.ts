@@ -93,7 +93,33 @@ async function authorPathsForPost(
 }
 
 const POST_COLUMNS =
-  "id, slug, title_en, title_de, title_fr, excerpt_en, excerpt_de, excerpt_fr, body_en, body_de, body_fr, cover_image_url, author_name, is_pillar, pillar_id, is_published, published_at, created_at, updated_at" as const;
+  "id, slug, title_en, title_de, title_fr, excerpt_en, excerpt_de, excerpt_fr, body_en, body_de, body_fr, cover_image_url, author_name, is_pillar, pillar_id, seo_title_en, seo_title_de, seo_title_fr, seo_description_en, seo_description_de, seo_description_fr, focus_keyword_en, focus_keyword_de, focus_keyword_fr, og_title_en, og_title_de, og_title_fr, og_description_en, og_description_de, og_description_fr, og_image_url, canonical_url, robots_noindex, robots_nofollow, schema_type, is_published, published_at, created_at, updated_at" as const;
+
+function readSeo(formData: FormData) {
+  const s = (k: string) => ((formData.get(k) as string) ?? "").trim() || null;
+  return {
+    seo_title_en: s("seo_title_en"),
+    seo_title_de: s("seo_title_de"),
+    seo_title_fr: s("seo_title_fr"),
+    seo_description_en: s("seo_description_en"),
+    seo_description_de: s("seo_description_de"),
+    seo_description_fr: s("seo_description_fr"),
+    focus_keyword_en: s("focus_keyword_en"),
+    focus_keyword_de: s("focus_keyword_de"),
+    focus_keyword_fr: s("focus_keyword_fr"),
+    og_title_en: s("og_title_en"),
+    og_title_de: s("og_title_de"),
+    og_title_fr: s("og_title_fr"),
+    og_description_en: s("og_description_en"),
+    og_description_de: s("og_description_de"),
+    og_description_fr: s("og_description_fr"),
+    og_image_url: s("og_image_url"),
+    canonical_url: s("canonical_url"),
+    robots_noindex: formData.get("robots_noindex") === "on",
+    robots_nofollow: formData.get("robots_nofollow") === "on",
+    schema_type: (formData.get("schema_type") as string) || "NewsArticle",
+  };
+}
 
 function readPillar(formData: FormData): { is_pillar: boolean; pillar_id: string | null } {
   const isPillar = formData.get("is_pillar") === "on";
@@ -242,6 +268,7 @@ export async function createNewsPost(formData: FormData) {
       ((formData.get("cover_image_url") as string) || "").trim() || null,
     author_name: (formData.get("author_name") as string) || null,
     ...readPillar(formData),
+    ...readSeo(formData),
     is_published: false,
   };
 
@@ -293,7 +320,16 @@ export async function updateNewsPost(id: string, formData: FormData) {
       ((formData.get("cover_image_url") as string) || "").trim() || null,
     author_name: (formData.get("author_name") as string) || null,
     ...readPillar(formData),
+    ...readSeo(formData),
   };
+
+  // Current slug (for rename → 301 history).
+  const { data: currentRow } = await supabase
+    .from("news_posts")
+    .select("slug")
+    .eq("id", id)
+    .single();
+  const oldSlug = currentRow?.slug as string | undefined;
 
   // Optional: admin can rename the slug. If provided, sanitise + ensure uniqueness.
   const rawSlug = ((formData.get("slug") as string) ?? "").trim();
@@ -308,6 +344,13 @@ export async function updateNewsPost(id: string, formData: FormData) {
     .eq("id", id);
 
   if (error) return { error: error.message };
+
+  // Record a 301 source when the slug actually changed.
+  if (record.slug && oldSlug && record.slug !== oldSlug) {
+    await supabase
+      .from("news_slug_history")
+      .upsert({ old_slug: oldSlug, post_id: id }, { onConflict: "old_slug" });
+  }
 
   const { categoryIds, primaryId } = readCategorySelection(formData);
   await syncPostCategories(supabase, id, categoryIds, primaryId, user.userId);

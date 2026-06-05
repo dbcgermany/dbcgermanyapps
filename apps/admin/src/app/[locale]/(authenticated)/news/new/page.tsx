@@ -10,6 +10,7 @@ import { CoverImageUpload } from "@/components/cover-image-upload";
 import { NewsCategoryPicker } from "@/components/news-category-picker";
 import { NewsAuthorPicker } from "@/components/news-author-picker";
 import { NewsPillarPicker } from "@/components/news-pillar-picker";
+import { NewsSeoPanel } from "@/components/news-seo-panel";
 import { RichTextEditor } from "@/components/rich-text-editor";
 
 // createNewsPost ends with redirect() on success — the action never
@@ -86,6 +87,8 @@ export default function NewNewsPostPage({
         <NewsPillarPicker />
 
         <NewsCategoryPicker locale={locale} />
+
+        <NewsSeoPanel />
 
         <CoverImageUpload />
 

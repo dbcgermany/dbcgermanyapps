@@ -9,6 +9,7 @@ import { CoverImageUpload } from "@/components/cover-image-upload";
 import { NewsCategoryPicker } from "@/components/news-category-picker";
 import { NewsAuthorPicker } from "@/components/news-author-picker";
 import { NewsPillarPicker } from "@/components/news-pillar-picker";
+import { NewsSeoPanel } from "@/components/news-seo-panel";
 import { RichTextEditor } from "@/components/rich-text-editor";
 
 const T = {
@@ -57,6 +58,26 @@ type Post = {
   author_name: string | null;
   is_pillar: boolean;
   pillar_id: string | null;
+  seo_title_en: string | null;
+  seo_title_de: string | null;
+  seo_title_fr: string | null;
+  seo_description_en: string | null;
+  seo_description_de: string | null;
+  seo_description_fr: string | null;
+  focus_keyword_en: string | null;
+  focus_keyword_de: string | null;
+  focus_keyword_fr: string | null;
+  og_title_en: string | null;
+  og_title_de: string | null;
+  og_title_fr: string | null;
+  og_description_en: string | null;
+  og_description_de: string | null;
+  og_description_fr: string | null;
+  og_image_url: string | null;
+  canonical_url: string | null;
+  robots_noindex: boolean;
+  robots_nofollow: boolean;
+  schema_type: string;
   news_category_links?: { category_id: string; is_primary: boolean }[] | null;
   post_authors?:
     | {
@@ -163,6 +184,38 @@ export function EditNewsForm({ locale, post }: { locale: string; post: Post }) {
         primaryId={
           (post.news_category_links ?? []).find((l) => l.is_primary)?.category_id ?? null
         }
+      />
+
+      <NewsSeoPanel
+        slug={post.slug}
+        defaults={{
+          focus_keyword_en: post.focus_keyword_en,
+          focus_keyword_de: post.focus_keyword_de,
+          focus_keyword_fr: post.focus_keyword_fr,
+          seo_title_en: post.seo_title_en,
+          seo_title_de: post.seo_title_de,
+          seo_title_fr: post.seo_title_fr,
+          seo_description_en: post.seo_description_en,
+          seo_description_de: post.seo_description_de,
+          seo_description_fr: post.seo_description_fr,
+          og_title_en: post.og_title_en,
+          og_title_de: post.og_title_de,
+          og_title_fr: post.og_title_fr,
+          og_description_en: post.og_description_en,
+          og_description_de: post.og_description_de,
+          og_description_fr: post.og_description_fr,
+          og_image_url: post.og_image_url,
+          canonical_url: post.canonical_url,
+          robots_noindex: post.robots_noindex,
+          robots_nofollow: post.robots_nofollow,
+          schema_type: post.schema_type,
+          titles: { en: post.title_en, de: post.title_de, fr: post.title_fr },
+          excerpts: {
+            en: post.excerpt_en ?? "",
+            de: post.excerpt_de ?? "",
+            fr: post.excerpt_fr ?? "",
+          },
+        }}
       />
 
       <CoverImageUpload initialUrl={post.cover_image_url} />
