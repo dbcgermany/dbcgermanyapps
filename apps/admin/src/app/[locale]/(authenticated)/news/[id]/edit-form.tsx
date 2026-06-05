@@ -7,6 +7,7 @@ import { Button, FormField, Input, Textarea } from "@dbc/ui";
 import { updateNewsPost } from "@/actions/news";
 import { CoverImageUpload } from "@/components/cover-image-upload";
 import { NewsCategoryPicker } from "@/components/news-category-picker";
+import { NewsAuthorPicker } from "@/components/news-author-picker";
 
 const T = {
   en: {
@@ -53,6 +54,19 @@ type Post = {
   cover_image_url: string | null;
   author_name: string | null;
   news_category_links?: { category_id: string; is_primary: boolean }[] | null;
+  post_authors?:
+    | {
+        author_id: string;
+        role: string;
+        sort_order: number;
+        // PostgREST returns a single object at runtime; supabase-js types it
+        // as an array. Accept both.
+        authors:
+          | { id: string; display_name: string; type: string }
+          | { id: string; display_name: string; type: string }[]
+          | null;
+      }[]
+    | null;
 };
 
 type ActionResult = { error?: string; success?: boolean } | null;
@@ -123,9 +137,15 @@ export function EditNewsForm({ locale, post }: { locale: string; post: Post }) {
         <Textarea name="body_fr" defaultValue={post.body_fr} rows={12} />
       </FormField>
 
-      <FormField label={t.author}>
-        <Input name="author_name" defaultValue={post.author_name ?? ""} />
-      </FormField>
+      <NewsAuthorPicker
+        initial={[...(post.post_authors ?? [])]
+          .sort((a, b) => a.sort_order - b.sort_order)
+          .map((pa) => {
+            const a = Array.isArray(pa.authors) ? pa.authors[0] : pa.authors;
+            return a ? { id: a.id, display_name: a.display_name, role: pa.role } : null;
+          })
+          .filter((x): x is { id: string; display_name: string; role: string } => x !== null)}
+      />
 
       <NewsCategoryPicker
         locale={locale}

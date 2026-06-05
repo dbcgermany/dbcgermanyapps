@@ -6,6 +6,36 @@ import { redirect } from "next/navigation";
 import { slugify, uniqueSlug } from "@/lib/slugify";
 import { pingRevalidate } from "@/lib/revalidate";
 import { syncPostCategories } from "@/lib/news-category-sync";
+import { syncPostAuthors, type PostAuthorEntry } from "@/lib/post-authors-sync";
+
+// Parse the editor's author picker selection; fall back to the default org
+// author (DBC Germany) when none chosen.
+async function resolveAuthorEntries(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any,
+  formData: FormData
+): Promise<PostAuthorEntry[]> {
+  let entries: PostAuthorEntry[] = [];
+  try {
+    const raw = JSON.parse((formData.get("author_entries") as string) || "[]");
+    if (Array.isArray(raw)) {
+      entries = raw
+        .filter((e) => e && typeof e.id === "string")
+        .map((e) => ({ id: e.id, role: typeof e.role === "string" ? e.role : "author" }));
+    }
+  } catch {
+    entries = [];
+  }
+  if (entries.length === 0) {
+    const { data: org } = await supabase
+      .from("authors")
+      .select("id")
+      .eq("is_org_default", true)
+      .maybeSingle();
+    if (org?.id) entries = [{ id: org.id, role: "author" }];
+  }
+  return entries;
+}
 
 // IMPORTANT: import @dbc/legal/server (isomorphic-dompurify → jsdom, which
 // initializes a JSDOM window at module load) DYNAMICALLY, inside the write
@@ -65,7 +95,9 @@ export async function getNewsPost(id: string) {
   const supabase = await createServerClient();
   const { data, error } = await supabase
     .from("news_posts")
-    .select(`${POST_COLUMNS}, news_category_links(category_id, is_primary)`)
+    .select(
+      `${POST_COLUMNS}, news_category_links(category_id, is_primary), post_authors(author_id, role, sort_order, authors(id, display_name, type))`
+    )
     .eq("id", id)
     .single();
   if (error) throw new Error(error.message);
@@ -111,6 +143,7 @@ export async function createNewsPost(formData: FormData) {
 
   const { categoryIds, primaryId } = readCategorySelection(formData);
   await syncPostCategories(supabase, data.id, categoryIds, primaryId, user.userId);
+  await syncPostAuthors(supabase, data.id, await resolveAuthorEntries(supabase, formData));
 
   await supabase.from("audit_log").insert({
     user_id: user.userId,
@@ -164,6 +197,7 @@ export async function updateNewsPost(id: string, formData: FormData) {
 
   const { categoryIds, primaryId } = readCategorySelection(formData);
   await syncPostCategories(supabase, id, categoryIds, primaryId, user.userId);
+  await syncPostAuthors(supabase, id, await resolveAuthorEntries(supabase, formData));
 
   await supabase.from("audit_log").insert({
     user_id: user.userId,

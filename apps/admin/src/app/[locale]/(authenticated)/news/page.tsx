@@ -15,10 +15,11 @@ export default async function NewsIndexPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const [t, tCommon, tCat] = await Promise.all([
+  const [t, tCommon, tCat, tAuth] = await Promise.all([
     getTranslations({ locale, namespace: "admin.news.list" }),
     getTranslations({ locale, namespace: "admin.common" }),
     getTranslations({ locale, namespace: "admin.news.categories" }),
+    getTranslations({ locale, namespace: "admin.news.authors" }),
   ]);
   const posts = await getNewsPosts();
 
@@ -28,6 +29,9 @@ export default async function NewsIndexPage({
         title={t("title")}
         cta={
           <div className="flex flex-wrap items-center gap-2">
+            <LinkButton href={`/${locale}/news/authors`} variant="secondary">
+              {tAuth("manage")}
+            </LinkButton>
             <LinkButton href={`/${locale}/news/categories`} variant="secondary">
               {tCat("manage")}
             </LinkButton>

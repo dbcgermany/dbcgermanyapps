@@ -1870,7 +1870,56 @@
         "categories": "Categories",
         "categoriesHint": "Tick the categories this article belongs to, then choose one as primary (drives the card badge).",
         "primary": "Primary",
-        "noCategories": "No categories yet. Create them under News → Categories."
+        "noCategories": "No categories yet. Create them under News → Categories.",
+        "authors": "Authors",
+        "authorsHint": "Search and add one or more authors with a role. Leave empty to credit DBC Germany.",
+        "addAuthor": "Add author",
+        "searchAuthors": "Search authors…",
+        "role": "Role",
+        "noAuthorsDefault": "No author selected — defaults to DBC Germany.",
+        "roles": {
+          "author": "Author",
+          "co_author": "Co-author",
+          "interviewer": "Interviewer",
+          "interviewee": "Interviewee",
+          "contributor": "Contributor"
+        }
+      },
+      "authors": {
+        "title": "Authors",
+        "manage": "Authors",
+        "add": "Add author",
+        "displayName": "Display name",
+        "type": "Type",
+        "slug": "Slug",
+        "slugHint": "URL-safe identifier. Leave empty to auto-generate.",
+        "roleEn": "Role/title (EN)",
+        "roleDe": "Role/title (DE)",
+        "roleFr": "Role/title (FR)",
+        "bioEn": "Bio (EN)",
+        "bioDe": "Bio (DE)",
+        "bioFr": "Bio (FR)",
+        "photo": "Photo",
+        "email": "Email",
+        "linkedin": "LinkedIn URL",
+        "website": "Website URL",
+        "instagram": "Instagram URL",
+        "public": "Public",
+        "create": "Create author",
+        "creating": "Creating…",
+        "reorderHint": "Drag to reorder. Saves automatically.",
+        "empty": "No authors yet. Add the first one.",
+        "deleteConfirm": "Delete author “{name}”?",
+        "createdToast": "Author created",
+        "deletedToast": "Author deleted",
+        "types": {
+          "coach": "Coach",
+          "expert": "Expert",
+          "journalist": "Journalist",
+          "staff": "DBC staff",
+          "guest": "Guest",
+          "dbc_org": "DBC Germany"
+        }
       }
     },
     "funnels": {

@@ -8,6 +8,7 @@ import { createNewsPost } from "@/actions/news";
 import { PageHeader } from "@/components/page-header";
 import { CoverImageUpload } from "@/components/cover-image-upload";
 import { NewsCategoryPicker } from "@/components/news-category-picker";
+import { NewsAuthorPicker } from "@/components/news-author-picker";
 
 // createNewsPost ends with redirect() on success — the action never
 // returns a success payload (Next.js navigates server-side and the
@@ -78,9 +79,7 @@ export default function NewNewsPostPage({
           <Textarea name="body_fr" rows={10} />
         </FormField>
 
-        <FormField label={t("author")}>
-          <Input name="author_name" />
-        </FormField>
+        <NewsAuthorPicker />
 
         <NewsCategoryPicker locale={locale} />
 
