@@ -21,6 +21,8 @@ interface NewsletterEmailProps {
   preheader?: string;
   /** Pre-rendered plain-text / markdown-lite body (paragraphs split by blank lines). */
   body: string;
+  /** Sanitized rich HTML body (preferred over `body` when present). */
+  bodyHtml?: string;
   unsubscribeUrl: string;
   locale: Locale;
   /** When present, renders the branded event hero block at the top of the body. */
@@ -201,14 +203,18 @@ export function NewsletterEmail(props: NewsletterEmailProps) {
         </Text>
       </Section>
       <Section className="mt-4">
-        {paragraphs.map((p, i) => (
-          <Text
-            key={i}
-            className="m-0 mb-4 text-sm leading-6 text-neutral-700"
-          >
-            {p}
-          </Text>
-        ))}
+        {props.bodyHtml ? (
+          <div
+            className="text-sm leading-6 text-neutral-700"
+            dangerouslySetInnerHTML={{ __html: props.bodyHtml }}
+          />
+        ) : (
+          paragraphs.map((p, i) => (
+            <Text key={i} className="m-0 mb-4 text-sm leading-6 text-neutral-700">
+              {p}
+            </Text>
+          ))
+        )}
       </Section>
       <Section className="mt-6">
         <Text className="m-0 text-xs text-neutral-400">

@@ -204,6 +204,40 @@ export function sanitizeRichHtml(html: string): string {
   });
 }
 
+// Email-safe allow-list: no iframe/script/media-embeds (email clients don't
+// run them), no class/id (most clients strip them anyway). Keeps links,
+// basic formatting, lists, tables and inline images.
+const EMAIL_ALLOWED_TAGS = [
+  "p", "br", "hr", "h1", "h2", "h3", "h4", "h5", "h6",
+  "strong", "em", "b", "i", "u",
+  "ul", "ol", "li", "a", "blockquote",
+  "table", "thead", "tbody", "tr", "th", "td",
+  "img", "span", "div",
+];
+const EMAIL_ALLOWED_ATTR = ["href", "title", "target", "rel", "src", "alt", "width", "height", "align"];
+
+/** Sanitize a rich-HTML body for email (stricter than sanitizeRichHtml). */
+export function sanitizeEmailHtml(html: string): string {
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: EMAIL_ALLOWED_TAGS,
+    ALLOWED_ATTR: EMAIL_ALLOWED_ATTR,
+  });
+}
+
+/** Derive a plain-text alternative from HTML (for the multipart text part). */
+export function htmlToPlainText(html: string): string {
+  return html
+    .replace(/<\/(p|div|h[1-6]|li|tr|blockquote)>/gi, "\n")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 export async function renderLegalMarkdown(
   options: RenderOptions
 ): Promise<string> {

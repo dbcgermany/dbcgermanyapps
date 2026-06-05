@@ -89,6 +89,7 @@ export default async function NewsletterEditPage({
           subject: nl.subject ?? "",
           preheader: nl.preheader ?? "",
           body_mdx: nl.body_mdx ?? "",
+          body_html: nl.body_html ?? "",
           from_name: nl.from_name ?? "DBC Germany",
           from_email: nl.from_email ?? "newsletter@dbc-germany.com",
           reply_to: nl.reply_to ?? "",

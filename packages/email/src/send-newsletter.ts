@@ -1,5 +1,6 @@
 import { render } from "@react-email/components";
 import React from "react";
+import { sanitizeEmailHtml, htmlToPlainText } from "@dbc/legal/server";
 import { createEmailClient, fromAddressFor, DEFAULT_FROM } from "./client";
 import { NewsletterEmail, type UpcomingEvent } from "./templates/newsletter";
 import {
@@ -17,6 +18,8 @@ export interface SendNewsletterInput {
   subject: string;
   preheader?: string;
   body: string;
+  /** Sanitized rich HTML body (preferred over `body` when present). */
+  bodyHtml?: string;
   unsubscribeUrl: string;
   fromName?: string;
   fromEmail?: string;
@@ -27,16 +30,21 @@ export interface SendNewsletterInput {
 }
 
 export async function sendNewsletterEmail(input: SendNewsletterInput) {
+  // Sanitize the HTML body again at the send boundary (defense in depth).
+  const cleanHtml = input.bodyHtml ? sanitizeEmailHtml(input.bodyHtml) : undefined;
   const html = await render(
     React.createElement(NewsletterEmail, {
       subject: input.subject,
       preheader: input.preheader,
       body: input.body,
+      bodyHtml: cleanHtml,
       unsubscribeUrl: input.unsubscribeUrl,
       locale: input.locale,
       upcomingEvent: input.upcomingEvent,
     })
   );
+  // Multipart text alternative (protects inbox placement).
+  const text = cleanHtml ? htmlToPlainText(cleanHtml) : input.body;
 
   const resend = createEmailClient();
   // Prefer explicit from fields on the call, then the newsletter env var,
@@ -54,6 +62,7 @@ export async function sendNewsletterEmail(input: SendNewsletterInput) {
     to: input.to,
     subject: input.subject,
     html,
+    text,
     replyTo: input.replyTo,
     headers: {
       "List-Unsubscribe": `<${input.unsubscribeUrl}>, <mailto:${unsubscribeMailto}>`,

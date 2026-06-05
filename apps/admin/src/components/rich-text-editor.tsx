@@ -35,12 +35,16 @@ export function RichTextEditor({
   defaultValue = "",
   postId,
   locale = "en",
+  onChange,
 }: {
-  name: string;
+  /** Hidden input name for plain-form submission. Omit when using onChange. */
+  name?: string;
   defaultValue?: string;
   /** When set, the link tool suggests this post's pillar/cluster/category links. */
   postId?: string;
   locale?: string;
+  /** Called with the latest HTML on every edit (for state-driven forms). */
+  onChange?: (html: string) => void;
 }) {
   const t = useTranslations("admin.news.editor.toolbar");
   const [html, setHtml] = useState(defaultValue);
@@ -57,7 +61,11 @@ export function RichTextEditor({
           "prose prose-neutral dark:prose-invert max-w-none min-h-[16rem] px-4 py-3 focus:outline-none",
       },
     },
-    onUpdate: ({ editor }) => setHtml(editor.getHTML()),
+    onUpdate: ({ editor }) => {
+      const next = editor.getHTML();
+      setHtml(next);
+      onChange?.(next);
+    },
   });
 
   async function onPickImage(e: React.ChangeEvent<HTMLInputElement>) {
@@ -83,7 +91,7 @@ export function RichTextEditor({
 
   return (
     <div className="rounded-md border border-input bg-background">
-      <input type="hidden" name={name} value={html} />
+      {name && <input type="hidden" name={name} value={html} />}
       <input
         ref={fileRef}
         type="file"

@@ -3599,6 +3599,7 @@ export type Database = {
       }
       newsletters: {
         Row: {
+          body_html: string | null
           body_mdx: string
           bounces_count: number
           clicks_count: number
@@ -3623,6 +3624,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          body_html?: string | null
           body_mdx?: string
           bounces_count?: number
           clicks_count?: number
@@ -3647,6 +3649,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          body_html?: string | null
           body_mdx?: string
           bounces_count?: number
           clicks_count?: number

@@ -3,8 +3,9 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Card, ConfirmDialog, Input, Select, Textarea } from "@dbc/ui";
+import { Card, ConfirmDialog, Input, Select } from "@dbc/ui";
 import type { DomainCheckResult } from "@dbc/email";
+import { RichTextEditor } from "@/components/rich-text-editor";
 import {
   saveNewsletter,
   previewNewsletterRecipientCount,
@@ -22,6 +23,7 @@ interface ComposerState {
   subject: string;
   preheader: string;
   body_mdx: string;
+  body_html: string;
   from_name: string;
   from_email: string;
   reply_to: string;
@@ -34,6 +36,7 @@ const DEFAULT: ComposerState = {
   subject: "",
   preheader: "",
   body_mdx: "",
+  body_html: "",
   from_name: "DBC Germany",
   from_email: "newsletter@dbc-germany.com",
   reply_to: "info@dbc-germany.com",
@@ -213,17 +216,20 @@ export function NewsletterComposer({
             </Select>
           </Field>
           <Field label={t("bodyLabel")}>
-            <Textarea
-              rows={14}
-              value={state.body_mdx}
-              onChange={(e) => update("body_mdx", e.target.value)}
-              className="font-mono"
+            <RichTextEditor
+              defaultValue={state.body_html}
+              locale={
+                state.locale === "de" || state.locale === "fr"
+                  ? state.locale
+                  : "en"
+              }
+              onChange={(html) => update("body_html", html)}
             />
           </Field>
           {/* Inline preview — visual sanity check while editing. Pixel-
               perfect render still goes through the existing "Send test"
               button (real email path through the React Email template). */}
-          {state.body_mdx.trim() && (
+          {(state.body_html || state.body_mdx).trim() && (
             <Field label="Preview">
               <div className="rounded-md border border-border bg-muted/20 p-4 text-sm">
                 <p className="text-xs uppercase tracking-wider text-muted-foreground">
@@ -236,15 +242,22 @@ export function NewsletterComposer({
                   </p>
                 )}
                 <hr className="my-3 border-border" />
-                <div
-                  className="whitespace-pre-wrap leading-relaxed"
-                  style={{
-                    fontFamily:
-                      "system-ui, -apple-system, Segoe UI, Roboto, sans-serif",
-                  }}
-                >
-                  {state.body_mdx}
-                </div>
+                {state.body_html ? (
+                  <div
+                    className="prose prose-sm prose-neutral max-w-none leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: state.body_html }}
+                  />
+                ) : (
+                  <div
+                    className="whitespace-pre-wrap leading-relaxed"
+                    style={{
+                      fontFamily:
+                        "system-ui, -apple-system, Segoe UI, Roboto, sans-serif",
+                    }}
+                  >
+                    {state.body_mdx}
+                  </div>
+                )}
                 <hr className="my-3 border-border" />
                 <p className="text-xs text-muted-foreground">{companyFooter}</p>
               </div>

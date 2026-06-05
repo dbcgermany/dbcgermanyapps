@@ -15,6 +15,8 @@ export type { LegalDocumentType, PublishedLegalPage } from "./db";
 export {
   renderLegalMarkdown,
   sanitizeRichHtml,
+  sanitizeEmailHtml,
+  htmlToPlainText,
   TEMPLATE_VARIABLES,
 } from "./render";
 export type { RenderOptions, TemplateContext } from "./render";

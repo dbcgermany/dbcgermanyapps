@@ -64,6 +64,7 @@ export interface NewsletterDraft {
   subject: string;
   preheader: string | null;
   body_mdx: string;
+  body_html?: string | null;
   from_name: string;
   from_email: string;
   reply_to: string | null;
@@ -103,6 +104,7 @@ export async function saveNewsletter(draft: NewsletterDraft) {
     subject: draft.subject.trim(),
     preheader: draft.preheader?.trim() || null,
     body_mdx: draft.body_mdx,
+    body_html: draft.body_html ?? null,
     from_name: draft.from_name.trim() || "DBC Germany",
     from_email: draft.from_email.trim() || "newsletter@dbc-germany.com",
     reply_to: draft.reply_to?.trim() || null,
@@ -258,6 +260,7 @@ export async function sendTestNewsletter(id: string, toEmail: string) {
       subject,
       preheader: nl.preheader ?? undefined,
       body: nl.body_mdx,
+      bodyHtml: nl.body_html ?? undefined,
       unsubscribeUrl: `${SITE_URL}/${locale}/newsletter/unsubscribe?token=preview`,
       fromName,
       fromEmail,
@@ -355,6 +358,7 @@ export async function sendNewsletter(id: string) {
           subject: nl.subject,
           preheader: nl.preheader ?? undefined,
           body: nl.body_mdx,
+          bodyHtml: nl.body_html ?? undefined,
           unsubscribeUrl,
           fromName: nl.from_name,
           fromEmail: nl.from_email,
