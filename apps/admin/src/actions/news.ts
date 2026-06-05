@@ -3,10 +3,22 @@
 import { createServerClient, requireRole } from "@dbc/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { sanitizeRichHtml } from "@dbc/legal/server";
 import { slugify, uniqueSlug } from "@/lib/slugify";
 import { pingRevalidate } from "@/lib/revalidate";
 import { syncPostCategories } from "@/lib/news-category-sync";
+
+// IMPORTANT: import @dbc/legal/server (isomorphic-dompurify → jsdom, which
+// initializes a JSDOM window at module load) DYNAMICALLY, inside the write
+// actions only. A top-level import drags jsdom into the cold-start of every
+// function that imports this module — including the read-only /news list
+// page (getNewsPosts) — which fails to boot the lambda and 500s the page.
+async function cleanBody(
+  v: FormDataEntryValue | null,
+  fallback = ""
+): Promise<string> {
+  const { sanitizeRichHtml } = await import("@dbc/legal/server");
+  return sanitizeRichHtml(((v as string) ?? "") || fallback);
+}
 
 function readCategorySelection(formData: FormData) {
   return {
@@ -14,12 +26,6 @@ function readCategorySelection(formData: FormData) {
     primaryId: (formData.get("primary_category_id") as string) || null,
   };
 }
-
-// Bodies are authored as rich HTML and rendered with dangerouslySetInnerHTML
-// on the public site, which (being ISR) does not run a sanitizer at request
-// time. Sanitize here on write so stored HTML is always safe.
-const cleanBody = (v: FormDataEntryValue | null, fallback = "") =>
-  sanitizeRichHtml(((v as string) ?? "") || fallback);
 
 const NEWS_PUBLIC_PATHS = (slug: string) => ["/[locale]/news", `/[locale]/news/${slug}`];
 
@@ -86,9 +92,9 @@ export async function createNewsPost(formData: FormData) {
     excerpt_en: (formData.get("excerpt_en") as string) || null,
     excerpt_de: (formData.get("excerpt_de") as string) || null,
     excerpt_fr: (formData.get("excerpt_fr") as string) || null,
-    body_en: cleanBody(formData.get("body_en")),
-    body_de: cleanBody(formData.get("body_de"), formData.get("body_en") as string),
-    body_fr: cleanBody(formData.get("body_fr"), formData.get("body_en") as string),
+    body_en: await cleanBody(formData.get("body_en")),
+    body_de: await cleanBody(formData.get("body_de"), formData.get("body_en") as string),
+    body_fr: await cleanBody(formData.get("body_fr"), formData.get("body_en") as string),
     cover_image_url:
       ((formData.get("cover_image_url") as string) || "").trim() || null,
     author_name: (formData.get("author_name") as string) || null,
@@ -134,9 +140,9 @@ export async function updateNewsPost(id: string, formData: FormData) {
     excerpt_en: (formData.get("excerpt_en") as string) || null,
     excerpt_de: (formData.get("excerpt_de") as string) || null,
     excerpt_fr: (formData.get("excerpt_fr") as string) || null,
-    body_en: cleanBody(formData.get("body_en")),
-    body_de: cleanBody(formData.get("body_de")),
-    body_fr: cleanBody(formData.get("body_fr")),
+    body_en: await cleanBody(formData.get("body_en")),
+    body_de: await cleanBody(formData.get("body_de")),
+    body_fr: await cleanBody(formData.get("body_fr")),
     cover_image_url:
       ((formData.get("cover_image_url") as string) || "").trim() || null,
     author_name: (formData.get("author_name") as string) || null,
