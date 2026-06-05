@@ -1836,6 +1836,7 @@
         "bodyEn": "Contenu (EN)",
         "bodyDe": "Contenu (DE)",
         "bodyFr": "Contenu (FR)",
+        "bodyHint": "HTML pris en charge : <p> pour les paragraphes, <a href=\"…\"> pour les liens.",
         "author": "Auteur (optionnel)",
         "saving": "Enregistrement…",
         "saveDraft": "Enregistrer le brouillon"

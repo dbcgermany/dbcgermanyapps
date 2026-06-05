@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Reveal } from "@dbc/ui";
 import { createServerClient } from "@dbc/supabase/server";
+import { sanitizeRichHtml } from "@dbc/legal/server";
 import { getCompanyInfo } from "@/lib/company-info";
 import { JsonLd, articleJsonLd, breadcrumbJsonLd } from "@/lib/json-ld";
 import { DBC } from "@/lib/dbc-assets";
@@ -86,6 +87,9 @@ export default async function NewsArticlePage({
   const body =
     (post[`body_${l}` as "body_en" | "body_de" | "body_fr"] as string) ||
     post.body_en;
+  // Article bodies are authored as rich HTML (headings, links, lists);
+  // sanitize server-side so hyperlinks render but XSS-by-typo can't.
+  const bodyHtml = sanitizeRichHtml(body);
   const cover = post.cover_image_url ?? DBC.hero.home;
   const company = await getCompanyInfo();
   const excerptKey = `excerpt_${l}` as "excerpt_en" | "excerpt_de" | "excerpt_fr";
@@ -156,9 +160,10 @@ export default async function NewsArticlePage({
       </Reveal>
 
       <Reveal delay={160}>
-      <div className="prose prose-neutral dark:prose-invert mt-10 max-w-none whitespace-pre-wrap text-base leading-8 text-foreground">
-        {body}
-      </div>
+      <div
+        className="prose prose-neutral dark:prose-invert mt-10 max-w-none text-base leading-8 text-foreground"
+        dangerouslySetInnerHTML={{ __html: bodyHtml }}
+      />
       </Reveal>
     </article>
   );

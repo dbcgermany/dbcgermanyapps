@@ -163,6 +163,20 @@ export interface RenderOptions {
   ticketsSiteUrl: string;
 }
 
+/**
+ * Sanitize a block of trusted-but-fallible rich HTML (e.g. a news/blog
+ * article body authored in the admin) using the same allow-list as the
+ * legal renderer. No markdown parsing and no template interpolation —
+ * the input is already HTML. Keeps `<a href target rel>` so internal and
+ * external hyperlinks survive, strips any script/iframe/onerror payloads.
+ */
+export function sanitizeRichHtml(html: string): string {
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS,
+    ALLOWED_ATTR,
+  });
+}
+
 export async function renderLegalMarkdown(
   options: RenderOptions
 ): Promise<string> {

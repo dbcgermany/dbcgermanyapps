@@ -67,7 +67,7 @@ export default function NewNewsPostPage({
           <Textarea name="excerpt_fr" rows={2} />
         </FormField>
 
-        <FormField label={t("bodyEn")} required>
+        <FormField label={t("bodyEn")} required hint={t("bodyHint")}>
           <Textarea name="body_en" rows={10} required />
         </FormField>
         <FormField label={t("bodyDe")}>

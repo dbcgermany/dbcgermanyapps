@@ -1836,6 +1836,7 @@
         "bodyEn": "Body (EN)",
         "bodyDe": "Body (DE)",
         "bodyFr": "Body (FR)",
+        "bodyHint": "HTML supported: use <p> for paragraphs and <a href=\"…\"> for links.",
         "author": "Author (optional)",
         "saving": "Saving…",
         "saveDraft": "Save draft"

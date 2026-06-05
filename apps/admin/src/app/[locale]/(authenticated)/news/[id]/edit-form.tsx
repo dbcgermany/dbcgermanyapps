@@ -14,6 +14,7 @@ const T = {
     titleEn: "Title (EN)", titleDe: "Title (DE)", titleFr: "Title (FR)",
     excerptEn: "Excerpt (EN)", excerptDe: "Excerpt (DE)", excerptFr: "Excerpt (FR)",
     bodyEn: "Body (EN)", bodyDe: "Body (DE)", bodyFr: "Body (FR)",
+    bodyHint: "HTML supported: use <p> for paragraphs and <a href=\"…\"> for links.",
     author: "Author", saving: "Saving…", save: "Save",
   },
   de: {
@@ -22,6 +23,7 @@ const T = {
     titleEn: "Titel (EN)", titleDe: "Titel (DE)", titleFr: "Titel (FR)",
     excerptEn: "Kurzfassung (EN)", excerptDe: "Kurzfassung (DE)", excerptFr: "Kurzfassung (FR)",
     bodyEn: "Inhalt (EN)", bodyDe: "Inhalt (DE)", bodyFr: "Inhalt (FR)",
+    bodyHint: "HTML möglich: <p> für Absätze, <a href=\"…\"> für Links.",
     author: "Autor", saving: "Wird gespeichert…", save: "Speichern",
   },
   fr: {
@@ -30,6 +32,7 @@ const T = {
     titleEn: "Titre (EN)", titleDe: "Titre (DE)", titleFr: "Titre (FR)",
     excerptEn: "Extrait (EN)", excerptDe: "Extrait (DE)", excerptFr: "Extrait (FR)",
     bodyEn: "Contenu (EN)", bodyDe: "Contenu (DE)", bodyFr: "Contenu (FR)",
+    bodyHint: "HTML pris en charge : <p> pour les paragraphes, <a href=\"…\"> pour les liens.",
     author: "Auteur", saving: "Enregistrement…", save: "Enregistrer",
   },
 } as const;
@@ -108,7 +111,7 @@ export function EditNewsForm({ locale, post }: { locale: string; post: Post }) {
         <Textarea name="excerpt_fr" defaultValue={post.excerpt_fr ?? ""} rows={2} />
       </FormField>
 
-      <FormField label={t.bodyEn} required>
+      <FormField label={t.bodyEn} required hint={t.bodyHint}>
         <Textarea name="body_en" defaultValue={post.body_en} rows={12} required />
       </FormField>
       <FormField label={t.bodyDe}>

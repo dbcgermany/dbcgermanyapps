@@ -1836,6 +1836,7 @@
         "bodyEn": "Inhalt (EN)",
         "bodyDe": "Inhalt (DE)",
         "bodyFr": "Inhalt (FR)",
+        "bodyHint": "HTML möglich: <p> für Absätze, <a href=\"…\"> für Links.",
         "author": "Autor (optional)",
         "saving": "Wird gespeichert…",
         "saveDraft": "Entwurf speichern"
