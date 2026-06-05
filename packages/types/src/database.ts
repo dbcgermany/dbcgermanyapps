@@ -3169,6 +3169,115 @@ export type Database = {
         }
         Relationships: []
       }
+      news_categories: {
+        Row: {
+          color: string | null
+          created_at: string
+          description_de: string | null
+          description_en: string | null
+          description_fr: string | null
+          id: string
+          image_url: string | null
+          name_de: string | null
+          name_en: string
+          name_fr: string | null
+          seo_description_de: string | null
+          seo_description_en: string | null
+          seo_description_fr: string | null
+          seo_title_de: string | null
+          seo_title_en: string | null
+          seo_title_fr: string | null
+          slug: string
+          sort_order: number
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          description_de?: string | null
+          description_en?: string | null
+          description_fr?: string | null
+          id?: string
+          image_url?: string | null
+          name_de?: string | null
+          name_en: string
+          name_fr?: string | null
+          seo_description_de?: string | null
+          seo_description_en?: string | null
+          seo_description_fr?: string | null
+          seo_title_de?: string | null
+          seo_title_en?: string | null
+          seo_title_fr?: string | null
+          slug: string
+          sort_order?: number
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          description_de?: string | null
+          description_en?: string | null
+          description_fr?: string | null
+          id?: string
+          image_url?: string | null
+          name_de?: string | null
+          name_en?: string
+          name_fr?: string | null
+          seo_description_de?: string | null
+          seo_description_en?: string | null
+          seo_description_fr?: string | null
+          seo_title_de?: string | null
+          seo_title_en?: string | null
+          seo_title_fr?: string | null
+          slug?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      news_category_links: {
+        Row: {
+          added_at: string
+          added_by: string | null
+          category_id: string
+          is_primary: boolean
+          post_id: string
+        }
+        Insert: {
+          added_at?: string
+          added_by?: string | null
+          category_id: string
+          is_primary?: boolean
+          post_id: string
+        }
+        Update: {
+          added_at?: string
+          added_by?: string | null
+          category_id?: string
+          is_primary?: boolean
+          post_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "news_category_links_added_by_fkey"
+            columns: ["added_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "news_category_links_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "news_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "news_category_links_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "news_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       news_posts: {
         Row: {
           author_name: string | null
