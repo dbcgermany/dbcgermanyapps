@@ -291,10 +291,22 @@ export function articleJsonLd(article: {
   published_at: string;
   updated_at: string;
   author_name: string | null;
+  /** Real authors with their public profile URLs (preferred over author_name). */
+  authors?: { name: string; url?: string }[];
   cover_image_url: string | null;
   publisher: string;
   publisher_logo: string | null;
 }) {
+  const authorNode =
+    article.authors && article.authors.length > 0
+      ? article.authors.map((a) => ({
+          "@type": "Person" as const,
+          name: a.name,
+          url: a.url,
+        }))
+      : article.author_name
+        ? { "@type": "Person", name: article.author_name }
+        : { "@type": "Organization", name: article.publisher };
   return {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
@@ -303,9 +315,7 @@ export function articleJsonLd(article: {
     datePublished: article.published_at,
     dateModified: article.updated_at,
     image: article.cover_image_url ?? undefined,
-    author: article.author_name
-      ? { "@type": "Person", name: article.author_name }
-      : { "@type": "Organization", name: article.publisher },
+    author: authorNode,
     publisher: {
       "@type": "Organization",
       name: article.publisher,

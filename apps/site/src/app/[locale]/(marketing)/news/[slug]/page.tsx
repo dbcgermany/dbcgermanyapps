@@ -15,7 +15,7 @@ async function getPost(slug: string) {
   const { data } = await supabase
     .from("news_posts")
     .select(
-      "id, slug, title_en, title_de, title_fr, excerpt_en, excerpt_de, excerpt_fr, body_en, body_de, body_fr, cover_image_url, author_name, published_at, updated_at, is_published, seo_title, seo_description, og_image_url"
+      "id, slug, title_en, title_de, title_fr, excerpt_en, excerpt_de, excerpt_fr, body_en, body_de, body_fr, cover_image_url, author_name, published_at, updated_at, is_published, seo_title, seo_description, og_image_url, post_authors(role, sort_order, authors(slug, display_name))"
     )
     .eq("slug", slug)
     .eq("is_published", true)
@@ -94,6 +94,27 @@ export default async function NewsArticlePage({
   const excerptKey = `excerpt_${l}` as "excerpt_en" | "excerpt_de" | "excerpt_fr";
   const excerpt = (post[excerptKey] as string | null) ?? body.slice(0, 200);
 
+  const rawAuthors =
+    (post.post_authors as
+      | {
+          role: string;
+          sort_order: number;
+          authors:
+            | { slug: string; display_name: string }
+            | { slug: string; display_name: string }[]
+            | null;
+        }[]
+      | null) ?? [];
+  const byline = rawAuthors
+    .slice()
+    .sort((a, b) => a.sort_order - b.sort_order)
+    .map((pa) => (Array.isArray(pa.authors) ? pa.authors[0] : pa.authors))
+    .filter((a): a is { slug: string; display_name: string } => Boolean(a));
+  const bylineAuthors =
+    byline.length > 0
+      ? byline
+      : [{ slug: "dbc-germany", display_name: post.author_name || "DBC Germany" }];
+
   const jsonLd = articleJsonLd({
     title,
     description: excerpt,
@@ -101,6 +122,10 @@ export default async function NewsArticlePage({
     published_at: post.published_at ?? "",
     updated_at: (post.updated_at as string | null) ?? post.published_at ?? "",
     author_name: post.author_name,
+    authors: bylineAuthors.map((a) => ({
+      name: a.display_name,
+      url: `https://dbc-germany.com/${locale}/news/author/${a.slug}`,
+    })),
     cover_image_url: post.cover_image_url,
     publisher: company?.legal_name ?? "DBC Germany",
     publisher_logo: company?.logo_light_url ?? null,
@@ -137,7 +162,20 @@ export default async function NewsArticlePage({
             })}
           </time>
         )}
-        {post.author_name && <span>· {post.author_name}</span>}
+        <span className="flex flex-wrap items-center gap-1">
+          <span aria-hidden>·</span>
+          {bylineAuthors.map((a, i) => (
+            <span key={a.slug}>
+              {i > 0 && <span>, </span>}
+              <Link
+                href={`/${locale}/news/author/${a.slug}`}
+                className="hover:text-foreground"
+              >
+                {a.display_name}
+              </Link>
+            </span>
+          ))}
+        </span>
       </div>
 
       <h1 className="mt-3 font-heading text-4xl font-bold leading-tight tracking-tight sm:text-5xl">

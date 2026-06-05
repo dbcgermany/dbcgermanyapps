@@ -76,6 +76,22 @@ async function categoryPathsForPost(
     .map((s) => `/[locale]/news/category/${s}`);
 }
 
+// The author landing pages a post currently credits.
+async function authorPathsForPost(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any,
+  postId: string
+): Promise<string[]> {
+  const { data } = await supabase
+    .from("post_authors")
+    .select("authors(slug)")
+    .eq("post_id", postId);
+  return ((data ?? []) as { authors: { slug: string } | { slug: string }[] | null }[])
+    .map((r) => (Array.isArray(r.authors) ? r.authors[0]?.slug : r.authors?.slug))
+    .filter((s): s is string => Boolean(s))
+    .map((s) => `/[locale]/news/author/${s}`);
+}
+
 const POST_COLUMNS =
   "id, slug, title_en, title_de, title_fr, excerpt_en, excerpt_de, excerpt_fr, body_en, body_de, body_fr, cover_image_url, author_name, is_published, published_at, created_at, updated_at" as const;
 
@@ -157,6 +173,7 @@ export async function createNewsPost(formData: FormData) {
   await pingRevalidate("site", [
     ...NEWS_PUBLIC_PATHS(slug),
     ...(await categoryPathsForPost(supabase, data.id)),
+    ...(await authorPathsForPost(supabase, data.id)),
   ]);
   redirect(`/${locale}/news/${data.id}`);
 }
@@ -219,6 +236,7 @@ export async function updateNewsPost(id: string, formData: FormData) {
     await pingRevalidate("site", [
       ...NEWS_PUBLIC_PATHS(slugRow.slug),
       ...(await categoryPathsForPost(supabase, id)),
+      ...(await authorPathsForPost(supabase, id)),
     ]);
   return { success: true };
 }
@@ -257,6 +275,7 @@ export async function toggleNewsPublish(id: string, locale: string) {
   await pingRevalidate("site", [
     ...NEWS_PUBLIC_PATHS(post.slug),
     ...(await categoryPathsForPost(supabase, id)),
+    ...(await authorPathsForPost(supabase, id)),
   ]);
   return { success: true };
 }

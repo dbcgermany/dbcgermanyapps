@@ -124,6 +124,29 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         }
       }
     }
+
+    const { data: authors } = await supabase
+      .from("authors")
+      .select("slug")
+      .eq("is_public", true);
+
+    if (authors) {
+      for (const author of authors) {
+        for (const locale of LOCALES) {
+          entries.push({
+            url: `${BASE}/${locale}/news/author/${author.slug}`,
+            lastModified: new Date(),
+            changeFrequency: "weekly",
+            priority: 0.5,
+            alternates: {
+              languages: Object.fromEntries(
+                LOCALES.map((l) => [l, `${BASE}/${l}/news/author/${author.slug}`])
+              ),
+            },
+          });
+        }
+      }
+    }
   } catch {
     // DB unavailable — static entries only
   }

@@ -16,6 +16,28 @@ type RawCategory = {
 };
 type RawLink = { is_primary: boolean; news_categories: RawCategory | null };
 
+type RawAuthor = {
+  slug: string;
+  display_name: string;
+  type: string;
+  photo_url: string | null;
+};
+// PostgREST returns a single object for the to-one embed; supabase-js may
+// type it as an array. Accept both.
+type RawPostAuthor = {
+  role: string;
+  sort_order: number;
+  authors: RawAuthor | RawAuthor[] | null;
+};
+
+export type PostByline = {
+  slug: string;
+  name: string;
+  type: string;
+  photo_url: string | null;
+  role: string;
+};
+
 export type RawPost = {
   id: string;
   slug: string;
@@ -29,10 +51,31 @@ export type RawPost = {
   author_name: string | null;
   published_at: string | null;
   news_category_links: RawLink[] | null;
+  post_authors: RawPostAuthor[] | null;
 };
 
 const POST_SELECT =
-  "id, slug, title_en, title_de, title_fr, excerpt_en, excerpt_de, excerpt_fr, cover_image_url, author_name, published_at, news_category_links(is_primary, news_categories(slug, name_en, name_de, name_fr))";
+  "id, slug, title_en, title_de, title_fr, excerpt_en, excerpt_de, excerpt_fr, cover_image_url, author_name, published_at, news_category_links(is_primary, news_categories(slug, name_en, name_de, name_fr)), post_authors(role, sort_order, authors(slug, display_name, type, photo_url))";
+
+/** Ordered byline for a post: its authors, else a DBC Germany fallback. */
+export function postByline(post: RawPost): PostByline[] {
+  const rows = [...(post.post_authors ?? [])].sort((a, b) => a.sort_order - b.sort_order);
+  const out: PostByline[] = [];
+  for (const r of rows) {
+    const a = Array.isArray(r.authors) ? r.authors[0] : r.authors;
+    if (a) out.push({ slug: a.slug, name: a.display_name, type: a.type, photo_url: a.photo_url, role: r.role });
+  }
+  if (out.length === 0) {
+    out.push({
+      slug: "dbc-germany",
+      name: post.author_name || "DBC Germany",
+      type: "dbc_org",
+      photo_url: null,
+      role: "author",
+    });
+  }
+  return out;
+}
 
 export type NewsCategoryRow = {
   id: string;
@@ -131,7 +174,64 @@ export function toNewsCard(post: RawPost, locale: SiteLocale): NewsCardData {
           day: "numeric",
         })
       : null,
-    author: post.author_name,
+    author: postByline(post).map((b) => b.name).join(", "),
     category: primaryCategory(post, locale),
   };
+}
+
+export type AuthorRow = {
+  id: string;
+  slug: string;
+  display_name: string;
+  type: string;
+  role_title_en: string | null;
+  role_title_de: string | null;
+  role_title_fr: string | null;
+  bio_en: string | null;
+  bio_de: string | null;
+  bio_fr: string | null;
+  photo_url: string | null;
+  linkedin_url: string | null;
+  website_url: string | null;
+  instagram_url: string | null;
+};
+
+const AUTHOR_SELECT =
+  "id, slug, display_name, type, role_title_en, role_title_de, role_title_fr, bio_en, bio_de, bio_fr, photo_url, linkedin_url, website_url, instagram_url";
+
+export async function fetchAuthorBySlug(slug: string): Promise<AuthorRow | null> {
+  const supabase = await createServerClient();
+  const { data } = await supabase
+    .from("authors")
+    .select(AUTHOR_SELECT)
+    .eq("slug", slug)
+    .eq("is_public", true)
+    .maybeSingle();
+  return (data as unknown as AuthorRow) ?? null;
+}
+
+export async function fetchPostsByAuthorId(authorId: string, limit = 60): Promise<RawPost[]> {
+  const supabase = await createServerClient();
+  const { data: links } = await supabase
+    .from("post_authors")
+    .select("post_id")
+    .eq("author_id", authorId);
+  const ids = (links ?? []).map((l) => l.post_id);
+  if (ids.length === 0) return [];
+  const { data } = await supabase
+    .from("news_posts")
+    .select(POST_SELECT)
+    .in("id", ids)
+    .eq("is_published", true)
+    .order("published_at", { ascending: false })
+    .limit(limit);
+  return (data ?? []) as unknown as RawPost[];
+}
+
+export function authorField(a: AuthorRow, field: string, l: SiteLocale): string | null {
+  return (
+    ((a as unknown as Record<string, string | null>)[`${field}_${l}`]) ??
+    ((a as unknown as Record<string, string | null>)[`${field}_en`]) ??
+    null
+  );
 }
