@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { Reveal } from "@dbc/ui";
 import { createServerClient } from "@dbc/supabase/server";
 import { getCompanyInfo } from "@/lib/company-info";
@@ -15,12 +15,29 @@ async function getPost(slug: string) {
   const { data } = await supabase
     .from("news_posts")
     .select(
-      "id, slug, title_en, title_de, title_fr, excerpt_en, excerpt_de, excerpt_fr, body_en, body_de, body_fr, cover_image_url, author_name, published_at, updated_at, is_published, seo_title, seo_description, og_image_url, post_authors(role, sort_order, authors(slug, display_name))"
+      "id, slug, title_en, title_de, title_fr, excerpt_en, excerpt_de, excerpt_fr, body_en, body_de, body_fr, cover_image_url, author_name, published_at, updated_at, is_published, seo_title, seo_description, seo_title_en, seo_title_de, seo_title_fr, seo_description_en, seo_description_de, seo_description_fr, og_title_en, og_title_de, og_title_fr, og_description_en, og_description_de, og_description_fr, og_image_url, canonical_url, robots_noindex, robots_nofollow, schema_type, post_authors(role, sort_order, authors(slug, display_name))"
     )
     .eq("slug", slug)
     .eq("is_published", true)
     .maybeSingle();
   return data;
+}
+
+// A renamed slug → the article's current published slug (for 301s).
+async function resolveSlugRedirect(slug: string): Promise<string | null> {
+  const supabase = await createServerClient();
+  const { data } = await supabase
+    .from("news_slug_history")
+    .select("news_posts(slug, is_published)")
+    .eq("old_slug", slug)
+    .maybeSingle();
+  const p = data?.news_posts as
+    | { slug: string; is_published: boolean }
+    | { slug: string; is_published: boolean }[]
+    | null
+    | undefined;
+  const post = Array.isArray(p) ? p[0] : p;
+  return post && post.is_published ? post.slug : null;
 }
 
 export async function generateMetadata({
@@ -32,32 +49,44 @@ export async function generateMetadata({
   const post = await getPost(slug);
   if (!post) return {};
   const l = (locale === "de" || locale === "fr" ? locale : "en") as "en" | "de" | "fr";
+  const f = (k: string) =>
+    (post as unknown as Record<string, string | null>)[`${k}_${l}`] ?? null;
   const title =
+    f("seo_title") ??
     (post.seo_title as string | null) ??
     (post[`title_${l}` as "title_en" | "title_de" | "title_fr"] as string) ??
     post.title_en;
   const excerptKey = `excerpt_${l}` as "excerpt_en" | "excerpt_de" | "excerpt_fr";
   const bodyKey = `body_${l}` as "body_en" | "body_de" | "body_fr";
   const rawDesc =
+    f("seo_description") ??
     (post.seo_description as string | null) ??
     (post[excerptKey] as string | null) ??
     ((post[bodyKey] as string) ?? "").slice(0, 160);
   const description = rawDesc.length > 160 ? rawDesc.slice(0, 157) + "..." : rawDesc;
+  const ogTitle = f("og_title") ?? title;
+  const ogDescription = f("og_description") ?? description;
   const image = (post.og_image_url as string | null) ?? post.cover_image_url;
   const BASE = "https://dbc-germany.com";
+  const canonical =
+    (post.canonical_url as string | null) || `${BASE}/${locale}/news/${slug}`;
   return {
     title,
     description: description || undefined,
+    robots: {
+      index: !(post.robots_noindex as boolean),
+      follow: !(post.robots_nofollow as boolean),
+    },
     openGraph: {
-      title,
-      description: description || undefined,
+      title: ogTitle,
+      description: ogDescription || undefined,
       type: "article",
       publishedTime: post.published_at ?? undefined,
       modifiedTime: (post.updated_at as string | null) ?? undefined,
       images: image ? [{ url: image }] : undefined,
     },
     alternates: {
-      canonical: `${BASE}/${locale}/news/${slug}`,
+      canonical,
       languages: {
         en: `${BASE}/en/news/${slug}`,
         de: `${BASE}/de/news/${slug}`,
@@ -74,7 +103,11 @@ export default async function NewsArticlePage({
 }) {
   const { locale, slug } = await params;
   const post = await getPost(slug);
-  if (!post) notFound();
+  if (!post) {
+    const target = await resolveSlugRedirect(slug);
+    if (target && target !== slug) permanentRedirect(`/${locale}/news/${target}`);
+    notFound();
+  }
 
   const l = (locale === "de" || locale === "fr" ? locale : "en") as
     | "en"
@@ -129,6 +162,7 @@ export default async function NewsArticlePage({
     cover_image_url: post.cover_image_url,
     publisher: company?.legal_name ?? "DBC Germany",
     publisher_logo: company?.logo_light_url ?? null,
+    schemaType: (post.schema_type as string | null) ?? "NewsArticle",
   });
   const breadcrumb = breadcrumbJsonLd([
     { name: "DBC Germany", url: `https://dbc-germany.com/${locale}` },

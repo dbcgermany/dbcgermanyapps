@@ -296,6 +296,8 @@ export function articleJsonLd(article: {
   cover_image_url: string | null;
   publisher: string;
   publisher_logo: string | null;
+  /** schema.org type (Article | NewsArticle | BlogPosting | Opinion | Interview). */
+  schemaType?: string;
 }) {
   const authorNode =
     article.authors && article.authors.length > 0
@@ -307,9 +309,15 @@ export function articleJsonLd(article: {
       : article.author_name
         ? { "@type": "Person", name: article.author_name }
         : { "@type": "Organization", name: article.publisher };
+  // Opinion/Interview aren't standalone schema.org article types; map them to
+  // Article so the markup stays valid while reflecting intent.
+  const type =
+    article.schemaType === "NewsArticle" || article.schemaType === "BlogPosting"
+      ? article.schemaType
+      : "Article";
   return {
     "@context": "https://schema.org",
-    "@type": "NewsArticle",
+    "@type": type,
     headline: article.title,
     description: article.description,
     datePublished: article.published_at,
