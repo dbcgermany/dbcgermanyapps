@@ -3,8 +3,15 @@
 import { createServerClient, requireRole } from "@dbc/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { sanitizeRichHtml } from "@dbc/legal/server";
 import { slugify, uniqueSlug } from "@/lib/slugify";
 import { pingRevalidate } from "@/lib/revalidate";
+
+// Bodies are authored as rich HTML and rendered with dangerouslySetInnerHTML
+// on the public site, which (being ISR) does not run a sanitizer at request
+// time. Sanitize here on write so stored HTML is always safe.
+const cleanBody = (v: FormDataEntryValue | null, fallback = "") =>
+  sanitizeRichHtml(((v as string) ?? "") || fallback);
 
 const NEWS_PUBLIC_PATHS = (slug: string) => ["/[locale]/news", `/[locale]/news/${slug}`];
 
@@ -54,9 +61,9 @@ export async function createNewsPost(formData: FormData) {
     excerpt_en: (formData.get("excerpt_en") as string) || null,
     excerpt_de: (formData.get("excerpt_de") as string) || null,
     excerpt_fr: (formData.get("excerpt_fr") as string) || null,
-    body_en: formData.get("body_en") as string,
-    body_de: (formData.get("body_de") as string) || (formData.get("body_en") as string),
-    body_fr: (formData.get("body_fr") as string) || (formData.get("body_en") as string),
+    body_en: cleanBody(formData.get("body_en")),
+    body_de: cleanBody(formData.get("body_de"), formData.get("body_en") as string),
+    body_fr: cleanBody(formData.get("body_fr"), formData.get("body_en") as string),
     cover_image_url:
       ((formData.get("cover_image_url") as string) || "").trim() || null,
     author_name: (formData.get("author_name") as string) || null,
@@ -96,9 +103,9 @@ export async function updateNewsPost(id: string, formData: FormData) {
     excerpt_en: (formData.get("excerpt_en") as string) || null,
     excerpt_de: (formData.get("excerpt_de") as string) || null,
     excerpt_fr: (formData.get("excerpt_fr") as string) || null,
-    body_en: formData.get("body_en") as string,
-    body_de: formData.get("body_de") as string,
-    body_fr: formData.get("body_fr") as string,
+    body_en: cleanBody(formData.get("body_en")),
+    body_de: cleanBody(formData.get("body_de")),
+    body_fr: cleanBody(formData.get("body_fr")),
     cover_image_url:
       ((formData.get("cover_image_url") as string) || "").trim() || null,
     author_name: (formData.get("author_name") as string) || null,
