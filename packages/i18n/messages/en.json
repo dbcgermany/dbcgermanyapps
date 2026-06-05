@@ -1893,6 +1893,20 @@
           "linkPrompt": "Enter the URL",
           "videoPrompt": "Paste a YouTube or Vimeo URL"
         },
+        "pillar": "Pillar / cluster",
+        "isPillar": "This is a pillar article",
+        "noPillar": "Not part of a pillar",
+        "linkPickerTitle": "Insert link",
+        "linkExternalUrl": "External URL (https://…)",
+        "linkSearchPages": "Search articles…",
+        "linkInsert": "Insert",
+        "linkGroups": {
+          "pillar": "This pillar",
+          "siblings": "Sibling articles",
+          "clusters": "Cluster articles",
+          "category": "Same category",
+          "recent": "Recent articles"
+        },
         "roles": {
           "author": "Author",
           "co_author": "Co-author",

@@ -8,6 +8,7 @@ import { updateNewsPost } from "@/actions/news";
 import { CoverImageUpload } from "@/components/cover-image-upload";
 import { NewsCategoryPicker } from "@/components/news-category-picker";
 import { NewsAuthorPicker } from "@/components/news-author-picker";
+import { NewsPillarPicker } from "@/components/news-pillar-picker";
 import { RichTextEditor } from "@/components/rich-text-editor";
 
 const T = {
@@ -54,6 +55,8 @@ type Post = {
   body_fr: string;
   cover_image_url: string | null;
   author_name: string | null;
+  is_pillar: boolean;
+  pillar_id: string | null;
   news_category_links?: { category_id: string; is_primary: boolean }[] | null;
   post_authors?:
     | {
@@ -129,13 +132,13 @@ export function EditNewsForm({ locale, post }: { locale: string; post: Post }) {
       </FormField>
 
       <FormField label={t.bodyEn} required>
-        <RichTextEditor name="body_en" defaultValue={post.body_en} />
+        <RichTextEditor name="body_en" defaultValue={post.body_en} postId={post.id} locale={locale} />
       </FormField>
       <FormField label={t.bodyDe}>
-        <RichTextEditor name="body_de" defaultValue={post.body_de} />
+        <RichTextEditor name="body_de" defaultValue={post.body_de} postId={post.id} locale={locale} />
       </FormField>
       <FormField label={t.bodyFr}>
-        <RichTextEditor name="body_fr" defaultValue={post.body_fr} />
+        <RichTextEditor name="body_fr" defaultValue={post.body_fr} postId={post.id} locale={locale} />
       </FormField>
 
       <NewsAuthorPicker
@@ -146,6 +149,12 @@ export function EditNewsForm({ locale, post }: { locale: string; post: Post }) {
             return a ? { id: a.id, display_name: a.display_name, role: pa.role } : null;
           })
           .filter((x): x is { id: string; display_name: string; role: string } => x !== null)}
+      />
+
+      <NewsPillarPicker
+        currentId={post.id}
+        isPillar={post.is_pillar}
+        pillarId={post.pillar_id}
       />
 
       <NewsCategoryPicker

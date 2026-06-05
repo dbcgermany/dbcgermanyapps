@@ -21,6 +21,7 @@ import { toast } from "sonner";
 import { cn } from "@dbc/ui";
 import { EDITOR_EXTENSIONS } from "@/lib/editor-extensions";
 import { uploadEventCover } from "@/actions/events";
+import { EditorLinkDialog } from "@/components/editor-link-dialog";
 
 /**
  * Visual (WYSIWYG) editor for rich-HTML bodies — built so non-technical
@@ -32,12 +33,18 @@ import { uploadEventCover } from "@/actions/events";
 export function RichTextEditor({
   name,
   defaultValue = "",
+  postId,
+  locale = "en",
 }: {
   name: string;
   defaultValue?: string;
+  /** When set, the link tool suggests this post's pillar/cluster/category links. */
+  postId?: string;
+  locale?: string;
 }) {
   const t = useTranslations("admin.news.editor.toolbar");
   const [html, setHtml] = useState(defaultValue);
+  const [linkOpen, setLinkOpen] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const editor = useEditor({
@@ -65,26 +72,6 @@ export function RichTextEditor({
       return;
     }
     editor.chain().focus().setImage({ src: res.url, alt: file.name }).run();
-  }
-
-  function addLink() {
-    if (!editor) return;
-    const url = window.prompt(t("linkPrompt"))?.trim();
-    if (url === undefined) return;
-    if (url === "") {
-      editor.chain().focus().unsetLink().run();
-      return;
-    }
-    const external = /^https?:\/\//.test(url);
-    editor
-      .chain()
-      .focus()
-      .setLink({
-        href: url,
-        target: external ? "_blank" : null,
-        rel: external ? "noopener noreferrer" : null,
-      })
-      .run();
   }
 
   function addVideo() {
@@ -116,13 +103,21 @@ export function RichTextEditor({
           <Tb editor={editor} on={() => editor.chain().focus().toggleOrderedList().run()} active="orderedList" label={t("orderedList")}><ListOrdered className="h-4 w-4" /></Tb>
           <Tb editor={editor} on={() => editor.chain().focus().toggleBlockquote().run()} active="blockquote" label={t("quote")}><Quote className="h-4 w-4" /></Tb>
           <Divider />
-          <Tb editor={editor} on={addLink} active="link" label={t("link")}><LinkIcon className="h-4 w-4" /></Tb>
+          <Tb editor={editor} on={() => setLinkOpen(true)} active="link" label={t("link")}><LinkIcon className="h-4 w-4" /></Tb>
           <Tb editor={editor} on={() => editor.chain().focus().unsetLink().run()} label={t("unlink")}><Unlink className="h-4 w-4" /></Tb>
           <Tb editor={editor} on={() => fileRef.current?.click()} label={t("image")}><ImageIcon className="h-4 w-4" /></Tb>
           <Tb editor={editor} on={addVideo} label={t("video")}><VideoIcon className="h-4 w-4" /></Tb>
         </div>
       )}
       <EditorContent editor={editor} />
+      {editor && linkOpen && (
+        <EditorLinkDialog
+          editor={editor}
+          postId={postId}
+          locale={locale}
+          onClose={() => setLinkOpen(false)}
+        />
+      )}
     </div>
   );
 }

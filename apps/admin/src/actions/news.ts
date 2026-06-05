@@ -93,7 +93,102 @@ async function authorPathsForPost(
 }
 
 const POST_COLUMNS =
-  "id, slug, title_en, title_de, title_fr, excerpt_en, excerpt_de, excerpt_fr, body_en, body_de, body_fr, cover_image_url, author_name, is_published, published_at, created_at, updated_at" as const;
+  "id, slug, title_en, title_de, title_fr, excerpt_en, excerpt_de, excerpt_fr, body_en, body_de, body_fr, cover_image_url, author_name, is_pillar, pillar_id, is_published, published_at, created_at, updated_at" as const;
+
+function readPillar(formData: FormData): { is_pillar: boolean; pillar_id: string | null } {
+  const isPillar = formData.get("is_pillar") === "on";
+  const pillarId = (formData.get("pillar_id") as string) || null;
+  // A pillar has no parent; a post can't be its own pillar.
+  return { is_pillar: isPillar, pillar_id: isPillar ? null : pillarId };
+}
+
+// Module-local type (a non-async export in a "use server" file breaks the build).
+type LinkSuggestion = { label: string; slug: string; group: string };
+
+// Internal-link suggestions for the editor's link tool: a post's pillar +
+// sibling clusters / its clusters, same-category articles, then recent ones.
+export async function getLinkSuggestions(postId?: string): Promise<LinkSuggestion[]> {
+  await requireRole("manager");
+  const supabase = await createServerClient();
+  const out: LinkSuggestion[] = [];
+  const seen = new Set<string>();
+  const add = (label: string, slug: string, group: string) => {
+    if (seen.has(slug)) return;
+    seen.add(slug);
+    out.push({ label, slug, group });
+  };
+
+  if (postId) {
+    const { data: post } = await supabase
+      .from("news_posts")
+      .select("id, is_pillar, pillar_id")
+      .eq("id", postId)
+      .maybeSingle();
+    if (post?.pillar_id) {
+      const { data: pillar } = await supabase
+        .from("news_posts")
+        .select("title_en, slug")
+        .eq("id", post.pillar_id)
+        .maybeSingle();
+      if (pillar) add(pillar.title_en, pillar.slug, "pillar");
+      const { data: sibs } = await supabase
+        .from("news_posts")
+        .select("title_en, slug")
+        .eq("pillar_id", post.pillar_id)
+        .neq("id", postId)
+        .limit(12);
+      (sibs ?? []).forEach((s) => add(s.title_en, s.slug, "siblings"));
+    }
+    if (post?.is_pillar) {
+      const { data: clusters } = await supabase
+        .from("news_posts")
+        .select("title_en, slug")
+        .eq("pillar_id", postId)
+        .limit(20);
+      (clusters ?? []).forEach((s) => add(s.title_en, s.slug, "clusters"));
+    }
+    // same-category articles
+    const { data: cats } = await supabase
+      .from("news_category_links")
+      .select("category_id")
+      .eq("post_id", postId);
+    const catIds = (cats ?? []).map((c) => c.category_id);
+    if (catIds.length > 0) {
+      const { data: mates } = await supabase
+        .from("news_category_links")
+        .select("news_posts(title_en, slug, id)")
+        .in("category_id", catIds)
+        .limit(30);
+      (mates ?? []).forEach((m) => {
+        const p = Array.isArray(m.news_posts) ? m.news_posts[0] : m.news_posts;
+        if (p && p.id !== postId) add(p.title_en, p.slug, "category");
+      });
+    }
+  }
+
+  const { data: recent } = await supabase
+    .from("news_posts")
+    .select("title_en, slug")
+    .eq("is_published", true)
+    .order("published_at", { ascending: false })
+    .limit(12);
+  (recent ?? []).forEach((s) => add(s.title_en, s.slug, "recent"));
+  return out;
+}
+
+// Pillar articles available to assign as a cluster's parent.
+export async function getPillarOptions(excludeId?: string) {
+  await requireRole("manager");
+  const supabase = await createServerClient();
+  let q = supabase
+    .from("news_posts")
+    .select("id, title_en, slug")
+    .eq("is_pillar", true)
+    .order("created_at", { ascending: false });
+  if (excludeId) q = q.neq("id", excludeId);
+  const { data } = await q;
+  return data ?? [];
+}
 
 export async function getNewsPosts() {
   await requireRole("manager");
@@ -146,6 +241,7 @@ export async function createNewsPost(formData: FormData) {
     cover_image_url:
       ((formData.get("cover_image_url") as string) || "").trim() || null,
     author_name: (formData.get("author_name") as string) || null,
+    ...readPillar(formData),
     is_published: false,
   };
 
@@ -196,6 +292,7 @@ export async function updateNewsPost(id: string, formData: FormData) {
     cover_image_url:
       ((formData.get("cover_image_url") as string) || "").trim() || null,
     author_name: (formData.get("author_name") as string) || null,
+    ...readPillar(formData),
   };
 
   // Optional: admin can rename the slug. If provided, sanitise + ensure uniqueness.

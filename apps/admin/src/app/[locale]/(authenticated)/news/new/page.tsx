@@ -9,6 +9,7 @@ import { PageHeader } from "@/components/page-header";
 import { CoverImageUpload } from "@/components/cover-image-upload";
 import { NewsCategoryPicker } from "@/components/news-category-picker";
 import { NewsAuthorPicker } from "@/components/news-author-picker";
+import { NewsPillarPicker } from "@/components/news-pillar-picker";
 import { RichTextEditor } from "@/components/rich-text-editor";
 
 // createNewsPost ends with redirect() on success — the action never
@@ -71,16 +72,18 @@ export default function NewNewsPostPage({
         </FormField>
 
         <FormField label={t("bodyEn")} required>
-          <RichTextEditor name="body_en" />
+          <RichTextEditor name="body_en" locale={locale} />
         </FormField>
         <FormField label={t("bodyDe")}>
-          <RichTextEditor name="body_de" />
+          <RichTextEditor name="body_de" locale={locale} />
         </FormField>
         <FormField label={t("bodyFr")}>
-          <RichTextEditor name="body_fr" />
+          <RichTextEditor name="body_fr" locale={locale} />
         </FormField>
 
         <NewsAuthorPicker />
+
+        <NewsPillarPicker />
 
         <NewsCategoryPicker locale={locale} />
 

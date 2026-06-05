@@ -1893,6 +1893,20 @@
           "linkPrompt": "Saisir l’URL",
           "videoPrompt": "Coller une URL YouTube ou Vimeo"
         },
+        "pillar": "Pilier / cluster",
+        "isPillar": "Ceci est un article pilier",
+        "noPillar": "Ne fait pas partie d’un pilier",
+        "linkPickerTitle": "Insérer un lien",
+        "linkExternalUrl": "URL externe (https://…)",
+        "linkSearchPages": "Rechercher des articles…",
+        "linkInsert": "Insérer",
+        "linkGroups": {
+          "pillar": "Ce pilier",
+          "siblings": "Articles frères",
+          "clusters": "Articles du cluster",
+          "category": "Même catégorie",
+          "recent": "Articles récents"
+        },
         "roles": {
           "author": "Auteur",
           "co_author": "Co-auteur",
