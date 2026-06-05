@@ -2734,7 +2734,13 @@
     },
     "news": {
       "all": "All",
-      "empty": "No articles in this category yet."
+      "empty": "No articles in this category yet.",
+      "minRead": "{n} min read",
+      "updatedOn": "Updated {date}",
+      "related": "More articles",
+      "share": "Share",
+      "copyLink": "Copy link",
+      "linkCopied": "Link copied"
     },
     "intros": {
       "news": "The DBC Germany journal covers the African-rooted business community in Europe — founder stories, policy briefs, capital updates, and long-form pieces on the companies shaping the diaspora economy. Expect notes from the ground in Düsseldorf, Berlin, Paris, and Lubumbashi, alongside reporting on Richesses d'Afrique Germany 2026 and our programmes. We publish in three languages; German and French versions usually follow the English one within a few days. Subscribe to the newsletter on /newsletter to get one curated brief per week — the archive lives below.",

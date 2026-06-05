@@ -146,6 +146,56 @@ export async function fetchPostsByCategoryId(categoryId: string, limit = 60): Pr
   return (data ?? []) as unknown as RawPost[];
 }
 
+/** Estimated reading time in minutes from an HTML body (~200 wpm). */
+export function readingTimeMinutes(html: string): number {
+  const text = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  const words = text ? text.split(" ").length : 0;
+  return Math.max(1, Math.round(words / 200));
+}
+
+/** More articles: same-category first, then recent — excluding the current post. */
+export async function fetchRelatedPosts(postId: string, limit = 3): Promise<RawPost[]> {
+  const supabase = await createServerClient();
+  const { data: cats } = await supabase
+    .from("news_category_links")
+    .select("category_id")
+    .eq("post_id", postId);
+  const catIds = (cats ?? []).map((c) => c.category_id);
+  const ids = new Set<string>();
+  if (catIds.length) {
+    const { data: links } = await supabase
+      .from("news_category_links")
+      .select("post_id")
+      .in("category_id", catIds);
+    (links ?? []).forEach((l) => {
+      if (l.post_id !== postId) ids.add(l.post_id);
+    });
+  }
+  let related: RawPost[] = [];
+  if (ids.size) {
+    const { data } = await supabase
+      .from("news_posts")
+      .select(POST_SELECT)
+      .in("id", [...ids])
+      .eq("is_published", true)
+      .order("published_at", { ascending: false })
+      .limit(limit);
+    related = (data ?? []) as unknown as RawPost[];
+  }
+  if (related.length < limit) {
+    const exclude = [postId, ...related.map((r) => r.id)];
+    const { data } = await supabase
+      .from("news_posts")
+      .select(POST_SELECT)
+      .eq("is_published", true)
+      .not("id", "in", `(${exclude.join(",")})`)
+      .order("published_at", { ascending: false })
+      .limit(limit - related.length);
+    related = [...related, ...((data ?? []) as unknown as RawPost[])];
+  }
+  return related.slice(0, limit);
+}
+
 export function localizedName(cat: RawCategory, locale: SiteLocale): string {
   return (cat[`name_${locale}` as "name_en"] as string | null) ?? cat.name_en;
 }

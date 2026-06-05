@@ -2734,7 +2734,13 @@
     },
     "news": {
       "all": "Alle",
-      "empty": "Noch keine Artikel in dieser Kategorie."
+      "empty": "Noch keine Artikel in dieser Kategorie.",
+      "minRead": "{n} Min. Lesezeit",
+      "updatedOn": "Aktualisiert {date}",
+      "related": "Weitere Artikel",
+      "share": "Teilen",
+      "copyLink": "Link kopieren",
+      "linkCopied": "Link kopiert"
     },
     "intros": {
       "news": "Das Journal von DBC Germany berichtet über die afrikanisch verwurzelte Business-Community in Europa — Gründer-Stories, Policy-Briefings, Kapital-Updates und Longreads zu den Unternehmen, die die Diaspora-Wirtschaft prägen. Notizen aus Düsseldorf, Berlin, Paris und Lubumbashi sowie Berichte zu Richesses d'Afrique Germany 2026 und unseren Programmen. Wir publizieren in drei Sprachen; deutsche und französische Fassungen folgen der englischen in der Regel innerhalb weniger Tage. Newsletter unter /newsletter abonnieren, um einen kuratierten Brief pro Woche zu erhalten — das Archiv liegt unten.",

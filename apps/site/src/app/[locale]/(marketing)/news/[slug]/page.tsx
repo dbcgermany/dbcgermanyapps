@@ -2,11 +2,20 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { Reveal } from "@dbc/ui";
 import { createServerClient } from "@dbc/supabase/server";
 import { getCompanyInfo } from "@/lib/company-info";
 import { JsonLd, articleJsonLd, breadcrumbJsonLd } from "@/lib/json-ld";
 import { DBC } from "@/lib/dbc-assets";
+import { NewsCard } from "@/components/news-card";
+import { ShareButtons } from "@/components/share-buttons";
+import {
+  fetchRelatedPosts,
+  readingTimeMinutes,
+  toNewsCard,
+  toLocale,
+} from "@/lib/news";
 
 export const revalidate = 60;
 
@@ -126,6 +135,15 @@ export default async function NewsArticlePage({
   const company = await getCompanyInfo();
   const excerptKey = `excerpt_${l}` as "excerpt_en" | "excerpt_de" | "excerpt_fr";
   const excerpt = (post[excerptKey] as string | null) ?? body.slice(0, 200);
+  const readMin = readingTimeMinutes(body);
+  const tNews = await getTranslations({ locale, namespace: "site.news" });
+  const related = (await fetchRelatedPosts(post.id)).map((p) => toNewsCard(p, toLocale(locale)));
+  const isUpdated =
+    !!post.published_at &&
+    !!post.updated_at &&
+    new Date(post.updated_at as string).getTime() -
+      new Date(post.published_at).getTime() >
+      86_400_000;
 
   const rawAuthors =
     (post.post_authors as
@@ -186,7 +204,7 @@ export default async function NewsArticlePage({
       </Link>
 
       <Reveal>
-      <div className="mt-6 flex items-center gap-3 text-xs text-muted-foreground">
+      <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
         {post.published_at && (
           <time dateTime={post.published_at}>
             {new Date(post.published_at).toLocaleDateString(locale, {
@@ -210,6 +228,20 @@ export default async function NewsArticlePage({
             </span>
           ))}
         </span>
+        <span aria-hidden>·</span>
+        <span>{tNews("minRead", { n: readMin })}</span>
+        {isUpdated && (
+          <span>
+            ·{" "}
+            {tNews("updatedOn", {
+              date: new Date(post.updated_at as string).toLocaleDateString(locale, {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              }),
+            })}
+          </span>
+        )}
       </div>
 
       <h1 className="mt-3 font-heading text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
@@ -232,10 +264,30 @@ export default async function NewsArticlePage({
 
       <Reveal delay={160}>
       <div
-        className="prose prose-neutral dark:prose-invert mt-10 max-w-none text-base leading-8 text-foreground"
+        className="prose prose-neutral dark:prose-invert mt-10 max-w-none text-base leading-8 text-foreground [&_figure]:my-6 [&_iframe]:aspect-video [&_iframe]:h-auto [&_iframe]:w-full [&_iframe]:rounded-lg [&_img]:rounded-lg"
         dangerouslySetInnerHTML={{ __html: body }}
       />
       </Reveal>
+
+      <ShareButtons
+        url={`https://dbc-germany.com/${locale}/news/${slug}`}
+        title={title}
+      />
+
+      {related.length > 0 && (
+        <Reveal delay={80}>
+          <div className="mt-16 border-t border-border pt-10">
+            <h2 className="font-heading text-2xl font-bold tracking-tight">
+              {tNews("related")}
+            </h2>
+            <div className="mt-6 grid gap-8 sm:grid-cols-2">
+              {related.map((card) => (
+                <NewsCard key={card.slug} locale={locale} post={card} />
+              ))}
+            </div>
+          </div>
+        </Reveal>
+      )}
     </article>
   );
 }
