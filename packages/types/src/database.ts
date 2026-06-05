@@ -435,6 +435,96 @@ export type Database = {
         }
         Relationships: []
       }
+      authors: {
+        Row: {
+          bio_de: string | null
+          bio_en: string | null
+          bio_fr: string | null
+          contact_id: string | null
+          created_at: string
+          display_name: string
+          email: string | null
+          id: string
+          instagram_url: string | null
+          is_org_default: boolean
+          is_public: boolean
+          linkedin_url: string | null
+          photo_url: string | null
+          role_title_de: string | null
+          role_title_en: string | null
+          role_title_fr: string | null
+          slug: string
+          sort_order: number
+          team_member_id: string | null
+          type: string
+          updated_at: string
+          website_url: string | null
+        }
+        Insert: {
+          bio_de?: string | null
+          bio_en?: string | null
+          bio_fr?: string | null
+          contact_id?: string | null
+          created_at?: string
+          display_name: string
+          email?: string | null
+          id?: string
+          instagram_url?: string | null
+          is_org_default?: boolean
+          is_public?: boolean
+          linkedin_url?: string | null
+          photo_url?: string | null
+          role_title_de?: string | null
+          role_title_en?: string | null
+          role_title_fr?: string | null
+          slug: string
+          sort_order?: number
+          team_member_id?: string | null
+          type?: string
+          updated_at?: string
+          website_url?: string | null
+        }
+        Update: {
+          bio_de?: string | null
+          bio_en?: string | null
+          bio_fr?: string | null
+          contact_id?: string | null
+          created_at?: string
+          display_name?: string
+          email?: string | null
+          id?: string
+          instagram_url?: string | null
+          is_org_default?: boolean
+          is_public?: boolean
+          linkedin_url?: string | null
+          photo_url?: string | null
+          role_title_de?: string | null
+          role_title_en?: string | null
+          role_title_fr?: string | null
+          slug?: string
+          sort_order?: number
+          team_member_id?: string | null
+          type?: string
+          updated_at?: string
+          website_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "authors_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "authors_team_member_id_fkey"
+            columns: ["team_member_id"]
+            isOneToOne: false
+            referencedRelation: "team_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       catering_menu_items: {
         Row: {
           allergens: string[] | null
@@ -3754,6 +3844,42 @@ export type Database = {
             columns: ["updated_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_authors: {
+        Row: {
+          author_id: string
+          post_id: string
+          role: string
+          sort_order: number
+        }
+        Insert: {
+          author_id: string
+          post_id: string
+          role?: string
+          sort_order?: number
+        }
+        Update: {
+          author_id?: string
+          post_id?: string
+          role?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_authors_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "authors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_authors_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "news_posts"
             referencedColumns: ["id"]
           },
         ]
