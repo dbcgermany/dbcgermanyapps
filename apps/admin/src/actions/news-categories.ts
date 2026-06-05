@@ -9,8 +9,10 @@ import { pingRevalidate } from "@/lib/revalidate";
 const categoryPaths = (slug?: string) =>
   slug ? ["/[locale]/news", `/[locale]/news/category/${slug}`] : ["/[locale]/news"];
 
-export const NEWS_CATEGORY_COLUMNS =
-  "id, slug, name_en, name_de, name_fr, description_en, description_de, description_fr, seo_title_en, seo_title_de, seo_title_fr, seo_description_en, seo_description_de, seo_description_fr, color, image_url, sort_order, created_at" as const;
+// NOTE: not exported — a non-async export in a "use server" file passes local
+// tsc but breaks the Vercel/Turbopack build. Keep module-local.
+const NEWS_CATEGORY_COLUMNS =
+  "id, slug, name_en, name_de, name_fr, description_en, description_de, description_fr, seo_title_en, seo_title_de, seo_title_fr, seo_description_en, seo_description_de, seo_description_fr, color, image_url, sort_order, created_at";
 
 export async function getNewsCategories() {
   await requireRole("manager");
