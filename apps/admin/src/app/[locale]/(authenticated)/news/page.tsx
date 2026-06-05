@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { Badge } from "@dbc/ui";
+import { Badge, LinkButton } from "@dbc/ui";
 import { getNewsPosts, toggleNewsPublish } from "@/actions/news";
 import { PageHeader } from "@/components/page-header";
 import { EmptyState } from "@/components/empty-state";
@@ -15,9 +15,10 @@ export default async function NewsIndexPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const [t, tCommon] = await Promise.all([
+  const [t, tCommon, tCat] = await Promise.all([
     getTranslations({ locale, namespace: "admin.news.list" }),
     getTranslations({ locale, namespace: "admin.common" }),
+    getTranslations({ locale, namespace: "admin.news.categories" }),
   ]);
   const posts = await getNewsPosts();
 
@@ -25,7 +26,14 @@ export default async function NewsIndexPage({
     <div>
       <PageHeader
         title={t("title")}
-        cta={<AddButton href={`/${locale}/news/new`} label={t("newPost")} />}
+        cta={
+          <div className="flex flex-wrap items-center gap-2">
+            <LinkButton href={`/${locale}/news/categories`} variant="secondary">
+              {tCat("manage")}
+            </LinkButton>
+            <AddButton href={`/${locale}/news/new`} label={t("newPost")} />
+          </div>
+        }
       />
 
       {posts.length === 0 ? (

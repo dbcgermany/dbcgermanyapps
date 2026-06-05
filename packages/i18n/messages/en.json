@@ -1840,6 +1840,37 @@
         "author": "Author (optional)",
         "saving": "Saving…",
         "saveDraft": "Save draft"
+      },
+      "categories": {
+        "title": "News categories",
+        "manage": "Categories",
+        "add": "Add category",
+        "nameEn": "Name (EN)",
+        "nameDe": "Name (DE)",
+        "nameFr": "Name (FR)",
+        "descEn": "Description (EN)",
+        "descDe": "Description (DE)",
+        "descFr": "Description (FR)",
+        "slug": "Slug",
+        "slugHint": "URL-safe identifier. Leave empty to auto-generate from the name.",
+        "color": "Color",
+        "create": "Create category",
+        "creating": "Creating…",
+        "reorderHint": "Drag to reorder. Order drives the news archive filter. Saves automatically.",
+        "empty": "No categories yet. Add the first one.",
+        "deleteConfirm": "Delete category “{name}”?",
+        "createdToast": "Category created",
+        "deletedToast": "Category deleted",
+        "colors": {
+          "red": "Red", "gold": "Gold", "blue": "Blue", "teal": "Teal",
+          "purple": "Purple", "green": "Green", "orange": "Orange", "slate": "Slate"
+        }
+      },
+      "editor": {
+        "categories": "Categories",
+        "categoriesHint": "Tick the categories this article belongs to, then choose one as primary (drives the card badge).",
+        "primary": "Primary",
+        "noCategories": "No categories yet. Create them under News → Categories."
       }
     },
     "funnels": {

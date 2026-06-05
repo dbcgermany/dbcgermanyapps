@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Button, FormField, Input, Textarea } from "@dbc/ui";
 import { updateNewsPost } from "@/actions/news";
 import { CoverImageUpload } from "@/components/cover-image-upload";
+import { NewsCategoryPicker } from "@/components/news-category-picker";
 
 const T = {
   en: {
@@ -51,6 +52,7 @@ type Post = {
   body_fr: string;
   cover_image_url: string | null;
   author_name: string | null;
+  news_category_links?: { category_id: string; is_primary: boolean }[] | null;
 };
 
 type ActionResult = { error?: string; success?: boolean } | null;
@@ -124,6 +126,14 @@ export function EditNewsForm({ locale, post }: { locale: string; post: Post }) {
       <FormField label={t.author}>
         <Input name="author_name" defaultValue={post.author_name ?? ""} />
       </FormField>
+
+      <NewsCategoryPicker
+        locale={locale}
+        selectedIds={(post.news_category_links ?? []).map((l) => l.category_id)}
+        primaryId={
+          (post.news_category_links ?? []).find((l) => l.is_primary)?.category_id ?? null
+        }
+      />
 
       <CoverImageUpload initialUrl={post.cover_image_url} />
 

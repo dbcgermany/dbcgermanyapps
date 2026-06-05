@@ -1840,6 +1840,37 @@
         "author": "Auteur (optionnel)",
         "saving": "Enregistrement…",
         "saveDraft": "Enregistrer le brouillon"
+      },
+      "categories": {
+        "title": "Catégories d’actualités",
+        "manage": "Catégories",
+        "add": "Ajouter une catégorie",
+        "nameEn": "Nom (EN)",
+        "nameDe": "Nom (DE)",
+        "nameFr": "Nom (FR)",
+        "descEn": "Description (EN)",
+        "descDe": "Description (DE)",
+        "descFr": "Description (FR)",
+        "slug": "Slug",
+        "slugHint": "Identifiant d’URL. Laisser vide pour générer depuis le nom.",
+        "color": "Couleur",
+        "create": "Créer la catégorie",
+        "creating": "Création…",
+        "reorderHint": "Glisser pour réordonner. L’ordre pilote le filtre des actualités. Enregistrement automatique.",
+        "empty": "Aucune catégorie. Ajoutez la première.",
+        "deleteConfirm": "Supprimer la catégorie « {name} » ?",
+        "createdToast": "Catégorie créée",
+        "deletedToast": "Catégorie supprimée",
+        "colors": {
+          "red": "Rouge", "gold": "Or", "blue": "Bleu", "teal": "Turquoise",
+          "purple": "Violet", "green": "Vert", "orange": "Orange", "slate": "Ardoise"
+        }
+      },
+      "editor": {
+        "categories": "Catégories",
+        "categoriesHint": "Cochez les catégories de cet article, puis choisissez-en une comme principale (badge).",
+        "primary": "Principale",
+        "noCategories": "Aucune catégorie. Créez-les dans Actualités → Catégories."
       }
     },
     "funnels": {

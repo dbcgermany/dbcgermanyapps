@@ -6,6 +6,14 @@ import { redirect } from "next/navigation";
 import { sanitizeRichHtml } from "@dbc/legal/server";
 import { slugify, uniqueSlug } from "@/lib/slugify";
 import { pingRevalidate } from "@/lib/revalidate";
+import { syncPostCategories } from "@/lib/news-category-sync";
+
+function readCategorySelection(formData: FormData) {
+  return {
+    categoryIds: formData.getAll("category_ids").map(String),
+    primaryId: (formData.get("primary_category_id") as string) || null,
+  };
+}
 
 // Bodies are authored as rich HTML and rendered with dangerouslySetInnerHTML
 // on the public site, which (being ISR) does not run a sanitizer at request
@@ -34,7 +42,7 @@ export async function getNewsPost(id: string) {
   const supabase = await createServerClient();
   const { data, error } = await supabase
     .from("news_posts")
-    .select(POST_COLUMNS)
+    .select(`${POST_COLUMNS}, news_category_links(category_id, is_primary)`)
     .eq("id", id)
     .single();
   if (error) throw new Error(error.message);
@@ -77,6 +85,9 @@ export async function createNewsPost(formData: FormData) {
     .single();
 
   if (error) return { error: error.message };
+
+  const { categoryIds, primaryId } = readCategorySelection(formData);
+  await syncPostCategories(supabase, data.id, categoryIds, primaryId, user.userId);
 
   await supabase.from("audit_log").insert({
     user_id: user.userId,
@@ -124,6 +135,9 @@ export async function updateNewsPost(id: string, formData: FormData) {
     .eq("id", id);
 
   if (error) return { error: error.message };
+
+  const { categoryIds, primaryId } = readCategorySelection(formData);
+  await syncPostCategories(supabase, id, categoryIds, primaryId, user.userId);
 
   await supabase.from("audit_log").insert({
     user_id: user.userId,

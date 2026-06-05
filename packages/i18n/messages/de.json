@@ -1840,6 +1840,37 @@
         "author": "Autor (optional)",
         "saving": "Wird gespeichert…",
         "saveDraft": "Entwurf speichern"
+      },
+      "categories": {
+        "title": "News-Kategorien",
+        "manage": "Kategorien",
+        "add": "Kategorie hinzufügen",
+        "nameEn": "Name (EN)",
+        "nameDe": "Name (DE)",
+        "nameFr": "Name (FR)",
+        "descEn": "Beschreibung (EN)",
+        "descDe": "Beschreibung (DE)",
+        "descFr": "Beschreibung (FR)",
+        "slug": "Slug",
+        "slugHint": "URL-Kennung. Leer lassen, um aus dem Namen zu generieren.",
+        "color": "Farbe",
+        "create": "Kategorie erstellen",
+        "creating": "Wird erstellt…",
+        "reorderHint": "Zum Sortieren ziehen. Reihenfolge steuert den Filter im News-Archiv. Speichert automatisch.",
+        "empty": "Noch keine Kategorien. Füge die erste hinzu.",
+        "deleteConfirm": "Kategorie „{name}“ löschen?",
+        "createdToast": "Kategorie erstellt",
+        "deletedToast": "Kategorie gelöscht",
+        "colors": {
+          "red": "Rot", "gold": "Gold", "blue": "Blau", "teal": "Türkis",
+          "purple": "Lila", "green": "Grün", "orange": "Orange", "slate": "Schiefer"
+        }
+      },
+      "editor": {
+        "categories": "Kategorien",
+        "categoriesHint": "Kreuze die Kategorien dieses Artikels an und wähle eine als primär (steuert das Badge).",
+        "primary": "Primär",
+        "noCategories": "Noch keine Kategorien. Erstelle sie unter News → Kategorien."
       }
     },
     "funnels": {
