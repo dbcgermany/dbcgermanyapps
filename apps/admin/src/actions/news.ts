@@ -23,6 +23,23 @@ const cleanBody = (v: FormDataEntryValue | null, fallback = "") =>
 
 const NEWS_PUBLIC_PATHS = (slug: string) => ["/[locale]/news", `/[locale]/news/${slug}`];
 
+// The category landing pages a post currently belongs to (so they refresh
+// when a post is published/edited/recategorized).
+async function categoryPathsForPost(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any,
+  postId: string
+): Promise<string[]> {
+  const { data } = await supabase
+    .from("news_category_links")
+    .select("news_categories(slug)")
+    .eq("post_id", postId);
+  return ((data ?? []) as { news_categories: { slug: string } | null }[])
+    .map((r) => r.news_categories?.slug)
+    .filter((s): s is string => Boolean(s))
+    .map((s) => `/[locale]/news/category/${s}`);
+}
+
 const POST_COLUMNS =
   "id, slug, title_en, title_de, title_fr, excerpt_en, excerpt_de, excerpt_fr, body_en, body_de, body_fr, cover_image_url, author_name, is_published, published_at, created_at, updated_at" as const;
 
@@ -98,7 +115,10 @@ export async function createNewsPost(formData: FormData) {
   });
 
   revalidatePath(`/${locale}/news`);
-  await pingRevalidate("site", NEWS_PUBLIC_PATHS(slug));
+  await pingRevalidate("site", [
+    ...NEWS_PUBLIC_PATHS(slug),
+    ...(await categoryPathsForPost(supabase, data.id)),
+  ]);
   redirect(`/${locale}/news/${data.id}`);
 }
 
@@ -155,7 +175,11 @@ export async function updateNewsPost(id: string, formData: FormData) {
     .select("slug")
     .eq("id", id)
     .single();
-  if (slugRow?.slug) await pingRevalidate("site", NEWS_PUBLIC_PATHS(slugRow.slug));
+  if (slugRow?.slug)
+    await pingRevalidate("site", [
+      ...NEWS_PUBLIC_PATHS(slugRow.slug),
+      ...(await categoryPathsForPost(supabase, id)),
+    ]);
   return { success: true };
 }
 
@@ -190,7 +214,10 @@ export async function toggleNewsPublish(id: string, locale: string) {
   });
 
   revalidatePath(`/${locale}/news`);
-  await pingRevalidate("site", NEWS_PUBLIC_PATHS(post.slug));
+  await pingRevalidate("site", [
+    ...NEWS_PUBLIC_PATHS(post.slug),
+    ...(await categoryPathsForPost(supabase, id)),
+  ]);
   return { success: true };
 }
 

@@ -2618,6 +2618,10 @@
         "description": "You have been unsubscribed from the DBC Germany newsletter."
       }
     },
+    "news": {
+      "all": "All",
+      "empty": "No articles in this category yet."
+    },
     "intros": {
       "news": "The DBC Germany journal covers the African-rooted business community in Europe — founder stories, policy briefs, capital updates, and long-form pieces on the companies shaping the diaspora economy. Expect notes from the ground in Düsseldorf, Berlin, Paris, and Lubumbashi, alongside reporting on Richesses d'Afrique Germany 2026 and our programmes. We publish in three languages; German and French versions usually follow the English one within a few days. Subscribe to the newsletter on /newsletter to get one curated brief per week — the archive lives below.",
       "team": "Meet the operators behind DBC Germany. The Düsseldorf office runs incubation, investment prep, courses, mentorship, and the annual Richesses d'Afrique conference. The names below are the people you'll actually work with if you apply to a programme, pitch a partnership, or come to an event. Each profile links to the person's professional background and the programmes they lead. If you don't see the role you need, contact us — we hire for operator-grade generalists more often than titles suggest.",

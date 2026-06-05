@@ -102,6 +102,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         }
       }
     }
+
+    const { data: categories } = await supabase
+      .from("news_categories")
+      .select("slug");
+
+    if (categories) {
+      for (const cat of categories) {
+        for (const locale of LOCALES) {
+          entries.push({
+            url: `${BASE}/${locale}/news/category/${cat.slug}`,
+            lastModified: new Date(),
+            changeFrequency: "weekly",
+            priority: 0.6,
+            alternates: {
+              languages: Object.fromEntries(
+                LOCALES.map((l) => [l, `${BASE}/${l}/news/category/${cat.slug}`])
+              ),
+            },
+          });
+        }
+      }
+    }
   } catch {
     // DB unavailable — static entries only
   }

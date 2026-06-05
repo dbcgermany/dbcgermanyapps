@@ -2618,6 +2618,10 @@
         "description": "Sie wurden vom DBC-Germany-Newsletter abgemeldet."
       }
     },
+    "news": {
+      "all": "Alle",
+      "empty": "Noch keine Artikel in dieser Kategorie."
+    },
     "intros": {
       "news": "Das Journal von DBC Germany berichtet über die afrikanisch verwurzelte Business-Community in Europa — Gründer-Stories, Policy-Briefings, Kapital-Updates und Longreads zu den Unternehmen, die die Diaspora-Wirtschaft prägen. Notizen aus Düsseldorf, Berlin, Paris und Lubumbashi sowie Berichte zu Richesses d'Afrique Germany 2026 und unseren Programmen. Wir publizieren in drei Sprachen; deutsche und französische Fassungen folgen der englischen in der Regel innerhalb weniger Tage. Newsletter unter /newsletter abonnieren, um einen kuratierten Brief pro Woche zu erhalten — das Archiv liegt unten.",
       "team": "Lernen Sie die Operatoren hinter DBC Germany kennen. Das Düsseldorfer Büro leitet Inkubation, Investment-Prep, Kurse, Mentoring und die jährliche Richesses-d'Afrique-Konferenz. Die Personen unten sind die, mit denen Sie tatsächlich arbeiten, wenn Sie sich für ein Programm bewerben, eine Partnerschaft pitchen oder zu einem Event kommen. Jedes Profil verlinkt auf den professionellen Hintergrund und die Programme der Person. Falls die benötigte Rolle nicht dabei ist: Kontaktieren Sie uns — wir stellen häufiger operativ starke Generalisten ein, als die Titel vermuten lassen.",
