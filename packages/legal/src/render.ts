@@ -44,12 +44,36 @@ const ALLOWED_TAGS = [
   "table", "thead", "tbody", "tr", "th", "td",
   "blockquote",
   "div", "span", "address",
+  // Inline media for news/blog bodies (images + captions + safe embeds).
+  "img", "figure", "figcaption", "iframe",
 ];
 
 const ALLOWED_ATTR = [
   "href", "title", "target", "rel", "class", "lang",
   "colspan", "rowspan", "align",
+  // Media attributes.
+  "src", "alt", "width", "height", "loading",
+  "allow", "allowfullscreen", "frameborder", "sandbox",
 ];
+
+// Embeds are restricted to a known-safe allowlist (YouTube / Vimeo). Any
+// other <iframe> is dropped. Registered once on the shared DOMPurify
+// instance; legal docs have no iframes so they're unaffected.
+const ALLOWED_IFRAME_SRC =
+  /^https:\/\/(www\.)?(youtube-nocookie\.com\/embed\/|youtube\.com\/embed\/|player\.vimeo\.com\/video\/)/;
+
+let iframeHookRegistered = false;
+function ensureIframeHook() {
+  if (iframeHookRegistered) return;
+  iframeHookRegistered = true;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  DOMPurify.addHook("uponSanitizeElement", (node: any) => {
+    if (node?.tagName?.toLowerCase?.() === "iframe") {
+      const src = node.getAttribute?.("src") ?? "";
+      if (!ALLOWED_IFRAME_SRC.test(src)) node.parentNode?.removeChild(node);
+    }
+  });
+}
 
 export interface TemplateContext {
   company: PublicCompanyInfo | null;
@@ -168,12 +192,15 @@ export interface RenderOptions {
  * article body authored in the admin) using the same allow-list as the
  * legal renderer. No markdown parsing and no template interpolation —
  * the input is already HTML. Keeps `<a href target rel>` so internal and
- * external hyperlinks survive, strips any script/iframe/onerror payloads.
+ * external hyperlinks survive, allows inline images + YouTube/Vimeo embeds,
+ * strips any script / disallowed-iframe / onerror payloads.
  */
 export function sanitizeRichHtml(html: string): string {
+  ensureIframeHook();
   return DOMPurify.sanitize(html, {
     ALLOWED_TAGS,
     ALLOWED_ATTR,
+    ADD_TAGS: ["iframe"],
   });
 }
 

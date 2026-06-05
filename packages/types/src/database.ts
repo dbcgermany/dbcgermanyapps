@@ -3380,8 +3380,10 @@ export type Database = {
           excerpt_en: string | null
           excerpt_fr: string | null
           id: string
+          is_pillar: boolean
           is_published: boolean
           og_image_url: string | null
+          pillar_id: string | null
           published_at: string | null
           seo_description: string | null
           seo_keywords: string | null
@@ -3403,8 +3405,10 @@ export type Database = {
           excerpt_en?: string | null
           excerpt_fr?: string | null
           id?: string
+          is_pillar?: boolean
           is_published?: boolean
           og_image_url?: string | null
+          pillar_id?: string | null
           published_at?: string | null
           seo_description?: string | null
           seo_keywords?: string | null
@@ -3426,8 +3430,10 @@ export type Database = {
           excerpt_en?: string | null
           excerpt_fr?: string | null
           id?: string
+          is_pillar?: boolean
           is_published?: boolean
           og_image_url?: string | null
+          pillar_id?: string | null
           published_at?: string | null
           seo_description?: string | null
           seo_keywords?: string | null
@@ -3438,7 +3444,15 @@ export type Database = {
           title_fr?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "news_posts_pillar_id_fkey"
+            columns: ["pillar_id"]
+            isOneToOne: false
+            referencedRelation: "news_posts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       newsletter_sends: {
         Row: {
