@@ -5,6 +5,10 @@ import { seoFromI18n } from "@/lib/seo";
 import { ContactForm } from "./contact-form";
 import { getCompanyInfo, formatOfficeAddress } from "@dbc/legal";
 
+// ISR: reads company_info from the DB → follows the site's standard
+// revalidate window (company-info saves also path-revalidate this route).
+export const revalidate = 60;
+
 export async function generateMetadata({
   params,
 }: {

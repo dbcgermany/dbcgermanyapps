@@ -416,13 +416,9 @@ export async function updateCompanyInfoSection(
 
   revalidatePath("/", "layout");
   await pingSiteRevalidate("company-info");
-  // Homepage hero is a page-level field — tag-revalidation alone busts
-  // the data cache but the homepage's own ISR (revalidate=60) keeps the
-  // static prerender. Path-revalidate the marketing root so the new
-  // hero shows up on the next request, not 60s later.
-  if (section === "home_hero") {
-    await pingSitePath("/[locale]");
-  }
+  // Company info renders into the footer (every page) + the legal/contact
+  // pages, so path-revalidate them all (covers home_hero via "/[locale]").
+  await pingSitePaths(COMPANY_INFO_SITE_PATHS);
   return { success: true };
 }
 
@@ -470,6 +466,28 @@ async function pingSitePath(path: string) {
   } catch (err) {
     console.error("[pingSitePath] failed:", err);
   }
+}
+
+/**
+ * Company info renders into the footer (present on EVERY page) and directly
+ * into the legal/contact pages. These now all read the DB and run ISR
+ * (revalidate=60), so path-revalidate the full set on any company-info save
+ * to surface edits within seconds instead of up to 60s. Includes "/[locale]"
+ * which, with "layout" scope, also covers the homepage hero.
+ */
+const COMPANY_INFO_SITE_PATHS = [
+  "/[locale]",
+  "/[locale]/about",
+  "/[locale]/contact",
+  "/[locale]/imprint",
+  "/[locale]/privacy",
+  "/[locale]/terms",
+  "/[locale]/cookies",
+  "/[locale]/us-privacy-notice",
+];
+
+async function pingSitePaths(paths: string[]) {
+  await Promise.all(paths.map((p) => pingSitePath(p)));
 }
 
 /**
@@ -608,6 +626,7 @@ export async function uploadBrandAsset(
 
   revalidatePath("/", "layout");
   await pingSiteRevalidate("company-info");
+  await pingSitePaths(COMPANY_INFO_SITE_PATHS);
   return { success: true, url: publicUrl };
 }
 
@@ -652,21 +671,7 @@ export async function updateCompanyInfoAboutSections(input: {
 
   revalidatePath("/", "layout");
   await pingSiteRevalidate("company-info");
-  // Also ping the /about path directly so ISR picks up the change even
-  // when the site doesn't tag-revalidate for "company-info".
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
-  const secret = process.env.REVALIDATE_SECRET;
-  if (siteUrl && secret) {
-    try {
-      await fetch(`${siteUrl}/api/revalidate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ path: "/[locale]/about", secret }),
-        cache: "no-store",
-      });
-    } catch (err) {
-      console.error("[about revalidate] failed:", err);
-    }
-  }
+  // Route through the shared helper (was a duplicated inline fetch).
+  await pingSitePaths(COMPANY_INFO_SITE_PATHS);
   return { success: true };
 }
