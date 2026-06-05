@@ -9,6 +9,7 @@ import { PageHeader } from "@/components/page-header";
 import { CoverImageUpload } from "@/components/cover-image-upload";
 import { NewsCategoryPicker } from "@/components/news-category-picker";
 import { NewsAuthorPicker } from "@/components/news-author-picker";
+import { RichTextEditor } from "@/components/rich-text-editor";
 
 // createNewsPost ends with redirect() on success — the action never
 // returns a success payload (Next.js navigates server-side and the
@@ -69,14 +70,14 @@ export default function NewNewsPostPage({
           <Textarea name="excerpt_fr" rows={2} />
         </FormField>
 
-        <FormField label={t("bodyEn")} required hint={t("bodyHint")}>
-          <Textarea name="body_en" rows={10} required />
+        <FormField label={t("bodyEn")} required>
+          <RichTextEditor name="body_en" />
         </FormField>
         <FormField label={t("bodyDe")}>
-          <Textarea name="body_de" rows={10} />
+          <RichTextEditor name="body_de" />
         </FormField>
         <FormField label={t("bodyFr")}>
-          <Textarea name="body_fr" rows={10} />
+          <RichTextEditor name="body_fr" />
         </FormField>
 
         <NewsAuthorPicker />

@@ -8,6 +8,7 @@ import { updateNewsPost } from "@/actions/news";
 import { CoverImageUpload } from "@/components/cover-image-upload";
 import { NewsCategoryPicker } from "@/components/news-category-picker";
 import { NewsAuthorPicker } from "@/components/news-author-picker";
+import { RichTextEditor } from "@/components/rich-text-editor";
 
 const T = {
   en: {
@@ -127,14 +128,14 @@ export function EditNewsForm({ locale, post }: { locale: string; post: Post }) {
         <Textarea name="excerpt_fr" defaultValue={post.excerpt_fr ?? ""} rows={2} />
       </FormField>
 
-      <FormField label={t.bodyEn} required hint={t.bodyHint}>
-        <Textarea name="body_en" defaultValue={post.body_en} rows={12} required />
+      <FormField label={t.bodyEn} required>
+        <RichTextEditor name="body_en" defaultValue={post.body_en} />
       </FormField>
       <FormField label={t.bodyDe}>
-        <Textarea name="body_de" defaultValue={post.body_de} rows={12} />
+        <RichTextEditor name="body_de" defaultValue={post.body_de} />
       </FormField>
       <FormField label={t.bodyFr}>
-        <Textarea name="body_fr" defaultValue={post.body_fr} rows={12} />
+        <RichTextEditor name="body_fr" defaultValue={post.body_fr} />
       </FormField>
 
       <NewsAuthorPicker

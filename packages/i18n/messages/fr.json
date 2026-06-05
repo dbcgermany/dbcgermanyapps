@@ -1877,6 +1877,22 @@
         "searchAuthors": "Rechercher des auteurs…",
         "role": "Rôle",
         "noAuthorsDefault": "Aucun auteur sélectionné — DBC Germany par défaut.",
+        "toolbar": {
+          "bold": "Gras",
+          "italic": "Italique",
+          "underline": "Souligné",
+          "h2": "Titre 2",
+          "h3": "Titre 3",
+          "bulletList": "Liste à puces",
+          "orderedList": "Liste numérotée",
+          "quote": "Citation",
+          "link": "Ajouter un lien",
+          "unlink": "Retirer le lien",
+          "image": "Insérer une image",
+          "video": "Insérer une vidéo",
+          "linkPrompt": "Saisir l’URL",
+          "videoPrompt": "Coller une URL YouTube ou Vimeo"
+        },
         "roles": {
           "author": "Auteur",
           "co_author": "Co-auteur",
