@@ -11,6 +11,12 @@ const nextConfig: NextConfig = {
     "@dbc/i18n",
     "@dbc/ui",
     "@dbc/email",
+    // @dbc/legal ships raw TypeScript (exports point at ./src/*.ts). The news
+    // create/update actions call sanitizeRichHtml via a dynamic
+    // import("@dbc/legal/server"); without transpiling the package, that import
+    // throws at runtime under Turbopack and every article save fails silently
+    // before the DB write. Team edits work because they don't sanitize HTML.
+    "@dbc/legal",
   ],
   images: {
     // Admin needs to render next/image tags pointing at Supabase Storage

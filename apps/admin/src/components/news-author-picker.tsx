@@ -6,14 +6,17 @@ import { useTranslations } from "next-intl";
 import { Button, FormField, Input, Select } from "@dbc/ui";
 import { searchAuthors } from "@/actions/authors";
 import { AUTHOR_ROLES } from "@/lib/author-types";
+import type {
+  AuthorPickKind,
+  AuthorSearchResult,
+} from "@/lib/post-authors-sync";
 
 export type SelectedAuthor = {
+  kind: AuthorPickKind;
   id: string;
   display_name: string;
   role: string;
 };
-
-type SearchResult = { id: string; display_name: string; type: string };
 
 /**
  * Dynamic typeahead author picker. Search authors, add one or more with a
@@ -25,7 +28,7 @@ export function NewsAuthorPicker({ initial = [] }: { initial?: SelectedAuthor[] 
   const t = useTranslations("admin.news.editor");
   const [selected, setSelected] = useState<SelectedAuthor[]>(initial);
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<SearchResult[]>([]);
+  const [results, setResults] = useState<AuthorSearchResult[]>([]);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -44,7 +47,11 @@ export function NewsAuthorPicker({ initial = [] }: { initial?: SelectedAuthor[] 
         }
         const r = await searchAuthors(q);
         if (!active) return;
-        setResults(r.filter((a) => !selected.some((s) => s.id === a.id)));
+        setResults(
+          r.filter(
+            (a) => !selected.some((s) => s.kind === a.kind && s.id === a.id)
+          )
+        );
         setOpen(true);
       },
       q ? 200 : 0
@@ -55,8 +62,11 @@ export function NewsAuthorPicker({ initial = [] }: { initial?: SelectedAuthor[] 
     };
   }, [query, selected]);
 
-  function add(a: SearchResult) {
-    setSelected((p) => [...p, { id: a.id, display_name: a.display_name, role: "author" }]);
+  function add(a: AuthorSearchResult) {
+    setSelected((p) => [
+      ...p,
+      { kind: a.kind, id: a.id, display_name: a.display_name, role: "author" },
+    ]);
     setQuery("");
     setResults([]);
     setOpen(false);
@@ -67,7 +77,14 @@ export function NewsAuthorPicker({ initial = [] }: { initial?: SelectedAuthor[] 
       <input
         type="hidden"
         name="author_entries"
-        value={JSON.stringify(selected.map((s) => ({ id: s.id, role: s.role })))}
+        value={JSON.stringify(
+          selected.map((s) => ({
+            kind: s.kind,
+            id: s.id,
+            role: s.role,
+            name: s.display_name,
+          }))
+        )}
       />
       <div className="space-y-2">
         {selected.length === 0 && (
@@ -78,7 +95,12 @@ export function NewsAuthorPicker({ initial = [] }: { initial?: SelectedAuthor[] 
             key={s.id}
             className="flex items-center justify-between gap-2 rounded-md border border-border bg-background px-3 py-2"
           >
-            <span className="truncate text-sm font-medium">{s.display_name}</span>
+            <span className="flex min-w-0 flex-col">
+              <span className="truncate text-sm font-medium">{s.display_name}</span>
+              <span className="truncate text-xs text-muted-foreground">
+                {t(`kinds.${s.kind}`)}
+              </span>
+            </span>
             <div className="flex shrink-0 items-center gap-2">
               <Select
                 value={s.role}
@@ -117,12 +139,18 @@ export function NewsAuthorPicker({ initial = [] }: { initial?: SelectedAuthor[] 
             <div className="absolute z-10 mt-1 w-full overflow-hidden rounded-md border border-border bg-card shadow-lg">
               {results.map((a) => (
                 <button
-                  key={a.id}
+                  key={`${a.kind}:${a.id}`}
                   type="button"
                   onClick={() => add(a)}
-                  className="block w-full px-3 py-2 text-left text-sm hover:bg-muted"
+                  className="block w-full px-3 py-2 text-left hover:bg-muted"
                 >
-                  {a.display_name}
+                  <span className="block truncate text-sm font-medium">
+                    {a.display_name}
+                  </span>
+                  <span className="block truncate text-xs text-muted-foreground">
+                    {t(`kinds.${a.kind}`)}
+                    {a.detail ? ` · ${a.detail}` : ""}
+                  </span>
                 </button>
               ))}
             </div>

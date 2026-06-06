@@ -450,11 +450,13 @@ export type Database = {
           is_public: boolean
           linkedin_url: string | null
           photo_url: string | null
+          profile_id: string | null
           role_title_de: string | null
           role_title_en: string | null
           role_title_fr: string | null
           slug: string
           sort_order: number
+          speaker_id: string | null
           team_member_id: string | null
           type: string
           updated_at: string
@@ -474,11 +476,13 @@ export type Database = {
           is_public?: boolean
           linkedin_url?: string | null
           photo_url?: string | null
+          profile_id?: string | null
           role_title_de?: string | null
           role_title_en?: string | null
           role_title_fr?: string | null
           slug: string
           sort_order?: number
+          speaker_id?: string | null
           team_member_id?: string | null
           type?: string
           updated_at?: string
@@ -498,11 +502,13 @@ export type Database = {
           is_public?: boolean
           linkedin_url?: string | null
           photo_url?: string | null
+          profile_id?: string | null
           role_title_de?: string | null
           role_title_en?: string | null
           role_title_fr?: string | null
           slug?: string
           sort_order?: number
+          speaker_id?: string | null
           team_member_id?: string | null
           type?: string
           updated_at?: string
@@ -517,9 +523,23 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "authors_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "authors_speaker_id_fkey"
+            columns: ["speaker_id"]
+            isOneToOne: true
+            referencedRelation: "speakers"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "authors_team_member_id_fkey"
             columns: ["team_member_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "team_members"
             referencedColumns: ["id"]
           },

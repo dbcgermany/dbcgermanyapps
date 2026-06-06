@@ -1862,8 +1862,14 @@
         "createdToast": "Kategorie erstellt",
         "deletedToast": "Kategorie gelöscht",
         "colors": {
-          "red": "Rot", "gold": "Gold", "blue": "Blau", "teal": "Türkis",
-          "purple": "Lila", "green": "Grün", "orange": "Orange", "slate": "Schiefer"
+          "red": "Rot",
+          "gold": "Gold",
+          "blue": "Blau",
+          "teal": "Türkis",
+          "purple": "Lila",
+          "green": "Grün",
+          "orange": "Orange",
+          "slate": "Schiefer"
         }
       },
       "editor": {
@@ -1872,9 +1878,9 @@
         "primary": "Primär",
         "noCategories": "Noch keine Kategorien. Erstelle sie unter News → Kategorien.",
         "authors": "Autoren",
-        "authorsHint": "Einen oder mehrere Autoren mit Rolle suchen und hinzufügen. Leer lassen = DBC Germany.",
+        "authorsHint": "Teammitglieder, Speaker, Admins oder Gastautoren mit Rolle hinzufügen. Leer lassen, um DBC Germany zu nennen.",
         "addAuthor": "Autor hinzufügen",
-        "searchAuthors": "Autoren suchen…",
+        "searchAuthors": "Team, Speaker, Autoren suchen…",
         "role": "Rolle",
         "noAuthorsDefault": "Kein Autor gewählt — Standard ist DBC Germany.",
         "toolbar": {
@@ -1913,7 +1919,15 @@
           "interviewer": "Interviewer",
           "interviewee": "Interviewter",
           "contributor": "Mitwirkender"
-        }
+        },
+        "kinds": {
+          "author": "Autor",
+          "team_member": "Team",
+          "speaker": "Speaker",
+          "profile": "Admin"
+        },
+        "newCategory": "Neue Kategorie",
+        "cancel": "Abbrechen"
       },
       "authors": {
         "title": "Autoren",

@@ -15,6 +15,8 @@ import {
   readingTimeMinutes,
   toNewsCard,
   toLocale,
+  bylineNames,
+  type RawPostAuthor,
 } from "@/lib/news";
 
 export const revalidate = 60;
@@ -24,7 +26,7 @@ async function getPost(slug: string) {
   const { data } = await supabase
     .from("news_posts")
     .select(
-      "id, slug, title_en, title_de, title_fr, excerpt_en, excerpt_de, excerpt_fr, body_en, body_de, body_fr, cover_image_url, author_name, published_at, updated_at, is_published, seo_title, seo_description, seo_title_en, seo_title_de, seo_title_fr, seo_description_en, seo_description_de, seo_description_fr, og_title_en, og_title_de, og_title_fr, og_description_en, og_description_de, og_description_fr, og_image_url, canonical_url, robots_noindex, robots_nofollow, schema_type, post_authors(role, sort_order, authors(slug, display_name))"
+      "id, slug, title_en, title_de, title_fr, excerpt_en, excerpt_de, excerpt_fr, body_en, body_de, body_fr, cover_image_url, author_name, published_at, updated_at, is_published, seo_title, seo_description, seo_title_en, seo_title_de, seo_title_fr, seo_description_en, seo_description_de, seo_description_fr, og_title_en, og_title_de, og_title_fr, og_description_en, og_description_de, og_description_fr, og_image_url, canonical_url, robots_noindex, robots_nofollow, schema_type, post_authors(role, sort_order, authors(slug, display_name, type, photo_url, role_title_en, role_title_de, role_title_fr, bio_en, bio_de, bio_fr, team_members(name, photo_url, role_en, role_de, role_fr, bio_en, bio_de, bio_fr), speakers(first_name, last_name, photo_url, title_en, title_de, title_fr, bio_en, bio_de, bio_fr), profiles(display_name, first_name, last_name, avatar_url)))"
     )
     .eq("slug", slug)
     .eq("is_published", true)
@@ -145,26 +147,11 @@ export default async function NewsArticlePage({
       new Date(post.published_at).getTime() >
       86_400_000;
 
-  const rawAuthors =
-    (post.post_authors as
-      | {
-          role: string;
-          sort_order: number;
-          authors:
-            | { slug: string; display_name: string }
-            | { slug: string; display_name: string }[]
-            | null;
-        }[]
-      | null) ?? [];
-  const byline = rawAuthors
-    .slice()
-    .sort((a, b) => a.sort_order - b.sort_order)
-    .map((pa) => (Array.isArray(pa.authors) ? pa.authors[0] : pa.authors))
-    .filter((a): a is { slug: string; display_name: string } => Boolean(a));
-  const bylineAuthors =
-    byline.length > 0
-      ? byline
-      : [{ slug: "dbc-germany", display_name: post.author_name || "DBC Germany" }];
+  // Names resolve live from the linked Team/Speaker/admin profile (SSOT).
+  const bylineAuthors = bylineNames(
+    (post.post_authors as unknown as RawPostAuthor[] | null) ?? null,
+    post.author_name as string | null
+  ).map((a) => ({ slug: a.slug, display_name: a.name }));
 
   const jsonLd = articleJsonLd({
     title,

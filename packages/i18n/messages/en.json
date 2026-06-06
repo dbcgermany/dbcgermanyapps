@@ -1862,8 +1862,14 @@
         "createdToast": "Category created",
         "deletedToast": "Category deleted",
         "colors": {
-          "red": "Red", "gold": "Gold", "blue": "Blue", "teal": "Teal",
-          "purple": "Purple", "green": "Green", "orange": "Orange", "slate": "Slate"
+          "red": "Red",
+          "gold": "Gold",
+          "blue": "Blue",
+          "teal": "Teal",
+          "purple": "Purple",
+          "green": "Green",
+          "orange": "Orange",
+          "slate": "Slate"
         }
       },
       "editor": {
@@ -1872,9 +1878,9 @@
         "primary": "Primary",
         "noCategories": "No categories yet. Create them under News → Categories.",
         "authors": "Authors",
-        "authorsHint": "Search and add one or more authors with a role. Leave empty to credit DBC Germany.",
+        "authorsHint": "Search and add team members, speakers, admins or guest authors, each with a role. Leave empty to credit DBC Germany.",
         "addAuthor": "Add author",
-        "searchAuthors": "Search authors…",
+        "searchAuthors": "Search team, speakers, authors…",
         "role": "Role",
         "noAuthorsDefault": "No author selected — defaults to DBC Germany.",
         "toolbar": {
@@ -1913,7 +1919,15 @@
           "interviewer": "Interviewer",
           "interviewee": "Interviewee",
           "contributor": "Contributor"
-        }
+        },
+        "kinds": {
+          "author": "Author",
+          "team_member": "Team",
+          "speaker": "Speaker",
+          "profile": "Admin"
+        },
+        "newCategory": "New category",
+        "cancel": "Cancel"
       },
       "authors": {
         "title": "Authors",

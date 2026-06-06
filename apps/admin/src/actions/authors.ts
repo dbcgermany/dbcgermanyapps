@@ -1,8 +1,10 @@
 "use server";
 
 import { createServerClient, requireRole } from "@dbc/supabase/server";
+import { STAFF_ROLES } from "@dbc/types";
 import { slugify, uniqueSlug } from "@/lib/slugify";
 import { pingRevalidate } from "@/lib/revalidate";
+import type { AuthorSearchResult } from "@/lib/post-authors-sync";
 
 // Module-local (a non-async export in a "use server" file breaks the build).
 const AUTHOR_COLUMNS =
@@ -22,19 +24,122 @@ export async function getAuthors() {
   return data;
 }
 
-// Typeahead source for the news editor's author picker.
-export async function searchAuthors(query: string) {
+// Typeahead source for the news editor's author picker. Unifies four SSOT
+// sources — existing authors, team members, speakers, and admin profiles —
+// into one de-duplicated person list. A person already backed by an `authors`
+// row (or represented as a team member) is shown once, so the operator never
+// picks the same human twice. The hard no-duplicate guarantee lives in
+// resolvePickedAuthors (find-or-create keyed on the canonical FK).
+export async function searchAuthors(query: string): Promise<AuthorSearchResult[]> {
   await requireRole("manager");
   const supabase = await createServerClient();
-  let q = supabase
-    .from("authors")
-    .select("id, display_name, type, photo_url, slug")
-    .order("sort_order", { ascending: true })
-    .limit(20);
-  const term = query.trim();
-  if (term) q = q.ilike("display_name", `%${term}%`);
-  const { data } = await q;
-  return data ?? [];
+  const term = query.trim().toLowerCase();
+  const match = (s: string | null | undefined) =>
+    !term || (s ?? "").toLowerCase().includes(term);
+
+  // Reference sets are small (tens of rows) — pull them whole so de-dup is
+  // correct regardless of which rows match the term.
+  const [authorsRes, teamRes, speakersRes, profilesRes] = await Promise.all([
+    supabase
+      .from("authors")
+      .select(
+        "id, display_name, type, photo_url, role_title_en, team_member_id, speaker_id, profile_id"
+      )
+      .order("sort_order", { ascending: true }),
+    supabase
+      .from("team_members")
+      .select("id, name, role_en, photo_url, profile_id")
+      .order("sort_order", { ascending: true }),
+    supabase
+      .from("speakers")
+      .select("id, first_name, last_name, title_en, photo_url, team_member_id"),
+    supabase
+      .from("profiles")
+      .select("id, display_name, first_name, last_name, avatar_url, role")
+      .in("role", STAFF_ROLES),
+  ]);
+
+  const authors = authorsRes.data ?? [];
+  const team = teamRes.data ?? [];
+  const speakers = speakersRes.data ?? [];
+  const profiles = profilesRes.data ?? [];
+
+  // People already backed by an author row — don't list them again as a raw
+  // person entity.
+  const backedTeam = new Set(authors.map((a) => a.team_member_id).filter(Boolean));
+  const backedSpeaker = new Set(authors.map((a) => a.speaker_id).filter(Boolean));
+  const backedProfile = new Set(authors.map((a) => a.profile_id).filter(Boolean));
+  // profile -> team member, so an admin who is on the team collapses to the
+  // team entry (one canonical person).
+  const profileTeam = new Map<string, string>();
+  for (const t of team) if (t.profile_id) profileTeam.set(t.profile_id, t.id);
+
+  const results: AuthorSearchResult[] = [];
+  const representedTeam = new Set<string>();
+
+  // 1) Existing authors (incl. DBC Germany + any already-linked person).
+  for (const a of authors) {
+    if (!match(a.display_name)) continue;
+    results.push({
+      kind: "author",
+      id: a.id,
+      display_name: a.display_name,
+      detail: a.role_title_en ?? null,
+      photo_url: a.photo_url,
+    });
+    if (a.team_member_id) representedTeam.add(a.team_member_id);
+  }
+
+  // 2) Team members not already backed by an author.
+  for (const t of team) {
+    if (backedTeam.has(t.id) || representedTeam.has(t.id)) continue;
+    if (!match(t.name)) continue;
+    results.push({
+      kind: "team_member",
+      id: t.id,
+      display_name: t.name,
+      detail: t.role_en ?? null,
+      photo_url: t.photo_url,
+    });
+    representedTeam.add(t.id);
+  }
+
+  // 3) Speakers, unless they're a team member already represented, or backed.
+  for (const s of speakers) {
+    if (backedSpeaker.has(s.id)) continue;
+    if (s.team_member_id && representedTeam.has(s.team_member_id)) continue;
+    const name = [s.first_name, s.last_name].filter(Boolean).join(" ");
+    if (!match(name)) continue;
+    results.push({
+      kind: "speaker",
+      id: s.id,
+      display_name: name,
+      detail: s.title_en ?? null,
+      photo_url: s.photo_url,
+    });
+  }
+
+  // 4) Admin profiles, unless they map to an already-represented team member
+  //    or are backed by an author.
+  for (const p of profiles) {
+    if (backedProfile.has(p.id)) continue;
+    const linkedTeam = profileTeam.get(p.id);
+    if (linkedTeam && representedTeam.has(linkedTeam)) continue;
+    const name =
+      p.display_name ||
+      [p.first_name, p.last_name].filter(Boolean).join(" ") ||
+      "";
+    if (!name || !match(name)) continue;
+    results.push({
+      kind: "profile",
+      id: p.id,
+      display_name: name,
+      detail: null,
+      photo_url: p.avatar_url ?? null,
+    });
+  }
+
+  return results.slice(0, 30);
 }
 
 function readAuthorForm(formData: FormData) {

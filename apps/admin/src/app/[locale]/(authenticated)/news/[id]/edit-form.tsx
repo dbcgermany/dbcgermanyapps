@@ -167,9 +167,15 @@ export function EditNewsForm({ locale, post }: { locale: string; post: Post }) {
           .sort((a, b) => a.sort_order - b.sort_order)
           .map((pa) => {
             const a = Array.isArray(pa.authors) ? pa.authors[0] : pa.authors;
-            return a ? { id: a.id, display_name: a.display_name, role: pa.role } : null;
+            // Saved credits are already canonical `authors` rows.
+            return a
+              ? { kind: "author" as const, id: a.id, display_name: a.display_name, role: pa.role }
+              : null;
           })
-          .filter((x): x is { id: string; display_name: string; role: string } => x !== null)}
+          .filter(
+            (x): x is { kind: "author"; id: string; display_name: string; role: string } =>
+              x !== null
+          )}
       />
 
       <NewsPillarPicker

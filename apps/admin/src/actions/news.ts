@@ -1,38 +1,62 @@
 "use server";
 
 import { createServerClient, requireRole } from "@dbc/supabase/server";
+import * as Sentry from "@sentry/nextjs";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { slugify, uniqueSlug } from "@/lib/slugify";
 import { pingRevalidate } from "@/lib/revalidate";
 import { syncPostCategories } from "@/lib/news-category-sync";
-import { syncPostAuthors, type PostAuthorEntry } from "@/lib/post-authors-sync";
+import {
+  syncPostAuthors,
+  resolvePickedAuthors,
+  type PostAuthorEntry,
+  type PickedAuthor,
+  type AuthorPickKind,
+} from "@/lib/post-authors-sync";
 
-// Parse the editor's author picker selection; fall back to the default org
-// author (DBC Germany) when none chosen.
+const AUTHOR_PICK_KINDS: AuthorPickKind[] = [
+  "author",
+  "team_member",
+  "speaker",
+  "profile",
+];
+
+// Parse the editor's author picker selection ([{kind, id, role, name}]) and
+// resolve each pick to its canonical author row (team members / speakers /
+// admins are linked, never duplicated). Falls back to the default org author
+// (DBC Germany) when none chosen.
 async function resolveAuthorEntries(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   supabase: any,
   formData: FormData
 ): Promise<PostAuthorEntry[]> {
-  let entries: PostAuthorEntry[] = [];
+  let picked: PickedAuthor[] = [];
   try {
     const raw = JSON.parse((formData.get("author_entries") as string) || "[]");
     if (Array.isArray(raw)) {
-      entries = raw
+      picked = raw
         .filter((e) => e && typeof e.id === "string")
-        .map((e) => ({ id: e.id, role: typeof e.role === "string" ? e.role : "author" }));
+        .map((e) => ({
+          // Default to "author" for legacy entries that predate the `kind` field.
+          kind: AUTHOR_PICK_KINDS.includes(e.kind) ? e.kind : "author",
+          id: e.id,
+          role: typeof e.role === "string" ? e.role : "author",
+          name: typeof e.name === "string" ? e.name : undefined,
+        }));
     }
   } catch {
-    entries = [];
+    picked = [];
   }
+
+  const entries = await resolvePickedAuthors(supabase, picked);
   if (entries.length === 0) {
     const { data: org } = await supabase
       .from("authors")
       .select("id")
       .eq("is_org_default", true)
       .maybeSingle();
-    if (org?.id) entries = [{ id: org.id, role: "author" }];
+    if (org?.id) return [{ id: org.id, role: "author" }];
   }
   return entries;
 }
@@ -42,12 +66,40 @@ async function resolveAuthorEntries(
 // actions only. A top-level import drags jsdom into the cold-start of every
 // function that imports this module — including the read-only /news list
 // page (getNewsPosts) — which fails to boot the lambda and 500s the page.
-async function cleanBody(
-  v: FormDataEntryValue | null,
-  fallback = ""
-): Promise<string> {
-  const { sanitizeRichHtml } = await import("@dbc/legal/server");
-  return sanitizeRichHtml(((v as string) ?? "") || fallback);
+//
+// @dbc/legal MUST be in apps/admin's transpilePackages — it ships raw .ts and
+// the dynamic import below throws at runtime under Turbopack otherwise, which
+// previously made every article save fail silently before the DB write.
+
+const BODY_SANITIZE_ERROR =
+  "We couldn’t process the article body, so nothing was saved. Please try again — if it keeps happening, report it.";
+
+// Sanitize the three localized bodies. Returns a clear error (never throws)
+// when the sanitizer can't be loaded/run, so the save surfaces a toast instead
+// of an opaque "Server Components render" crash. We never persist unsanitized
+// HTML — sanitization is an XSS boundary. `fallbackToEn` mirrors create's
+// behaviour (empty DE/FR fall back to EN); update keeps them independent.
+async function sanitizeBodies(
+  formData: FormData,
+  fallbackToEn: boolean
+): Promise<
+  | { body_en: string; body_de: string; body_fr: string }
+  | { error: string }
+> {
+  try {
+    const { sanitizeRichHtml } = await import("@dbc/legal/server");
+    const clean = (v: FormDataEntryValue | null, fallback = "") =>
+      sanitizeRichHtml(((v as string) ?? "") || fallback);
+    const en = clean(formData.get("body_en"));
+    return {
+      body_en: en,
+      body_de: clean(formData.get("body_de"), fallbackToEn ? en : ""),
+      body_fr: clean(formData.get("body_fr"), fallbackToEn ? en : ""),
+    };
+  } catch (e) {
+    Sentry.captureException(e, { tags: { area: "news.sanitizeBodies" } });
+    return { error: BODY_SANITIZE_ERROR };
+  }
 }
 
 function readCategorySelection(formData: FormData) {
@@ -253,6 +305,10 @@ export async function createNewsPost(formData: FormData) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const slug = await uniqueSlug(supabase as any, "news_posts", base);
 
+  // New posts: empty DE/FR bodies fall back to the EN body.
+  const bodies = await sanitizeBodies(formData, true);
+  if ("error" in bodies) return bodies;
+
   const record = {
     slug,
     title_en: titleEn,
@@ -261,9 +317,7 @@ export async function createNewsPost(formData: FormData) {
     excerpt_en: (formData.get("excerpt_en") as string) || null,
     excerpt_de: (formData.get("excerpt_de") as string) || null,
     excerpt_fr: (formData.get("excerpt_fr") as string) || null,
-    body_en: await cleanBody(formData.get("body_en")),
-    body_de: await cleanBody(formData.get("body_de"), formData.get("body_en") as string),
-    body_fr: await cleanBody(formData.get("body_fr"), formData.get("body_en") as string),
+    ...bodies,
     cover_image_url:
       ((formData.get("cover_image_url") as string) || "").trim() || null,
     author_name: (formData.get("author_name") as string) || null,
@@ -306,6 +360,11 @@ export async function updateNewsPost(id: string, formData: FormData) {
   const supabase = await createServerClient();
   const locale = formData.get("locale") as string;
 
+  // Edits keep DE/FR bodies independent (don't overwrite an intentionally
+  // empty translation with the EN body).
+  const bodies = await sanitizeBodies(formData, false);
+  if ("error" in bodies) return bodies;
+
   const record: Record<string, unknown> = {
     title_en: formData.get("title_en") as string,
     title_de: formData.get("title_de") as string,
@@ -313,9 +372,7 @@ export async function updateNewsPost(id: string, formData: FormData) {
     excerpt_en: (formData.get("excerpt_en") as string) || null,
     excerpt_de: (formData.get("excerpt_de") as string) || null,
     excerpt_fr: (formData.get("excerpt_fr") as string) || null,
-    body_en: await cleanBody(formData.get("body_en")),
-    body_de: await cleanBody(formData.get("body_de")),
-    body_fr: await cleanBody(formData.get("body_fr")),
+    ...bodies,
     cover_image_url:
       ((formData.get("cover_image_url") as string) || "").trim() || null,
     author_name: (formData.get("author_name") as string) || null,

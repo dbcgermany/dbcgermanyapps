@@ -1862,8 +1862,14 @@
         "createdToast": "Catégorie créée",
         "deletedToast": "Catégorie supprimée",
         "colors": {
-          "red": "Rouge", "gold": "Or", "blue": "Bleu", "teal": "Turquoise",
-          "purple": "Violet", "green": "Vert", "orange": "Orange", "slate": "Ardoise"
+          "red": "Rouge",
+          "gold": "Or",
+          "blue": "Bleu",
+          "teal": "Turquoise",
+          "purple": "Violet",
+          "green": "Vert",
+          "orange": "Orange",
+          "slate": "Ardoise"
         }
       },
       "editor": {
@@ -1872,9 +1878,9 @@
         "primary": "Principale",
         "noCategories": "Aucune catégorie. Créez-les dans Actualités → Catégories.",
         "authors": "Auteurs",
-        "authorsHint": "Recherchez et ajoutez un ou plusieurs auteurs avec un rôle. Vide = DBC Germany.",
+        "authorsHint": "Ajoutez des membres de l’équipe, intervenants, admins ou auteurs invités avec un rôle. Laissez vide pour créditer DBC Germany.",
         "addAuthor": "Ajouter un auteur",
-        "searchAuthors": "Rechercher des auteurs…",
+        "searchAuthors": "Rechercher équipe, intervenants, auteurs…",
         "role": "Rôle",
         "noAuthorsDefault": "Aucun auteur sélectionné — DBC Germany par défaut.",
         "toolbar": {
@@ -1913,7 +1919,15 @@
           "interviewer": "Intervieweur",
           "interviewee": "Interviewé",
           "contributor": "Contributeur"
-        }
+        },
+        "kinds": {
+          "author": "Auteur",
+          "team_member": "Équipe",
+          "speaker": "Intervenant",
+          "profile": "Admin"
+        },
+        "newCategory": "Nouvelle catégorie",
+        "cancel": "Annuler"
       },
       "authors": {
         "title": "Auteurs",
