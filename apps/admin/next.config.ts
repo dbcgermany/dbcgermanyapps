@@ -18,6 +18,12 @@ const nextConfig: NextConfig = {
     // before the DB write. Team edits work because they don't sanitize HTML.
     "@dbc/legal",
   ],
+  // jsdom (pulled in by isomorphic-dompurify, used by @dbc/legal's
+  // sanitizeRichHtml) must NOT be bundled by Turbopack — it relies on dynamic
+  // requires that break once bundled, so the news-save server action throws
+  // when it runs the sanitizer at runtime. Mark them external so they load as
+  // real Node modules from node_modules at runtime instead.
+  serverExternalPackages: ["isomorphic-dompurify", "jsdom"],
   images: {
     // Admin needs to render next/image tags pointing at Supabase Storage
     // (avatars, team photos, event covers, sponsor logos, newsletter covers,

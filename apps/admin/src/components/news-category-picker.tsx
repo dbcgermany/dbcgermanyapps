@@ -1,11 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button, FormField, Input, Select } from "@dbc/ui";
-import { getNewsCategories, createNewsCategory } from "@/actions/news-categories";
+import {
+  getNewsCategories,
+  createNewsCategory,
+  deleteNewsCategory,
+} from "@/actions/news-categories";
 import { NEWS_CATEGORY_COLORS } from "@/lib/news-category-palette";
 
 type PickerCategory = { id: string; name: string };
@@ -30,11 +34,13 @@ export function NewsCategoryPicker({
 }) {
   const t = useTranslations("admin.news.editor");
   const tCat = useTranslations("admin.news.categories");
+  const tCommon = useTranslations("admin.common");
   const [cats, setCats] = useState<PickerCategory[] | null>(null);
   const [checked, setChecked] = useState<Set<string>>(new Set(selectedIds));
   const [primary, setPrimary] = useState<string | null>(primaryId);
   const [adding, setAdding] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [draft, setDraft] = useState({ en: "", de: "", fr: "", color: "" });
 
   const localeKey = (() => {
@@ -72,6 +78,27 @@ export function NewsCategoryPicker({
       }
       return next;
     });
+  }
+
+  async function deleteInline(id: string, name: string) {
+    if (deletingId) return;
+    if (!window.confirm(tCat("deleteConfirm", { name }))) return;
+    setDeletingId(id);
+    const res = await deleteNewsCategory(id);
+    if (res?.error) {
+      toast.error(res.error);
+      setDeletingId(null);
+      return;
+    }
+    setCats((prev) => (prev ?? []).filter((c) => c.id !== id));
+    setChecked((prev) => {
+      const n = new Set(prev);
+      n.delete(id);
+      return n;
+    });
+    setPrimary((p) => (p === id ? null : p));
+    setDeletingId(null);
+    toast.success(tCat("deletedToast"));
   }
 
   async function createInline() {
@@ -141,6 +168,16 @@ export function NewsCategoryPicker({
                 />
                 {t("primary")}
               </label>
+              <button
+                type="button"
+                onClick={() => deleteInline(c.id, c.name)}
+                disabled={deletingId === c.id}
+                title={tCommon("delete")}
+                aria-label={tCommon("delete")}
+                className="shrink-0 rounded p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-destructive disabled:opacity-50"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
             </div>
           );
         })}

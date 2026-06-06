@@ -72,7 +72,7 @@ async function resolveAuthorEntries(
 // previously made every article save fail silently before the DB write.
 
 const BODY_SANITIZE_ERROR =
-  "We couldn’t process the article body, so nothing was saved. Please try again — if it keeps happening, report it.";
+  "We couldn’t process the article body, so nothing was saved.";
 
 // Sanitize the three localized bodies. Returns a clear error (never throws)
 // when the sanitizer can't be loaded/run, so the save surfaces a toast instead
@@ -98,7 +98,12 @@ async function sanitizeBodies(
     };
   } catch (e) {
     Sentry.captureException(e, { tags: { area: "news.sanitizeBodies" } });
-    return { error: BODY_SANITIZE_ERROR };
+    // Surface the real cause to the operator (admin is a trusted tool) and to
+    // the Vercel runtime logs — the redacted "Server Components render" error
+    // and the un-wired Sentry capture made this impossible to diagnose blind.
+    const detail = e instanceof Error ? `${e.name}: ${e.message}` : String(e);
+    console.error("[news.sanitizeBodies] failed:", e);
+    return { error: `${BODY_SANITIZE_ERROR} (${detail})` };
   }
 }
 
