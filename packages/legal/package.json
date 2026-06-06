@@ -15,11 +15,12 @@
   "dependencies": {
     "@dbc/supabase": "workspace:*",
     "marked": "^15.0.0",
-    "isomorphic-dompurify": "^2.20.0"
+    "sanitize-html": "^2.14.0"
   },
   "devDependencies": {
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/sanitize-html": "^2.13.0",
     "typescript": "^5"
   },
   "peerDependencies": {

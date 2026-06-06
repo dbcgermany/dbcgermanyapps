@@ -7,15 +7,19 @@
 //      in 15 places — they'd drift, and one Rechtsanwalt note can
 //      sync them all at once via the company_info form instead).
 //   2. Run the body through `marked` to produce HTML.
-//   3. Sanitize the HTML with DOMPurify to defang any accidental
-//      script/iframe/onerror payloads. Admin is trusted but XSS-by-
-//      typo is a real concern with rich text.
+//   3. Sanitize the HTML to defang any accidental script/iframe/onerror
+//      payloads. Admin is trusted but XSS-by-typo is a real concern with
+//      rich text.
 //
-// The pipeline is server-only — DOMPurify needs a DOM, so we use
-// isomorphic-dompurify which lazy-loads jsdom on the server side.
+// Sanitization uses `sanitize-html` (htmlparser2-based) — NOT DOMPurify.
+// DOMPurify needs a DOM, so it pulled in jsdom via isomorphic-dompurify;
+// jsdom cannot run in the Vercel serverless runtime (bundled it breaks on
+// dynamic requires; externalised it hits ERR_REQUIRE_ESM on a transitive
+// ESM-only dep), which silently broke every admin news save. sanitize-html
+// is pure JS with no DOM dependency, so it works in build AND at runtime.
 
 import { marked } from "marked";
-import DOMPurify from "isomorphic-dompurify";
+import sanitizeHtml from "sanitize-html";
 import type { PublicCompanyInfo } from "./company";
 import {
   formatRegisteredAddress,
@@ -57,21 +61,35 @@ const ALLOWED_ATTR = [
 ];
 
 // Embeds are restricted to a known-safe allowlist (YouTube / Vimeo). Any
-// other <iframe> is dropped. Registered once on the shared DOMPurify
-// instance; legal docs have no iframes so they're unaffected.
+// other <iframe> is dropped. Legal docs have no iframes so they're unaffected.
+const ALLOWED_IFRAME_HOSTS = [
+  "www.youtube.com",
+  "youtube.com",
+  "www.youtube-nocookie.com",
+  "youtube-nocookie.com",
+  "player.vimeo.com",
+];
 const ALLOWED_IFRAME_SRC =
   /^https:\/\/(www\.)?(youtube-nocookie\.com\/embed\/|youtube\.com\/embed\/|player\.vimeo\.com\/video\/)/;
 
-let iframeHookRegistered = false;
-function ensureIframeHook() {
-  if (iframeHookRegistered) return;
-  iframeHookRegistered = true;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  DOMPurify.addHook("uponSanitizeElement", (node: any) => {
-    if (node?.tagName?.toLowerCase?.() === "iframe") {
-      const src = node.getAttribute?.("src") ?? "";
-      if (!ALLOWED_IFRAME_SRC.test(src)) node.parentNode?.removeChild(node);
-    }
+// Shared sanitize pass. `allowIframe` enables the YouTube/Vimeo embed
+// allow-list (rich bodies); email + legal pass it false. The exclusiveFilter
+// drops any iframe whose src isn't a known embed path (hostname allow-list
+// alone wouldn't constrain the path).
+function runSanitize(
+  html: string,
+  tags: string[],
+  attrs: string[],
+  allowIframe: boolean
+): string {
+  return sanitizeHtml(html, {
+    allowedTags: tags,
+    allowedAttributes: { "*": attrs },
+    allowedIframeHostnames: allowIframe ? ALLOWED_IFRAME_HOSTS : [],
+    allowIframeRelativeUrls: false,
+    exclusiveFilter: (frame) =>
+      frame.tag === "iframe" &&
+      !ALLOWED_IFRAME_SRC.test(frame.attribs?.src ?? ""),
   });
 }
 
@@ -196,12 +214,7 @@ export interface RenderOptions {
  * strips any script / disallowed-iframe / onerror payloads.
  */
 export function sanitizeRichHtml(html: string): string {
-  ensureIframeHook();
-  return DOMPurify.sanitize(html, {
-    ALLOWED_TAGS,
-    ALLOWED_ATTR,
-    ADD_TAGS: ["iframe"],
-  });
+  return runSanitize(html, ALLOWED_TAGS, ALLOWED_ATTR, true);
 }
 
 // Email-safe allow-list: no iframe/script/media-embeds (email clients don't
@@ -218,10 +231,7 @@ const EMAIL_ALLOWED_ATTR = ["href", "title", "target", "rel", "src", "alt", "wid
 
 /** Sanitize a rich-HTML body for email (stricter than sanitizeRichHtml). */
 export function sanitizeEmailHtml(html: string): string {
-  return DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: EMAIL_ALLOWED_TAGS,
-    ALLOWED_ATTR: EMAIL_ALLOWED_ATTR,
-  });
+  return runSanitize(html, EMAIL_ALLOWED_TAGS, EMAIL_ALLOWED_ATTR, false);
 }
 
 /** Derive a plain-text alternative from HTML (for the multipart text part). */
@@ -249,10 +259,6 @@ export async function renderLegalMarkdown(
   );
   const interpolated = applyTemplates(options.body_markdown, ctx);
   const html = await marked.parse(interpolated, { async: true });
-  const sanitized = DOMPurify.sanitize(html, {
-    ALLOWED_TAGS,
-    ALLOWED_ATTR,
-  });
-  return sanitized;
+  return runSanitize(html, ALLOWED_TAGS, ALLOWED_ATTR, false);
 }
 
