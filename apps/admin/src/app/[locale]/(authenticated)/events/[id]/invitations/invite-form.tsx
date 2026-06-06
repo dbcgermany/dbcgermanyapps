@@ -5,7 +5,11 @@ import { toast } from "sonner";
 import { useTranslations } from "next-intl";
 import { BirthdayField, Button, CountrySelect, Input, Select, Textarea, TITLE_VALUES, TitleGenderFields, type Gender, type Title } from "@dbc/ui";
 import { createInvitation } from "@/actions/invitations";
-import { localeFromCountry } from "@dbc/email";
+// Import directly from the dependency-free resolver, NOT the @dbc/email
+// barrel: the barrel re-exports send-newsletter → @dbc/legal/server →
+// next/headers, which (now that @dbc/legal is transpiled) Turbopack would
+// otherwise drag into this client bundle and fail to build.
+import { localeFromCountry } from "@dbc/email/src/locale-resolver";
 
 const DEFAULT_INVITATION_BODY: Record<string, string> = {
   en: "We are pleased to invite you to {event} on {date} at {venue}.\n\nYour complimentary ticket is attached to this email as a PDF. Please present the QR code at the entrance for check-in.\n\nWe look forward to welcoming you.",
