@@ -517,8 +517,11 @@ async function vercelChecks() {
         return;
       }
       const ageD = Math.round((Date.now() - dep.created) / 864e5);
+      // A build in flight is transient, not a defect — only a build that
+      // finished badly is a failure.
+      const inFlight = ["QUEUED", "BUILDING", "INITIALIZING"].includes(dep.state);
       report(
-        dep.state === "READY" ? "PASS" : "FAIL",
+        dep.state === "READY" ? "PASS" : inFlight ? "WARN" : "FAIL",
         `${dep.state} · ${ageD}d old · ${String(dep.meta?.githubCommitSha ?? "").slice(0, 7)}`,
       );
     });
