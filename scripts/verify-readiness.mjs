@@ -663,12 +663,23 @@ async function dnsChecks() {
     const gsc = txt.filter((t) => t.startsWith("google-site-verification="));
     const [info] = await restSelect("company_info?select=google_site_verification&limit=1");
     const stored = info?.google_site_verification ?? null;
-    const match = stored && gsc.some((t) => t.includes(stored));
-    report(
-      gsc.length ? (stored && !match ? "WARN" : "PASS") : "FAIL",
-      `${gsc.length} token(s) live` +
-        (stored ? ` · company_info token ${match ? "matches" : "DOES NOT match DNS"}` : " · none stored in company_info"),
-    );
+    // A live token proves *some* Google property is verified — the Workspace
+    // setup publishes one too. It does NOT prove the Search Console Domain
+    // property is verified, so a bare token count must not read as green.
+    if (!gsc.length) {
+      report("FAIL", "no google-site-verification TXT at the apex");
+      return;
+    }
+    if (!stored) {
+      report(
+        "WARN",
+        `${gsc.length} token(s) live but none recorded in company_info — cannot tell which property is verified. ` +
+          `Live: ${gsc.map((t) => t.split("=")[1].slice(0, 12) + "…").join(", ")}`,
+      );
+      return;
+    }
+    const match = gsc.some((t) => t.includes(stored));
+    report(match ? "PASS" : "FAIL", `company_info token ${match ? "is live" : "is NOT in DNS"}`);
   });
 }
 

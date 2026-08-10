@@ -133,7 +133,6 @@ Tickets are already selling against AI-drafted terms.
 | Env vars | admin 22/22, site 21/21 required present in Production |
 | DNS — receiving | Google MX on apex, apex SPF `include:_spf.google.com` |
 | DNS — sending | Resend DKIM + `send` SPF + `send` MX all present |
-| Search Console | verification TXT live at apex |
 | Event date consistency | 0 stale "13 June" strings in DB + code (fixed 2026-08-11) |
 | Load test | 1737 requests, 0 failures, 56 RPS — see `LOAD_TEST_RESULTS.md` |
 
@@ -155,6 +154,20 @@ Tickets are already selling against AI-drafted terms.
 - [ ] Reconcile the speaker lineup: the event description names Jean-Claude
       Tshipama, but the live speakers block shows Diambilay, Alina
       Adomaitytė, Pauline Mona Tshiebe Kayoko and Mark Rau.
+- [ ] **Search Console is still not verified.** The only
+      `google-site-verification` TXT at the apex is
+      `M_knRDrx…V53ZV0`, which belongs to the Google Workspace setup. The
+      Domain-property token issued on 2026-05-08
+      (`google-site-verification=yRPaeJCF1U9zk…z2dA`) has never been added
+      in Strato hPanel, so no indexing data is being collected and the
+      sitemaps have never been submitted. Add it as a second TXT at the apex
+      — do **not** remove the Workspace one — then verify in GSC and submit
+      `dbc-germany.com/sitemap.xml` and
+      `tickets.dbc-germany.com/sitemap.xml`. Worth doing before the event,
+      since the September date is now the one being indexed.
+      Record whichever token belongs to the GSC property in
+      `company_info.google_site_verification` so the verifier can tell the
+      two apart instead of warning.
 
 ## T-14 · Sat 22 August
 
