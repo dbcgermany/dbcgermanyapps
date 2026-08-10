@@ -39,7 +39,14 @@ to the website contact form or the appropriate Google mailbox.
 
 ## 1. Resend: verify `dbc-germany.com` in Resend dashboard
 
-**Status**: BLOCKER for production email.
+**Status**: ✅ CLOSED — re-verified 2026-08-11 via `GET /domains/8263c261-…`:
+`status: verified`, region `eu-west-1`, all DNS records passing. The bounce /
+complaint webhook is also live and `enabled` for `email.bounced` +
+`email.complained`. Sending from the six reserved addresses works.
+`node scripts/verify-readiness.mjs` re-checks both on every run.
+
+The history below is kept for the DNS record values, which are still the ones
+in Strato and are what you would re-enter after a key rotation.
 
 The Resend API key is live on all three Vercel projects and the integration
 works (verified by a test send to `dbcgermany@gmail.com` on 2026-04-18).
@@ -168,11 +175,25 @@ Resend sender, set a Reply-To pointing at the appropriate Google mailbox
 
 ## 2. Vercel: upgrade team to Pro + restore production cron cadences
 
-**Status**: Tickets app has crippled cron schedules (all daily) because the
-Vercel team `dbcgermany-7280s-projects` is on Hobby since 2026-04-15.
+**Status**: 🔴 STILL OPEN — and worse than described below. Re-checked
+2026-08-11: the team is still `billing.plan: "hobby"`, and
+`GET /v9/projects/{id}` returns `crons.definitions: []` for tickets, admin
+**and** site. The schedules are not "crippled to daily" — **zero cron jobs are
+registered**, so none of the 13 declared crons have ever run in production.
 
-**Fix**: upgrade to Pro ($20/mo/member). Then edit `apps/tickets/vercel.json`
-and restore the production schedules:
+The trap: `apps/*/vercel.json` already declares the full production cadences
+(tickets 7 jobs incl. two at `*/5`, admin 6 jobs). Builds go green and nothing
+warns, because Vercel silently ignores schedules the plan cannot support.
+**Reading `vercel.json` tells you nothing about what runs** — check
+`crons.definitions` on the project, which is what `scripts/verify-readiness.mjs`
+now does.
+
+Consequences and the upgrade steps are itemised in
+`docs/PRELAUNCH_CHECKLIST.md` under blocker 3.
+
+**Fix**: upgrade to Pro ($20/mo/member), then redeploy all three projects so
+the schedules register. The cadences below are already in the repo — they do
+not need re-adding:
 
 ```json
 {

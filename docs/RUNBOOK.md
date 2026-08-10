@@ -20,9 +20,13 @@ should email the primary; if no ack within 15 min, escalation.
 
 | Tier | Name | Phone | Slack | Email |
 |---|---|---|---|---|
-| Primary | Jay N Kalala | _TBD_ | _TBD_ | realjaynka@gmail.com |
-| Escalation | _TBD_ | _TBD_ | _TBD_ | _TBD_ |
-| Owner of last resort | _TBD_ | _TBD_ | _TBD_ | _TBD_ |
+| Primary | Jay N Kalala | +49 163 148 95 47 (published business line) | _none — no Slack workspace_ | realjaynka@gmail.com |
+| Escalation | _TBD — needed before 5 Sep_ | _TBD_ | — | _TBD_ |
+| Owner of last resort | _TBD — needed before 5 Sep_ | _TBD_ | — | _TBD_ |
+
+⚠️ With a single named responder there is no escalation path: if the primary
+is unreachable on event day, nobody else can act. Name a second person before
+5 September, even if their only job is to phone the primary.
 
 **Vendor support:**
 - Stripe: dashboard.stripe.com → bottom-right chat (24/7 for live accounts)
