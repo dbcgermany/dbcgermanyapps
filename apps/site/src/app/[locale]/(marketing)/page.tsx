@@ -291,10 +291,10 @@ export default async function HomePage({
                 </p>
                 <h3 className="mt-3 font-heading text-2xl font-bold sm:text-3xl">
                   {locale === "de"
-                    ? "13. Juni 2026 · Essen"
+                    ? "5. September 2026 · Essen"
                     : locale === "fr"
-                      ? "13 juin 2026 · Essen"
-                      : "13 June 2026 · Essen"}
+                      ? "5 septembre 2026 · Essen"
+                      : "5 September 2026 · Essen"}
                 </h3>
                 <p className="mt-4 text-sm leading-6 text-muted-foreground">
                   {t("events.noUpcoming")}

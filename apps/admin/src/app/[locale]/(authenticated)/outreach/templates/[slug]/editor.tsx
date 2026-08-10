@@ -26,7 +26,7 @@ const VARIABLES: Array<{ token: string; example: string }> = [
   { token: "{tier}", example: "Tier 1" },
   { token: "{pitchTier}", example: "Gold" },
   { token: "{eventTitle}", example: "Richesses d'Afrique Germany 2026" },
-  { token: "{eventDate}", example: "13 June 2026" },
+  { token: "{eventDate}", example: "5 September 2026" },
   { token: "{eventCity}", example: "Essen" },
   { token: "{eventVenue}", example: "Messe Essen" },
   {

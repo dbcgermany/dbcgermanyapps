@@ -188,7 +188,7 @@ const s = StyleSheet.create({
 const COPY = {
   en: {
     eyebrow: "Class of 2026 · post-event access",
-    title: "The conversations don't end on June 13.",
+    title: "The conversations don't end on September 5.",
     lead:
       "Every ticket to Richesses d'Afrique Germany 2026 unlocks a 12-month membership in the Class of 2026: quarterly operator calls, deck reviews, warm intros on demand. This card explains how to plug in.",
     metaLabel: "Save this",
@@ -247,7 +247,7 @@ const COPY = {
   },
   de: {
     eyebrow: "Class of 2026 · Zugang nach dem Event",
-    title: "Am 13. Juni hört das Gespräch nicht auf.",
+    title: "Am 5. September hört das Gespräch nicht auf.",
     lead:
       "Jedes Ticket für Richesses d'Afrique Germany 2026 öffnet eine zwölfmonatige Mitgliedschaft in der Class of 2026: Quartals-Operator-Calls, Deck-Reviews und warme Intros auf Anfrage. Diese Karte zeigt, wie Sie einsteigen.",
     metaLabel: "Aufheben",
@@ -306,7 +306,7 @@ const COPY = {
   },
   fr: {
     eyebrow: "Class of 2026 · accès post-événement",
-    title: "Le 13 juin, la conversation ne s'arrête pas.",
+    title: "Le 5 septembre, la conversation ne s'arrête pas.",
     lead:
       "Chaque billet pour Richesses d'Afrique Germany 2026 ouvre douze mois d'adhésion à la Class of 2026 : calls opérateurs trimestriels, relectures de decks et intros chaudes à la demande. Cette carte explique comment vous brancher.",
     metaLabel: "À conserver",

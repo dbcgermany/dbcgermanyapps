@@ -98,7 +98,7 @@ export default async function PressPage({
         de: "Flagship-Event 2026",
         fr: "Événement phare 2026",
       }[l],
-      value: "Richesses d'Afrique · 13 June 2026 · Essen, Germany",
+      value: "Richesses d'Afrique · 5 September 2026 · Essen, Germany",
     },
   ];
 

@@ -214,7 +214,7 @@ const T = {
     p1Eyebrow: "Page 1 of 4 · Before Essen",
     p1Title: "The one decision",
     p1Hint:
-      "Most operators arrive with a list. You only need one. Write the single decision you'd be glad to have made by the end of June 13.",
+      "Most operators arrive with a list. You only need one. Write the single decision you'd be glad to have made by the end of September 5.",
     p1Q1: "The one decision I want to walk out with",
     p1Q2: "Why this decision matters to me right now",
     p1Q3: "What's been blocking me from making it",
@@ -238,7 +238,7 @@ const T = {
     p4Eyebrow: "Page 4 of 4 · After Essen",
     p4Title: "The 90-day commitment",
     p4Hint:
-      "If June 13 was worth it, write the proof. Three milestones, each one you can verify yourself on a specific date.",
+      "If September 5 was worth it, write the proof. Three milestones, each one you can verify yourself on a specific date.",
     p4WriteTitle: "The commitment, written as if it's already true",
     p4MilestoneLabel: "Milestone",
     p4DateLabel: "By",
@@ -266,7 +266,7 @@ const T = {
     p1Eyebrow: "Seite 1 von 4 · Vor Essen",
     p1Title: "Die eine Entscheidung",
     p1Hint:
-      "Die meisten kommen mit einer Liste. Sie brauchen nur eine. Schreiben Sie die eine Entscheidung auf, mit der Sie am 13. Juni gerne herausgehen würden.",
+      "Die meisten kommen mit einer Liste. Sie brauchen nur eine. Schreiben Sie die eine Entscheidung auf, mit der Sie am 5. September gerne herausgehen würden.",
     p1Q1: "Die eine Entscheidung, mit der ich rausgehen will",
     p1Q2: "Warum diese Entscheidung jetzt wichtig ist",
     p1Q3: "Was mich bisher davon abgehalten hat",
@@ -292,7 +292,7 @@ const T = {
     p4Eyebrow: "Seite 4 von 4 · Nach Essen",
     p4Title: "Die 90-Tage-Verpflichtung",
     p4Hint:
-      "Wenn der 13. Juni etwas wert war, schreiben Sie den Beweis auf. Drei Meilensteine, jeder überprüfbar an einem konkreten Datum.",
+      "Wenn der 5. September etwas wert war, schreiben Sie den Beweis auf. Drei Meilensteine, jeder überprüfbar an einem konkreten Datum.",
     p4WriteTitle:
       "Die Verpflichtung, formuliert als sei sie bereits Realität",
     p4MilestoneLabel: "Meilenstein",
@@ -320,7 +320,7 @@ const T = {
     p1Eyebrow: "Page 1 sur 4 · Avant Essen",
     p1Title: "L'unique décision",
     p1Hint:
-      "La plupart arrivent avec une liste. Une seule suffit. Notez la décision unique que vous serez heureux d'avoir prise le soir du 13 juin.",
+      "La plupart arrivent avec une liste. Une seule suffit. Notez la décision unique que vous serez heureux d'avoir prise le soir du 5 septembre.",
     p1Q1: "La seule décision avec laquelle je veux ressortir",
     p1Q2: "Pourquoi cette décision compte maintenant",
     p1Q3: "Ce qui m'a empêché de la prendre jusqu'ici",
@@ -346,7 +346,7 @@ const T = {
     p4Eyebrow: "Page 4 sur 4 · Après Essen",
     p4Title: "L'engagement à 90 jours",
     p4Hint:
-      "Si le 13 juin en valait la peine, écrivez la preuve. Trois jalons, chacun vérifiable à une date précise.",
+      "Si le 5 septembre en valait la peine, écrivez la preuve. Trois jalons, chacun vérifiable à une date précise.",
     p4WriteTitle:
       "L'engagement, formulé comme s'il était déjà acquis",
     p4MilestoneLabel: "Jalon",

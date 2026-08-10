@@ -35,9 +35,9 @@ const SECTIONS: Array<{
           fr: "Quand et où a lieu Richesses d'Afrique 2026 ?",
         },
         a: {
-          en: "Saturday, 13 June 2026, in Essen, Germany. Tickets are available at tickets.dbc-germany.com.",
-          de: "Samstag, 13. Juni 2026, in Essen. Tickets unter tickets.dbc-germany.com.",
-          fr: "Samedi 13 juin 2026 à Essen (Allemagne). Billets sur tickets.dbc-germany.com.",
+          en: "Saturday, 5 September 2026, in Essen, Germany. Tickets are available at tickets.dbc-germany.com.",
+          de: "Samstag, 5. September 2026, in Essen. Tickets unter tickets.dbc-germany.com.",
+          fr: "Samedi 5 septembre 2026 à Essen (Allemagne). Billets sur tickets.dbc-germany.com.",
         },
       },
       {

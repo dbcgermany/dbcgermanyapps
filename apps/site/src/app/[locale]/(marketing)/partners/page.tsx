@@ -131,9 +131,9 @@ export default async function PartnersPage({
       fr: "Soutenez Richesses d'Afrique Essen 2026.",
     }[l],
     intro: {
-      en: "Reach 950+ founders, investors and executives with African focus on June 13, 2026 in Essen. All packages are customisable; the tiers below are starting points.",
-      de: "Erreichen Sie am 13. Juni 2026 in Essen 950+ Gründer, Investoren und Führungskräfte mit Afrika-Fokus. Alle Pakete sind anpassbar, die unten gezeigten Stufen sind Startpunkte.",
-      fr: "Touchez 950+ fondateurs, investisseurs et cadres à focus africain le 13 juin 2026 à Essen. Tous les packages sont personnalisables ; les paliers ci-dessous sont indicatifs.",
+      en: "Reach 950+ founders, investors and executives with African focus on September 5, 2026 in Essen. All packages are customisable; the tiers below are starting points.",
+      de: "Erreichen Sie am 5. September 2026 in Essen 950+ Gründer, Investoren und Führungskräfte mit Afrika-Fokus. Alle Pakete sind anpassbar, die unten gezeigten Stufen sind Startpunkte.",
+      fr: "Touchez 950+ fondateurs, investisseurs et cadres à focus africain le 5 septembre 2026 à Essen. Tous les packages sont personnalisables ; les paliers ci-dessous sont indicatifs.",
     }[l],
     cta: {
       en: "Request the sponsor deck",
